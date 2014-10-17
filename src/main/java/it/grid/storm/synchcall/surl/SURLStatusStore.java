@@ -409,8 +409,7 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
 
   @Override
   public void store(TRequestToken requestToken, GridUserInterface user,
-    HashMap<TSURL, TReturnStatus> surlStatuses)
-    throws IllegalArgumentException, TokenDuplicationException {
+    HashMap<TSURL, TReturnStatus> surlStatuses) {
 
     Entry e = Entry.from(requestToken, user, surlStatuses);
 
@@ -424,23 +423,12 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
   }
 
   @Override
-  public void store(TRequestToken requestToken,
-    HashMap<TSURL, TReturnStatus> surlStatuses)
-    throws IllegalArgumentException, TokenDuplicationException {
-
-    store(requestToken, null, surlStatuses);
-
-  }
-
-  @Override
   public int update(TRequestToken requestToken, List<TSURL> surls,
-    TStatusCode newStatusCode, String explanation)
-    throws IllegalArgumentException, UnknownTokenException,
-    ExpiredTokenException, UnknownSurlException {
+    TReturnStatus status) throws UnknownTokenException, ExpiredTokenException,
+    UnknownSurlException {
 
-    logger.debug(
-      "update: token={}, surls={}, newStatusCode={}, explanation={}",
-      requestToken, surls, newStatusCode, explanation);
+    logger.debug("update: token={}, surls={}, status={}", requestToken, surls,
+      status);
 
     Entry e = statusStore.getIfPresent(requestToken);
     int updateCount = 0;
@@ -456,7 +444,7 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
         throw new UnknownSurlException(String.format(
           "SURL %s not linked to request token %s", s, requestToken));
       }
-      e.surlStatuses.put(s, new TReturnStatus(newStatusCode, explanation));
+      e.surlStatuses.put(s, status);
       updateCount++;
     }
 
@@ -470,11 +458,10 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
   }
 
   @Override
-  public int update(TRequestToken requestToken, TStatusCode newStatusCode,
-    String explanation) throws UnknownSurlException {
+  public int update(TRequestToken requestToken, TReturnStatus status)
+    throws UnknownSurlException {
 
-    logger.debug("update: token={}, newStatusCode={}, explanation={}",
-      requestToken, newStatusCode, explanation);
+    logger.debug("update: token={}, status={}", requestToken, status);
 
     Entry e = statusStore.getIfPresent(requestToken);
     int updateCount = 0;
@@ -486,7 +473,7 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
     }
 
     for (TSURL s : e.surlStatuses.keySet()) {
-      e.surlStatuses.put(s, new TReturnStatus(newStatusCode, explanation));
+      e.surlStatuses.put(s, status);
       updateCount++;
     }
 
@@ -499,21 +486,10 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
   }
 
   @Override
-  public int update(TRequestToken requestToken, TSURL surl,
-    TStatusCode newStatusCode) throws IllegalArgumentException,
-    UnknownTokenException, ExpiredTokenException, UnknownSurlException {
+  public int update(TRequestToken requestToken, TSURL surl, TReturnStatus status)
+    throws UnknownTokenException, ExpiredTokenException, UnknownSurlException {
 
-    return update(requestToken, Arrays.asList(surl), newStatusCode, null);
-  }
-
-  @Override
-  public int update(TRequestToken requestToken, TSURL surl,
-    TStatusCode newStatusCode, String explanation)
-    throws IllegalArgumentException, UnknownTokenException,
-    ExpiredTokenException, UnknownSurlException {
-
-    return update(requestToken, Arrays.asList(surl), newStatusCode, explanation);
-
+    return update(requestToken, Arrays.asList(surl), status);
   }
 
 }

@@ -18,7 +18,6 @@
 package it.grid.storm.persistence.model;
 
 import it.grid.storm.common.types.TURLPrefix;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TDirOption;
 import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
@@ -247,14 +246,10 @@ public class PtGChunkTO {
 	 */
 	public void changeStatusSRM_REQUEST_QUEUED(String explanation) {
 
-		try {
-			if (explanation == null) {
-				explanation = "";
-			}
-			status = new TReturnStatus(TStatusCode.SRM_REQUEST_QUEUED, explanation);
-		} catch (InvalidTReturnStatusAttributeException e) {
-			log.debug(e.getMessage(), e);
+		if (explanation == null) {
+			explanation = "";
 		}
+		status = new TReturnStatus(TStatusCode.SRM_REQUEST_QUEUED, explanation);
 	}
 
 	/**
@@ -264,14 +259,10 @@ public class PtGChunkTO {
 	 */
 	public void changeStatusSRM_DONE(String explanation) {
 
-		try {
-			if (explanation == null) {
-				explanation = "";
-			}
-			status = new TReturnStatus(TStatusCode.SRM_DONE, explanation);
-		} catch (InvalidTReturnStatusAttributeException e) {
-			log.debug(e.getMessage(), e);
+		if (explanation == null) {
+			explanation = "";
 		}
+		status = new TReturnStatus(TStatusCode.SRM_DONE, explanation);
 	}
 
 	/**
@@ -281,14 +272,10 @@ public class PtGChunkTO {
 	 */
 	public void changeStatusSRM_INVALID_REQUEST(String explanation) {
 
-		try {
-			if (explanation == null) {
-				explanation = "";
-			}
-			status = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, explanation);
-		} catch (InvalidTReturnStatusAttributeException e) {
-			log.debug(e.getMessage(), e);
+		if (explanation == null) {
+			explanation = "";
 		}
+		status = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, explanation);
 	}
 
 	/**
@@ -298,15 +285,11 @@ public class PtGChunkTO {
 	 */
 	public void changeStatusSRM_AUTHORIZATION_FAILURE(String explanation) {
 
-		try {
-			if (explanation == null) {
-				explanation = "";
-			}
-			status = new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
-				explanation);
-		} catch (InvalidTReturnStatusAttributeException e) {
-			log.debug(e.getMessage(), e);
+		if (explanation == null) {
+			explanation = "";
 		}
+		status = new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+			explanation);
 	}
 
 	/**
@@ -316,14 +299,10 @@ public class PtGChunkTO {
 	 */
 	public void changeStatusSRM_ABORTED(String explanation) {
 
-		try {
-			if (explanation == null) {
-				explanation = "";
-			}
-			status = new TReturnStatus(TStatusCode.SRM_ABORTED, explanation);
-		} catch (InvalidTReturnStatusAttributeException e) {
-			log.debug(e.getMessage(), e);
+		if (explanation == null) {
+			explanation = "";
 		}
+		status = new TReturnStatus(TStatusCode.SRM_ABORTED, explanation);
 	}
 
 	/**
@@ -333,16 +312,10 @@ public class PtGChunkTO {
 	 */
 	public void changeStatusSRM_REQUEST_INPROGRESS(String explanation) {
 
-		try {
-			if (explanation == null) {
-				explanation = "";
-			}
-			status = new TReturnStatus(TStatusCode.SRM_REQUEST_INPROGRESS,
-				explanation);
-		} catch (InvalidTReturnStatusAttributeException e) {
-
-			log.debug(e.getMessage(), e);
+		if (explanation == null) {
+			explanation = "";
 		}
+		status = new TReturnStatus(TStatusCode.SRM_REQUEST_INPROGRESS, explanation);
 	}
 
 	/**
@@ -352,15 +325,10 @@ public class PtGChunkTO {
 	 */
 	public void changeStatusSRM_INTERNAL_ERROR(String explanation) {
 
-		try {
-			if (explanation == null) {
-				explanation = "";
-			}
-			status = new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR, explanation);
-		} catch (InvalidTReturnStatusAttributeException e) {
-			
-			log.debug(e.getMessage(), e);
+		if (explanation == null) {
+			explanation = "";
 		}
+		status = new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR, explanation);
 	}
 
 	/**
@@ -370,16 +338,11 @@ public class PtGChunkTO {
 	 */
 	public void changeStatusSRM_FATAL_INTERNAL_ERROR(String explanation) {
 
-		try {
-			if (explanation == null) {
-				explanation = "";
-			}
-			status = new TReturnStatus(TStatusCode.SRM_FATAL_INTERNAL_ERROR,
-				explanation);
-		} catch (InvalidTReturnStatusAttributeException e) {
-
-			log.debug(e.getMessage(), e);
+		if (explanation == null) {
+			explanation = "";
 		}
+		status = new TReturnStatus(TStatusCode.SRM_FATAL_INTERNAL_ERROR,
+			explanation);
 	}
 
 	/**
@@ -389,15 +352,10 @@ public class PtGChunkTO {
 	 */
 	public void changeStatusSRM_INVALID_PATH(String explanation) {
 
-		try {
-			if (explanation == null) {
-				explanation = "";
-			}
-			status = new TReturnStatus(TStatusCode.SRM_INVALID_PATH, explanation);
-		} catch (InvalidTReturnStatusAttributeException e) {
-
-			log.debug(e.getMessage(), e);
+		if (explanation == null) {
+			explanation = "";
 		}
+		status = new TReturnStatus(TStatusCode.SRM_INVALID_PATH, explanation);
 	}
 
 	@Override

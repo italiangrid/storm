@@ -27,7 +27,6 @@ import it.grid.storm.catalogs.InvalidSurlRequestDataAttributesException;
 import it.grid.storm.catalogs.PtPData;
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.config.Configuration;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TOverwriteMode;
@@ -61,17 +60,8 @@ public class PtPBuilder {
 		TSizeInBytes expectedFileSize = inputData.getFileSize();
 		TURLPrefix transferProtocols = inputData.getTransferProtocols();
 		TOverwriteMode overwriteOption = TOverwriteMode.ALWAYS;
-		TReturnStatus status;
-		try {
-			status = new TReturnStatus(TStatusCode.SRM_REQUEST_QUEUED,
-				"Synchronous request created");
-		} catch (InvalidTReturnStatusAttributeException e) {
-			log.error("Unable to build TReturnStatus. "
-				+ "InvalidTReturnStatusAttributeException: {}", e.getMessage());
-			throw new BuilderException(
-				"Error building PtP TReturnStatus. Building failed");
-		}
-		;
+		TReturnStatus status = new TReturnStatus(TStatusCode.SRM_REQUEST_QUEUED,
+			"Synchronous request created");
 		TTURL transferURL = TTURL.makeEmpty();
 		PtPData data;
 		try {

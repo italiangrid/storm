@@ -1,6 +1,6 @@
 package it.grid.storm.catalogs;
 
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
@@ -8,7 +8,6 @@ import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.SURLStatusStore;
-import it.grid.storm.synchcall.surl.TokenDuplicationException;
 import it.grid.storm.synchcall.surl.UnknownSurlException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
@@ -38,62 +37,27 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
     if (stored) {
       return;
     }
-    try {
-      while (!stored) {
-        try {
-          if (this instanceof IdentityInputData) {
-            SURLStatusStore.INSTANCE.store(
-              generatedRequestToken,
-              ((IdentityInputData) this).getUser(),
-              buildSurlStatusMap(SURL, status.getStatusCode(),
-                status.getExplanation()));
-          } else {
-            SURLStatusStore.INSTANCE.store(
-              generatedRequestToken,
-              buildSurlStatusMap(SURL, status.getStatusCode(),
-                status.getExplanation()));
-          }
-          stored = true;
-        } catch (TokenDuplicationException e) {
-          generatedRequestToken = TRequestToken.getRandom();
-        }
-      }
-    } catch (IllegalArgumentException e) {
-      log.error(e.getMessage(), e);
-      throw new IllegalStateException("Unexpected IllegalArgumentException: "
-        + e.getMessage());
+    GridUserInterface user = null;
+    if (this instanceof IdentityInputData) {
+      user = ((IdentityInputData) this).getUser();
     }
+    SURLStatusStore.INSTANCE.store(generatedRequestToken, user,
+      buildSurlStatusMap(SURL, status));
+    stored = true;
   }
 
   private static HashMap<TSURL, TReturnStatus> buildSurlStatusMap(TSURL surl,
-    TStatusCode code, String explanation) throws IllegalArgumentException {
+    TReturnStatus status) {
 
-    if (surl == null || code == null) {
+    if (surl == null || status == null) {
       throw new IllegalArgumentException(
-        "Unable to build the status, null arguments: surl=" + surl
-          + " statusCode=" + code);
+        "Unable to build the status, null arguments: surl=" + surl + " status="
+          + status);
     }
     HashMap<TSURL, TReturnStatus> surlStatusMap = new HashMap<TSURL, TReturnStatus>(
       1);
-    surlStatusMap.put(surl, buildStatus(code, explanation));
+    surlStatusMap.put(surl, status);
     return surlStatusMap;
-  }
-
-  private static TReturnStatus buildStatus(TStatusCode statusCode,
-    String explaination) throws IllegalArgumentException, IllegalStateException {
-
-    if (statusCode == null) {
-      throw new IllegalArgumentException(
-        "Unable to build the status, null arguments: statusCode=" + statusCode);
-    }
-    try {
-      return new TReturnStatus(statusCode, explaination);
-    } catch (InvalidTReturnStatusAttributeException e1) {
-      // Never thrown
-      throw new IllegalStateException(
-        "Unexpected InvalidTReturnStatusAttributeException "
-          + "in building TReturnStatus: " + e1.getMessage());
-    }
   }
 
   @Override
@@ -118,17 +82,8 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
     super.setStatus(status);
     if (!(this instanceof PersistentChunkData)) {
       try {
-        if (status.getExplanation() == null) {
-          SURLStatusStore.INSTANCE.update(generatedRequestToken, this.SURL,
-            status.getStatusCode());
-        } else {
-          SURLStatusStore.INSTANCE.update(generatedRequestToken, this.SURL,
-            status.getStatusCode(), status.getExplanation());
-        }
-      } catch (IllegalArgumentException e) {
-        // Never thrown
-        throw new IllegalStateException("Unexpected IllegalArgumentException "
-          + "in updating status store: " + e.getMessage());
+        SURLStatusStore.INSTANCE.update(generatedRequestToken, this.SURL,
+          status);
       } catch (UnknownTokenException e) {
         log.warn("Received an UnknownTokenException, probably the token has "
           + "expired, unable to update its status in the store: {}",
@@ -150,18 +105,8 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
     super.setStatus(statusCode, explanation);
     if (!(this instanceof PersistentChunkData)) {
       try {
-        if (explanation == null) {
-          SURLStatusStore.INSTANCE.update(generatedRequestToken, this.SURL,
-            statusCode);
-        } else {
-          SURLStatusStore.INSTANCE.update(generatedRequestToken, this.SURL,
-            statusCode, explanation);
-        }
-      } catch (IllegalArgumentException e) {
-        log.error(e.getMessage(), e);
-        // Never thrown
-        throw new IllegalStateException("Unexpected IllegalArgumentException "
-          + "in updating status store: " + e.getMessage());
+        SURLStatusStore.INSTANCE.update(generatedRequestToken, this.SURL,
+          super.getStatus());
       } catch (UnknownTokenException e) {
         // Never thrown
         log.warn("Received an UnknownTokenException, probably the token has "
@@ -177,5 +122,4 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
       }
     }
   }
-
 }

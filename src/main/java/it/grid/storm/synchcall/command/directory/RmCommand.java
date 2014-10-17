@@ -32,29 +32,35 @@ import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
-import it.grid.storm.namespace.VirtualFSInterface;
-import it.grid.storm.space.SpaceHelper;
-import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
+import it.grid.storm.srm.types.SRMCommandException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSURLReturnStatus;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.synchcall.command.AbstractCommand;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.CommandHelper;
-import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.RmInputData;
 import it.grid.storm.synchcall.data.directory.RmOutputData;
-import it.grid.storm.synchcall.surl.UnknownSurlException;
+
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+class RmException extends SRMCommandException {
+
+  private static final long serialVersionUID = 1L;
+
+  public RmException(TStatusCode code, String message) {
+
+    super(code, message);
+  }
+}
 
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008
@@ -68,12 +74,35 @@ public class RmCommand implements Command {
 
   private static final String SRM_COMMAND = "srmRm";
   private static final Logger log = LoggerFactory.getLogger(RmCommand.class);
-  private final String funcName = "srmRm";
   private final NamespaceInterface namespace;
 
   public RmCommand() {
 
     namespace = NamespaceDirector.getNamespace();
+
+  }
+
+  private void checkInputData(InputData data) throws IllegalArgumentException {
+
+    if (data == null) {
+      throw new IllegalArgumentException("Invalid input data: NULL");
+    }
+    if (!(data instanceof RmInputData)) {
+      throw new IllegalArgumentException("Invalid input data type");
+    }
+  }
+
+  private List<TSURL> getSurlArray(RmInputData data) throws RmException {
+
+    if (data.getSurlArray() == null) {
+      throw new RmException(TStatusCode.SRM_FAILURE, "Invalid SURL array: NULL");
+    }
+    if (data.getSurlArray().size() == 0) {
+      throw new RmException(TStatusCode.SRM_FAILURE,
+        "Invalid SURL array specified");
+    }
+
+    return data.getSurlArray().getArrayList();
   }
 
   /**
@@ -83,315 +112,201 @@ public class RmCommand implements Command {
    *          Contains information about input data for rm request.
    * @return RmOutputData Contains output data
    */
-  public OutputData execute(InputData inputDataGeneric) {
+  public OutputData execute(InputData data) {
 
-    log.debug("SrmRm: Dir Manager Rm start!");
-
-    TReturnStatus globalStatus = null;
-
-    RmOutputData outputData = new RmOutputData();
-    RmInputData inputData = (RmInputData) inputDataGeneric;
-
-    /**
-     * Validate RmInputData. The check is done at this level to separate
-     * internal StoRM logic from xmlrpc specific operation.
-     */
-    if ((inputData == null)
-      || ((inputData != null) && (inputData.getSurlArray() == null))) {
-      log.debug("srmRm : Invalid input parameter specified");
-      globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
-        "Invalid input parameters specified");
-      printRequestOutcome(globalStatus, inputData);
-      outputData.setStatus(globalStatus);
-      outputData.setSurlStatus(null);
-      return outputData;
-    }
-
-    ArrayOfSURLs surlArray = inputData.getSurlArray();
-    ArrayOfTSURLReturnStatus arrayOfFileStatus = new ArrayOfTSURLReturnStatus();
-
-    log.debug("srmRm: DirManager: Rm: SURLVectorSize: {}", surlArray.size());
-    for (TSURL surl : inputData.getSurlArray().getArrayList()) {
-      log.debug("srmRm: DirManager: Rm: SURL: {}", surl);
-      TSURLReturnStatus fileStatus = new TSURLReturnStatus();
-      fileStatus.setSurl(surl);
-      TReturnStatus returnStatus = null;
-      StoRI stori = null;
-      if (!surl.isEmpty()) {
-        try {
-          if (inputData instanceof IdentityInputData) {
-            try {
-              stori = namespace.resolveStoRIbySURL(surl,
-                ((IdentityInputData) inputData).getUser());
-            } catch (UnapprochableSurlException e) {
-              log.info("Unable to build a stori for surl {} for user {}. {}",
-                surl, DataHelper.getRequestor(inputData), e.getMessage());
-
-              globalStatus = CommandHelper.buildStatus(
-                TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
-              printRequestOutcome(globalStatus, inputData);
-              outputData.setStatus(globalStatus);
-              outputData.setSurlStatus(null);
-              return outputData;
-            } catch (NamespaceException e) {
-              log.info("Unable to build a stori for surl {} for user {}. {}",
-                surl, DataHelper.getRequestor(inputData), e.getMessage());
-              globalStatus = CommandHelper.buildStatus(
-                TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
-              printRequestOutcome(globalStatus, inputData);
-              outputData.setStatus(globalStatus);
-              outputData.setSurlStatus(null);
-              return outputData;
-            } catch (InvalidSURLException e) {
-              log.info("Unable to build a stori for surl {} for user {}. {}",
-                surl, DataHelper.getRequestor(inputData), e.getMessage());
-              globalStatus = CommandHelper.buildStatus(
-                TStatusCode.SRM_INVALID_PATH, e.getMessage());
-              printRequestOutcome(globalStatus, inputData);
-              outputData.setStatus(globalStatus);
-              outputData.setSurlStatus(null);
-              return outputData;
-            }
-          } else {
-            try {
-              stori = namespace.resolveStoRIbySURL(surl);
-            } catch (UnapprochableSurlException e) {
-              log.info("Unable to build a stori for surl {}. {}", surl,
-                e.getMessage());
-              globalStatus = CommandHelper.buildStatus(
-                TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
-              printRequestOutcome(globalStatus, inputData);
-              outputData.setStatus(globalStatus);
-              outputData.setSurlStatus(null);
-              return outputData;
-            } catch (NamespaceException e) {
-              log.info("Unable to build a stori for surl {}. {}", surl,
-                e.getMessage());
-              globalStatus = CommandHelper.buildStatus(
-                TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
-              printRequestOutcome(globalStatus, inputData);
-              outputData.setStatus(globalStatus);
-              outputData.setSurlStatus(null);
-              return outputData;
-            } catch (InvalidSURLException e) {
-              log.info("Unable to build a stori for surl {}. {}", surl,
-                e.getMessage());
-              globalStatus = CommandHelper.buildStatus(
-                TStatusCode.SRM_INVALID_PATH, e.getMessage());
-              printRequestOutcome(globalStatus, inputData);
-              outputData.setStatus(globalStatus);
-              outputData.setSurlStatus(null);
-              return outputData;
-            }
-          }
-        } catch (IllegalArgumentException e) {
-
-          log.error("SrmRm: StoRI from surl error: {}", e.getMessage(), e);
-
-          globalStatus = CommandHelper.buildStatus(
-            TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
-          printRequestOutcome(globalStatus, inputData);
-          outputData.setStatus(globalStatus);
-          outputData.setSurlStatus(null);
-          return outputData;
-        }
-      } else {
-        log.error("srmRm: Invalid SURL {}", surl);
-        returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
-          "Invalid SURL");
-        printSurlOutcome(returnStatus, inputData, surl);
-      }
-      if (stori != null) {
-        TSpaceToken token = new SpaceHelper().getTokenFromStoRI(log, stori);
-        SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
-        boolean isSpaceAuthorized;
-        if (inputData instanceof IdentityInputData) {
-          isSpaceAuthorized = spaceAuth.authorize(
-            ((IdentityInputData) inputData).getUser(), SRMSpaceRequest.RM);
-        } else {
-          isSpaceAuthorized = spaceAuth.authorizeAnonymous(SRMSpaceRequest.RM);
-        }
-        if (isSpaceAuthorized) {
-          AuthzDecision decision;
-          if (inputData instanceof IdentityInputData) {
-            decision = AuthzDirector.getPathAuthz().authorize(
-              ((IdentityInputData) inputData).getUser(), SRMFileRequest.RM,
-              stori);
-          } else {
-            decision = AuthzDirector.getPathAuthz().authorizeAnonymous(
-              SRMFileRequest.RM, stori.getStFN());
-          }
-          if (decision.equals(AuthzDecision.PERMIT)) {
-
-            log.debug("srmRm: authorized for {} on file= {}",
-              DataHelper.getRequestor(inputData), stori.getPFN());
-
-            // Prior to delete the file get the actual file size to update
-            // properly the DB
-            long fileSize = 0;
-            if (stori.getLocalFile().exists()) {
-              fileSize = stori.getLocalFile().getExactSize();
-            }
-            try {
-              GridUserInterface user = AbstractCommand
-                .getUserFromInputData(inputData);
-              returnStatus = manageAuthorizedRM(user, surl, stori);
-            } catch (IllegalArgumentException e) {
-              log.error("srmRm: {}", e.getMessage(), e);
-
-              globalStatus = CommandHelper.buildStatus(
-                TStatusCode.SRM_INTERNAL_ERROR,
-                "Error while performing an authorized rm");
-              printRequestOutcome(globalStatus, inputData);
-              outputData.setStatus(globalStatus);
-              outputData.setSurlStatus(null);
-              return outputData;
-            } catch (UnknownSurlException e) {
-              log.error("srmRm: {}", e.getMessage(), e);
-              returnStatus = CommandHelper.buildStatus(
-                TStatusCode.SRM_INVALID_PATH, "The SURL is unknown");
-            }
-            if (returnStatus.isSRM_SUCCESS()) {
-              /*
-               * If Storage Area hard limit is enabled, update space on DB
-               */
-              VirtualFSInterface fs = stori.getVirtualFileSystem();
-              if (fs != null && fs.getProperties().isOnlineSpaceLimited()) {
-                if (inputData instanceof IdentityInputData) {
-                  new SpaceHelper().increaseFreeSpaceForSA(log, funcName,
-                    ((IdentityInputData) inputData).getUser(), surl, fileSize);
-                } else {
-                  new SpaceHelper().increaseFreeSpaceForSA(log, funcName, surl,
-                    fileSize);
-                }
-              }
-            }
-          } else {
-            log.debug(
-              "srmRm: User not authorized to delete file. AuthzDecision: {}",
-              decision);
-            returnStatus = CommandHelper.buildStatus(
-              TStatusCode.SRM_AUTHORIZATION_FAILURE,
-              "User is not authorized to delete the file");
-          }
-        } else {
-          log.debug("srmRm: User not authorized to perform srmRm on SA: {}",
-            token);
-
-          returnStatus = CommandHelper.buildStatus(
-            TStatusCode.SRM_AUTHORIZATION_FAILURE,
-            "User not authorized to perform "
-              + "srmRm request on the storage area");
-        }
-      }
-      printSurlOutcome(returnStatus, inputData, surl);
-      fileStatus.setStatus(returnStatus);
-      arrayOfFileStatus.addTSurlReturnStatus(fileStatus);
-    }
-
-    boolean atLeastOneSuccess = false;
-    boolean atLeastOneFailure = false;
-    for (TSURLReturnStatus status : arrayOfFileStatus.getArray()) {
-      if (atLeastOneFailure && atLeastOneSuccess) {
-        break;
-      }
-      if (status.getStatus().isSRM_SUCCESS()) {
-        atLeastOneSuccess = true;
-      } else {
-        atLeastOneFailure = true;
-      }
-    }
-    if (atLeastOneSuccess) {
-      if (atLeastOneFailure) {
-        globalStatus = CommandHelper.buildStatus(
-          TStatusCode.SRM_PARTIAL_SUCCESS, "Some files were not removed");
-      } else {
-        globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS,
-          "All files removed");
-      }
-    } else {
-      globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
-        "No files removed");
-    }
-    printRequestOutcome(globalStatus, inputData);
-    outputData.setStatus(globalStatus);
-    outputData.setSurlStatus(arrayOfFileStatus);
+    RmOutputData outputData = null;
+    log.debug("SrmRm: Start execution.");
+    checkInputData(data);
+    outputData = doRm((RmInputData) data);
+    log.debug("SrmRm return status: {}", outputData.getStatus());
+    printRequestOutcome(outputData.getStatus(), (RmInputData) data);
     return outputData;
   }
 
-  private TReturnStatus safeBuildReturnStatus(TStatusCode code,
-    String explanation) {
+  private RmOutputData doRm(RmInputData data) {
+
+    RmOutputData outputData = null;
+    TReturnStatus globalStatus = null;
+    GridUserInterface user = getUser(data);
+    List<TSURL> surls = null;
+    boolean atLeastOneSuccess = false;
+    boolean atLeastOneFailure = false;
+    boolean allUnauthorized = true;
+    ArrayOfTSURLReturnStatus arrayOfFileStatus = new ArrayOfTSURLReturnStatus();
 
     try {
-      return new TReturnStatus(code, explanation);
-    } catch (InvalidTReturnStatusAttributeException e) {
-      log.error("srmRm: {}", e.getMessage(), e);
-      throw new IllegalStateException(e);
+      surls = getSurlArray(data);
+    } catch (RmException e) {
+      log.error("srmRm: {}", e.getMessage());
+      outputData = new RmOutputData(e.getReturnStatus());
+      return outputData;
     }
+    log.debug("srmRm: Received srmRm on {} surls", surls.size());
+
+    for (TSURL surl : surls) {
+
+      TReturnStatus returnStatus = null;
+      try {
+        returnStatus = removeFile(surl, user, data);
+      } catch (RmException e) {
+        log.error("srmRm: {}", e.getMessage());
+        returnStatus = e.getReturnStatus();
+      } finally {
+        arrayOfFileStatus.addTSurlReturnStatus(new TSURLReturnStatus(surl,
+          returnStatus));
+        atLeastOneSuccess |= returnStatus.isSRM_SUCCESS();
+        atLeastOneFailure |= !returnStatus.isSRM_SUCCESS();
+        allUnauthorized &= returnStatus.getStatusCode().equals(
+          TStatusCode.SRM_AUTHORIZATION_FAILURE);
+        printSurlOutcome(returnStatus, data, surl);
+      }
+
+    }
+    globalStatus = computeGlobalStatus(atLeastOneSuccess, atLeastOneFailure,
+      allUnauthorized);
+    outputData = new RmOutputData(globalStatus, arrayOfFileStatus);
+
+    return outputData;
   }
 
-  /**
-   * @param user
-   *          VomsGridUser
-   * @param stori
-   *          StoRI
-   * @return TReturnStatus
-   * @throws UnknownSurlException
-   * @throws IllegalArgumentException
-   */
-  private TReturnStatus manageAuthorizedRM(GridUserInterface user, TSURL surl,
-    StoRI stori) throws IllegalArgumentException, UnknownSurlException {
+  private TReturnStatus removeFile(TSURL surl, GridUserInterface user,
+    RmInputData inputData) throws RmException {
 
-    boolean fileRemoved = false;
+    TReturnStatus returnStatus = null;
+    StoRI stori = resolveStoRI(surl, user);
+    checkUserAuthorization(stori, user);
+    log.debug("srmRm authorized for {} for directory = {}", userToString(user),
+      stori.getPFN());
 
-    LocalFile file = stori.getLocalFile();
-
-    if (!file.exists()) {
-      return safeBuildReturnStatus(TStatusCode.SRM_INVALID_PATH,
-        "File does not exist");
+    LocalFile localFile = stori.getLocalFile();
+    if (!localFile.exists()) {
+      throw new RmException(TStatusCode.SRM_INVALID_PATH, "File does not exist");
+    }
+    if (localFile.isDirectory()) {
+      throw new RmException(TStatusCode.SRM_INVALID_PATH,
+        "The specified file is a directory. Not removed");
     }
 
-    if (file.isDirectory()) {
-      return safeBuildReturnStatus(TStatusCode.SRM_INVALID_PATH,
-        "The specified file is a directory. Not removed.");
-    }
+    // Get file size before it's removed
+    long fileSize = localFile.getSize();
 
     SURLStatusManager manager = SURLStatusManagerFactory.newSURLStatusManager();
 
     manager.abortAllGetRequestsForSURL(user, surl, "File has been removed.");
     manager.abortAllPutRequestsForSURL(user, surl, "File has been removed.");
 
-    fileRemoved = removeTarget(file);
-
-    if (!fileRemoved) {
-      return safeBuildReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+    if (!localFile.delete()) {
+      log.error("srmRm: File not removed!");
+      throw new RmException(TStatusCode.SRM_AUTHORIZATION_FAILURE,
         "File not removed, permission denied.");
     }
+    returnStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, "File removed");
 
-    return safeBuildReturnStatus(TStatusCode.SRM_SUCCESS, "File removed.");
+    try {
+      NamespaceDirector.getNamespace().resolveVFSbyLocalFile(localFile)
+        .decreaseUsedSpace(fileSize);
+    } catch (NamespaceException e) {
+      log.error(e.getMessage());
+      returnStatus.extendExplaination("Unable to decrease used space: "
+        + e.getMessage());
+    }
+
+    return returnStatus;
 
   }
 
-  private boolean removeTarget(LocalFile file) {
+  private TReturnStatus computeGlobalStatus(boolean atLeastOneSuccess,
+    boolean atLeastOneFailure, boolean allUnauthorized) {
 
-    boolean result = false;
-
-    /**
-     * Same situation in Rmdir This check is really needed here? The check can
-     * not be done at this level. In Jit no ACE on file are setted!!! In any
-     * case add check for null permission.
-     */
-
-    boolean canDelete = true;
-
-    if (canDelete) {
-      result = file.delete();
-    } else {
-
-      log.debug("srmRm : Unable to delete the file {}. Permission denied.",
-        file);
+    if (atLeastOneSuccess && !atLeastOneFailure) {
+      return new TReturnStatus(TStatusCode.SRM_SUCCESS, "All files removed");
     }
-    return result;
+    if (atLeastOneSuccess) {
+      return new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
+        "Some files were not removed");
+    }
+    if (allUnauthorized) {
+      return new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+        "User is not authorized to remove any files");
+    }
+    return new TReturnStatus(TStatusCode.SRM_FAILURE, "No files removed");
+  }
+
+  private boolean isAnonymous(GridUserInterface user) {
+
+    return (user == null);
+  }
+
+  private String userToString(GridUserInterface user) {
+
+    return isAnonymous(user) ? "anonymous" : user.getDn();
+  }
+
+  private GridUserInterface getUser(InputData data) {
+
+    if (data instanceof IdentityInputData) {
+      return ((IdentityInputData) data).getUser();
+    }
+    return null;
+  }
+
+  private StoRI resolveStoRI(TSURL surl, GridUserInterface user)
+    throws RmException {
+
+    try {
+      return namespace.resolveStoRIbySURL(surl, user);
+    } catch (UnapprochableSurlException e) {
+      log.error(e.getMessage());
+      throw new RmException(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+        e.getMessage());
+    } catch (NamespaceException e) {
+      log.error(e.getMessage());
+      throw new RmException(TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
+    } catch (InvalidSURLException e) {
+      log.error(e.getMessage());
+      throw new RmException(TStatusCode.SRM_INVALID_PATH, e.getMessage());
+    } catch (IllegalArgumentException e) {
+      log.error(e.getMessage());
+      throw new RmException(TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
+    }
+  }
+
+  private void checkUserAuthorization(StoRI stori, GridUserInterface user)
+    throws RmException {
+
+    TSpaceToken token;
+    try {
+      token = stori.getVirtualFileSystem().getSpaceToken();
+    } catch (NamespaceException e) {
+      log.error(e.getMessage());
+      throw new RmException(TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
+    }
+    SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
+
+    boolean isSpaceAuthorized;
+    if (isAnonymous(user)) {
+      isSpaceAuthorized = spaceAuth.authorizeAnonymous(SRMSpaceRequest.RM);
+    } else {
+      isSpaceAuthorized = spaceAuth.authorize(user, SRMSpaceRequest.RM);
+    }
+    if (!isSpaceAuthorized) {
+      log.debug("srmRm: User not authorized to perform srmRm on SA: {}", token);
+      throw new RmException(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+        "User not authorized to perform srmRm request on the storage area");
+    }
+    AuthzDecision decision;
+    if (isAnonymous(user)) {
+      decision = AuthzDirector.getPathAuthz().authorizeAnonymous(
+        SRMFileRequest.RM, stori.getStFN());
+    } else {
+      decision = AuthzDirector.getPathAuthz().authorize(user,
+        SRMFileRequest.RM, stori);
+    }
+    if (!decision.equals(AuthzDecision.PERMIT)) {
+      log.debug("srmRm: User is not authorized to delete a file");
+      throw new RmException(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+        "User is not authorized to delete a file");
+    }
   }
 
   private void printSurlOutcome(TReturnStatus status, RmInputData inputData,

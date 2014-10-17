@@ -27,15 +27,15 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
-import it.grid.storm.common.SRMConstants;
 import it.grid.storm.filesystem.LocalFile;
+import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.InvalidSURLException;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
-import it.grid.storm.space.SpaceHelper;
+import it.grid.storm.srm.types.SRMCommandException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSpaceToken;
@@ -43,12 +43,44 @@ import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.CommandHelper;
 import it.grid.storm.synchcall.command.DirectoryCommand;
-import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.RmdirInputData;
 import it.grid.storm.synchcall.data.directory.RmdirOutputData;
+
+
+class RmdirException extends SRMCommandException {
+
+  private static final long serialVersionUID = 1L;
+
+  public RmdirException(TStatusCode code, String message) {
+
+    super(code, message);
+  }
+}
+
+class TSize {
+	
+	private long size;
+	
+	TSize(long size) {
+		this.size = size;
+	}
+	
+	public void add(long n) {
+		size += n;
+	}
+	
+	public void dec(long n) {
+		size -= n;
+	}
+	
+	public long get() {
+		return size;
+	}
+	
+}
 
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008
@@ -60,6 +92,8 @@ import it.grid.storm.synchcall.data.directory.RmdirOutputData;
 
 public class RmdirCommand extends DirectoryCommand implements Command {
 
+	
+
   public static final Logger log = LoggerFactory.getLogger(RmdirCommand.class);
 	private static final String SRM_COMMAND = "srmRmdir";
 	private final NamespaceInterface namespace;
@@ -67,6 +101,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 	public RmdirCommand() {
 
 		namespace = NamespaceDirector.getNamespace();
+		
 	}
 
 	/**
@@ -74,268 +109,232 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 	 * 
 	 * @param inputData
 	 *          Contains information about input data for Rmdir request.
-	 * @return TReturnStatus Contains output data
+	 * @return OutputData Contains output data
 	 */
 	public OutputData execute(InputData data) {
 
-		log.debug("srmRmdir: Start execution.");
-		TReturnStatus returnStatus = null;
-
-		RmdirInputData inputData = (RmdirInputData) data;
-		RmdirOutputData outData = null;
-
-		/**
-		 * Validate RmdirInputData. The check is done at this level to separate
-		 * internal StoRM logic from xmlrpc specific operation.
-		 */
-
-		if ((inputData == null)
-			|| ((inputData != null) && (inputData.getSurl() == null))) {
-			returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
-				"Invalid parameter specified.");
-			printRequestOutcome(returnStatus, inputData);
-			outData = new RmdirOutputData(returnStatus);
-			return outData;
-		}
-
-		TSURL surl = inputData.getSurl();
+		RmdirOutputData outputData = null;
+		log.debug("SrmRmdir: Start execution.");
+		checkInputData(data);
+		outputData = doRmdir((RmdirInputData) data);
+		log.debug("srmRmdir return status: {}", outputData.getStatus());
+		printRequestOutcome(outputData.getStatus(), (RmdirInputData) data);
+		return outputData;
+		
+	}
+	
+	private RmdirOutputData doRmdir(RmdirInputData data) {
+		
+		TSURL surl = null;
+		GridUserInterface user = null;
 		StoRI stori = null;
-		if (!surl.isEmpty()) {
+		TReturnStatus returnStatus = null;
+		boolean recursion = false;
+		TSize size = new TSize(0);
+				
+		try {
+			surl = getSURL(data);
+			user = getUser(data);
+			recursion = isRecursive(data);
+			stori = resolveStoRI(surl, user);
+		  checkUserAuthorization(stori, user);
+			log.debug("srmRmdir: rmdir authorized for {}. Dir={}. Recursive={}",
+				userToString(user), stori.getPFN(), recursion);
+			removeFolder(stori.getLocalFile(), recursion, size);
+			returnStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS,
+				"Directory removed with success!");
+			log.debug("srmRmdir: decrease used space of {} bytes", size.get());
 			try {
-				if (inputData instanceof IdentityInputData) {
-					try {
-						stori = namespace.resolveStoRIbySURL(surl,
-							((IdentityInputData) inputData).getUser());
-					} catch (UnapprochableSurlException e) {
-					  log.info("Unable to build a stori for surl {} for user {}: {}",
-					    surl,
-					    DataHelper.getRequestor(inputData),
-					    e.getMessage());
-					  
-						returnStatus = CommandHelper.buildStatus(
-							TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
-						printRequestOutcome(returnStatus, inputData);
-						return new RmdirOutputData(returnStatus);
-					} catch (NamespaceException e) {
-					  log.info("Unable to build a stori for surl {} for user {}: {}",
-					    surl,
-					    DataHelper.getRequestor(inputData),
-					    e.getMessage());
-						returnStatus = CommandHelper.buildStatus(
-							TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
-						printRequestOutcome(returnStatus, inputData);
-						return new RmdirOutputData(returnStatus);
-					} catch (InvalidSURLException e) {
-					  log.info("Unable to build a stori for surl {} for user {}: {}",
-					    surl,
-					    DataHelper.getRequestor(inputData),
-					    e.getMessage());
-						returnStatus = CommandHelper.buildStatus(
-							TStatusCode.SRM_INVALID_PATH, e.getMessage());
-						printRequestOutcome(returnStatus, inputData);
-						return new RmdirOutputData(returnStatus);
-					}
-				} else {
-					try {
-						stori = namespace.resolveStoRIbySURL(surl);
-					} catch (UnapprochableSurlException e) {
-					  log.info("Unable to build a stori for surl {}: {}",
-					    surl,
-					    e.getMessage());
-						returnStatus = CommandHelper.buildStatus(
-							TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
-						printRequestOutcome(returnStatus, inputData);
-						return new RmdirOutputData(returnStatus);
-					} catch (NamespaceException e) {
-					  log.info("Unable to build a stori for surl {}: {}",
-					    surl,
-					    e.getMessage());
-						returnStatus = CommandHelper.buildStatus(
-							TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
-						printRequestOutcome(returnStatus, inputData);
-						return new RmdirOutputData(returnStatus);
-					} catch (InvalidSURLException e) {
-					  log.info("Unable to build a stori for surl {}: {}",
-					    surl,
-					    e.getMessage());
-						returnStatus = CommandHelper.buildStatus(
-							TStatusCode.SRM_INVALID_PATH, e.getMessage());
-						printRequestOutcome(returnStatus, inputData);
-						return new RmdirOutputData(returnStatus);
-					}
-				}
-			} catch (IllegalArgumentException e) {
-			  log.error("StoRI from surl build error: {}",
-			    e.getMessage(), e);
-				returnStatus = CommandHelper.buildStatus(
-					TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
-				printRequestOutcome(returnStatus, inputData);
-				outData = new RmdirOutputData(returnStatus);
-				return outData;
+				decreaseUsedSpace(stori.getLocalFile(), size.get());
+			} catch (NamespaceException e) {
+				log.error("srmRmdir: {}", e.getMessage());
+				returnStatus.extendExplaination("Unable to decrease used space: "
+					+ e.getMessage());
 			}
-		} else {
-			returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
-				"Invalid SURL specified");
-			printRequestOutcome(returnStatus, inputData);
-			outData = new RmdirOutputData(returnStatus);
-			return outData;
+		} catch (RmdirException e) {
+			log.error("srmRmdir: {}", e.getMessage());
+			returnStatus = e.getReturnStatus();
 		}
 
-		// Check here if recursive flag is not specifed
-		// in input parameter.Use default value
-		Boolean recursive = inputData.getRecursive();
-		if (recursive == null) {
-			recursive = new Boolean(SRMConstants.recursiveFlag);
+		log.debug("srmRmdir: returned status is {}", returnStatus);
+		return new RmdirOutputData(returnStatus);
+	}
+	
+	private void checkInputData(InputData data)
+		throws IllegalArgumentException {
+		
+		if (data == null) {
+			throw new IllegalArgumentException("Invalid input data: NULL");
 		}
+		if (!(data instanceof RmdirInputData)) {
+			throw new IllegalArgumentException("Invalid input data type");
+		}
+	}
+	
+	private StoRI resolveStoRI(TSURL surl, GridUserInterface user)
+		throws RmdirException {
 
-		/**
-		 * From version 1.4 Add the control for Storage Area using the new authz for
-		 * space component.
-		 */
-
-		TSpaceToken token = new SpaceHelper().getTokenFromStoRI(log, stori);
+		String formatStr = "Unable to build a stori for surl {} for user {}: {}";
+		try {
+			return namespace.resolveStoRIbySURL(surl, user);
+		} catch (UnapprochableSurlException e) {
+			log.error(formatStr, surl, userToString(user), e.getMessage());
+			throw new RmdirException(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+				e.getMessage());
+		}	catch (NamespaceException e) {
+			log.error(formatStr, surl, userToString(user), e.getMessage());
+			throw new RmdirException(TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
+		}	catch (InvalidSURLException e) {
+			log.error(formatStr, surl, userToString(user), e.getMessage());
+			throw new RmdirException(TStatusCode.SRM_INVALID_PATH, e.getMessage());
+		}	catch (IllegalArgumentException e) {
+			log.error(formatStr, surl, userToString(user), e.getMessage());
+			throw new RmdirException(TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
+		}
+	}
+	
+	private boolean isAnonymous(GridUserInterface user) {
+		
+		return (user == null);
+	}
+	
+	private String userToString(GridUserInterface user) {
+		
+		return isAnonymous(user) ? "anonymous" : user.getDn();
+	}
+	
+	private void checkUserAuthorization(StoRI stori, GridUserInterface user) 
+		throws RmdirException {
+		
+		TSpaceToken token;
+		try {
+			token = stori.getVirtualFileSystem().getSpaceToken();
+		} catch (NamespaceException e) {
+			log.error(e.getMessage());
+			throw new RmdirException(TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
+		}
 		SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
+		
 		boolean isSpaceAuthorized;
-		if (inputData instanceof IdentityInputData) {
-			isSpaceAuthorized = spaceAuth.authorize(
-				((IdentityInputData) inputData).getUser(), SRMSpaceRequest.RMD);
-		} else {
+		if (isAnonymous(user)) {
 			isSpaceAuthorized = spaceAuth.authorizeAnonymous(SRMSpaceRequest.RMD);
+		} else {
+			isSpaceAuthorized = spaceAuth.authorize(user, SRMSpaceRequest.RMD);
 		}
 		if (!isSpaceAuthorized) {
-			log.debug("User not authorized to perform srmRmdir on SA: {}", token);
-			returnStatus = CommandHelper.buildStatus(
-				TStatusCode.SRM_AUTHORIZATION_FAILURE,
-				"User not authorized to perform srmRmdir on storage area");
-			printRequestOutcome(returnStatus, inputData);
-			outData = new RmdirOutputData(returnStatus);
-			return outData;
+			log.debug("srmRmdir: User not authorized to perform srmRmdir request "
+			  + "on the storage area: {}", token);
+			throw new RmdirException(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+				"User is not authorized to remove the directory on the storage area "
+					+ token);
 		}
-
+		
 		AuthzDecision decision;
-		if (inputData instanceof IdentityInputData) {
-			decision = AuthzDirector.getPathAuthz().authorize(
-				((IdentityInputData) inputData).getUser(), SRMFileRequest.RMD, stori);
-		} else {
+		if (isAnonymous(user)) {
 			decision = AuthzDirector.getPathAuthz().authorizeAnonymous(
 				SRMFileRequest.RMD, stori.getStFN());
+		} else {			
+			decision = AuthzDirector.getPathAuthz().authorize(user,
+				SRMFileRequest.RMD, stori);
 		}
-		if (decision.equals(AuthzDecision.PERMIT)) {
-			log.debug("srmRmDir authorized for {}. Dir={}. Recursive={}",
-			  DataHelper.getRequestor(inputData), 
-			  stori.getPFN(),
-			  recursive);
-			returnStatus = manageAuthorizedRMDIR(stori.getLocalFile(),
-				recursive.booleanValue());
-		} else {
-			returnStatus = CommandHelper.buildStatus(
-				TStatusCode.SRM_AUTHORIZATION_FAILURE,
-				"User is not authorized to delete the directory");
+		if (!decision.equals(AuthzDecision.PERMIT)) {
+			log.debug("srmRmdir: User is not authorized to delete the directory");
+			throw new RmdirException(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+				"User is not authorized to remove the directory");
 		}
-		printRequestOutcome(returnStatus, inputData);
-		outData = new RmdirOutputData(returnStatus);
-		return outData;
+		return;
+	}
+	
+	private GridUserInterface getUser(InputData data) {
+		
+		if (data instanceof IdentityInputData) {
+			return ((IdentityInputData) data).getUser();
+		}
+		return null;
+	}
+	
+	private TSURL getSURL(RmdirInputData data) throws RmdirException {
+		
+		TSURL surl = ((RmdirInputData) data).getSurl();
+		if (surl == null) {
+			throw new RmdirException(TStatusCode.SRM_FAILURE,
+				"SURL specified is NULL");
+		}
+		if (surl.isEmpty()) {
+			throw new RmdirException(TStatusCode.SRM_FAILURE,
+				"SURL specified is empty");
+		}
+		return surl;
+	}
+	
+	private boolean isRecursive(RmdirInputData data) {
+		
+		return data.getRecursive().booleanValue();
+	}
+	
+	private void decreaseUsedSpace(LocalFile localFile, long sizeToRemove)
+		throws NamespaceException {
+
+		NamespaceDirector.getNamespace().resolveVFSbyLocalFile(localFile)
+			.decreaseUsedSpace(sizeToRemove);
 	}
 
-	/**
-	 * This method of FileSystem remove file and dir both from file system and
-	 * from DataBase
-	 * 
-	 * @param user
-	 *          VomsGridUser
-	 * @param stori
-	 *          StoRI
-	 * @param recursive
-	 *          boolean
-	 * @return TReturnStatus
-	 */
-	private TReturnStatus manageAuthorizedRMDIR(LocalFile directory,
-		boolean recursive) {
-
-		TReturnStatus returnStatus;
-
-		if ((directory.exists()) && (directory.isDirectory())) {
-			if (recursive) {
-
-				log.debug("{}: Recursive deletion will remove directory and contents.", SRM_COMMAND);
-
-				if (!deleteDirectoryContent(directory)) {
-					return CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
-						"Unable to delete some files within directory.");
-				}
-			}
-
-			if (!removeFile(directory)) {
-				returnStatus = CommandHelper.buildStatus(
-					TStatusCode.SRM_NON_EMPTY_DIRECTORY, "Directory is not empty");
-			} else {
-				returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS,
-					"Directory removed with success!");
-			}
-		} else {
-			log.debug("{}: request with invalid directory specified!", SRM_COMMAND);
-			if (!directory.exists()) {
-				returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
-					"Directory does not exists");
-			} else {
-				returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
-					"Not a directory");
-			}
+	private void checkPrerequisites(LocalFile dir, boolean recursion)
+		throws RmdirException {
+		
+		if (!dir.exists()) {
+			throw new RmdirException(TStatusCode.SRM_INVALID_PATH,
+				"Directory does not exists");
 		}
-		return returnStatus;
+		if (!dir.isDirectory()) {
+			throw new RmdirException(TStatusCode.SRM_INVALID_PATH, "Not a directory");
+		}
+		if (!recursion && (dir.listFiles().length > 0)) {
+			throw new RmdirException(TStatusCode.SRM_NON_EMPTY_DIRECTORY,
+				"Directory is not empty");
+		}
 	}
 
-	/**
-	 * Recursive function for deleteAll
-	 */
-	private boolean deleteDirectoryContent(LocalFile directory) {
-
-		boolean result = true;
-		if (directory.exists()) {
-			if (directory.isDirectory()) {
-				LocalFile[] list = directory.listFiles();
-				if (list.length > 0) {
-					for (LocalFile element : list) {
-						result = result && deleteDirectoryContent(element);
-						if (element.exists()) {
-							result = result && removeFile(element);
-						}
-					}
+	private void removeFolder(LocalFile dir, boolean recursive, TSize size)
+		throws RmdirException {
+		
+		/* 
+		 * Check if dir exists and is a directory, if recursion is enabled when 
+		 * directory is not empty, etc...
+		 */
+		checkPrerequisites(dir, recursive);
+		
+		if (recursive) {
+			LocalFile[] list = dir.listFiles();
+			log.debug("srmRmdir: removing {} content", dir);
+			for (LocalFile element : list) {
+				log.debug("srmRmdir: removing {}", element);
+				if (element.isDirectory()) {
+					removeFolder(element, recursive, size);
 				} else {
-					// The directory is empty and it is deleted by the if in the
-					// for loop above
+					removeFile(element, size);
 				}
-			} else {
-				result = removeFile(directory);
 			}
 		}
-		return result;
+		log.debug("srmRmdir: removing {}", dir);
+		removeEmptyDirectory(dir, size);
 	}
 
-	private boolean removeFile(LocalFile file) {
-
-		boolean result = false;
-		LocalFile[] list;
-		if (file.exists()) {
-			if (file.isDirectory()) {
-				list = file.listFiles();
-				if (list.length > 0) {
-					result = false;
-					
-					log.info("{} : Unable to delete non-empty directory {}", 
-							SRM_COMMAND, file);
-
-				} else {
-					result = file.delete();
-				}
-			} else {
-				result = file.delete();
-			}
-		} else {
-			result = false;
-			log.debug("{}: file {} does not exist", SRM_COMMAND, file);
+	private void removeEmptyDirectory(LocalFile directory, TSize size)
+		throws RmdirException {
+		
+		removeFile(directory, size);
+	}
+	
+	private void removeFile(LocalFile file, TSize size) throws RmdirException {
+		
+		long fileSize = file.length();
+		if (!file.delete()) {
+			log.error("srmRmdir: Unable to delete {}", file);
+			throw new RmdirException(TStatusCode.SRM_FAILURE,
+				"Unable to delete " + file.getAbsolutePath());
 		}
-		return result;
+		size.add(fileSize);
 	}
 
 	private void printRequestOutcome(TReturnStatus status,

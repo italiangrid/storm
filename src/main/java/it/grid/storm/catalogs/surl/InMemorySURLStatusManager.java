@@ -67,7 +67,8 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
 
       try {
 
-        return (store.update(token, TStatusCode.SRM_ABORTED, explanation) != 0);
+        return (store.update(token, new TReturnStatus(TStatusCode.SRM_ABORTED,
+          explanation)) != 0);
 
       } catch (UnknownSurlException e) {
         LOGGER.error(e.getMessage(), e);
@@ -91,7 +92,8 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
 
       try {
 
-        return (store.update(token, surl, TStatusCode.SRM_ABORTED, explanation) != 0);
+        return (store.update(token, surl, new TReturnStatus(
+          TStatusCode.SRM_ABORTED, explanation)) != 0);
 
       } catch (UnknownSurlException e) {
         LOGGER.error(e.getMessage(), e);
@@ -114,7 +116,7 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
 
       try {
 
-        return (store.update(token, surl, code, explanation) != 0);
+        return (store.update(token, surl, new TReturnStatus(code, explanation)) != 0);
 
       } catch (UnknownSurlException e) {
         LOGGER.error(e.getMessage(), e);

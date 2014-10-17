@@ -45,77 +45,30 @@ public class TReturnStatus implements Serializable {
 	protected String explanation = null;
 	private Long lastUpdateTIme = null;
 
-	private static final String UNDEFINED_EXPLANATION = "undefined";
 	private static final String EMPTY_EXPLANATION = "";
 	private static final int MAX_EXPLANATION_LENGTH = 255;
 
 	public static final String PNAME_RETURNSTATUS = "returnStatus";
 	public static final String PNAME_STATUS = "status";
 
-	/**
-	 * Default constructor that makes a TReturnStatus with SRM_CUSTOM_STATUS, and
-	 * explanation String "undefined".
-	 * 
-	 * @throws InvalidTReturnStatusAttributeException
-	 */
-	public TReturnStatus() throws InvalidTReturnStatusAttributeException {
-
-		this(TStatusCode.SRM_CUSTOM_STATUS);
-	}
-
-	public TReturnStatus(TReturnStatus original)
-		throws InvalidTReturnStatusAttributeException {
-
-		if (original == null || original.statusCode == null) {
-			throw new InvalidTReturnStatusAttributeException(statusCode);
-		}
-		this.statusCode = original.statusCode;
-		this.setExplanation(original.getExplanation());
-		updated();
-	}
-
 	public TReturnStatus(TStatusCode statusCode)
-		throws InvalidTReturnStatusAttributeException {
+		throws IllegalArgumentException {
 
-		this(statusCode, UNDEFINED_EXPLANATION);
+		this(statusCode, EMPTY_EXPLANATION);
 	}
 
 	/**
 	 * Can be Explanation String a null value?
 	 */
-	public TReturnStatus(TStatusCode statusCode, String explanation)
-		throws InvalidTReturnStatusAttributeException {
+	public TReturnStatus(TStatusCode statusCode, String explanation) {
 
-		if (statusCode == null) {
-			throw new InvalidTReturnStatusAttributeException(statusCode);
-		}
-		this.statusCode = statusCode;
-		this.setExplanation(explanation);
-		updated();
+	  setStatusCode(statusCode);
+	  setExplanation(explanation);
 	}
 
 	public TReturnStatus clone() {
 
-		try {
-			return new TReturnStatus(this);
-		} catch (InvalidTReturnStatusAttributeException e) {
-			// never thrown
-			throw new IllegalStateException(
-				"unexpected InvalidTReturnStatusAttributeException "
-					+ "in TReturnStatus: " + e.getMessage());
-		}
-	}
-
-	public static TReturnStatus getInitialValue() {
-
-		TReturnStatus result = null;
-		try {
-			result = new TReturnStatus(TStatusCode.SRM_CUSTOM_STATUS,
-				"Initial status..");
-		} catch (InvalidTReturnStatusAttributeException e) {
-			// Never Happen!!
-		}
-		return result;
+		return new TReturnStatus(getStatusCode(), getExplanation());
 	}
 
 	/**
@@ -152,14 +105,13 @@ public class TReturnStatus implements Serializable {
 	protected void setExplanation(String explanationString) {
 
 		if (explanationString == null) {
-			this.explanation = EMPTY_EXPLANATION;
+			explanation = EMPTY_EXPLANATION;
 		} else if (explanationString.length() <= MAX_EXPLANATION_LENGTH) {
-			this.explanation = explanationString;
+			explanation = explanationString;
 		} else {
-			this.explanation = explanationString.substring(0, MAX_EXPLANATION_LENGTH);
-			log.warn(String.format(
-				"Explanation string truncated at %d characters: '%s'",
-				MAX_EXPLANATION_LENGTH, this.explanation));
+			explanation = explanationString.substring(0, MAX_EXPLANATION_LENGTH);
+			log.warn("TReturnStatus: Explanation string truncated at {} characters: "
+			  + "'{}'", MAX_EXPLANATION_LENGTH, explanation);
 		}
 		updated();
 	}
@@ -195,8 +147,8 @@ public class TReturnStatus implements Serializable {
 
 		// Return STATUS OF REQUEST
 		HashMap<String, String> globalStatus = new HashMap<String, String>();
-		globalStatus.put("statusCode", this.getStatusCode().getValue());
-		globalStatus.put("explanation", this.getExplanation());
+		globalStatus.put("statusCode", getStatusCode().getValue());
+		globalStatus.put("explanation", getExplanation());
 
 		// Insert TReturnStatus struct into global Output structure
 		outputParam.put(name, globalStatus);
@@ -210,15 +162,12 @@ public class TReturnStatus implements Serializable {
 
 	public boolean isSRM_SUCCESS() {
 
-		if (statusCode.equals(TStatusCode.SRM_SUCCESS))
-			return true;
-		else
-			return false;
+		return statusCode.equals(TStatusCode.SRM_SUCCESS);
 	}
 
 	public void extendExplaination(String string) {
 
-		this.setExplanation(this.getExplanation() + " [ " + string + " ]");
+		setExplanation(getExplanation() + " [ " + string + " ]");
 	}
 
 	/*

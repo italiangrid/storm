@@ -47,28 +47,16 @@ public interface SURLStatusStoreIF {
   
   public void store(TRequestToken requestToken, GridUserInterface user,
     HashMap<TSURL, TReturnStatus> surlStatuses)
-    throws IllegalArgumentException, TokenDuplicationException;
-  
-  public void store(TRequestToken requestToken,
-    HashMap<TSURL, TReturnStatus> surlStatuses)
-    throws IllegalArgumentException, TokenDuplicationException;
-  
+    throws TokenDuplicationException;
+
   public int update(TRequestToken requestToken, List<TSURL> surls,
-    TStatusCode newStatusCode, String explanation)
-    throws IllegalArgumentException, UnknownTokenException,
-    ExpiredTokenException, UnknownSurlException;
+    TReturnStatus status) throws UnknownTokenException, ExpiredTokenException,
+    UnknownSurlException;
   
-  public int update(TRequestToken requestToken, 
-    TStatusCode newStatusCode, String explanation) 
-      throws UnknownSurlException;
+  public int update(TRequestToken requestToken, TReturnStatus status)
+    throws UnknownSurlException;
   
-  public int update(TRequestToken requestToken, TSURL surl,
-    TStatusCode newStatusCode) throws IllegalArgumentException,
-    UnknownTokenException, ExpiredTokenException, UnknownSurlException;
-  
-  public int update(TRequestToken requestToken, TSURL surl,
-    TStatusCode newStatusCode, String explanation)
-    throws IllegalArgumentException, UnknownTokenException,
-    ExpiredTokenException, UnknownSurlException;
+  public int update(TRequestToken requestToken, TSURL surl, TReturnStatus status)
+    throws UnknownTokenException, ExpiredTokenException, UnknownSurlException;
 
 }

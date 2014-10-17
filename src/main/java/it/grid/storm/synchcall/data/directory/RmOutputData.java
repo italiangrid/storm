@@ -28,26 +28,24 @@ package it.grid.storm.synchcall.data.directory;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.synchcall.data.OutputData;
-import it.grid.storm.synchcall.data.exception.InvalidRmOutputAttributeException;
 
 public class RmOutputData implements OutputData {
 
 	private TReturnStatus returnStatus = null;
 	private ArrayOfTSURLReturnStatus arrayOfFileStatus = null;
 
-	public RmOutputData() {
+	public RmOutputData(TReturnStatus retStatus, ArrayOfTSURLReturnStatus details) {
 
-	}
-
-	public RmOutputData(TReturnStatus retStatus, ArrayOfTSURLReturnStatus details)
-		throws InvalidRmOutputAttributeException {
-
-		boolean ok = (details == null);
-		if (!ok) {
-			throw new InvalidRmOutputAttributeException(details);
+		if (retStatus == null) {
+			throw new IllegalArgumentException("RmOutputData: return status NULL");
 		}
 		this.returnStatus = retStatus;
 		this.arrayOfFileStatus = details;
+	}
+	
+	public RmOutputData(TReturnStatus retStatus) {
+
+		this(retStatus, null);
 	}
 
 	/**
@@ -86,32 +84,9 @@ public class RmOutputData implements OutputData {
 		this.arrayOfFileStatus = details;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see it.grid.storm.synchcall.data.OutputData#isSuccess()
-	 */
 	public boolean isSuccess() {
 
-		// TODO Auto-generated method stub
-		return true;
+		return returnStatus.isSRM_SUCCESS();
 	}
 
-	/**
-	 * Get Log message
-	 */
-	// public String getLogMessage() {
-	// StringBuffer buf = new StringBuffer("srmRm: ");
-	// if((returnStatus!=null)&&
-	// (returnStatus.getStatusCode()!=null)&&
-	// (returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS))) {
-	// buf.append("<"++">");
-	//
-	//
-	// } else {
-	//
-	// }
-	//
-	// return buf.toString();
-	// }
 }

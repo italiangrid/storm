@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import it.grid.storm.srm.types.InvalidTTURLAttributesException;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.*;
 
 import srmClientStubs.TReturnStatus;
@@ -172,7 +171,7 @@ public class WSReturnStatusConverter {
 			if (auxExplanation == null)
 				auxExplanation = "";
 			return new it.grid.storm.srm.types.TReturnStatus(code, auxExplanation);
-		} catch (InvalidTReturnStatusAttributeException e) {
+		} catch (IllegalArgumentException e) {
 			throw new WSConversionException(
 				"Unable to complete conversion for WS TReturnStatus: "
 					+ stub.toString() + "; " + e);

@@ -21,7 +21,6 @@ import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.griduser.GridUserInterface;
 // import it.grid.storm.namespace.SurlStatusStore;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.InvalidTSpaceTokenAttributesException;
 import it.grid.storm.srm.types.TFileStorageType;
@@ -337,12 +336,7 @@ public class CopyChunkCatalog {
 			errorSb.append("\nRetrieved StatusCode was not recognised: "
 				+ chunkDataTO.status());
 		} else {
-			try {
-				status = new TReturnStatus(code, chunkDataTO.errString());
-			} catch (InvalidTReturnStatusAttributeException e) {
-				errorSb.append("\n");
-				errorSb.append(e);
-			}
+			status = new TReturnStatus(code, chunkDataTO.errString());
 		}
 		// make CopyChunkData
 		CopyPersistentChunkData aux = null;

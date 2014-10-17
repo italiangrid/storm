@@ -5,7 +5,6 @@ import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.StatusCodeConverter;
 import it.grid.storm.catalogs.StoRMDataSource;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
@@ -147,7 +146,7 @@ public class SURLStatusDAO {
       TSURL surl = surlFromString(rs.getString(1));
       TStatusCode sc = converter.toSTORM(rs.getInt(2));
 
-      statusMap.put(surl, returnStatusFromStatusCode(sc));
+      statusMap.put(surl, new TReturnStatus(sc));
     }
 
     return statusMap;
@@ -208,9 +207,8 @@ public class SURLStatusDAO {
     // Add a failure state for the surls that were
     // requested but are not linked to the token
     for (TSURL s : surlsCopy) {
-      TReturnStatus rs = returnStatusFromStatusCode(TStatusCode.SRM_FAILURE,
-        "SURL not linked to passed request token.");
-      statuses.put(s, rs);
+      statuses.put(s, new TReturnStatus(TStatusCode.SRM_FAILURE,
+        "SURL not linked to passed request token."));
     }
 
     return statuses;
@@ -294,8 +292,7 @@ public class SURLStatusDAO {
 
         TSURL surl = surlFromString(rs.getString(1));
         surl.setUniqueID(rs.getInt(2));
-        statusMap.put(surl,
-          returnStatusFromStatusCode(converter.toSTORM(rs.getInt(3))));
+        statusMap.put(surl, new TReturnStatus(converter.toSTORM(rs.getInt(3))));
 
       }
 
@@ -345,8 +342,7 @@ public class SURLStatusDAO {
 
         TSURL surl = surlFromString(rs.getString(1));
         surl.setUniqueID(rs.getInt(2));
-        statusMap.put(surl,
-          returnStatusFromStatusCode(converter.toSTORM(rs.getInt(3))));
+        statusMap.put(surl, new TReturnStatus(converter.toSTORM(rs.getInt(3))));
 
       }
 
@@ -642,22 +638,6 @@ public class SURLStatusDAO {
       closeStatetement(stat);
       closeConnection(con);
     }
-  }
-
-  private TReturnStatus returnStatusFromStatusCode(TStatusCode sc) {
-
-    return returnStatusFromStatusCode(sc, null);
-  }
-
-  private TReturnStatus returnStatusFromStatusCode(TStatusCode sc,
-    String explanation) {
-
-    try {
-      return new TReturnStatus(sc, explanation);
-    } catch (InvalidTReturnStatusAttributeException e) {
-      throw new IllegalArgumentException(e);
-    }
-
   }
 
   private TSURL surlFromString(String s) {

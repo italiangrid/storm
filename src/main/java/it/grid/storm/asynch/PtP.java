@@ -63,6 +63,7 @@ import it.grid.storm.synchcall.data.IdentityInputData;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,6 +183,7 @@ public class PtP implements Delegable, Chooser, Request {
 
       log.info("Unable to perform the PTP request, surl busy "
         + "(ongoing get on the same surl)");
+
       printRequestOutcome(requestData);
       return;
     }
@@ -457,53 +459,85 @@ public class PtP implements Delegable, Chooser, Request {
   private boolean managePermitTraverseStep(StoRI fileStoRI)
     throws CannotMapUserException {
 
-    if (requestData instanceof IdentityInputData) {
-      return verifyPath(fileStoRI)
-        && setParentAcl(fileStoRI, ((IdentityInputData) requestData).getUser()
-          .getLocalUser());
-    } else {
-      if (verifyPath(fileStoRI)) {
-        setHttpsServiceParentAcl(fileStoRI);
-        return true;
-      } else {
-        return false;
-      }
+    if (!preparePath(fileStoRI)) {
+      return false;
     }
+    if (requestData instanceof IdentityInputData) {
+      LocalUser user = ((IdentityInputData) requestData).getUser()
+        .getLocalUser();
+      return setParentAcl(fileStoRI, user);
+    }
+
+    setHttpsServiceParentAcl(fileStoRI);
+    return true;
   }
 
   /**
    * @param fileStoRI
    * @return
+   *
    */
-  private boolean verifyPath(StoRI fileStoRI) {
+  private boolean preparePath(StoRI fileStoRI) {
 
-    boolean exists;
-    boolean automaticDirectoryCreation = Configuration.getInstance()
-      .getAutomaticDirectoryCreation();
-
-    for (StoRI parentStoRI : fileStoRI.getParents()) {
-      exists = parentStoRI.getLocalFile().exists();
-      if (!exists || !parentStoRI.getLocalFile().isDirectory()) {
-        String errorString = "The requested SURL is: "
-          + fileStoRI.getSURL().toString() + ", but its parent "
-          + parentStoRI.getSURL().toString();
-        if (!exists) {
-          if (automaticDirectoryCreation) {
-            continue;
-          } else {
-            errorString = errorString + " does not exist!";
-          }
-        } else {
-          errorString = errorString + " is not a directory!";
-        }
-        requestData.changeStatusSRM_INVALID_PATH(errorString);
-        failure = true;
-        log.debug("{} Parent points to {}.", errorString, parentStoRI
-          .getLocalFile().toString());
+    List<StoRI> parents = fileStoRI.getParents();
+    for (int i = parents.size() - 1; i >= 0; i--) {
+      if (!prepareDirectory(parents.get(i).getLocalFile())) {
         return false;
       }
     }
     return true;
+  }
+
+  private boolean prepareDirectory(LocalFile dir) {
+
+    boolean automaticDirectoryCreation = Configuration.getInstance()
+      .getAutomaticDirectoryCreation();
+
+    if (dir.exists()) {
+      if (!dir.isDirectory()) {
+        requestData.changeStatusSRM_INVALID_PATH(dir.getAbsolutePath()
+          + " exists but is not a directory!");
+        failure = true;
+        return false;
+      }
+      return true;
+    }
+
+    if (!automaticDirectoryCreation) {
+      log.debug("srmPtP: {} doesn't exist and automatic directory creation is "
+        + "disabled", dir.getAbsolutePath());
+      requestData.changeStatusSRM_INVALID_PATH("Parent "
+        + dir.getAbsolutePath() + " doesn't exist!");
+      failure = true;
+      return false;
+    }
+
+    log.debug("srmPtP: Creating missing parent {} ...", dir.getAbsolutePath());
+    try {
+      dir.mkdir();
+    } catch (SecurityException e) {
+      requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
+      failure = true;
+      log.error("ERROR in PtPChunk! Filesystem was unable to successfully "
+        + "create directory: {}", dir);
+      return false;
+    }
+    updateUsedSpace(dir);
+    return true;
+  }
+
+  private void updateUsedSpace(LocalFile dir) {
+
+    VirtualFSInterface vfs;
+    try {
+      vfs = NamespaceDirector.getNamespace().resolveVFSbyLocalFile(dir);
+    } catch (NamespaceException e) {
+      log.error("srmPtP: Error during used space update - {}", e.getMessage());
+      return;
+    }
+    long size = dir.getSize();
+    log.debug("srmPtP: Update {} used space [+ {}]", vfs.getAliasName(), size);
+    vfs.increaseUsedSpace(size);
   }
 
   private boolean setParentAcl(StoRI fileStoRI, LocalUser localUser) {
@@ -511,66 +545,24 @@ public class PtP implements Delegable, Chooser, Request {
     log.debug("PtPChunk: setting parent traverse ACL for {} to user {}",
       fileStoRI.getAbsolutePath(), localUser);
 
-    boolean automaticDirectoryCreation = Configuration.getInstance()
-      .getAutomaticDirectoryCreation();
-
     for (StoRI parentStoRI : fileStoRI.getParents()) {
       LocalFile parentFile = parentStoRI.getLocalFile();
       log.debug("PtPChunk TraverseStep - processing parent {}",
         parentFile.toString());
-      if (!prepareDirectory(parentFile, automaticDirectoryCreation)) {
-        log.warn("Unable to perform directory preparation step on parent "
-          + "file {}", parentFile.getAbsolutePath());
+
+      try {
+        if (!setAcl(parentStoRI, localUser, FilesystemPermission.Traverse,
+          fileStoRI.hasJustInTimeACLs())) {
+          requestData.changeStatusSRM_FAILURE("Local filesystem mask does "
+            + "not allow setting up correct ACLs for PtG!");
+          failure = true;
+          return false;
+        }
+      } catch (Exception e) {
+        requestData.changeStatusSRM_INTERNAL_ERROR("Local filesystem has"
+          + " problems manipulating ACE!");
         failure = true;
         return false;
-      } else {
-        try {
-          if (!setAcl(parentStoRI, localUser, FilesystemPermission.Traverse,
-            fileStoRI.hasJustInTimeACLs())) {
-            requestData.changeStatusSRM_FAILURE("Local filesystem mask does "
-              + "not allow setting up correct ACLs for PtG!");
-            failure = true;
-            return false;
-          }
-        } catch (Exception e) {
-          requestData.changeStatusSRM_INTERNAL_ERROR("Local filesystem has"
-            + " problems manipulating ACE!");
-          failure = true;
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  /**
-   * Private method that handles directory creation: it considers whether it
-   * already exists, and if automatic creation is enabled or not. BEWARE! It
-   * returns a boolean true if any _anomaly_ occurs!
-   */
-  private boolean prepareDirectory(LocalFile f, boolean canCreate)
-    throws SecurityException {
-
-    if ((!f.exists()) && (!canCreate)) {
-      requestData.changeStatusSRM_INVALID_PATH("Directory structure as "
-        + "specified in SURL does not exist!");
-      failure = true;
-      log
-        .debug(
-          "ATTENTION in PtPChunk! Directory structure as specified "
-            + "in {} does not exist, and automatic directory creation is disbaled! "
-            + "Failing this chunk of request!", f);
-      return false;
-    } else {
-      if (!f.exists()) {
-        if (!f.mkdirs()) {
-          requestData.changeStatusSRM_INTERNAL_ERROR("Local filesystem error: "
-            + "could not crete directory!");
-          failure = true;
-          log.error("ERROR in PtPChunk! Filesystem was unable to successfully "
-            + "create directory: {}", f.toString());
-          return false;
-        }
       }
     }
     return true;
@@ -833,6 +825,7 @@ public class PtP implements Delegable, Chooser, Request {
               + "does not exists");
           log.info("PtPChunk execution failed. The space token {} provided by "
             + "user does not exists", spaceToken);
+
           failure = true;
           return false;
 
@@ -1061,22 +1054,12 @@ public class PtP implements Delegable, Chooser, Request {
     s.ptpStreet(this);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see it.grid.storm.asynch.Request#getSURL()
-   */
   @Override
   public String getSURL() {
 
     return requestData.getSURL().toString();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see it.grid.storm.asynch.Request#isResultSuccess()
-   */
   @Override
   public boolean isResultSuccess() {
 

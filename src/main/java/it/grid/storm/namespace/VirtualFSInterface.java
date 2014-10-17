@@ -139,5 +139,9 @@ public interface VirtualFSInterface {
 	public boolean isHttpWorldReadable();
 
 	public void setProperties(PropertyInterface prop);
+	
+	public boolean increaseUsedSpace(long size);
+	
+	public boolean decreaseUsedSpace(long size);
 
 }

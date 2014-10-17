@@ -45,7 +45,6 @@ import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTMetaDataPathDetail;
 import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.InvalidTUserIDAttributeException;
 import it.grid.storm.srm.types.TCheckSumType;
@@ -122,7 +121,7 @@ public class LsCommand extends DirectoryCommand implements Command {
 
 		LSOutputData outputData = new LSOutputData();
 		LSInputData inputData = (LSInputData) data;
-		TReturnStatus globalStatus = TReturnStatus.getInitialValue();
+		TReturnStatus globalStatus = null;
 		@SuppressWarnings("unused")
 		TRequestToken requestToken = null; // Not used (now LS is synchronous).
 
@@ -535,12 +534,8 @@ public class LsCommand extends DirectoryCommand implements Command {
 							  stori.getAbsolutePath(),
 							  e.getMessage(), e);
 							errorCount++;
-							try {
-								currentElementDetail.setStatus(new TReturnStatus(
-									TStatusCode.SRM_FAILURE, "Unable to get full details"));
-							} catch (InvalidTReturnStatusAttributeException ex1) {
-							  log.error(ex1.getMessage(),ex1);
-							}
+							currentElementDetail.setStatus(new TReturnStatus(
+								TStatusCode.SRM_FAILURE, "Unable to get full details"));
 						}
 					}
 
@@ -593,13 +588,8 @@ public class LsCommand extends DirectoryCommand implements Command {
 							  e.getMessage(),
 							  e);
 							errorCount++;
-
-							try {
-								currentElementDetail.setStatus(new TReturnStatus(
-									TStatusCode.SRM_FAILURE, "Unable to get full details"));
-							} catch (InvalidTReturnStatusAttributeException ex1) {
-							  log.error(ex1.getMessage(),ex1);
-							}
+							currentElementDetail.setStatus(new TReturnStatus(
+								TStatusCode.SRM_FAILURE, "Unable to get full details"));
 						}
 					}
 
@@ -710,11 +700,8 @@ public class LsCommand extends DirectoryCommand implements Command {
 			statusCode = TStatusCode.SRM_INVALID_PATH;
 		}
 
-		try {
-			returnStatus = new TReturnStatus(statusCode, explanation);
-		} catch (InvalidTReturnStatusAttributeException ex1) {
-			log.error("srmLs: Error creating returnStatus ", ex1);
-		}
+		returnStatus = new TReturnStatus(statusCode, explanation);
+		
 		elementDetail.setStatus(returnStatus);
 	}
 
