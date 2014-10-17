@@ -636,6 +636,7 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 
     // Get LocalFile and Remove
     fileToRemove = stori.getLocalFile();
+    long sizeToRemove = fileToRemove.getSize();
     res = fileToRemove.delete();
     res = true;
 
@@ -662,6 +663,14 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
     if (res) {
       surlReturnStatus.setStatus(new TReturnStatus(TStatusCode.SRM_SUCCESS,
         "File request successfully aborted."));
+      try {
+        NamespaceDirector.getNamespace().resolveVFSbyLocalFile(fileToRemove)
+          .decreaseUsedSpace(sizeToRemove);
+      } catch (NamespaceException e) {
+        log.error(e.getMessage());
+        surlReturnStatus.getStatus().extendExplaination(
+          "Unable to decrease used space: " + e.getMessage());
+      }
       return surlReturnStatus;
     } else {
 
