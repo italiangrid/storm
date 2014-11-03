@@ -50,7 +50,7 @@ public class VirtualFSResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Map<String, SAInfo> listVFS() throws WebApplicationException {
 
-		log.info("Serving VFS resource listing");
+		log.debug("Serving VFS resource listing");
 		Collection<VirtualFSInterface> vfsCollection = null;
 		try {
 			vfsCollection = NamespaceDirector.getNamespace().getAllDefinedVFS();
