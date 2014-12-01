@@ -1,13 +1,19 @@
 ---
 layout: default
-title: StoRM Storage Resource Manager
+title: StoRM releases
 ---
 
 # StoRM releases
 
-StoRM packages can be obtained from the EMI repository or from the StoRM product team package repository.
+The current release is [StoRM v.1.11.5]({{ site.baseurl }}/release-notes/StoRM-v1.11.5.html).
+
+{% include releases.liquid %}
+
+Information about previous releases can be found [here](releases.html) or on the [EMI website](http://www.eu-emi.eu).
 
 ### Repository configuration 
+
+StoRM packages can be obtained from the EMI repository or from the StoRM product team package repository.
 
 #### EMI 3 
 
@@ -28,20 +34,6 @@ To install the repository files, run the following commands (as root):
 
     (SL5) # wget http://italiangrid.github.io/storm/repo/storm_sl5.repo -O /etc/yum.repos.d/storm_sl5.repo
     (SL6) # wget http://italiangrid.github.io/storm/repo/storm_sl6.repo -O /etc/yum.repos.d/storm_sl6.repo
-
----
-
-### Current release
-
-The current release is [StoRM v.1.11.4]({{ site.baseurl }}/release-notes/StoRM-v1.11.4.html).
-
-{% include download/component-table.html %}
-
----
-
-### Previous releases
-
-Information about previous releases can be found [here](releases.html) or on the [EMI website](http://www.eu-emi.eu).
 
 ---
 
