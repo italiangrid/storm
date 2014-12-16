@@ -40,6 +40,13 @@ storm.service.FE-list.hostnames =
 
 
 # ============================
+# Front End service port
+# ============================
+# The Front End binding port
+#   <!! managed by YAIM; please read the above NOTE !!>
+storm.service.port = 8444
+
+# ============================
 # Managed SURL endpoints 
 # ============================
 #
