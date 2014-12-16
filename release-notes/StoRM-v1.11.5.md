@@ -1,10 +1,12 @@
 ---
 layout: default
 title: "StoRM v.1.11.5 - release notes"
-release_date: "05.12.2014"
+release_date: "19.12.2014"
 rfcs:
 - id: STOR-320
   title: Storm publishes inconsistent storage capacity information
+- id: STOR-394
+  title: Changes on the yaim STORM_FRONTEND_PORT variable doesn't update Frontend's configuration file
 - id: STOR-419
   title: StoRM Native Libs LCMAPS package should include dependencies to the needed lcmaps plugins
 - id: STOR-459

@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM BackEnd v. 1.11.5 release notes"
-release_date: 05.12.2014
+release_date: 19.12.2014
 rfcs:
 - id: STOR-459
   title: Multiple srmPtg on the same file can block StoRM Backend
