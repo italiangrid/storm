@@ -1,4 +1,4 @@
-exclude: [README.md, _bin]
+exclude: [README.md, _bin, run-jekyll.sh]
 
 markdown: redcarpet
 redcarpet:
