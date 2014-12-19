@@ -13,7 +13,8 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.5]({{ site.baseurl }
 
 ### Description
 
-This release provides a bug fix.
+This release fixes a memory leak on the storm frontend that was triggered when the Argus authorization callout
+was enabled.
 
 ### Bug fixes
 

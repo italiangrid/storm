@@ -13,7 +13,9 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.5]({{ site.baseurl }
 
 ### Description
 
-This release provides several bug fixes.
+This release fixes a problem in the handling of partial HTTP get requests that
+could fill up the disk space on the machine where the storm-gridhttps server
+was running.
 
 ### Bug fixes
 

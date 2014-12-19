@@ -262,19 +262,31 @@ is the default):
 
 ```bash
 chown -RL storm:storm <sa-root-directory>
-chmod -R o-rwx,g+r <sa-root-directory>
+chmod -R 750 <sa-root-directory>
 ```
 
-Site administrator must also make traversable by other users the parent directories of each storage-area root directory (that's usually the same directory for all the storage-areas):
+Site administrator must also make traversable by other users the parent
+directories of each storage-area root directory (that's usually the same
+directory for all the storage-areas):
 
 ```bash
 chmod o+x <sa-root-directory-parent>
 ```
 
 If the storm GridHTTPs server is also enabled for a storage area, you also have
-to make sure that the GridHTTPs can access the files. To set the correct
-permissions, you could use the following command (assuming that the gridhttps
-server runs as user `gridhttps`, which is the default): 
+to make sure that the GridHTTPs service can access the files. 
+
+The easiest way to make things work as expected is to run the GridHTTPs service
+as user `storm`. This can be done by setting the `STORM_GRIDHTTPS_USER` yaim variable
+as follows:
+
+```bash
+STORM_GRIDHTTPS_USER=storm
+```
+
+By default, the GridHTTPs will run as user `gridhttps`. In this case, you have
+to set the correct permissions on the storage area also for the `gridhttps`
+user:
 
 ```bash
 find <sa-root-directory> -type d -exec setfacl -m g:gridhttps:x {} \;
