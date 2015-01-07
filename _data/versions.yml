@@ -1,0 +1,51 @@
+docs:
+  sysadmin-guide:
+      name: System Administrator Guide
+      current: 1.11.5
+      previous: [1.11.4,1.11.3,1.11.2,1.11.1]
+
+  webdav-service-user-guide:
+      name: WebDAV service user guide
+      current: 3.0.1
+      previous: [3.0.0, 2.0.2]
+
+components:
+  storm-backend-server:
+      name: StoRM Backend
+      current: 1.11.5
+      previous: [1.11.4,1.11.3,1.11.2,1.11.1]
+
+  storm-frontend-server:
+      name: StoRM Frontend
+      current: 1.8.6
+      previous: [1.8.5,1.8.4,1.8.3]
+
+  storm-gridhttps-server:
+      name: StoRM GridHTTPs
+      current: 3.0.2
+      previous: [3.0.1,3.0.0,2.0.2,2.0.1]
+
+  yaim-storm:
+      name: YAIM StoRM
+      current: 4.3.6
+      previous: [4.3.5,4.3.4,4.3.3,4.3.2]
+
+  storm-dynamic-info-provider:
+      name: StoRM Info Provider
+      current: 1.7.7
+      previous: [1.7.6]
+
+  storm-native-libs:
+      name: StoRM Native Libs
+      current: 1.0.3
+      previous: [1.0.2,1.0.1]
+
+  storm-srm-client:
+      name: StoRM SRM Client
+      current: 1.6.1
+      previous: [1.6.0]
+
+  storm-gridftp-dsi:
+      name: StoRM GridFTP
+      current: 1.2.0
+      previous: []

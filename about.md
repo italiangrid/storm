@@ -10,9 +10,6 @@ Here are the main StoRM developers:
 {% assign author=site.data.authors.andrea %}
 {% include author.html %}
 
-{% assign author=site.data.authors.valerio %}
-{% include author.html %}
-
 {% assign author=site.data.authors.daniele %}
 {% include author.html %}
 
