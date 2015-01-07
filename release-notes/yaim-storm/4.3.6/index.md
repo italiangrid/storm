@@ -17,7 +17,7 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.5]({{ site.baseurl }
 
 ### Description
 
-This release provides several bug fixes.
+This release provides bug fixes.
 
 ### Bug fixes
 

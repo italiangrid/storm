@@ -15,7 +15,7 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.5]({{ site.baseurl }
 
 ### Description
 
-This release provides several bug fixes.
+This release provides bug fixes.
 
 ### Bug fixes
 
@@ -23,7 +23,9 @@ This release provides several bug fixes.
 
 ### Installation and configuration
 
-You can find information about upgrade, clean installation and configuration of StoRM services in the [System Admininistration Guide][storm-sysadmin-guide] of the [Documentation][storm-documentation] section.
+You can find information about upgrade, clean installation and configuration of
+StoRM services in the [System Admininistration Guide][storm-sysadmin-guide] of
+the [Documentation][storm-documentation] section.
 
 ### Known issues
 
