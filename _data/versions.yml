@@ -49,8 +49,3 @@ components:
       name: StoRM GridFTP
       current: 1.2.0
       previous: []
-
-  storm-gridhttps-plugin:
-      name: StoRM GridHTTPs Plugin
-      current: 1.1.0
-      previous: []

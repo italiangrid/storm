@@ -40,13 +40,6 @@
   repo: StoRM emi
   visibility: hide
 
-- name: StoRM GridHTTPs plugin
-  package: storm-gridhttps-plugin
-  latest: 1.1.0
-  new: false
-  repo: StoRM emi
-  visibility: hide
-
 - name: StoRM GridFTP
   package: storm-gridftp-dsi
   latest: 1.2.0
