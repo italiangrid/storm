@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM dynamic info v.1.7.7 release notes"
-release_date: 19.12.2014
+release_date: 07.01.2015
 rfcs:
 - id: STOR-320
   title: Storm publishes inconsistent storage capacity information

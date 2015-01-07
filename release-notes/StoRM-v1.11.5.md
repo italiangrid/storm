@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM v.1.11.5 - release notes"
-release_date: "19.12.2014"
+release_date: "07.01.2015"
 rfcs:
 - id: STOR-320
   title: Storm publishes inconsistent storage capacity information
@@ -74,10 +74,6 @@ This release provides several bug fixes.
 ### Installation and configuration
 
 You can find information about upgrade, clean installation and configuration of StoRM services in the [System Admininistration Guide][storm-sysadmin-guide] of the [Documentation][storm-documentation] section.
-
-### Known issues
-
-None at the moment
 
 [storm-documentation]: {{site.baseurl}}/documentation.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.5

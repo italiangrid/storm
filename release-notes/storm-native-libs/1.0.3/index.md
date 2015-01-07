@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM native libs v.1.0.3 release notes"
-release_date: 19.12.2014
+release_date: 07.01.2015
 rfcs:
 - id: STOR-651
   title: StoRM incorrectly considers small files as migrated to tape on GPFS 3.5

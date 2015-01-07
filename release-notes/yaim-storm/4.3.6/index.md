@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "YAIM StoRM v.4.3.6 release notes"
-release_date: 19.12.2014
+release_date: 07.01.2015
 rfcs:
 - id: STOR-394
   title: Changes on the yaim STORM_FRONTEND_PORT variable doesn't update Frontend's configuration file

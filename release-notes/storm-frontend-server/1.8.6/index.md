@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM Frontend v.1.8.6 release notes"
-release_date: 19.12.2014
+release_date: 07.01.2015
 rfcs:
 - id: STOR-605
   title: StoRM frontend leaks memory when Argus callout is enabled

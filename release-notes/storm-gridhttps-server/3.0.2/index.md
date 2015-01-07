@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM GridHTTPs v. 3.0.2 release notes"
-release_date: 19.12.2014
+release_date: 07.01.2015
 rfcs:
 - id: STOR-607
   title: WebDAV partial GET requests fill up disk with temporary files
