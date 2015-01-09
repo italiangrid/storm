@@ -365,5 +365,26 @@ public class DNMatchingRule {
 		result.append(" CN=" + commonNamePatternString);
 		return result.toString();
 	}
+	
+	public String toShortSlashSeparatedString() {
+
+		StringBuffer result = new StringBuffer();
+		if (!countryPatternString.equals(ADMIT_ALL)) {
+			result.append("/C=" + countryPatternString);
+		}
+		if (!organizationPatternString.equals(ADMIT_ALL)) {
+			result.append("/O=" + organizationPatternString);
+		}
+		if (!organizationalUnitPatternString.equals(ADMIT_ALL)) {
+			result.append("/OU=" + organizationalUnitPatternString);
+		}
+		if (!localityPatternString.equals(ADMIT_ALL)) {
+			result.append("/L=" + localityPatternString);
+		}
+		if (!commonNamePatternString.equals(ADMIT_ALL)) {
+			result.append("/CN=" + commonNamePatternString);
+		}
+		return result.toString();
+	}
 
 }

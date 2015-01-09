@@ -1047,7 +1047,7 @@ public class RequestSummaryDAO {
 		}
 		try {
 			query = con
-				.prepareStatement("SELECT config_RequestTypeID from request_queue WHERE r_token=?");
+				.prepareStatement("SELECT * from request_queue WHERE r_token=?");
 			logWarnings(con.getWarnings());
 			query.setString(1, rt);
 			con.setAutoCommit(false);
@@ -1076,13 +1076,8 @@ public class RequestSummaryDAO {
 			to.setNumOfWaiting(rs.getInt("numOfWaiting"));
 			to.setNumOfFailed(rs.getInt("numOfFailed"));
 			to.setTimestamp(rs.getTimestamp("timeStamp"));
-			/**
-			 * This code is only for the 1.3.18. This is a workaround to get FQANs
-			 * using the proxy field on request_queue. The FE use the proxy field of
-			 * request_queue to insert a single FQAN string containing all FQAN
-			 * separeted by the "#" char. The proxy is a BLOB, hence it has to be
-			 * properly conveted in string.
-			 */
+			
+			
 			java.sql.Blob blob = rs.getBlob("proxy");
 			if (blob != null) {
 				byte[] bdata = blob.getBytes(1, (int) blob.length());

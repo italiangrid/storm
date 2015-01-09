@@ -27,9 +27,7 @@ import it.grid.storm.persistence.model.TransferObjectDecodingException;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
 import it.grid.storm.srm.types.ArrayOfTMetaDataSpace;
-import it.grid.storm.srm.types.ArrayOfTSpaceToken;
 import it.grid.storm.srm.types.InvalidTMetaDataSpaceAttributeException;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TMetaDataSpace;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -167,43 +165,34 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
 		boolean requestSuccess = (errorCount == 0);
 		boolean requestFailure = (errorCount == data.getSpaceTokenArray().size());
 
-		try {
-			if (requestSuccess) {
-				globalStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, "");
+		if (requestSuccess) {
+			globalStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, "");
 
-				log.info("srmGetSpaceMetadata: user <{}> Request for [spaceTokens: {}] "
-				  + "done succesfully with: [status: {}]",
-				  data.getUser(),
-				  data.getSpaceTokenArray(),
-				  globalStatus);
+			log.info("srmGetSpaceMetadata: user <{}> Request for [spaceTokens: {}] "
+				+ "done succesfully with: [status: {}]", data.getUser(),
+				data.getSpaceTokenArray(), globalStatus);
+
+		} else {
+			if (requestFailure) {
+				globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE,
+					"No valid space tokens");
+
+				log.info(
+					"srmGetSpaceMetadata: user <{}> Request for [spaceTokens: {}] "
+						+ "failed with: [status: {}]", data.getUser(),
+					data.getSpaceTokenArray(), globalStatus);
 
 			} else {
-				if (requestFailure) {
-					globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE,
-						"No valid space tokens");
 
-					log.info("srmGetSpaceMetadata: user <{}> Request for [spaceTokens: {}] "
-					  + "failed with: [status: {}]",
-					  data.getUser(),
-					  data.getSpaceTokenArray(),
-					  globalStatus);
+				globalStatus = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
+					"Check space tokens statuses for details");
 
-				} else {
+				log.info(
+					"srmGetSpaceMetadata: user <{}> Request for [spaceTokens: {}] "
+						+ "partially done with: [status: {}]", data.getUser(),
+					data.getSpaceTokenArray(), globalStatus);
 
-					globalStatus = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
-						"Check space tokens statuses for details");
-
-					log.info("srmGetSpaceMetadata: user <{}> Request for [spaceTokens: {}] "
-					  + "partially done with: [status: {}]",
-					  data.getUser(),
-					  data.getSpaceTokenArray(),
-					  globalStatus);
-
-				}
 			}
-		} catch (InvalidTReturnStatusAttributeException ex) {
-		  log.error(ex.getMessage(),ex);
-			return new GetSpaceMetaDataOutputData();
 		}
 
 		GetSpaceMetaDataOutputData response = null;
@@ -223,7 +212,7 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
 
 		try {
 			metadata.setStatus(new TReturnStatus(statusCode, message));
-		} catch (InvalidTReturnStatusAttributeException e) {
+		} catch (IllegalArgumentException e) {
 		  log.error(e.getMessage(),e);
 		}
 		
@@ -238,45 +227,6 @@ public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
 		} else {
 			CommandHelper.printRequestOutcome(SRM_COMMAND, log, status);
 		}
-	}
-
-	/**
-	 * 
-	 * @param success
-	 *          boolean
-	 * @param globalStatus
-	 *          boolean
-	 * @param user
-	 *          GridUserInterface
-	 * @param token
-	 *          TSpaceToken
-	 * @param arrayOfToken
-	 *          ArrayOfTSpaceToken
-	 * @param status
-	 *          TReturnStatus
-	 * @return String
-	 */
-	private String formatLogMessage(boolean success, boolean globalStatus,
-		GridUserInterface user, TSpaceToken token, ArrayOfTSpaceToken arrayOfToken,
-		TReturnStatus status) {
-
-		StringBuffer buf = new StringBuffer("srmGetSpaceMetaData: ");
-		buf.append("<" + user + "> ");
-		buf.append("Request for [spacetoken:");
-		if (!globalStatus) {
-			buf.append(token);
-		} else {
-			buf.append(arrayOfToken);
-		}
-		buf.append("] ");
-		if (success) {
-			buf.append("successfully done with:[status:");
-		} else {
-			buf.append("failed with:[status:");
-		}
-		buf.append(status);
-		buf.append("]");
-		return buf.toString();
 	}
 
 }

@@ -131,12 +131,8 @@ public class TMetaDataSpace implements Serializable {
 			log.warn("TMetaDataSpace built without SPACEDATA detail.");
 			this.spaceType = TSpaceType.EMPTY;
 			this.spaceToken = TSpaceToken.makeEmpty();
-			try {
-				this.status = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-					"Invalid space token");
-			} catch (InvalidTReturnStatusAttributeException e) {
-				this.status = null;
-			}
+			this.status = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
+				"Invalid space token");
 			this.owner = TUserID.makeEmpty();
 			this.totalSize = TSizeInBytes.makeEmpty();
 			this.guaranteedSize = TSizeInBytes.makeEmpty();
@@ -172,17 +168,13 @@ public class TMetaDataSpace implements Serializable {
 				this.lifetimeLeft = this.lifetimeAssigned.timeLeft(spaceData
 					.getCreationDate());
 			}
-			try {
-				if ((this.lifetimeLeft.value() == 0)
-					&& (this.spaceType != TSpaceType.VOSPACE)) {
-					this.status = new TReturnStatus(
-						TStatusCode.SRM_SPACE_LIFETIME_EXPIRED, "Expired space lifetime");
-				} else {
-					this.status = new TReturnStatus(TStatusCode.SRM_SUCCESS,
-						"Valid space token");
-				}
-			} catch (InvalidTReturnStatusAttributeException e) {
-				this.status = null;
+			if ((this.lifetimeLeft.value() == 0)
+				&& (this.spaceType != TSpaceType.VOSPACE)) {
+				this.status = new TReturnStatus(TStatusCode.SRM_SPACE_LIFETIME_EXPIRED,
+					"Expired space lifetime");
+			} else {
+				this.status = new TReturnStatus(TStatusCode.SRM_SUCCESS,
+					"Valid space token");
 			}
 		}
 	}

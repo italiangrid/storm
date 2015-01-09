@@ -25,7 +25,6 @@ import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSizeInBytes;
@@ -366,11 +365,7 @@ public abstract class Copy implements Delegable, Chooser, Request {
 				this.rt = rt;
 			} else {
 				this.successful = false;
-				try {
-					this.status = new TReturnStatus();
-				} catch (InvalidTReturnStatusAttributeException e) {
-					log.warn("Unexpected InvalidTReturnStatusAttributeException: {}", e);
-				}
+				this.status = new TReturnStatus(TStatusCode.SRM_CUSTOM_STATUS);
 			}
 		}
 
@@ -386,11 +381,7 @@ public abstract class Copy implements Delegable, Chooser, Request {
 			}
 			this.successful = false;
 			this.failureExplanation = failureExplanation;
-			try {
-				this.status = new TReturnStatus();
-			} catch (InvalidTReturnStatusAttributeException e) {
-				log.warn("Unexpected InvalidTReturnStatusAttributeException: {}", e);
-			}
+			this.status = new TReturnStatus(TStatusCode.SRM_CUSTOM_STATUS);
 		}
 
 		/**
@@ -485,11 +476,7 @@ public abstract class Copy implements Delegable, Chooser, Request {
 				this.rt = rt;
 			} else {
 				this.successful = false;
-				try {
-					this.status = new TReturnStatus();
-				} catch (InvalidTReturnStatusAttributeException e) {
-					log.warn("Unexpected InvalidTReturnStatusAttributeException: {}", e);
-				}
+				this.status = new TReturnStatus(TStatusCode.SRM_CUSTOM_STATUS);
 			}
 		}
 
@@ -505,11 +492,7 @@ public abstract class Copy implements Delegable, Chooser, Request {
 			}
 			this.successful = false;
 			this.failureExplanation = failureExplanation;
-			try {
-				this.status = new TReturnStatus();
-			} catch (InvalidTReturnStatusAttributeException e) {
-				log.warn("Unexpected InvalidTReturnStatusAttributeException: {}", e);
-			}
+			this.status = new TReturnStatus(TStatusCode.SRM_CUSTOM_STATUS);
 		}
 
 		/**

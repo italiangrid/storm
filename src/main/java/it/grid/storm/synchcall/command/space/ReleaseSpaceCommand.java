@@ -20,10 +20,7 @@ package it.grid.storm.synchcall.command.space;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.persistence.exceptions.DataAccessException;
-import it.grid.storm.persistence.model.TransferObjectDecodingException;
 import it.grid.storm.space.StorageSpaceData;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
@@ -88,7 +85,7 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
     if ((inputData == null)
       || ((inputData != null) && (inputData.getSpaceToken() == null))) {
       log.error("Empty space token.");
-      returnStatus = manageStatus(TStatusCode.SRM_INVALID_REQUEST,
+      returnStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
         "SpaceToken is empty.");
       outputData.setStatus(returnStatus);
       return outputData;
@@ -97,7 +94,7 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
     GridUserInterface user = inputData.getUser();
     if (user == null) {
       log.debug("Null user credentials.");
-      returnStatus = manageStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE,
+      returnStatus = new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE,
         "Unable to get user credential");
       outputData.setStatus(returnStatus);
 
@@ -109,7 +106,6 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
 
     boolean forceFileRelease = inputData.isForceFileRelease();
     boolean nopinned = true;
-    boolean failure = false;
     String explanation = "";
     TStatusCode statusCode = null;
 
@@ -120,10 +116,9 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
       log.error("Error fetching data for space token {}. {}",
         inputData.getSpaceToken(), e.getMessage(), e);
 
-      failure = true;
       explanation = "Error building space data from row DB data.";
       statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-      returnStatus = manageStatus(statusCode, explanation);
+      returnStatus = new TReturnStatus(statusCode, explanation);
       outputData.setStatus(returnStatus);
 
       log.error("srmReleaseSpace: <{}> Request for [spacetoken: {}] failed "
@@ -133,10 +128,9 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
     }
 
     if (data == null) {
-      failure = true;
       explanation = "SpaceToken does not refers to an existing space.";
       statusCode = TStatusCode.SRM_INVALID_REQUEST;
-      returnStatus = manageStatus(statusCode, explanation);
+      returnStatus = new TReturnStatus(statusCode, explanation);
       outputData.setStatus(returnStatus);
 
       log.error("srmReleaseSpace: <{}> Request for [spacetoken: {}] failed "
@@ -159,18 +153,16 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
       } else {
 
         log.debug("User {} not authorized to release space.", data.getOwner());
-        failure = true;
         explanation = "User is not authorized to release this token";
         statusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
-        returnStatus = manageStatus(statusCode, explanation);
+        returnStatus = new TReturnStatus(statusCode, explanation);
       }
 
     } else {
       log.debug("Space contains pinned files.");
-      failure = true;
       explanation = "Space still contains pinned files. ";
       statusCode = TStatusCode.SRM_FAILURE;
-      returnStatus = manageStatus(statusCode, explanation);
+      returnStatus = new TReturnStatus(statusCode, explanation);
     }
 
     outputData.setStatus(returnStatus);
@@ -211,37 +203,18 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
       File spaceFile = new File(spaceFileName);
       if (spaceFile.delete()) {
         if (catalog.release(user, data.getSpaceToken())) {
-          return manageStatus(TStatusCode.SRM_SUCCESS, "Space Released.");
+          return new TReturnStatus(TStatusCode.SRM_SUCCESS, "Space Released.");
         } else {
-          return manageStatus(TStatusCode.SRM_INTERNAL_ERROR,
+          return new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR,
             "Space removed, but spaceToken was not found in the DB");
         }
       } else {
-        return manageStatus(TStatusCode.SRM_FAILURE,
+        return new TReturnStatus(TStatusCode.SRM_FAILURE,
           "Space can not be removed by StoRM!");
       }
     } else {
-      return manageStatus(TStatusCode.SRM_FAILURE, "SRM Internal failure.");
+			return new TReturnStatus(TStatusCode.SRM_FAILURE, "SRM Internal failure.");
     }
-  }
-
-  /**
-   * 
-   * @param statusCode
-   *          statusCode
-   * @param explanation
-   *          explanation string
-   * @return returnStatus returnStatus
-   */
-  private TReturnStatus manageStatus(TStatusCode statusCode, String explanation) {
-
-    TReturnStatus returnStatus = null;
-    try {
-      returnStatus = new TReturnStatus(statusCode, explanation);
-    } catch (InvalidTReturnStatusAttributeException ex1) {
-      log.error(ex1.getMessage(), ex1);
-    }
-    return returnStatus;
   }
 
   private void printRequestOutcome(TReturnStatus status,

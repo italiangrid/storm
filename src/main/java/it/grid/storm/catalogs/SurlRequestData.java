@@ -19,7 +19,6 @@ package it.grid.storm.catalogs;
 
 import java.util.Map;
 
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
@@ -42,12 +41,12 @@ public abstract class SurlRequestData implements RequestData {
 	public SurlRequestData(TSURL toSURL, TReturnStatus status)
 		throws InvalidSurlRequestDataAttributesException {
 
-		if (toSURL == null || status == null || status.getStatusCode() == null) {
-			throw new InvalidSurlRequestDataAttributesException(toSURL, status);
-		}
-		this.SURL = toSURL;
-		this.status = status;
-	}
+	  if (toSURL == null || status == null || status.getStatusCode() == null) {
+      throw new InvalidSurlRequestDataAttributesException(toSURL, status);
+    }
+    this.SURL = toSURL;
+    this.status = status;
+  }
 
 	/**
 	 * Method that returns the TURL for this chunk of the srm request.
@@ -66,30 +65,25 @@ public abstract class SurlRequestData implements RequestData {
 
 		return status;
 	}
-
+	
 	/**
 	 * Method used to set the Status associated to this chunk. If status is null,
 	 * then nothing gets set!
 	 */
-	public void setStatus(TReturnStatus newstat) {
+  public void setStatus(TReturnStatus status) {
 
-		if (newstat != null) {
-			status = newstat;
-		}
+    if (status != null) {
+      this.status = status;
+    }
 	}
 
-	protected void setStatus(TStatusCode statusCode, String explanation) {
+  protected void setStatus(TStatusCode statusCode, String explanation) {
 
-		try {
-			if (explanation == null) {
-				status = new TReturnStatus(statusCode);
-			} else {
-				status = new TReturnStatus(statusCode, explanation);
-			}
-		} catch (InvalidTReturnStatusAttributeException e) {
-			log.error("Unable to set SRM request status to [{},{}]. Error: {}", 
-				statusCode.getValue(), explanation, e.getMessage(), e);
-		}
+    if (explanation == null) {
+      status = new TReturnStatus(statusCode);
+    } else {
+      status = new TReturnStatus(statusCode, explanation);
+    }
 	}
 
 	/**

@@ -33,7 +33,6 @@ import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.ReservationException;
 import it.grid.storm.filesystem.Space;
 import it.grid.storm.filesystem.SpaceSystem;
-import it.grid.storm.https.HTTPSPluginException;
 import it.grid.storm.namespace.model.Authority;
 import it.grid.storm.namespace.model.Capability;
 import it.grid.storm.namespace.model.MappingRule;
@@ -503,7 +502,12 @@ public class StoRIImpl implements StoRI {
 						authority = transProt.getAuthority();
 					}
 					
-					resultTURL = buildTURL(choosen, authority);
+					if (choosen.equals(Protocol.HTTP) || choosen.equals(Protocol.HTTPS)){
+					  resultTURL = buildHTTPTURL(choosen,authority);
+					} else {
+					  resultTURL = buildTURL(choosen, authority);
+					}
+					
 					turlBuilt = true;
 				}
 				if (!turlBuilt) {
@@ -620,6 +624,24 @@ public class StoRIImpl implements StoRI {
 		return surl.toString();
 	}
 
+	private TTURL buildHTTPTURL(Protocol p, Authority authority){
+	  
+	  String prefix = Configuration.getInstance().getHTTPTURLPrefix(); 
+	  StringBuilder sb = new StringBuilder();
+	  sb.append(p.getProtocolPrefix());
+	  sb.append(authority);
+	  
+	  if ( prefix != null){
+      sb.append(prefix);
+    }
+
+	  sb.append(getStFN().toString());
+	  
+	  log.debug("built http turl: {}", sb.toString());
+	  
+	  return TTURL.makeFromString(sb.toString());
+	  
+	}
 	private TTURL buildTURL(Protocol protocol, Authority authority)
 		throws InvalidProtocolForTURLException {
 
@@ -642,31 +664,10 @@ public class StoRIImpl implements StoRI {
 		case 5:
 			result = TURLBuilder.buildROOTTURL(authority, this.getPFN());
 			break; // ROOT Protocol
-		case 6:
-			try {
-				result = TURLBuilder.buildHTTPTURL(authority, this.getLocalFile());
-			} catch (HTTPSPluginException e) {
-				log.error("Unable to build the TURL for protocol {} for authority {} and file {}. {}",
-				  protocol, authority, this.getLocalFile().toString(), 
-				  e.getMessage(),e);
-				throw new InvalidProtocolForTURLException(e, protocol.getSchema());
-			}
-			break; // HTTP Protocol
-		case 7:
-			try {
-				result = TURLBuilder.buildHTTPSTURL(authority, this.getLocalFile());
-			} catch (HTTPSPluginException e) {
-				log.error("Unable to build the TURL for protocol {} for authority {} and file {}. {}",
-				  protocol, authority, this.getLocalFile().toString(), 
-				  e.getMessage(),e);
-				throw new InvalidProtocolForTURLException(e, protocol.getSchema());
-			}
-			break; // HTTPS Protocol
 
 		default:
 		  // Unknown protocol
 			throw new InvalidProtocolForTURLException(protocol.getSchema()); 
-			
 		}
 		return result;
 	}

@@ -25,7 +25,6 @@ import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.InvalidTSpaceTokenAttributesException;
@@ -340,12 +339,7 @@ public class PtPChunkCatalog {
 			errorSb.append("\nRetrieved StatusCode was not recognised: "
 				+ auxTO.status());
 		} else {
-			try {
-				status = new TReturnStatus(code, auxTO.errString());
-			} catch (InvalidTReturnStatusAttributeException e) {
-				errorSb.append("\n");
-				errorSb.append(e);
-			}
+			status = new TReturnStatus(code, auxTO.errString());
 		}
 		GridUserInterface gridUser = null;
 		try {
@@ -673,12 +667,7 @@ public class PtPChunkCatalog {
 			errorSb.append("\nRetrieved StatusCode was not recognised: "
 				+ reducedChunkDataTO.status());
 		} else {
-			try {
-				status = new TReturnStatus(code, reducedChunkDataTO.errString());
-			} catch (InvalidTReturnStatusAttributeException e) {
-				errorSb.append("\n");
-				errorSb.append(e);
-			}
+			status = new TReturnStatus(code, reducedChunkDataTO.errString());
 		}
 		// fileStorageType
 		TFileStorageType fileStorageType = FileStorageTypeConverter.getInstance()

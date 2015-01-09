@@ -27,5 +27,7 @@ package it.grid.storm.common;
  */
 
 public enum OperationType {
-	UNDEF, PTG, SPTG, PTP, SPTP, COPY, BOL, AF, AR, EFL, GSM, GST, LS, MKD, MV, PNG, PD, RF, RESSP, RELSP, RM, RMD
+  UNDEF, PTG, SPTG, PTP, SPTP, COPY, 
+  BOL, AF, AR, EFL, GSM, GST, LS, MKD, MV, PNG, PD, 
+  RF, RESSP, RELSP, RM, RMD
 }

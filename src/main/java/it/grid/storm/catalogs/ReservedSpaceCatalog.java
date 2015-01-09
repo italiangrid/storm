@@ -621,7 +621,7 @@ public class ReservedSpaceCatalog {
 			expiredSpaceTO = ssDAO.getExpired(rightNow.getTimeInMillis() / 1000);
 		} catch (DataAccessException e) {
 			// No space expired FOUND
-			log.info("Space Garbage Collector: no space expired found.");
+			log.debug("Space Garbage Collector: no space expired found.");
 			return;
 		}
 

@@ -39,12 +39,10 @@ public class TSURLReturnStatus {
 
 	}
 
-	public TSURLReturnStatus(TSURL surl, TReturnStatus status)
-		throws InvalidTSURLReturnStatusAttributeException {
+	public TSURLReturnStatus(TSURL surl, TReturnStatus status) {
 
-		boolean ok = (surl != null);
-		if (!ok)
-			throw new InvalidTSURLReturnStatusAttributeException(surl);
+		if (surl == null)
+			throw new IllegalArgumentException("SURL is null");
 		this.surl = surl;
 		this.returnStatus = status;
 	}

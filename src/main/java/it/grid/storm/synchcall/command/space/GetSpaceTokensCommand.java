@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.ArrayOfTSpaceToken;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
@@ -84,12 +83,8 @@ public class GetSpaceTokensCommand extends SpaceCommand implements Command {
     GridUserInterface user = inputData.getUser();
     if (user == null) {
       log.debug("GetSpaceTokens: the user field is NULL");
-      try {
-        status = new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE,
-          "Unable to get user credential!");
-      } catch (InvalidTReturnStatusAttributeException ex1) {
-        log.error(ex1.getMessage(), ex1);
-      }
+      status = new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE,
+      	"Unable to get user credential!");
 
       log.error("srmGetSpaceTokens: <{}> "
         + "Request for [spaceTokenDescription:{}] failed with: [status: {}]",
@@ -111,22 +106,18 @@ public class GetSpaceTokensCommand extends SpaceCommand implements Command {
       arrayOfSpaceTokens = catalog.getSpaceTokensByAlias(spaceAlias);
     }
 
-    try {
-      if (arrayOfSpaceTokens.size() == 0) {
-        if (spaceAlias != null) {
-          status = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-            "'userSpaceTokenDescription' does not refer to an existing space");
-        } else {
-          status = new TReturnStatus(TStatusCode.SRM_FAILURE,
-            "No space tokens owned by this user");
-        }
-        arrayOfSpaceTokens = null;
-      } else {
-        status = new TReturnStatus(TStatusCode.SRM_SUCCESS, "");
-      }
-    } catch (InvalidTReturnStatusAttributeException e) {
-      log.error(e.getMessage(), e);
-    }
+		if (arrayOfSpaceTokens.size() == 0) {
+			if (spaceAlias != null) {
+				status = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
+					"'userSpaceTokenDescription' does not refer to an existing space");
+			} else {
+				status = new TReturnStatus(TStatusCode.SRM_FAILURE,
+					"No space tokens owned by this user");
+			}
+			arrayOfSpaceTokens = null;
+		} else {
+			status = new TReturnStatus(TStatusCode.SRM_SUCCESS, "");
+		}
 
     if (status.isSRM_SUCCESS()) {
       log.info("srmGetSpaceTokens: <{}> Request for [spaceTokenDescription: {}] "

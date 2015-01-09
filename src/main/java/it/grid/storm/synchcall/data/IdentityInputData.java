@@ -18,7 +18,6 @@
 package it.grid.storm.synchcall.data;
 
 import it.grid.storm.griduser.GridUserInterface;
-import java.util.Map;
 
 /**
  * 

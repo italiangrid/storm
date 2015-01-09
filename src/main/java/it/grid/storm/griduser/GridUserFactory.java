@@ -145,7 +145,7 @@ public class GridUserFactory {
 		return user;
 	}
 
-	GridUserInterface decode(Map inputParam) {
+	GridUserInterface decode(Map<String, Object> inputParam) {
 
 		// Member name for VomsGridUser Creation
 		String member_DN = new String("userDN");
@@ -153,29 +153,20 @@ public class GridUserFactory {
 
 		// Get DN and FQANs[]
 		String dnString = (String) inputParam.get(member_DN);
-
-		List fqansList = null;
-		try {
-			fqansList = Arrays.asList((Object[]) inputParam.get(member_Fqans));
-		} catch (NullPointerException e) {
-			log.debug("Empty FQAN[] found.", e);
-		}
+		Object[] fqansArr = (Object[]) inputParam.get(member_Fqans);
 
 		// Destination Fqans array
 		FQAN[] fqans = null;
 
-		if (fqansList != null) {
+		if (fqansArr != null) {
 			// Define FQAN[]
-			fqans = new FQAN[fqansList.size()];
-			log.debug("fqans_vector Size: {}" , fqansList.size());
+			fqans = new FQAN[fqansArr.length];
+			log.debug("fqans_vector Size: {}" , fqansArr.length);
 
-			for (int i = 0; i < fqansList.size(); i++) {
+			for (int i = 0; i < fqansArr.length; i++) {
 
-				String fqan_string = (String) fqansList.get(i);
-				log.debug("FQAN[{}]: {}",i, fqan_string);
-
-				FQAN fq = new FQAN(fqan_string);
-				fqans[i] = fq;
+				log.debug("FQAN[{}]: {}",i, (String) fqansArr[i]);
+				fqans[i] = new FQAN((String) fqansArr[i]);
 			}
 		}
 

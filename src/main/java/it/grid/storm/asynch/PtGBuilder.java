@@ -26,7 +26,6 @@ import it.grid.storm.catalogs.InvalidPtGDataAttributesException;
 import it.grid.storm.catalogs.InvalidSurlRequestDataAttributesException;
 import it.grid.storm.catalogs.PtGData;
 import it.grid.storm.common.types.TURLPrefix;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TDirOption;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -55,16 +54,8 @@ public class PtGBuilder {
 		TURLPrefix transferProtocols = inputData.getTransferProtocols();
 		TDirOption dirOption = TDirOption.makeNotDirectory();
 		TSizeInBytes fileSize = TSizeInBytes.makeEmpty();
-		TReturnStatus status;
-		try {
-			status = new TReturnStatus(TStatusCode.SRM_REQUEST_INPROGRESS,
-				"Synchronous request created");
-		} catch (InvalidTReturnStatusAttributeException e) {
-			log.error("Unable to build TReturnStatus. "
-				+ "InvalidTReturnStatusAttributeException: {}", e.getMessage(), e);
-			throw new BuilderException(
-				"Error building PtG TReturnStatus. Building failed");
-		}
+		TReturnStatus status = new TReturnStatus(
+			TStatusCode.SRM_REQUEST_INPROGRESS, "Synchronous request created");
 
 		TTURL transferURL = TTURL.makeEmpty();
 		PtGData data;

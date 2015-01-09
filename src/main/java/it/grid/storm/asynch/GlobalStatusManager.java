@@ -19,7 +19,6 @@ package it.grid.storm.asynch;
 
 import it.grid.storm.catalogs.ChunkData;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TStatusCode;
@@ -489,66 +488,58 @@ public class GlobalStatusManager {
 
 		log.debug("GlobalStatusManager: invoked saveRequestState.");
 
-		try {
+		boolean updatePinFileLifetime;
 
-			boolean updatePinFileLifetime;
+		TReturnStatus retstat = null;
 
-			TReturnStatus retstat = null;
+		if (internal.equals(InternalState.ERROR)) {
 
-			if (internal.equals(InternalState.ERROR)) {
+			updatePinFileLifetime = true;
+			retstat = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
+				"Global status cannot be evaluated: single file status must be checked.");
 
-				updatePinFileLifetime = true;
-				retstat = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
-					"Global status cannot be evaluated: single file status must be checked.");
+		} else if (internal.equals(InternalState.FAIL)) {
 
-			} else if (internal.equals(InternalState.FAIL)) {
+			updatePinFileLifetime = false;
+			retstat = new TReturnStatus(TStatusCode.SRM_FAILURE, "All chunks failed!");
 
-				updatePinFileLifetime = false;
-				retstat = new TReturnStatus(TStatusCode.SRM_FAILURE,
-					"All chunks failed!");
+		} else if (internal.equals(InternalState.SUCCESS)) {
 
-			} else if (internal.equals(InternalState.SUCCESS)) {
+			updatePinFileLifetime = true;
+			retstat = new TReturnStatus(TStatusCode.SRM_SUCCESS,
+				"All chunks successfully handled!");
 
-				updatePinFileLifetime = true;
-				retstat = new TReturnStatus(TStatusCode.SRM_SUCCESS,
-					"All chunks successfully handled!");
+		} else if (internal.equals(InternalState.PARTIAL)) {
 
-			} else if (internal.equals(InternalState.PARTIAL)) {
+			updatePinFileLifetime = true;
+			retstat = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
+				"Some chunks were successful while others failed!");
 
-				updatePinFileLifetime = true;
-				retstat = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
-					"Some chunks were successful while others failed!");
+		} else if (internal.equals(InternalState.SPACEFAIL)) {
 
-			} else if (internal.equals(InternalState.SPACEFAIL)) {
+			updatePinFileLifetime = false;
+			retstat = new TReturnStatus(TStatusCode.SRM_SPACE_LIFETIME_EXPIRED,
+				"Supplied SpaceToken has expired lifetime!");
 
-				updatePinFileLifetime = false;
-				retstat = new TReturnStatus(TStatusCode.SRM_SPACE_LIFETIME_EXPIRED,
-					"Supplied SpaceToken has expired lifetime!");
+		} else {
 
-			} else {
+			updatePinFileLifetime = true;
+			retstat = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
+				"Global status cannot be evaluated: single file status must be checked.");
+			log.error("ERROR IN GLOBAL STATUS EVALUATION! {} was attempted to be "
+				+ "written into persistence, but it is not a final state!", internal);
+			log.error("Request: {}", rt);
 
-				updatePinFileLifetime = true;
-				retstat = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
-					"Global status cannot be evaluated: single file status must be checked.");
-				log.error("ERROR IN GLOBAL STATUS EVALUATION! {} was attempted to be "
-					+ "written into persistence, but it is not a final state!", internal);
-				log.error("Request: {}", rt);
+		}
 
-			}
+		log.debug("GlobalStatusManager: saving into persistence {}", retstat);
 
-			log.debug("GlobalStatusManager: saving into persistence {}", retstat);
+		if (updatePinFileLifetime) {
+			RequestSummaryCatalog.getInstance().updateGlobalStatusPinFileLifetime(rt,
+				retstat);
 
-			if (updatePinFileLifetime) {
-				RequestSummaryCatalog.getInstance().updateGlobalStatusPinFileLifetime(
-					rt, retstat);
-
-			} else {
-				RequestSummaryCatalog.getInstance().updateGlobalStatus(rt, retstat);
-			}
-
-		} catch (InvalidTReturnStatusAttributeException e) {
-			log.error("ERROR IN GLOBAL STATUS EVALUATION! Could not create a valid "
-				+ "TReturnStatus: this is a programming bug! {}", e);
+		} else {
+			RequestSummaryCatalog.getInstance().updateGlobalStatus(rt, retstat);
 		}
 	}
 

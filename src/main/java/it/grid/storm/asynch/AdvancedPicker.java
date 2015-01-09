@@ -23,7 +23,6 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.scheduler.Scheduler;
 import it.grid.storm.scheduler.SchedulerException;
 import it.grid.storm.scheduler.SchedulerStatus;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -224,18 +223,9 @@ public class AdvancedPicker {
 							+ "request {} will transit to SRM_FAILURE, but each chunk in the "
 							+ "request will remain in SRM_REQUEST_QUEUED!", rt);
 						
-						try {
-							
-							RequestSummaryCatalog.getInstance().updateGlobalStatus(rt,
-								new TReturnStatus(TStatusCode.SRM_NOT_SUPPORTED,
-									"Request of type " + rtype + " is currently not supported!"));
-						
-						} catch (InvalidTReturnStatusAttributeException ex) {
-							
-							log.error("ADVANCED PICKER! Unable to change global status in "
-								+ "DB: {}", ex.getMessage(), ex);
-						
-						}
+						RequestSummaryCatalog.getInstance().updateGlobalStatus(rt,
+							new TReturnStatus(TStatusCode.SRM_NOT_SUPPORTED,
+								"Request of type " + rtype + " is currently not supported!"));
 				
 					}
 				

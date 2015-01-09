@@ -1,13 +1,10 @@
 package it.grid.storm.synchcall.command;
 
 import it.grid.storm.srm.types.ArrayOfSURLs;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
-import it.grid.storm.srm.types.InvalidTSURLReturnStatusAttributeException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSURLReturnStatus;
-import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.synchcall.data.InputData;
@@ -49,13 +46,12 @@ public class CommandHelper {
 			throw new IllegalArgumentException(
 				"Unable to build the status, null arguments: statusCode=" + statusCode);
 		}
-		try {
-			return new TReturnStatus(statusCode, explaination);
-		} catch (InvalidTReturnStatusAttributeException e) {
-			throw new IllegalStateException(
-				"Unexpected InvalidTReturnStatusAttributeException "
-					+ "in building TReturnStatus: " + e.getMessage());
+		if (explaination == null || explaination.isEmpty()) {
+			throw new IllegalArgumentException(
+				"Unable to build the status, null or empty argument: explaination="
+					+ explaination);
 		}
+		return new TReturnStatus(statusCode, explaination);
 	}
 
 	public static TSURLReturnStatus buildStatus(TSURL surl,
@@ -67,13 +63,7 @@ public class CommandHelper {
 				"Unable to build the status, null arguments: surl=" + surl
 					+ " returnStatus=" + returnStatus);
 		}
-		try {
-			return new TSURLReturnStatus(surl, returnStatus);
-		} catch (InvalidTSURLReturnStatusAttributeException e) {
-			throw new IllegalStateException(
-				"Unexpected InvalidTSURLReturnStatusAttributeException "
-					+ "in building TSURLReturnStatus: " + e.getMessage());
-		}
+		return new TSURLReturnStatus(surl, returnStatus);
 	}
 
 	public static void printRequestOutcome(String srmCommand, Logger log,
@@ -130,6 +120,7 @@ public class CommandHelper {
 	    status);
 
 	}
+
 
 	public static void printRequestOutcome(String srmCommand, Logger log,
 		TReturnStatus status, InputData inputData, TRequestToken token,

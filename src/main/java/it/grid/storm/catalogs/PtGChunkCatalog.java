@@ -26,7 +26,6 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
-import it.grid.storm.srm.types.InvalidTReturnStatusAttributeException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.InvalidTTURLAttributesException;
@@ -171,11 +170,7 @@ public class PtGChunkCatalog {
 		TReturnStatus status = null;
 		TStatusCode code = StatusCodeConverter.getInstance().toSTORM(chunkDataTO.status());
 		if (code != TStatusCode.EMPTY) {
-			try {
-				status = new TReturnStatus(code, chunkDataTO.errString());
-			} catch (InvalidTReturnStatusAttributeException e) {
-				log.error("PtGChunk : Unable to build the Return Status from the String '{}' and code '{}'. {}", chunkDataTO.errString(), chunkDataTO.status(), e.getMessage());
-			}
+			status = new TReturnStatus(code, chunkDataTO.errString());
 		}
 		inputChunk.setStatus(status);
 		TTURL turl = null;
@@ -306,12 +301,7 @@ public class PtGChunkCatalog {
 			errorSb.append("\nRetrieved StatusCode was not recognised: "
 				+ chunkDataTO.status());
 		} else {
-			try {
-				status = new TReturnStatus(code, chunkDataTO.errString());
-			} catch (InvalidTReturnStatusAttributeException e) {
-				errorSb.append("\n");
-				errorSb.append(e);
-			}
+			status = new TReturnStatus(code, chunkDataTO.errString());
 		}
 		GridUserInterface gridUser = null;
 		try {
@@ -514,7 +504,7 @@ public class PtGChunkCatalog {
 		return lookupPtGChunkData(Arrays.asList(new TSURL[] { surl }));
 	}
 
-	private Collection<PtGPersistentChunkData> lookupPtGChunkData(
+	public Collection<PtGPersistentChunkData> lookupPtGChunkData(
 		List<TSURL> surls, GridUserInterface user) {
 
 		int[] surlsUniqueIDs = new int[surls.size()];
@@ -660,12 +650,7 @@ public class PtGChunkCatalog {
 			errorSb.append("\nRetrieved StatusCode was not recognised: "
 				+ reducedChunkDataTO.status());
 		} else {
-			try {
-				status = new TReturnStatus(code, reducedChunkDataTO.errString());
-			} catch (InvalidTReturnStatusAttributeException e) {
-				errorSb.append("\n");
-				errorSb.append(e);
-			}
+			status = new TReturnStatus(code, reducedChunkDataTO.errString());
 		}
 		// make ReducedPtGChunkData
 		ReducedPtGChunkData aux = null;

@@ -141,7 +141,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 
 			log.debug("query result = {}", res);
 			if (res.first() == false) {
-				log.info("No rows found for query : {}", prepStatement.toString());
+				log.debug("No rows found for query : {}", prepStatement.toString());
 			} else {
 				do {
 					ssTO = helper.makeStorageSpaceTO(res);
@@ -556,7 +556,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 
 			log.debug("query result = {}" , res);
 			if (res.first() == false) {
-				log.info("No rows found for query : {}" , prepStatement.toString());
+				log.debug("No rows found for query : {}" , prepStatement.toString());
 				throw new DataAccessException("No storage space expired found at time "
 					+ currentTimeInSecond);
 			} else {

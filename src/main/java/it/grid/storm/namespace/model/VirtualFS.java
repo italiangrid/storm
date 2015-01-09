@@ -48,6 +48,8 @@ import it.grid.storm.namespace.naming.NamespaceUtil;
 import it.grid.storm.namespace.naming.NamingConst;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TransferObjectDecodingException;
+import it.grid.storm.space.SpaceUpdaterHelperFactory;
+import it.grid.storm.space.SpaceUpdaterHelperInterface;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
@@ -110,6 +112,7 @@ public class VirtualFS implements VirtualFSInterface {
 	TSpaceToken spaceToken;
 	SAAuthzType saAuthzType = SAAuthzType.UNKNOWN;
 	String saAuthzSourceName = null;
+	SpaceUpdaterHelperInterface spaceUpdater = null;
 
 	// For debug purpose only
 	public long creationTime = System.currentTimeMillis();
@@ -118,26 +121,6 @@ public class VirtualFS implements VirtualFSInterface {
 	public VirtualFS(boolean testingMode) {
 
 		this.testingMode = testingMode;
-	}
-
-	public VirtualFS(String aliasName, String type, String rootPath,
-		String spaceTokenDescription, StorageClassType storageClass,
-		Class fsDriver, Class spaceDriver, PropertyInterface properties,
-		DefaultValuesInterface defaultValue, CapabilityInterface capabilities)
-		throws NamespaceException {
-
-		this.aliasName = aliasName;
-		this.type = type;
-		this.rootPath = buildRootPath(rootPath);
-		this.spaceTokenDescription = spaceTokenDescription;
-		this.storageClass = storageClass;
-		this.fsDriver = fsDriver;
-		this.spaceSystemDriver = spaceDriver;
-		this.defValue = defaultValue;
-		this.capabilities = capabilities;
-		this.properties = properties;
-		buildStoRIRoot(rootPath);
-
 	}
 
 	/*****************************************************************************
@@ -152,6 +135,7 @@ public class VirtualFS implements VirtualFSInterface {
 	public void setFSType(String type) {
 
 		this.type = type;
+		initializeSpaceUpdaterHelper();
 	}
 
 	public void setFSDriver(Class fsDriver) throws NamespaceException {
@@ -176,22 +160,26 @@ public class VirtualFS implements VirtualFSInterface {
 		this.storageClass = storageClass;
 	}
 
+	private void initializeSpaceUpdaterHelper() {
+		
+	  spaceUpdater = SpaceUpdaterHelperFactory.getSpaceUpdaterHelper(this);
+	}
+
 	@Override
 	public void setProperties(PropertyInterface prop) {
 
 		this.properties = prop;
 	}
 
-	/**
-	 * public void setStorageAreaAuthz(String saAuthzSourceName) {
-	 * this.saAuthzSourceName = saAuthzSourceName; }
-	 **/
+	public void setSpaceSystemDriver(Class spaceDriver) throws NamespaceException {
 
-	public void setSpaceSystemDriver(Class spaceDriver) {
-
+		if (spaceDriver == null) {
+			throw new NamespaceException("NULL space driver");
+		}
+		
 		this.spaceSystemDriver = spaceDriver;
 	}
-
+	
 	public void setDefaultValues(DefaultValuesInterface defValue) {
 
 		this.defValue = defValue;
@@ -273,11 +261,6 @@ public class VirtualFS implements VirtualFSInterface {
 
 		return this.storageClass;
 	}
-
-	/**
-	 * public String getStorageAreaAuthz() throws NamespaceException { return
-	 * this.saAuthzSourceName; }
-	 **/
 
 	public PropertyInterface getProperties() {
 
@@ -1395,4 +1378,15 @@ public class VirtualFS implements VirtualFSInterface {
 			throw new NamespaceException("Required FIXED-AUTHZ, but it is UNDEFINED.");
 		}
 	}
+
+	public boolean increaseUsedSpace(long size) {
+
+		return spaceUpdater.increaseUsedSpace(this, size);	
+	}
+
+	public boolean decreaseUsedSpace(long size) {
+
+		return spaceUpdater.decreaseUsedSpace(this, size);
+	}
+
 }
