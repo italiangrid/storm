@@ -373,7 +373,7 @@ public class SURLStatusDAO {
 
       String query = "SELECT rg.sourceSURL, sg.statusCode "
         + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
-        + "ON (rg.request_queueID = rq.ID AND sg.ID = rg.ID) "
+        + "ON (rg.request_queueID = rq.ID AND sg.request_GetID=rg.ID) "
         + "WHERE ( rq.r_token = ? )";
 
       stat = con.prepareStatement(query);
