@@ -4,7 +4,7 @@ title: "StoRM v.1.11.6 - release notes"
 release_date: "21.01.2015"
 rfcs:
 - id: STOR-717
-  title: SRM Release Files fails for pinned SURLs when only the token (and no list of SURLs) is provided
+  title: SRM Relase Files fails in some cases
 
 components:
     - name: StoRM Backend
