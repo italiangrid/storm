@@ -7,10 +7,21 @@ title: StoRM releases
 
 The following is the list of last StoRM releases, with the released components list and a link to the release notes.
 
-<span class="label" style="margin-top: -20px;">07.01.2015</span> <span class="label label-info" style="margin-top: -20px;">current</span>
-### StoRM v.1.11.5
+<span class="label" style="margin-top: -20px;">21.01.2015</span> <span class="label label-info" style="margin-top: -20px;">current</span>
+### StoRM v.1.11.6
 
 This is the latest release for StoRM, available on StoRM repositories.
+
+| Component			   | Version	|
+|:---------------------|:-----------|
+|StoRM Backend         |[1.11.6]({{site.baseurl}}/release-notes/storm-backend-server/1.11.6/)|
+
+See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.6.html).
+
+___
+
+<span class="label" style="margin-top: -20px;">07.01.2015</span>
+### StoRM v.1.11.5
 
 | Component			   | Version	|
 |:---------------------|:-----------|
@@ -27,8 +38,6 @@ ___
 
 <span class="label" style="margin-top: -20px;">23.05.2014</span>
 ### StoRM v.1.11.4
-
-This is the latest release for StoRM, available on StoRM repositories.
 
 | Component			   | Version	|
 |:---------------------|:-----------|
