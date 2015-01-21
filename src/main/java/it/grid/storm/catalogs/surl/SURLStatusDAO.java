@@ -227,7 +227,7 @@ public class SURLStatusDAO {
 
       String query = "SELECT rb.sourceSURL, sb.statusCode "
         + "FROM request_queue rq JOIN (request_BoL rb, status_BoL sb) "
-        + "ON (rb.request_queueID = rq.ID AND sb.ID = rb.ID)"
+        + "ON (rb.request_queueID = rq.ID AND sb.request_BoLID = rb.ID)"
         + "WHERE ( rq.r_token = ? )";
 
       stat = con.prepareStatement(query);
@@ -373,7 +373,7 @@ public class SURLStatusDAO {
 
       String query = "SELECT rg.sourceSURL, sg.statusCode "
         + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
-        + "ON (rg.request_queueID = rq.ID AND sg.ID = rg.ID) "
+        + "ON (rg.request_queueID = rq.ID AND sg.request_GetID=rg.ID) "
         + "WHERE ( rq.r_token = ? )";
 
       stat = con.prepareStatement(query);
@@ -407,7 +407,7 @@ public class SURLStatusDAO {
 
       String query = "SELECT rp.targetSURL, sp.statusCode "
         + "FROM request_queue rq JOIN (request_Put rp, status_Put sp) "
-        + "ON (rp.request_queueID = rq.ID AND sp.ID = rp.ID)"
+        + "ON (rp.request_queueID = rq.ID AND sp.request_PutID = rp.ID)"
         + "WHERE ( rq.r_token = ? )";
 
       stat = con.prepareStatement(query);
@@ -667,7 +667,7 @@ public class SURLStatusDAO {
       // that have the SURL in SRM_FILE_PINNED status
       String query = "SELECT rq.ID, rg.ID, sg.statusCode "
         + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
-        + "ON (rg.request_queueID = rq.ID AND sg.ID = rg.ID) "
+        + "ON (rg.request_queueID = rq.ID AND sg.request_GetID = rg.ID) "
         + "WHERE ( rg.sourceSURL = ? and sg.statusCode = 22)";
 
       stat = con.prepareStatement(query);
