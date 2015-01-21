@@ -10,7 +10,7 @@ title: StoRM Documentation
 #### [System Administration Guide]({{site.baseurl}}/documentation/sysadmin-guide/{{ site.sysadmin_guide_version }}) &nbsp;<span class="label label-info">updated</span>
 
 Guide to install and configure StoRM.
-<br/>_Older versions_ : [1.11.4][sysadmin-1.11.4], [1.11.3][sysadmin-1.11.3], [1.11.2][sysadmin-1.11.2], [1.11.1][sysadmin-1.11.1]
+<br/>_Older versions_ : [1.11.5][sysadmin-1.11.5], [1.11.4][sysadmin-1.11.4], [1.11.3][sysadmin-1.11.3], [1.11.2][sysadmin-1.11.2], [1.11.1][sysadmin-1.11.1]
 
 #### [Configuration Examples]({{site.baseurl}}/documentation/examples/)
 
@@ -47,7 +47,7 @@ Common issues: analysis and solution.
 
 Conferences, tutorials, presentations and papers.
 
-
+[sysadmin-1.11.5]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.5/
 [sysadmin-1.11.4]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.4/
 [sysadmin-1.11.3]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.3/
 [sysadmin-1.11.2]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.2/
