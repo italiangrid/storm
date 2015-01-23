@@ -354,8 +354,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
               StormEA.setPinned(fileStoRI.getLocalFile().getAbsolutePath(),
                   expDate);
 
-              /* set group permission for tape quota management */
-              fileStoRI.setGroupTapeRead();
+              
               try {
                 TSizeInBytes fileSize = TSizeInBytes.make(fileStoRI
                     .getLocalFile().length(), SizeUnit.BYTES);
