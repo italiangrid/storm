@@ -361,6 +361,7 @@ REPLACE INTO config_Protocols (ID) VALUES ('rfio');
 REPLACE INTO config_Protocols (ID) VALUES ('root');
 REPLACE INTO config_Protocols (ID) VALUES ('http');
 REPLACE INTO config_Protocols (ID) VALUES ('https');
+REPLACE INTO config_Protocols (ID) VALUES ('xroot');
 
 REPLACE INTO config_Overwrite (ID) VALUES ('N');
 REPLACE INTO config_Overwrite (ID) VALUES ('A');

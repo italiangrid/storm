@@ -664,7 +664,9 @@ public class StoRIImpl implements StoRI {
 		case 5:
 			result = TURLBuilder.buildROOTTURL(authority, this.getPFN());
 			break; // ROOT Protocol
-
+		case 8:
+			result = TURLBuilder.buildXROOTTURL(authority, this.getPFN());
+			break; // XROOT Protocol
 		default:
 		  // Unknown protocol
 			throw new InvalidProtocolForTURLException(protocol.getSchema()); 
