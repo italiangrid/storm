@@ -51,7 +51,8 @@
 			<includes>
 				<include>storm_be_ISAM_mysql_update_from_1.0.0_to_1.1.0.sql</include>
 				<include>storm_mysql_grant.sql</include>
-				<include>/storm_mysql_tbl.sql</include>
+				<include>storm_mysql_tbl.sql</include>
+				<include>storm_mysql_update_from_1.7.0_to_1.7.1.sql</include>
 			</includes>
 			<outputDirectory>etc/storm/backend-server/db</outputDirectory>
 		</fileSet>
