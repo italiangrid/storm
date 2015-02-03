@@ -55,6 +55,8 @@ public class Protocol {
 	// TODO HTTPS TURL
 	public final static Protocol HTTP = new Protocol(6, "HTTP", "http", 8080);
 	public final static Protocol HTTPS = new Protocol(7, "HTTPS", "https", 443);
+	
+	public final static Protocol XROOT = new Protocol(8, "XROOT", "xroot", 1094);
 
 	public final static Protocol EMPTY = new Protocol(0, "EMPTY", "", -1);
 	public final static Protocol UNKNOWN = new Protocol(-1, "UNKNOWN", "", -1);
@@ -150,6 +152,10 @@ public class Protocol {
 		if (scheme.toLowerCase().replaceAll(" ", "")
 			.equals(EMPTY.getSchema().toLowerCase())) {
 			return EMPTY;
+		}
+		if (scheme.toLowerCase().replaceAll(" ", "")
+			.equals(XROOT.getSchema().toLowerCase())) {
+			return XROOT;
 		}
 		return UNKNOWN;
 	}

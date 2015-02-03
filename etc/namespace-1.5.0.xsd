@@ -149,6 +149,7 @@
 					<xs:enumeration value="gsiftp"/>
 					<xs:enumeration value="rfio"/>
 					<xs:enumeration value="root"/>
+					<xs:enumeration value="xroot"/>
 					<!--// TODO HTTPS TURL-->
 					<xs:enumeration value="http"/>
 					<xs:enumeration value="https"/>
@@ -164,6 +165,7 @@
 				<xs:enumeration value="gsiftp"/>
 				<xs:enumeration value="rfio"/>
 				<xs:enumeration value="root"/>
+				<xs:enumeration value="xroot"/>
 				<!--// TODO HTTPS TURL-->
 				<xs:enumeration value="http"/>
 				<xs:enumeration value="https"/>
