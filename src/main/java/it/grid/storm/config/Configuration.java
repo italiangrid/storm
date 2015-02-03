@@ -2149,27 +2149,7 @@ public class Configuration {
     }
   }
 
-  public String getGroupTapeReadBuffer() {
 
-    if (!cr.getConfiguration().containsKey(GROUP_TAPE_READ_BUFFER_KEY)) {
-      // return default
-      return "storm-SA-read";
-    } else {
-      // load from external source
-      return cr.getConfiguration().getString(GROUP_TAPE_READ_BUFFER_KEY);
-    }
-  }
-
-  public String getGroupTapeWriteBuffer() {
-
-    if (!cr.getConfiguration().containsKey(GROUP_TAPE_WRITE_BUFFER_KEY)) {
-      // return default
-      return "storm-SA-write";
-    } else {
-      // load from external source
-      return cr.getConfiguration().getString(GROUP_TAPE_WRITE_BUFFER_KEY);
-    }
-  }
 
   /**
    * @return
