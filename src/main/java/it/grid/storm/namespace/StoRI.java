@@ -80,10 +80,6 @@ public interface StoRI {
 
 	public void setMappingRule(MappingRule winnerRule);
 
-	public void setGroupTapeRead();
-
-	public void setGroupTapeWrite();
-
 	public MappingRule getMappingRule();
 
 	public ArrayList<StoRI> getChildren(TDirOption dirOption)
