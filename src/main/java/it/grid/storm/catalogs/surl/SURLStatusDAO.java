@@ -47,8 +47,8 @@ public class SURLStatusDAO {
         + "JOIN (request_Get rg, request_queue rq) "
         + "ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
         + "SET sg.statusCode=20, rq.status=20, sg.explanation=? "
-        + "WHERE (sg.statusCode=22 OR sg.statusCode=17) "
-        + "AND rg.sourceSURL = ? ";
+        + "WHERE rg.sourceSURL = ? and rg.sourceSURL_uniqueID = ? "
+        + "AND (sg.statusCode=22 OR sg.statusCode=17) ";
 
       if (user != null) {
         query += "AND rq.client_dn = ?";
@@ -57,9 +57,10 @@ public class SURLStatusDAO {
 
       stat.setString(1, explanation);
       stat.setString(2, surl.getSURLString());
+      stat.setInt(3, surl.uniqueId());
 
       if (user != null) {
-        stat.setString(3, user.getDn());
+        stat.setString(4, user.getDn());
       }
 
       final int updateCount = stat.executeUpdate();
@@ -97,8 +98,8 @@ public class SURLStatusDAO {
         + "JOIN (request_Put rp, request_queue rq) "
         + "ON sp.request_PutID=rp.ID AND rp.request_queueID=rq.ID "
         + "SET sp.statusCode=20, rq.status=20, sp.explanation=? "
-        + "WHERE (sp.statusCode=24 OR sp.statusCode=17) "
-        + "AND rp.targetSURL = ? ";
+        + "WHERE rp.targetSURL = ? and rp.targetSURL_uniqueID = ? "
+        + "AND (sp.statusCode=24 OR sp.statusCode=17)";
 
       if (user != null) {
         query += "AND rq.client_dn = ?";
@@ -107,9 +108,10 @@ public class SURLStatusDAO {
       stat = con.prepareStatement(query);
       stat.setString(1, explanation);
       stat.setString(2, surl.getSURLString());
-
+      stat.setInt(3,  surl.uniqueId());
+      
       if (user != null) {
-        stat.setString(3, user.getDn());
+        stat.setString(4, user.getDn());
       }
 
       final int updateCount = stat.executeUpdate();
