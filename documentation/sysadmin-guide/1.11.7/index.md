@@ -1,7 +1,7 @@
 ---
 layout: default
 title: StoRM Storage Resource Manager - System Administration Guide
-version: 1.11.6
+version: 1.11.7
 ---
 
 # StoRM System Administration Guide
