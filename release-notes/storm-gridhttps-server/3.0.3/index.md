@@ -1,15 +1,15 @@
 ---
 layout: default
-title: "StoRM GridHTTPs v. 3.0.2 release notes"
-release_date: 07.01.2015
+title: "StoRM GridHTTPs v. 3.0.3 release notes"
+release_date: 05.02.2015
 rfcs:
-- id: STOR-607
-  title: WebDAV partial GET requests fill up disk with temporary files
+- id: STOR-741
+  title: WebDAV MOVE and COPY with source equal to destination fail with 412 instead of 403
 ---
 
-## StoRM GridHTTPs v. 3.0.2
+## StoRM GridHTTPs v. 3.0.3
 
-Released on **{{ page.release_date }}** with [StoRM v. 1.11.5]({{ site.baseurl }}/release-notes/StoRM-v1.11.5.html).
+Released on **{{ page.release_date }}** with [StoRM v. 1.11.7]({{ site.baseurl }}/release-notes/StoRM-v1.11.7.html).
 
 ### Description
 
@@ -34,4 +34,4 @@ You can find information about upgrade, clean installation and configuration of 
 None at the moment
 
 [storm-documentation]: {{site.baseurl}}/documentation.html
-[storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.5
+[storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.7
