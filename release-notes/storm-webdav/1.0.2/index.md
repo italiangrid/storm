@@ -17,15 +17,15 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.7]({{ site.baseurl }
 
 ### Description
 
-The brand new StoRM WebDAV component 
+This is the first official release of the StoRM WebDAV service, which replaces the storm-gridhttps server.
 
-fixes a problem in the handling of partial HTTP get requests that
-could fill up the disk space on the machine where the storm-gridhttps server
-was running.
+The StoRM WebDAV service provides performance improvements and resolves some
+problems previously found in the storm-gridhttps-server, in particular:
+
+- incorrect handling of multi-range partial get requests
+- incorrect handling of multiple slashes in incoming requests
 
 ### Bug fixes
-
-The following issues list contains several storm-gridhttps-server open bugs those had been fixed with the new StoRM WebDAV component:
 
 {% include list-rfcs.liquid %}
 
@@ -35,7 +35,11 @@ The following issues list contains several storm-gridhttps-server open bugs thos
 
 ### Installation and configuration
 
-You can find information about upgrade, clean installation and configuration of StoRM services in the [System Administration Guide][storm-sysadmin-guide] of the [Documentation][storm-documentation] section.
+You can find information about upgrade, clean installation and configuration of
+StoRM services in the [System Administration Guide][storm-sysadmin-guide] of
+the [Documentation][storm-documentation] section.
+
+A new section describing the StoRM WebDAV service has just been added.
 
 ### Known issues
 
