@@ -29,10 +29,6 @@ problems previously found in the storm-gridhttps-server, in particular:
 
 {% include list-rfcs.liquid %}
 
-### Enhancements
-
-{% include list-features.liquid %}
-
 ### Installation and configuration
 
 You can find information about upgrade, clean installation and configuration of
