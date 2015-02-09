@@ -39,11 +39,21 @@ You can find information about upgrade, clean installation and configuration of
 StoRM services in the [System Administration Guide][storm-sysadmin-guide] of
 the [Documentation][storm-documentation] section.
 
-A new section describing the StoRM WebDAV service has just been added.
+#### Changes since the 1.0.0 preview release
 
-### Known issues
+Some sites installed the storm-webdav 1.0.0 previed release. The location of
+configuration and log files has changed in this release to be better aligned
+with other StoRM services.
 
-None at the moment
+Packaging changes described in the following table:
+
+|  | 1.0.0 location | 1.0.2 location |
+-------|----------------|----------------|
+| Configuration directory | `/etc/storm-webdav` | `/etc/storm/webdav` |
+| Service logs | `/var/log/storm-webdav` | `/var/log/storm/webdav` |
+
+If you installed the beta version, move configuration files to the new
+directory and restart the service.
 
 [storm-documentation]: {{site.baseurl}}/documentation.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.7
