@@ -1,3 +1,8 @@
+---
+layout: default
+title: StoRM WebDAV installation and configuration guide
+---
+
 # StoRM WebDAV installation and configuration guide
 
 ## Introduction
@@ -7,7 +12,7 @@ The StoRM WebDAV service replaces the StoRM GridHTTPS service.
 ## Install the service package
 
 Grap the latest package from the StoRM repository. See instructions
-[here](http://italiangrid.github.io/storm/download.html).
+[here]({{ site.baseurl }}/download.html).
 
 Note that storm-webdav is supported **only** on SL6.
 
@@ -114,7 +119,7 @@ is put in the `/etc/storm/webdav/vo-mapfiles.d` directory.
 
 The file `/etc/storm/webdav/vo-mapfiles.d/test.vomap` with the following content:
 
-```csv
+```bash
 /C=IT/O=INFN/OU=Personal Certificate/L=CNAF/CN=Andrea Ceccanti,/C=IT/O=INFN/CN=INFN CA,andrea.ceccanti@cnaf.infn.it
 /C=IT/O=INFN/OU=Personal Certificate/L=CNAF/CN=Enrico Vianello,/C=IT/O=INFN/CN=INFN CA,enrico.vianello@cnaf.infn.it
 ```
@@ -149,6 +154,7 @@ Stop the service:
 ```
 
 Check service status:
+
 ```
   service storm-webdav status
 ```
