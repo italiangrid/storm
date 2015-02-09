@@ -13,7 +13,7 @@ rfcs:
 
 ## StoRM WebDAV v. 1.0.2
 
-Released on **{{ page.release_date }}** with [StoRM v. 1.11.7]({{ site.baseurl }}/release-notes/StoRM-v1.11.7.html).
+Released on **{{ page.release_date }}** with [StoRM v. 1.11.7][release-notes].
 
 ### Description
 
@@ -31,8 +31,10 @@ problems previously found in the storm-gridhttps-server, in particular:
 
 ### Installation and configuration
 
-You can find information about upgrade, clean installation and configuration of
-StoRM services in the [System Administration Guide][storm-sysadmin-guide] of
+You can find [here][storm-webdav-guide] the storm-webdav installation and configuration guide.
+
+About the upgrade, clean installation and configuration of
+all the other StoRM services, you can find information in the [System Administration Guide][storm-sysadmin-guide] of
 the [Documentation][storm-documentation] section.
 
 #### Changes since the 1.0.0 preview release
@@ -51,5 +53,7 @@ Packaging changes described in the following table:
 If you installed the beta version, move configuration files to the new
 directory and restart the service.
 
+[release-notes]: {{ site.baseurl }}/release-notes/StoRM-v1.11.7.html
 [storm-documentation]: {{site.baseurl}}/documentation.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.7
+[storm-webdav-guide]: {{ site.baseurl }}/documentation/components/storm-webdav/1.0.2/index.html

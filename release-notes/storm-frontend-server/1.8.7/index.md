@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM Frontend v.1.8.7 release notes"
-release_date: 05.02.2015
+release_date: "09.02.2015"
 rfcs:
 - id: STOR-690
   title: StoRM returns SRM_SUCCESS as request status for SBOL when one of the multiple SURL is still SRM_REQUEST_QUEUED or SRM_IN_PROGRESS
@@ -23,9 +23,6 @@ This release fixes the returned SRM status of a srmStatusBol called on multiple 
 
 You can find information about upgrade, clean installation and configuration of StoRM services in the [System Administration Guide][storm-sysadmin-guide] of the [Documentation][storm-documentation] section.
 
-### Known issues
-
-None at the moment
 
 [storm-documentation]: {{site.baseurl}}/documentation.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.7

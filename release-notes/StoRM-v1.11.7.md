@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM v.1.11.7 - release notes"
-release_date: "05.02.2015"
+release_date: "09.02.2015"
 rfcs:
 - id: STOR-346
   title: WebDAV DELETE response is 401 UNAUTHORIZED instead of 404 NOT EXISTS for authorized users on nonexistent resources
@@ -19,10 +19,6 @@ rfcs:
   title: StoRM should be able to serve ptg requests for the "xroot" protocol
 - id: STOR-718
   title: Slow status update queries impact on mysql performance on multiple srmRm requests
-- id: STOR-738
-  title: WebDAV MOVE with same destination as source fails with 500
-- id: STOR-741
-  title: WebDAV MOVE and COPY with source equal to destination fail with 412 instead of 403
 
 components:
     - name: StoRM Backend
@@ -31,9 +27,6 @@ components:
     - name: StoRM Frontend
       package: storm-frontend-server
       version: 1.8.7
-    - name: StoRM GridHTTPs
-      package: storm-gridhttps-server
-      version: 3.0.3
     - name: StoRM WebDAV
       package: storm-webdav
       version: 1.0.2

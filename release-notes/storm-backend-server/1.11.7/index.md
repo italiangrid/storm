@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM BackEnd v. 1.11.7 release notes"
-release_date: 05.02.2015
+release_date: "09.02.2015"
 rfcs:
 - id: STOR-686
   title: Drop support for storm-SA-read storm-SA-write
