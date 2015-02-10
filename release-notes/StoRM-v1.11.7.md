@@ -63,3 +63,4 @@ the [Documentation][storm-documentation] section.
 
 [storm-documentation]: {{site.baseurl}}/documentation.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.7
+[storm-webdav-guide]: {{ site.baseurl }}/documentation/sysadmin-guide/1.11.7/storm-webdav-guide.html
