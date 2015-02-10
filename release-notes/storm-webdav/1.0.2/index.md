@@ -39,7 +39,7 @@ Guide][storm-sysadmin-guide].
 
 #### Changes since the 1.0.0 preview release
 
-Some sites installed the storm-webdav 1.0.0 previed release. The location of
+Some sites installed the storm-webdav 1.0.0 preview release. The location of
 configuration and log files has changed in this release to be better aligned
 with other StoRM services.
 
