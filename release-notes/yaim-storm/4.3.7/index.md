@@ -21,10 +21,6 @@ This release provides the ability to support xroot as transfer protocol, alias o
 
 {% include list-rfcs.liquid %}
 
-### Enhancements
-
-{% include list-features.liquid %}
-
 ### Installation and configuration
 
 You can find information about upgrade, clean installation and configuration of StoRM services in the [System Administration Guide][storm-sysadmin-guide] of the [Documentation][storm-documentation] section.
