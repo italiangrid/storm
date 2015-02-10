@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM WebDAV v. 1.0.2 release notes"
-release_date: 05.02.2015
+release_date: 09.02.2015
 rfcs:
 - id: STOR-346
   title: WebDAV DELETE response is 401 UNAUTHORIZED instead of 404 NOT EXISTS for authorized users on nonexistent resources
@@ -31,11 +31,9 @@ problems previously found in the storm-gridhttps-server, in particular:
 
 ### Installation and configuration
 
-You can find [here][storm-webdav-guide] the storm-webdav installation and configuration guide.
-
-About the upgrade, clean installation and configuration of
-all the other StoRM services, you can find information in the [System Administration Guide][storm-sysadmin-guide] of
-the [Documentation][storm-documentation] section.
+Read [StoRM WebDAV installation and configuration guide][storm-webdav-guide] to get further information.
+About the upgrade, clean installation and configuration of all the other StoRM services, 
+read the [System Administration Guide][storm-sysadmin-guide].
 
 #### Changes since the 1.0.0 preview release
 
@@ -56,4 +54,4 @@ directory and restart the service.
 [release-notes]: {{ site.baseurl }}/release-notes/StoRM-v1.11.7.html
 [storm-documentation]: {{site.baseurl}}/documentation.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.7
-[storm-webdav-guide]: {{ site.baseurl }}/documentation/components/storm-webdav/1.0.2/index.html
+[storm-webdav-guide]: {{ site.baseurl }}/documentation/sysadmin-guide/1.11.7/storm-webdav/service-guide.html
