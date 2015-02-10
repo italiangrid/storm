@@ -42,7 +42,7 @@ Released on **{{ page.release_date }}**
 ### Description
 
 This release provides several bug fixes and a new component: storm-webdav. This
-new component provide a replacement for the StoRM GridHTTPs service.
+new component provides a replacement for the StoRM GridHTTPs service.
 
 ### Released components
 
