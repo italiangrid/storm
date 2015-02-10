@@ -1,8 +1,8 @@
 docs:
   sysadmin-guide:
       name: System Administrator Guide
-      current: 1.11.5
-      previous: [1.11.4,1.11.3,1.11.2,1.11.1]
+      current: 1.11.7
+      previous: [1.11.6,1.11.5,1.11.4,1.11.3,1.11.2,1.11.1]
 
   webdav-service-user-guide:
       name: WebDAV service user guide
@@ -12,13 +12,18 @@ docs:
 components:
   storm-backend-server:
       name: StoRM Backend
-      current: 1.11.6
-      previous: [1.11.5,1.11.4,1.11.3,1.11.2,1.11.1]
+      current: 1.11.7
+      previous: [1.11.6,1.11.5,1.11.4,1.11.3,1.11.2,1.11.1]
 
   storm-frontend-server:
       name: StoRM Frontend
-      current: 1.8.6
-      previous: [1.8.5,1.8.4,1.8.3]
+      current: 1.8.7
+      previous: [1.8.6,1.8.5,1.8.4,1.8.3]
+
+  storm-webdav:
+      name: StoRM WebDAV
+      current: 1.0.2
+      previous: []
 
   storm-gridhttps-server:
       name: StoRM GridHTTPs
@@ -27,8 +32,8 @@ components:
 
   yaim-storm:
       name: YAIM StoRM
-      current: 4.3.6
-      previous: [4.3.5,4.3.4,4.3.3,4.3.2]
+      current: 4.3.7
+      previous: [4.3.6,4.3.5,4.3.4,4.3.3,4.3.2]
 
   storm-dynamic-info-provider:
       name: StoRM Info Provider
