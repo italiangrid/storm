@@ -41,7 +41,8 @@ Released on **{{ page.release_date }}**
 
 ### Description
 
-This release provides several bug fixes and a new component: storm-webdav. This brand new component provide a WebDAV endpoint which is logically separated from StoRM Backend. It's able to read/write directly on the filesystem out of SRM logic.
+This release provides several bug fixes and a new component: storm-webdav. This
+new component provide a replacement for the StoRM GridHTTPs service.
 
 ### Released components
 
@@ -53,7 +54,12 @@ This release provides several bug fixes and a new component: storm-webdav. This 
 
 ### Installation and configuration
 
-You can find information about upgrade, clean installation and configuration of StoRM services in the [System Administration Guide][storm-sysadmin-guide] of the [Documentation][storm-documentation] section.
+Check the the [StoRM WebDAV installation and configuration guide][storm-webdav-guide] 
+for `storm-webdav` detailed installation and configuration information.
+
+You can find information about upgrade, clean installation and configuration of
+StoRM services in the [System Administration Guide][storm-sysadmin-guide] of
+the [Documentation][storm-documentation] section.
 
 [storm-documentation]: {{site.baseurl}}/documentation.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.7
