@@ -27,25 +27,25 @@ Follow the [system administration guide]({{ site.baseurl }}/documentation/sysadm
 
 #### StoRM
 
-Note that the StoRM PT repositories only provide the latest version of the certified StoRM packages.
-You still need to install EMI3 repositories (as detailed above) for installations to work as expected.
+The latest certified [StoRM packages][prod_repo_url] can be found in the StoRM
+production repositories for [SL5][prod_repo_sl5] and [SL6][prod_repo_sl6].
+Note that you will still EMI3 repositories installed (as detailed above) for
+your setup to work as expected.
 
-To install the repository files, run the following commands (as root):
+To install the StoRM production repository files, run the following commands (as root):
 
     (SL5) # wget http://italiangrid.github.io/storm/repo/storm_sl5.repo -O /etc/yum.repos.d/storm_sl5.repo
     (SL6) # wget http://italiangrid.github.io/storm/repo/storm_sl6.repo -O /etc/yum.repos.d/storm_sl6.repo
-
 ---
-
 ### Preview releases
 
-Preview versions can be found in the preview repositories for [SL5][preview_repo_sl5] and [SL6][preview_repo_sl6].
+[Preview packages][preview_repo_url] can be found in the preview repositories for [SL5][preview_repo_sl5] and [SL6][preview_repo_sl6].
 
 ---
 
 ### Nightly builds
 
-Development versions are built regularly on our [continuous integration infrastructure](http://radiohead.cnaf.infn.it:9999/view/STORM/).
+Development packages are built regularly on our [continuous integration infrastructure](http://radiohead.cnaf.infn.it:9999/view/STORM/).
 
 Artifacts for the development branch (not recommended for production) can be found in the development
 yum repositories for [SL5][devel_repo_sl5] and [SL6][devel_repo_sl6].
@@ -69,5 +69,10 @@ The StoRM source is available on [Github](https://github.com) in the following r
 
 [devel_repo_sl5]: {{site.baseurl}}/repo/storm_develop_sl5.repo
 [devel_repo_sl6]: {{site.baseurl}}/repo/storm_develop_sl6.repo
+[prod_repo_sl5]: {{site.baseurl}}/repo/storm_sl5.repo
+[prod_repo_sl6]: {{site.baseurl}}/repo/storm_sl6.repo
 [preview_repo_sl5]: {{site.baseurl}}/repo/storm_preview_sl5.repo
 [preview_repo_sl6]: {{site.baseurl}}/repo/storm_preview_sl6.repo
+[prod_repo_url]: http://ci-01.cnaf.infn.it/download/storm/emi3
+[preview_repo_url]: http://ci-01.cnaf.infn.it/download/storm/preview
+[preview_repo_url]: http://ci-01.cnaf.infn.it/download/storm/preview
