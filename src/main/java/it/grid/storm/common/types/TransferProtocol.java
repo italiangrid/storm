@@ -76,6 +76,17 @@ public class TransferProtocol {
 			return 4;
 		}
 	};
+	
+	/**
+	 * Static attribute that indicates XROOT TransferProtocol.
+	 */
+	public static TransferProtocol XROOT = new TransferProtocol("xroot") {
+
+		public int hashCode() {
+
+			return 8;
+		}
+	};
 
 	/**
 	 * Static attribute that indicates HTTP TransferProtocol.
@@ -129,6 +140,8 @@ public class TransferProtocol {
 			return RFIO;
 		if (protocol.toLowerCase().replaceAll(" ", "").equals(ROOT.toString()))
 			return ROOT;
+		if (protocol.toLowerCase().replaceAll(" ", "").equals(XROOT.toString()))
+			return XROOT;
 		if (protocol.toLowerCase().replaceAll(" ", "").equals(HTTP.toString()))
 			return HTTP;
 		if (protocol.toLowerCase().replaceAll(" ", "").equals(HTTPS.toString()))

@@ -83,6 +83,11 @@ public class TURLBuilder {
 			.getExtraSlashesForROOTTURL();
 		return buildTURL(Protocol.ROOT, authority, extraSlashesForROOT, physicalFN);
 	}
+	
+	public static TTURL buildXROOTTURL(Authority authority, PFN physicalFN) {
+
+		return buildROOTTURL(authority, physicalFN);
+	}
 
 	public static TTURL buildHTTPTURL(Authority authority, LocalFile localFile)
 		throws HTTPSPluginException {

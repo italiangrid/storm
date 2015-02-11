@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS db_version (
   description VARCHAR(100));
 
 DELETE FROM storm_db.db_version;
-INSERT INTO storm_db.db_version (major,minor,revision,description) VALUES (1,7,0,'27 May 2011');
+INSERT INTO storm_db.db_version (major,minor,revision,description) VALUES (1,7,1,'27 Jan 2015');
    
 CREATE TABLE IF NOT EXISTS request_queue (
   ID int not null auto_increment,
@@ -361,6 +361,7 @@ REPLACE INTO config_Protocols (ID) VALUES ('rfio');
 REPLACE INTO config_Protocols (ID) VALUES ('root');
 REPLACE INTO config_Protocols (ID) VALUES ('http');
 REPLACE INTO config_Protocols (ID) VALUES ('https');
+REPLACE INTO config_Protocols (ID) VALUES ('xroot');
 
 REPLACE INTO config_Overwrite (ID) VALUES ('N');
 REPLACE INTO config_Overwrite (ID) VALUES ('A');

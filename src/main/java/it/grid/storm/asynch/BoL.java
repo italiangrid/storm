@@ -336,9 +336,8 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 			long expDate = (System.currentTimeMillis() / 1000 + (requestData
 				.getLifeTime().value() + requestData.getDeferredStartTime()));
 			StormEA.setPinned(localFile.getAbsolutePath(), expDate);
-
-			// set group permission for tape quota management
-			fileStoRI.setGroupTapeRead();
+			
+			
 			requestData.setFileSize(TSizeInBytes.make(localFile.length(),
 				SizeUnit.BYTES));
 

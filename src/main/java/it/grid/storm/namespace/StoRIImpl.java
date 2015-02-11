@@ -539,44 +539,7 @@ public class StoRIImpl implements StoRI {
 		return result;
 	}
 
-	public void setGroupTapeRead() {
-
-		String groupName = Configuration.getInstance().getGroupTapeReadBuffer();
-		boolean isGroupDefined = LocalGroups.getInstance()
-			.isGroupDefined(groupName);
-		if (isGroupDefined) {
-			LocalFile localFile = getLocalFile();
-			try {
-				localFile.setGroupOwnership(groupName);
-			} catch (FSException e) {
-				log.warn("Unable to change in the new group owner '{}' for file '{}': {}",
-				  groupName, localFile.getAbsolutePath(), e.getMessage(), e);
-			}
-		} else {
-			log.warn("The group for Read buffer in Tape support '{}' is not defined",
-			  groupName);
-		}
-	}
-
-	public void setGroupTapeWrite() {
-
-		String groupName = Configuration.getInstance().getGroupTapeWriteBuffer();
-		boolean isGroupDefined = LocalGroups.getInstance()
-			.isGroupDefined(groupName);
-		if (isGroupDefined) {
-			LocalFile localFile = getLocalFile();
-			try {
-				localFile.setGroupOwnership(groupName);
-			} catch (FSException e) {
-				log.warn("Unable to change in the new group owner '{}' for file '{}': {}",
-				  groupName, localFile.getAbsolutePath(), e.getMessage(), e);
-			}
-		} else {
-			log.warn("The group for Write buffer in Tape support '{}' is not defined",
-			  groupName);
-		}
-	}
-
+	
 	public void setMappingRule(MappingRule winnerRule) {
 		this.winnerRule = winnerRule;
 	}
@@ -664,7 +627,9 @@ public class StoRIImpl implements StoRI {
 		case 5:
 			result = TURLBuilder.buildROOTTURL(authority, this.getPFN());
 			break; // ROOT Protocol
-
+		case 8:
+			result = TURLBuilder.buildXROOTTURL(authority, this.getPFN());
+			break; // XROOT Protocol
 		default:
 		  // Unknown protocol
 			throw new InvalidProtocolForTURLException(protocol.getSchema()); 

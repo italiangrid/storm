@@ -970,9 +970,7 @@ public class PtP implements Delegable, Chooser, Request {
 
       // set extended attribute that indicates the file pinned
       StormEA.setPinned(fileStoRI.getLocalFile().getAbsolutePath(), expDate);
-
-      // set group permission for tape quota management
-      fileStoRI.setGroupTapeWrite();
+      
     }
   }
 
