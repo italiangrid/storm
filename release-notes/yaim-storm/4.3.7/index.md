@@ -15,7 +15,9 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.7]({{ site.baseurl }
 
 ### Description
 
-This release provides the ability to support xroot as transfer protocol, alias of root which is already used.
+This release provides the ability to support xroot as transfer protocol.
+In order to enable this protocol alias, a YAIM reconfiguration of the backend
+service is required.
 
 ### Bug fixes
 
