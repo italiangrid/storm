@@ -17,7 +17,8 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.7][release-notes].
 
 ### Description
 
-This is the first official release of the StoRM WebDAV service, which replaces the storm-gridhttps server.
+This is the first official release of the StoRM WebDAV service, which replaces
+the storm-gridhttps server.
 
 The StoRM WebDAV service provides performance improvements and resolves some
 problems previously found in the storm-gridhttps-server, in particular:
@@ -31,7 +32,7 @@ problems previously found in the storm-gridhttps-server, in particular:
 
 ### Installation and configuration
 
-Check the the [StoRM WebDAV installation and configuration guide][storm-webdav-guide] 
+Check the the [StoRM WebDAV installation and configuration guide][storm-webdav-guide]
 for detailed installation and configuration information.
 
 For the other StoRM services, check the the [System Administration

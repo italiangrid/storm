@@ -17,7 +17,12 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.7]({{ site.baseurl }
 
 ### Description
 
-This release provides several bug fixes.
+This release provides several bug fixes and adds support for the xroot protocol alias (
+formerly you would use 'root' for requesting a xrootd TURL).
+
+This update of the backend requires a YAIM reconfiguration.
+The YAIM reconfiguration is needed to add the new xroot protocol
+alias to the list of supported transport protocols in the StoRM database.
 
 ### Bug fixes
 
@@ -25,7 +30,9 @@ This release provides several bug fixes.
 
 ### Installation and configuration
 
-You can find information about upgrade, clean installation and configuration of StoRM services in the [System Administration Guide][storm-sysadmin-guide] of the [Documentation][storm-documentation] section.
+You can find information about upgrade, clean installation and configuration of
+StoRM services in the [System Administration Guide][storm-sysadmin-guide] of
+the [Documentation][storm-documentation] section.
 
 [storm-documentation]: {{site.baseurl}}/documentation.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.7
