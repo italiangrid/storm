@@ -44,6 +44,9 @@ Released on **{{ page.release_date }}**
 This release provides several bug fixes and a new component: storm-webdav. This
 new component provides a replacement for the StoRM GridHTTPs service.
 
+**Important**: the StoRM WebDAV service is released and supported only on
+SL/CENTOS 6.
+
 ### Released components
 
 {% include list-components.liquid %}

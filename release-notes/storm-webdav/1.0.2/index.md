@@ -26,6 +26,9 @@ problems previously found in the storm-gridhttps-server, in particular:
 - incorrect handling of multi-range partial get requests
 - incorrect handling of multiple slashes in incoming requests
 
+**Important**: The StoRM WebDAV service is released and supported only on
+SL/CENTOS 6.
+
 ### Bug fixes
 
 {% include list-rfcs.liquid %}
