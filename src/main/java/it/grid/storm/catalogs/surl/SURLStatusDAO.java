@@ -108,8 +108,8 @@ public class SURLStatusDAO {
       stat = con.prepareStatement(query);
       stat.setString(1, explanation);
       stat.setString(2, surl.getSURLString());
-      stat.setInt(3,  surl.uniqueId());
-      
+      stat.setInt(3, surl.uniqueId());
+
       if (user != null) {
         stat.setString(4, user.getDn());
       }
@@ -120,7 +120,7 @@ public class SURLStatusDAO {
         surl, updateCount);
 
       return (updateCount != 0);
-      
+
     } catch (SQLException e) {
       String msg = String.format("abortActivePtPsForSURL: SQL error: %s",
         e.getMessage());
@@ -493,6 +493,22 @@ public class SURLStatusDAO {
 
   }
 
+  private String quoteSURLUniqueIDs(List<TSURL> surls) {
+
+    StringBuilder sb = new StringBuilder();
+
+    for (TSURL s : surls) {
+      if (sb.length() > 0) {
+        sb.append(",");
+      }
+
+      sb.append(s.uniqueId());
+    }
+
+    return sb.toString();
+
+  }
+
   private String quoteSURLList(List<TSURL> surls) {
 
     StringBuilder sb = new StringBuilder();
@@ -523,10 +539,11 @@ public class SURLStatusDAO {
         + "ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
         + "SET sg.statusCode=21"
         + "WHERE (sg.statusCode=22 OR sg.statusCode=0) "
-        + "AND rg.sourceSURL = ?";
+        + "AND rg.sourceSURL = ? and rg.sourceSURL_uniqueID = ?";
 
       stat = con.prepareStatement(query);
       stat.setString(1, surl.getSURLString());
+      stat.setInt(2, surl.uniqueId());
 
       stat.executeUpdate();
     } catch (SQLException e) {
@@ -556,6 +573,7 @@ public class SURLStatusDAO {
         + "ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
         + "SET sg.statusCode=21 "
         + "WHERE (sg.statusCode=22 OR sg.statusCode=0) "
+        + "AND rg.sourceSURL_uniqueID IN (" + quoteSURLUniqueIDs(surls) + ") "
         + "AND rg.sourceSURL IN (" + quoteSURLList(surls) + ") "
         + "AND rq.client_dn = ?";
 
@@ -592,6 +610,7 @@ public class SURLStatusDAO {
         + "ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
         + "SET sg.statusCode=21 "
         + "WHERE (sg.statusCode=22 OR sg.statusCode=0) "
+        + "AND rg.sourceSURL_uniqueID IN (" + quoteSURLUniqueIDs(surls) + ") "
         + "AND rg.sourceSURL IN (" + quoteSURLList(surls) + ")";
 
       stat = con.prepareStatement(query);
@@ -624,6 +643,7 @@ public class SURLStatusDAO {
         + "ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
         + "SET sg.statusCode=21 "
         + "WHERE (sg.statusCode=22 OR sg.statusCode=0) "
+        + "AND rg.sourceSURL_uniqueID IN (" + quoteSURLUniqueIDs(surls) + ") "
         + "AND rg.sourceSURL IN (" + quoteSURLList(surls) + ") "
         + "AND rq.r_token = ?";
 
@@ -670,10 +690,12 @@ public class SURLStatusDAO {
       String query = "SELECT rq.ID, rg.ID, sg.statusCode "
         + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
         + "ON (rg.request_queueID = rq.ID AND sg.request_GetID = rg.ID) "
-        + "WHERE ( rg.sourceSURL = ? and sg.statusCode = 22)";
+        + "WHERE ( rg.sourceSURL = ? and rg.sourceSURL_uniqueID = ? "
+        + "and sg.statusCode = 22 )";
 
       stat = con.prepareStatement(query);
       stat.setString(1, surl.getSURLString());
+      stat.setInt(2, surl.uniqueId());
 
       rs = stat.executeQuery();
       return rs.next();
@@ -705,7 +727,8 @@ public class SURLStatusDAO {
       String query = "SELECT rq.ID, rp.ID, sp.statusCode "
         + "FROM request_queue rq JOIN (request_Put rp, status_Put sp) "
         + "ON (rp.request_queueID=rq.ID AND sp.request_PutID=rp.ID) "
-        + "WHERE ( rp.targetSURL = ? and sp.statusCode=24 )";
+        + "WHERE ( rp.targetSURL = ? and rp.targetSURL_uniqueID = ? "
+        + "and sp.statusCode=24 )";
 
       if (ptpRequestToken != null) {
         query += " AND rq.r_token != ?";
@@ -713,9 +736,10 @@ public class SURLStatusDAO {
 
       stat = con.prepareStatement(query);
       stat.setString(1, surl.getSURLString());
+      stat.setInt(2, surl.uniqueId());
 
       if (ptpRequestToken != null) {
-        stat.setString(2, ptpRequestToken.getValue());
+        stat.setString(3, ptpRequestToken.getValue());
       }
 
       rs = stat.executeQuery();
