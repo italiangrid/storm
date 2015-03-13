@@ -61,5 +61,6 @@ to apply changes to the StoRM database schema.
 You can find more information about upgrade, clean installation and configuration of
 StoRM services in the [System Administration Guide][storm-sysadmin-guide].
 
+[STOR-779]: https://issues.infn.it/jira/browse/STOR-779
 [storm-documentation]: {{site.baseurl}}/documentation.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.8

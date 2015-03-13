@@ -22,8 +22,8 @@ users whose certificate subject contained a single quote.
 
 ### Installation and configuration
 
-You can find information about upgrade, clean installation and configuration of StoRM services in the [System Administration Guide][storm-sysadmin-guide] of the [Documentation][storm-documentation] section.
+You can find information about upgrade, clean installation and configuration of
+StoRM services in the [System Administration Guide][storm-sysadmin-guide].
 
 
-[storm-documentation]: {{site.baseurl}}/documentation.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.8
