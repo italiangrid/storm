@@ -1,103 +1,104 @@
 <?xml version="1.0"?>
 <assembly
-	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+  xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
 
-	<id>storm-backend</id>
+  <id>storm-backend</id>
 
-	<includeBaseDirectory>false</includeBaseDirectory>
+  <includeBaseDirectory>false</includeBaseDirectory>
 
-	<formats>
-		<format>tar.gz</format>
-	</formats>
+  <formats>
+    <format>tar.gz</format>
+  </formats>
 
-	<!-- include all project dependencies and the project artifact -->
-	<dependencySets>
-		<dependencySet>
-			<!-- need to exclude this old xerces version that would otherwise be brough 
-				in as a commons-dbcp dendendency. Though the compiler seems to resolve the 
-				conflict fine, the assembly plugin put it in the package -->
-			<excludes>
-				<exclude>xerces:xerces</exclude>
-				<exclude>org.italiangrid:storm-native-interface</exclude>
-			</excludes>
-			<useProjectArtifact>false</useProjectArtifact>
-			<outputDirectory>usr/share/java/storm-backend-server</outputDirectory>
-		</dependencySet>
-	</dependencySets>
+  <!-- include all project dependencies and the project artifact -->
+  <dependencySets>
+    <dependencySet>
+      <!-- need to exclude this old xerces version that would otherwise be brough
+        in as a commons-dbcp dendendency. Though the compiler seems to resolve the
+        conflict fine, the assembly plugin put it in the package -->
+      <excludes>
+        <exclude>xerces:xerces</exclude>
+        <exclude>org.italiangrid:storm-native-interface</exclude>
+      </excludes>
+      <useProjectArtifact>false</useProjectArtifact>
+      <outputDirectory>usr/share/java/storm-backend-server</outputDirectory>
+    </dependencySet>
+  </dependencySets>
 
-	<fileSets>
+  <fileSets>
 
-		<!-- include a few file in etc -->
-		<fileSet>
-			<directory>etc</directory>
-			<includes>
-				<include>lcmaps.db</include>
-				<include>logging.xml</include>
-				<include>namespace-1.5.0.xsd</include>
-				<include>namespace.xml</include>
-				<include>path-authz.db</include>
-				<include>storm.properties.template</include>
-				<include>used-space.ini.template</include>
-				<include>welcome.txt</include>
-			</includes>
-			<outputDirectory>etc/storm/backend-server</outputDirectory>
-		</fileSet>
+    <!-- include a few file in etc -->
+    <fileSet>
+      <directory>etc</directory>
+      <includes>
+        <include>lcmaps.db</include>
+        <include>logging.xml</include>
+        <include>namespace-1.5.0.xsd</include>
+        <include>namespace.xml</include>
+        <include>path-authz.db</include>
+        <include>storm.properties.template</include>
+        <include>used-space.ini.template</include>
+        <include>welcome.txt</include>
+      </includes>
+      <outputDirectory>etc/storm/backend-server</outputDirectory>
+    </fileSet>
 
-		<!-- include a few file in etc/db -->
-		<fileSet>
-			<directory>etc/db</directory>
-			<includes>
-				<include>storm_be_ISAM_mysql_update_from_1.0.0_to_1.1.0.sql</include>
-				<include>storm_mysql_grant.sql</include>
-				<include>storm_mysql_tbl.sql</include>
-				<include>storm_mysql_update_from_1.7.0_to_1.7.1.sql</include>
-			</includes>
-			<outputDirectory>etc/storm/backend-server/db</outputDirectory>
-		</fileSet>
+    <!-- include a few file in etc/db -->
+    <fileSet>
+      <directory>etc/db</directory>
+      <includes>
+        <include>storm_be_ISAM_mysql_update_from_1.0.0_to_1.1.0.sql</include>
+        <include>storm_mysql_grant.sql</include>
+        <include>storm_mysql_tbl.sql</include>
+        <include>storm_mysql_update_from_1.7.0_to_1.7.1.sql</include>
+        <include>storm_mysql_update_from_1.7.1_to_1.7.2.sql</include>
+      </includes>
+      <outputDirectory>etc/storm/backend-server/db</outputDirectory>
+    </fileSet>
 
-		<!-- an empty fileset to create an empty log directory -->
-		<fileSet>
-			<directory>src</directory>
-			<outputDirectory>var/log/storm</outputDirectory>
-			<excludes>
-				<exclude>**/*</exclude>
-			</excludes>
-			<directoryMode>0755</directoryMode>
-		</fileSet>
+    <!-- an empty fileset to create an empty log directory -->
+    <fileSet>
+      <directory>src</directory>
+      <outputDirectory>var/log/storm</outputDirectory>
+      <excludes>
+        <exclude>**/*</exclude>
+      </excludes>
+      <directoryMode>0755</directoryMode>
+    </fileSet>
 
-	</fileSets>
+  </fileSets>
 
-	<files>
+  <files>
 
-		<file>
-			<source>etc/db/storm_database_config.sh</source>
-			<outputDirectory>etc/storm/backend-server/db</outputDirectory>
-			<fileMode>0755</fileMode>
-		</file>
+    <file>
+      <source>etc/db/storm_database_config.sh</source>
+      <outputDirectory>etc/storm/backend-server/db</outputDirectory>
+      <fileMode>0755</fileMode>
+    </file>
 
-		<file>
-			<source>target/${artifactId}.jar</source>
-			<outputDirectory>usr/share/java/storm-backend-server</outputDirectory>
-		</file>
+    <file>
+      <source>target/${artifactId}.jar</source>
+      <outputDirectory>usr/share/java/storm-backend-server</outputDirectory>
+    </file>
 
-		<file>
-			<source>etc/init.d/storm-backend-server</source>
-			<outputDirectory>etc/init.d</outputDirectory>
-			<fileMode>0755</fileMode>
-		</file>
+    <file>
+      <source>etc/init.d/storm-backend-server</source>
+      <outputDirectory>etc/init.d</outputDirectory>
+      <fileMode>0755</fileMode>
+    </file>
 
-		<file>
-			<source>etc/logrotate.d/storm-backend-server</source>
-			<outputDirectory>etc/logrotate.d</outputDirectory>
-		</file>
+    <file>
+      <source>etc/logrotate.d/storm-backend-server</source>
+      <outputDirectory>etc/logrotate.d</outputDirectory>
+    </file>
 
-		<file>
-			<source>etc/sysconfig/storm-backend-server</source>
-			<outputDirectory>etc/sysconfig</outputDirectory>
-		</file>
+    <file>
+      <source>etc/sysconfig/storm-backend-server</source>
+      <outputDirectory>etc/sysconfig</outputDirectory>
+    </file>
 
-	</files>
+  </files>
 
 </assembly>

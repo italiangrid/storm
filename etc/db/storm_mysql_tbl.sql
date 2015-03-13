@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS db_version (
   description VARCHAR(100));
 
 DELETE FROM storm_db.db_version;
-INSERT INTO storm_db.db_version (major,minor,revision,description) VALUES (1,7,1,'27 Jan 2015');
+INSERT INTO storm_db.db_version (major,minor,revision,description) VALUES (1,7,2,'10 Mar 2015');
    
 CREATE TABLE IF NOT EXISTS request_queue (
   ID int not null auto_increment,
@@ -278,6 +278,7 @@ ALTER TABLE status_Put
   add constraint FK_status_Put_3223 foreign key (request_PutID) references request_Put (ID) ON DELETE CASCADE;
   
 CREATE INDEX statusCode_index on status_Put (statusCode);
+CREATE INDEX statusCodeGet_index on status_Get (statusCode);
 CREATE INDEX transferURL_index ON status_Put (transferURL(255));
 
 ALTER TABLE request_BoL 
