@@ -13,7 +13,8 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.8]({{ site.baseurl }
 
 ### Description
 
-This release fixes the error occoured when user's DN contains a single quote.
+This release fixes an error that prevented the submission of asynchronous requests from
+users whose certificate subject contained a single quote.
 
 ### Bug fixes
 
@@ -21,8 +22,8 @@ This release fixes the error occoured when user's DN contains a single quote.
 
 ### Installation and configuration
 
-You can find information about upgrade, clean installation and configuration of StoRM services in the [System Administration Guide][storm-sysadmin-guide] of the [Documentation][storm-documentation] section.
+You can find information about upgrade, clean installation and configuration of
+StoRM services in the [System Administration Guide][storm-sysadmin-guide].
 
 
-[storm-documentation]: {{site.baseurl}}/documentation.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.8

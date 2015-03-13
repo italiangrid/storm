@@ -15,7 +15,8 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.8]({{ site.baseurl }
 
 ### Description
 
-This release fix a dependency issue on SL5 and a bug on configuration file parsing.
+This release fix a dependency issue on the SL5 packaging and provides more
+robust info provider configuration parsing.
 
 ### Bug fixes
 
@@ -23,11 +24,9 @@ This release fix a dependency issue on SL5 and a bug on configuration file parsi
 
 ### Installation and configuration
 
-You can find information about upgrade, clean installation and configuration of StoRM services in the [System Admininistration Guide][storm-sysadmin-guide] of the [Documentation][storm-documentation] section.
-
-### Known issues
-
-None at the moment
+You can find information about upgrade, clean installation and configuration of
+StoRM services in the [System Admininistration Guide][storm-sysadmin-guide] of
+the [Documentation][storm-documentation] section.
 
 [storm-documentation]: {{site.baseurl}}/documentation.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.8
