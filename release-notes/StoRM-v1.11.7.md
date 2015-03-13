@@ -64,10 +64,6 @@ You can find information about upgrade, clean installation and configuration of
 StoRM services in the [System Administration Guide][storm-sysadmin-guide] of
 the [Documentation][storm-documentation] section.
 
-### Known issues
-
-- [[STOR-751](https://issues.infn.it/jira/browse/STOR-751)] - storm-info-provider-rpm misses dependency on python-simplejson on SL5. Read [the workaround](https://issues.infn.it/jira/browse/STOR-751?focusedCommentId=58830&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-58830).
-
 [storm-documentation]: {{site.baseurl}}/documentation.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.7
 [storm-webdav-guide]: {{ site.baseurl }}/documentation/sysadmin-guide/1.11.7/storm-webdav-guide.html
