@@ -13,7 +13,8 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.8]({{ site.baseurl }
 
 ### Description
 
-This release fixes the error occoured when user's DN contains a single quote.
+This release fixes an error that prevented the submission of asynchronous requests from
+users whose certificate subject contained a single quote.
 
 ### Bug fixes
 
