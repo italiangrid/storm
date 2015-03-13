@@ -32,7 +32,7 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
     String explanation) {
 
     final SURLStatusDAO dao = new SURLStatusDAO();
-    return dao.abortActivePtGsForSURL(user, surl, explanation);
+    return dao.abortActivePtPsForSURL(user, surl, explanation);
 
   }
 
