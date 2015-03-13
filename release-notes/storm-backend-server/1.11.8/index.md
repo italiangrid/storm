@@ -44,7 +44,7 @@ issue][STOR-779], a database cleanup is recommended. To drop the storm
 database:
 
 - log into the StoRM MySQL database as `root`
-- drop the `storm_db` and `storm_BE_ISAM` databases
+- drop the `storm_db` and `storm_be_ISAM` databases
 - run YAIM to recreate the databases from scratch
 
 If you cannot afford to drop the database (e.g., you cannot stop the service),
