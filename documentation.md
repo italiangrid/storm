@@ -30,10 +30,10 @@ StoRM architecture, components, security management and deployment schemas.
 
 Explains how to use the StoRM SRM client.
 
-#### [WebDAV service user guide]({{site.baseurl}}/documentation/webdav-guide/{{ site.webdav_guide_version }})
+#### [StoRM WebDAV user guide]({{site.baseurl}}/documentation/storm-webdav-guide/{{ site.webdav_guide_version }})
 
-Explains the StoRM WebDAV interface, how to install, configure and use it.
-<br/>_Older versions_ : [3.0.0][webdav-3.0.0], [2.0.2][webdav-2.0.2]
+StoRM WebDAV service overview with use cases examples.
+<br/>_Older versions (with storm-gridhttps-server)_ : [3.0.1][webdav-3.0.1], [3.0.0][webdav-3.0.0], [2.0.2][webdav-2.0.2]
 
 #### [Frequently Asked Questions]({{site.baseurl}}/documentation/faq)
 
