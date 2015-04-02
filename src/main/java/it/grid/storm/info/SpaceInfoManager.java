@@ -147,9 +147,12 @@ public class SpaceInfoManager {
 		SpaceInfoManager.getInstance().foundSAtoAnalyze();
 		result = SpaceInfoManager.getInstance().bDUTasks.howManyTask();
 		log.debug("Tasks: {}", result);
-		// Submit the tasks
-		SpaceInfoManager.getInstance().submitTasks(
-			SpaceInfoManager.getInstance().bDUTasks);
+		
+		if (result > 0) {
+			// Submit the tasks
+			SpaceInfoManager.getInstance().submitTasks(
+				SpaceInfoManager.getInstance().bDUTasks);
+		}
 		return result;
 	}
 
@@ -316,28 +319,39 @@ public class SpaceInfoManager {
 		log.info("Background DU tasks size: {}", bDUTasks.getTasks().size());
 	}
 
+	private List<TSpaceToken> retrieveSTtoInitializeWithQuota() {
+		log.debug("Retrieving the list of SpaceToken with quota to initialize");
+		List<TSpaceToken> result = new ArrayList<TSpaceToken>();
+		List<StorageSpaceData> toInitialize = retrieveSSDtoInitializeWithQuota();
+		for (StorageSpaceData ssd : toInitialize) {
+			if (ssd.getSpaceToken() == null) {
+				log.debug("Null spacetoken found for {}", ssd);
+				continue;
+			}
+			result.add(ssd.getSpaceToken());
+			log.debug("Added {}", ssd.getSpaceToken());
+		}
+		log.debug("Returned {} elements", result.size());
+		return result;
+	}
+	
 	private void foundSAtoAnalyze() {
 
 		List<StorageSpaceData> toAnalyze = spaceCatalog
 			.getStorageSpaceNotInitialized();
+		List<TSpaceToken> quotaEnabledST = retrieveSTtoInitializeWithQuota();
 		for (StorageSpaceData ssd : toAnalyze) {
-			TSpaceToken sT = ssd.getSpaceToken();
-			String absPath = ssd.getSpaceFileNameString();
-			if (sT == null || absPath == null) {
-				log
-					.error("Unable to submit DU test, StorageSpaceData returns "
-					  + "null values: SpaceToken={}, SpaceFileNameString={}",
-					  sT, absPath);
-			} else {
-
-				try {
-					bDUTasks.addTask(sT, absPath);
-					log.debug("Added {} to the DU-Task Queue. (size: {})",
-					  absPath, bDUTasks.howManyTask());
-
-				} catch (SAInfoException e) {
-				  log.error(e.getMessage(),e);
-				}
+			if (quotaEnabledST.contains(ssd.getSpaceToken())) {
+				log.debug("StorageSpaceData {} has quota enabled and it won't be "
+					+ "added to the DU-Task queue", ssd.toString());
+				continue;
+			}
+			try {
+				bDUTasks.addTask(ssd.getSpaceToken(), ssd.getSpaceFileNameString());
+				log.debug("Added {} to the DU-Task Queue. (size: {})", 
+					ssd.getSpaceFileNameString(), bDUTasks.howManyTask());
+			} catch (SAInfoException e) {
+				log.error(e.getMessage(),e);
 			}
 		}
 	}

@@ -12,8 +12,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FilenameUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class BackgroundDUTasks {
 
@@ -125,6 +123,13 @@ public class BackgroundDUTasks {
 		public BgDUTask(TSpaceToken sToken, boolean root, String absPath)
 			throws SAInfoException {
 
+			if (sToken == null) {
+				throw new SAInfoException("Invalid null token");
+			}
+			if (absPath == null) {
+				throw new SAInfoException("Invalid null path");
+			}
+			
 			String pathNorm = FilenameUtils.normalize(FilenameUtils
 				.getFullPath(absPath + File.separator));
 			File cf = new File(pathNorm);
