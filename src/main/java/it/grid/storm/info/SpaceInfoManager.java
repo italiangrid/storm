@@ -182,15 +182,9 @@ public class SpaceInfoManager {
 	
 	public static int stop() {
 
-		int result = 0;
 		SpaceInfoManager.getInstance().stopExecution();
-		result = SpaceInfoManager.getInstance().failures.get();
-		return result;
+		return SpaceInfoManager.getInstance().failures.get();
 	}
-
-	// ********************************************
-	// Package methods
-	// ********************************************
 
 	/**
 	 * @return a list of StorageSpaceData related to SA with quota enabled to be
@@ -209,39 +203,6 @@ public class SpaceInfoManager {
 		}
 		return ssdSet;
 	}
-
-	/*
-	public StorageSpaceData getSSDfromQuotaName(String quotaName) {
-
-		StorageSpaceData ssd = null;
-		List<VirtualFSInterface> vfsList = retrieveSAtoInitializeWithQuota();
-		ReservedSpaceCatalog ssdCatalog = new ReservedSpaceCatalog();
-		for (VirtualFSInterface vfsEntry : vfsList) {
-			String qName = vfsEntry.getCapabilities().getQuota()
-				.getQuotaElementName();
-			if (qName.equals(quotaName)) {
-				String spaceTokenDesc = vfsEntry.getSpaceTokenDescription();
-				ssd = ssdCatalog.getStorageSpaceByAlias(spaceTokenDesc);
-			}
-		}
-		return ssd;
-	}
-
-	public List<String> retrieveQuotaNamesToUse() {
-
-		List<String> quotaNames = new ArrayList<String>();
-		List<VirtualFSInterface> vfsList = retrieveSAtoInitializeWithQuota();
-		for (VirtualFSInterface vfsEntry : vfsList) {
-			log.debug("vfsEntry (AliasName): {}", vfsEntry.getAliasName());
-			String quotaName = vfsEntry.getCapabilities().getQuota()
-				.getQuotaElementName();
-			log.debug("Found this quotaName to check: '{}'", quotaName); 
-			quotaNames.add(quotaName);
-		}
-		log.debug("Number of quotaNames: {}" ,quotaNames.size());
-		return quotaNames;
-	}
-	*/
 
 	private List<VirtualFSInterface> retrieveSAtoInitializeWithQuota() {
 
@@ -293,92 +254,6 @@ public class SpaceInfoManager {
 		}
 		return (quota.getDefined() && quota.getEnabled());
 	}
-
-	/**
-	 * Populate with DU tasks
-	 */
-	/*
-	private void fakeSAtoAnalyze(List<String> absPaths) {
-
-		// Create a list of SSD using the list of AbsPaths
-		List<StorageSpaceData> toAnalyze = new ArrayList<StorageSpaceData>();
-		for (String path : absPaths) {
-			path = path + File.separator;
-			String pathNorm = FilenameUtils
-				.normalize(FilenameUtils.getFullPath(path));
-			StorageSpaceData ssd = new StorageSpaceData();
-			try {
-				PFN spaceFN = PFN.make(pathNorm);
-				log.trace("PFN : " , spaceFN);
-				ssd.setSpaceToken(TSpaceToken.make(new it.grid.storm.common.GUID()
-					.toString()));
-
-				ssd.setSpaceFileName(spaceFN);
-				toAnalyze.add(ssd);
-			} catch (InvalidTSpaceTokenAttributesException e) {
-				log.error("Unable to create Space Token. {}", e.getMessage(), e);
-			} catch (InvalidPFNAttributeException e) {
-				log.error("Unable to create PFN. {}", e.getMessage(),e);
-			}
-		}
-
-		for (StorageSpaceData ssd : toAnalyze) {
-			TSpaceToken sT = ssd.getSpaceToken();
-			String absPath = ssd.getSpaceFileNameString();
-			try {
-				bDUTasks.addTask(sT, absPath);
-				log.debug("Added {} to the DU-Task Queue. (Task queue size: {})", 
-				  absPath,
-					bDUTasks.howManyTask());
-			} catch (SAInfoException e) {
-			  log.error(e.getMessage(), e);
-			}
-		}
-		log.info("Background DU tasks size: {}", bDUTasks.getTasks().size());
-	}
-	*/
-
-
-	/*
-	private List<TSpaceToken> retrieveSTtoInitializeWithQuota() {
-		log.debug("Retrieving the list of SpaceToken with quota to initialize");
-		List<TSpaceToken> result = new ArrayList<TSpaceToken>();
-		List<StorageSpaceData> toInitialize = retrieveSSDtoInitializeWithQuota();
-		for (StorageSpaceData ssd : toInitialize) {
-			if (ssd.getSpaceToken() == null) {
-				log.debug("Null spacetoken found for {}", ssd);
-				continue;
-			}
-			result.add(ssd.getSpaceToken());
-			log.debug("Added {}", ssd.getSpaceToken());
-		}
-		log.debug("Returned {} elements", result.size());
-		return result;
-	}
-	*/
-	
-	/*
-	private void foundSAtoAnalyze() {
-
-		List<StorageSpaceData> toAnalyze = spaceCatalog
-			.getStorageSpaceNotInitialized();
-		List<TSpaceToken> quotaEnabledST = retrieveSTtoInitializeWithQuota();
-		for (StorageSpaceData ssd : toAnalyze) {
-			if (quotaEnabledST.contains(ssd.getSpaceToken())) {
-				log.debug("StorageSpaceData {} has quota enabled and it won't be "
-					+ "added to the DU-Task queue", ssd.toString());
-				continue;
-			}
-			try {
-				bDUTasks.addTask(ssd.getSpaceToken(), ssd.getSpaceFileNameString());
-				log.debug("Added {} to the DU-Task Queue. (size: {})", 
-					ssd.getSpaceFileNameString(), bDUTasks.howManyTask());
-			} catch (SAInfoException e) {
-				log.error(e.getMessage(),e);
-			}
-		}
-	}
-	*/
 	
 	void stopExecution() {
 	  log.trace("SpaceInfoManager.stopExecution");
