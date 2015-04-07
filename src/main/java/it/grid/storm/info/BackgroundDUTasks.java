@@ -13,6 +13,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FilenameUtils;
 
+import com.google.common.base.Preconditions;
+
 public class BackgroundDUTasks {
 
 	private Set<BgDUTask> tasks = new HashSet<BgDUTask>();
@@ -123,12 +125,8 @@ public class BackgroundDUTasks {
 		public BgDUTask(TSpaceToken sToken, boolean root, String absPath)
 			throws SAInfoException {
 
-			if (sToken == null) {
-				throw new SAInfoException("Invalid null token");
-			}
-			if (absPath == null) {
-				throw new SAInfoException("Invalid null path");
-			}
+			Preconditions.checkNotNull(sToken, "Invalid null token");
+			Preconditions.checkNotNull(absPath, "Invalid null absPath");
 			
 			String pathNorm = FilenameUtils.normalize(FilenameUtils
 				.getFullPath(absPath + File.separator));

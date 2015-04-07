@@ -97,14 +97,7 @@ public class Bootstrap {
 
 	public static void initializeUsedSpace() {
 
-		int numberOfSpaceInitialized = SpaceInfoManager.getInstance()
-			.initSpaceFromINIFile();
-		
-		log.info("Initialized {} SA from used-space.ini", numberOfSpaceInitialized);
-		SpaceInfoManager.getInstance().updateSpaceUsed();
-		
-		int numberOfBgDU = SpaceInfoManager.howManyBackgroundDU();
-		log.info("Submitted {} background DU tasks.", numberOfBgDU);
+		SpaceInfoManager.getInstance().initializeUsedSpace();
 	}
 
 	/**

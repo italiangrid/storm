@@ -28,78 +28,76 @@ import org.ini4j.InvalidFileFormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
+
 public class IniReader {
 
 	private static Logger log = LoggerFactory.getLogger(IniReader.class);
-	private final String confPath;
-	public static final String DEFAULT_CONF_PATH = Configuration.getInstance()
-		.configurationDir();
-	private List<File> iniFiles = new ArrayList<File>();
+	private final String configurationPath;
 
-	public IniReader() throws IllegalArgumentException {
+	public IniReader() {
 
-		this(DEFAULT_CONF_PATH);
+		this(Configuration.getInstance().configurationDir());
 	}
 
-	public IniReader(String configurationPath) throws IllegalArgumentException {
+	public IniReader(String configurationPath) {
 
-		if (configurationPath == null) {
-			log.error("Null configurationPath argument provided");
-			throw new IllegalArgumentException(
-				"Null configurationPath argument provided");
-		}
-		File confFolder = new File(configurationPath);
-		if (!confFolder.isDirectory()) {
+		checkConfigurationPath(configurationPath);
+		this.configurationPath = configurationPath;
+	}
+
+	private void checkConfigurationPath(String configurationPath) {
+		
+		Preconditions.checkNotNull(configurationPath,
+			"Null configurationPath argument provided");
+		
+		if (!(new File(configurationPath)).isDirectory()) {
 
 			log.error("The provided configurationPath {} is not a valid directory", 
 			  configurationPath);
 			throw new IllegalArgumentException("The provided configurationPath "
 				+ configurationPath + " is not a valid directory");
 		}
-		this.confPath = configurationPath;
-		for (File file : confFolder.listFiles()) {
-			if (file.isFile()
-				&& (file.getName().endsWith(".ini") || file.getName().endsWith(".INI"))) {
+	}
+	
+	public final String getConfigurationPath() {
+
+		return configurationPath;
+	}
+
+	private List<File> getIniFiles() {
+		
+		List<File> iniFiles = new ArrayList<File>();
+		File confDir = new File(this.configurationPath);
+		for (File file : confDir.listFiles()) {
+			if (file.isFile() && file.getName().toLowerCase().endsWith(".ini")) {
 				iniFiles.add(file);
 			}
 		}
+		return iniFiles;
+	}
+	
+	public Ini getIniFile(String iniFileName) throws InvalidFileFormatException,
+		IOException {
+
+		Preconditions.checkNotNull(iniFileName,
+			"Null iniFileName argument provided");
+		
+		List<File> iniFiles = getIniFiles();
 		if (iniFiles.size() == 0) {
 			log.error("The provided configurationPath {} does not contains ini files", 
 			  configurationPath);
-			throw new IllegalArgumentException("The provided configurationPath "
-				+ configurationPath + " does not contains ini files");
-		}
-	}
-
-	/**
-	 * @return the confPath
-	 */
-	public final String getConfPath() {
-
-		return confPath;
-	}
-
-	/**
-	 * @param iniFileName
-	 * @return null if
-	 */
-	public Ini getIniFile(String iniFileName) throws IllegalArgumentException {
-
-		if (iniFileName == null) {
-			log.error("Null iniFileName argument provided");
-			throw new IllegalArgumentException("Null iniFileName argument provided");
-		}
-		Ini ini = null;
-		for (File iniFile : iniFiles) {
-			if (iniFile.getName().equals(iniFileName.trim())) {
-				try {
-					ini = new Ini(new FileReader(iniFile));
-				} catch (Throwable e) {
-				  log.error(e.getMessage(), e);
+		} else {
+			log.debug("{} ini files found in {}", iniFiles.size(), configurationPath);
+			String name = iniFileName.trim().toLowerCase();
+			for (File iniFile : iniFiles) {
+				if (name.equals(iniFile.getName().toLowerCase())) {
+					log.debug("{} found: {}", name, iniFile);
+					return new Ini(new FileReader(iniFile));
 				}
-				break;
 			}
 		}
-		return ini;
+		throw new FileNotFoundException(String.format(
+			"Ini file %s not found in %s", iniFileName, configurationPath));
 	}
 }
