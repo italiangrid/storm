@@ -4,10 +4,9 @@ import it.grid.storm.space.DUResult;
 import it.grid.storm.srm.types.TSpaceToken;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -23,15 +22,14 @@ public class BackgroundDUTasks {
 
 	public void addTask(TSpaceToken token, String path) throws SAInfoException {
 
-		BgDUTask task = new BgDUTask(token, true, path);
-		tasks.add(task);
+		addTask(new BgDUTask(token, true, path));
 	}
 
 	public void addTask(BgDUTask task) {
 
 		tasks.add(task);
 	}
-
+	
 	public void updateTask(BgDUTask task) throws SAInfoException {
 
 		if (tasks.contains(task)) {
@@ -43,40 +41,34 @@ public class BackgroundDUTasks {
 		}
 	}
 
-	public BgDUTask getBgDUTask(String absRootPath) {
+	public BgDUTask getTask(String absRootPath) {
 
-		BgDUTask result = null;
 		for (BgDUTask task : tasks) {
-			if (FilenameUtils.equalsNormalized(task.getAbsPath(), absRootPath)) {
-				result = task;
+			if (task.absPathMatched(absRootPath)) {
+				return task;
 			}
 		}
-		return result;
+		return null;
 	}
 
 	public void removeTask(String absRootPath) {
 
-		BgDUTask result = null;
-		for (BgDUTask task : tasks) {
-			if (FilenameUtils.equalsNormalized(task.getAbsPath(), absRootPath)) {
-				result = task;
+		for (Iterator<BgDUTask> i = tasks.iterator(); i.hasNext();) {
+			BgDUTask task = i.next();
+			if (task.absPathMatched(absRootPath)) {
+				tasks.remove(task);
+				return;
 			}
-		}
-		if (result != null) {
-			tasks.remove(result);
 		}
 	}
 
 	public void removeSuccessTask() {
 
-		List<BgDUTask> succTask = new ArrayList<BgDUTask>();
-		for (BgDUTask task : tasks) {
-			if (task.duResult.isSuccess()) {
-				succTask.add(task);
+		for (Iterator<BgDUTask> i = tasks.iterator(); i.hasNext();) {
+			BgDUTask task = i.next();
+			if (task.getDuResult().isSuccess()) {
+				tasks.remove(task);
 			}
-		}
-		for (BgDUTask t : succTask) {
-			removeTask(t.getAbsPath());
 		}
 	}
 
@@ -187,7 +179,12 @@ public class BackgroundDUTasks {
 
 			attempt++;
 		}
-
+		
+		public boolean absPathMatched(String absPath) {
+			
+			return FilenameUtils.equalsNormalized(getAbsPath(), absPath);
+		}
+		
 		public int compareTo(BgDUTask other) {
 
 			int result = -1;

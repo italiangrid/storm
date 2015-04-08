@@ -22,7 +22,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 
 import it.grid.storm.config.IniReader;
@@ -57,8 +56,7 @@ public class UsedSpaceFile {
 	public UsedSpaceFile(String iniFileName) throws InvalidFileFormatException,
 		IOException {
 
-		Preconditions.checkNotNull(iniFileName,
-			"Received null iniFileName parameter");
+		Preconditions.checkNotNull(iniFileName, "Received null iniFileName");
 		iniFile = new IniReader().getIniFile(iniFileName);
 	}
 
@@ -70,11 +68,9 @@ public class UsedSpaceFile {
 	public SaUsedSize getSAUsedSize(String saName) {
 		
 		Preconditions.checkNotNull(saName,"Received null saName parameter");
-		if (!getDefinedSA().contains(saName)) {
-			log.error("{} section not found into {}", saName, 
-				iniFile.getFile().getAbsolutePath());
-			return null;
-		}
+		Preconditions.checkArgument(hasSA(saName), 
+			saName + " section not found into used-space ini file");
+		
 		Section section = iniFile.get(saName);
 		Long usedSpace = null;
 		Date updateTime = null;
@@ -105,14 +101,9 @@ public class UsedSpaceFile {
 		return new SaUsedSize(saName, usedSpace, updateTime);
 	}
 	
-	public List<SaUsedSize> getAllSAUsedSizes() {
-
-		LinkedList<SaUsedSize> saUsedSizeList = new LinkedList<SaUsedSize>();
-		List<String> saNames = getDefinedSA();
-		for (String saName: saNames) {
-			saUsedSizeList.add(getSAUsedSize(saName));
-		}
-		return saUsedSizeList;
+	public boolean hasSA(String saName) {
+		
+		return getDefinedSA().contains(saName);
 	}
 
 	/**
@@ -122,6 +113,8 @@ public class UsedSpaceFile {
 	 */
 	private Date parseDate(String dateStr) throws ParseException {
 
+		Preconditions.checkNotNull(dateStr,"Received null dateStr parameter");
+		
 		SimpleDateFormat formatRFC2822 = new SimpleDateFormat(PATTERN_RFC2822);
 		SimpleDateFormat formatDefault = new SimpleDateFormat(PATTERN_DEFAULT);
 

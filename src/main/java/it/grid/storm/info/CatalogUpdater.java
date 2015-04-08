@@ -1,8 +1,6 @@
 package it.grid.storm.info;
 
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.common.types.InvalidPFNAttributeException;
-import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.concurrency.NamedThread;
 import it.grid.storm.concurrency.NamedThreadFactory;
@@ -88,31 +86,15 @@ public class CatalogUpdater {
 
 			log.debug("Saving info into DB... ");
 			StorageSpaceData ssd = null;
-			if (SpaceInfoManager.getInstance().testMode.get()) {
-				// this IS a TEST!
-				// Create a fake SSD
-				ssd = new StorageSpaceData();
-				try {
-					PFN spaceFN = PFN.make(duResult.getAbsRootPath());
-					ssd.setSpaceToken(sT);
-					ssd.setSpaceFileName(spaceFN);
-				} catch (InvalidPFNAttributeException e) {
-					log.error("Unable to create PFN. {}", e.getMessage(), e);
-				}
-
-			} else {
-				// This is not a TEST!
-				// Retrieve SA from Catalog
-				try {
-					ssd = spaceCatalog.getStorageSpace(sT);
-				} catch (TransferObjectDecodingException e) {
-					log
-						.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: {}",
-						  e.getMessage(), e);
-				} catch (DataAccessException e) {
-					log.error("Unable to build get StorageSpaceTO. DataAccessException: {}",
-					  e.getMessage(),e);
-				}
+			// Retrieve SA from Catalog
+			try {
+				ssd = spaceCatalog.getStorageSpace(sT);
+			} catch (TransferObjectDecodingException e) {
+				log.error("Unable to build StorageSpaceData from StorageSpaceTO. "
+					+ "TransferObjectDecodingException: {}", e.getMessage(), e);
+			} catch (DataAccessException e) {
+				log.error("Unable to build get StorageSpaceTO. DataAccessException: {}",
+					 e.getMessage(),e);
 			}
 
 			long usedSize = duResult.getSize();
@@ -123,12 +105,8 @@ public class CatalogUpdater {
 			} catch (InvalidTSizeAttributesException e) {
 				log.error(e.getMessage(),e);
 			}
-			if (SpaceInfoManager.getInstance().testMode.get()) {
-				log.debug("Saved SSD info into the DB ");
-			} else {
-				// Update the SSD into the DB
-				spaceCatalog.updateStorageSpace(ssd);
-			}
+			// Update the SSD into the DB
+			spaceCatalog.updateStorageSpace(ssd);
 
 			// Notify the manager about the saving was success
 			SpaceInfoManager.getInstance().savedSA(duResult);

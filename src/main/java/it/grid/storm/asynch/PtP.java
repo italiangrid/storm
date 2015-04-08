@@ -770,7 +770,7 @@ public class PtP implements Delegable, Chooser, Request {
           return false;
         } else {
           if (!sp.isSAInitialized(PtP.log, fileStoRI)
-            && SpaceInfoManager.isInProgress(SASpaceToken)) {
+            && SpaceInfoManager.getInstance().isInProgress(SASpaceToken)) {
             /* Trust we got space, let the request pass */
             log
               .debug("PtPChunk: ReserveSpaceStep: the storage area space "
