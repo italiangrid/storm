@@ -4,7 +4,7 @@ title: StoRM Storage Resource Manager - Storage Area configuration examples
 version: 1.11.3
 ---
 
-#### [StoRM Examples]({{site.baseurl}}/documentation/examples/)
+#### [Back to How-To]({{site.baseurl}}/documentation/examples/)
 
 ## Storage Area configuration examples
 

@@ -4,7 +4,7 @@ title: StoRM Storage Resource Manager - How to customize JVM options
 version: 1.11.4
 ---
 
-#### [StoRM Examples]({{site.baseurl}}/documentation/examples/)
+#### [Back to How-To]({{site.baseurl}}/documentation/examples/)
 
 ## Customizing JVM options
 

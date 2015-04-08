@@ -1,150 +1,67 @@
-html,body { 
-  height: 100%; 
-}
+.fixed-height { min-height: 60px !important; }
+.offset-20y { margin-top: 20px }
+.offset-60y { margin-top: 60px }
 
-code{
-  color: rgb(31, 26, 168);
-}
-
-.vo-highlight {
-  color: rgb(25, 100, 11);
-}
-
-#wrap, #home-wrap { 
-
-  min-height: 100%; 
-  height: auto !important;
-  height: 100%;
-  /* Keep the margin below aligned with the height value
-  of #push and #footer (and also consider eventually 
-  border sizes in the footer element)
-   */
-  margin: 0 auto -60px;
-}
-
-/* set a max-width for horizontal fluid layout 
-and make it centered */
-  .container {
+.container {
     margin-right: auto;
     margin-left: auto;
     max-width: 940px;
     text-align:justify;
     text-justify:inter-word;
-  }
+}
 
-  #push, #footer {
-    height: 60px;
-  }
-
-  #stormcontent {
-    margin-top: 25px;
-    margin-bottom: 60px;
-  }
-
-  #stormcontent p {
-    line-height: 25px;
-  }
-
-  #stormcontent li{
-    line-height: 25px;
-  }
-
-  .alert{
-    line-height: 25px;
-  }
-
-  .alert h4{
-    margin-bottom: 1em;
-  }
-
-  #footer{
-    /* border-top: 5px solid #e4c90f;*/
+.footer-bar,
+.footer-bar div,
+.footer-bar p {
+	background-image: none;
     background-color: #3d3f42;
-    /* margin-top: 20px; */
-  }
+    color: #cccccc;
+}
 
-  .highlight pre code {
-    font-size: 110%;
-  }
-
-  @media (max-width: 1024px) {
-    #footer {
-      margin-left: -20px;
-      margin-right: -20px;
-      padding-left: 20px;
-      padding-right: 20px;
-    }		
-  }
-
-
-  #wrap > .container {
-    padding-top: 41px;
-  }
-
-  .container .credit {
-    margin: 20px 0;
-  }
-
-  /** This is required to make anchors not disappear
-  under fixed navbar **/
-  a[name] {
-    padding-top: 66px;
-    margin-top: -66px;
-    display: inline-block; /* required for webkit browsers */
-  }
-
-
-  h1, h2, h3, h4, h5 {
-    color: #3d3f42;
-  }
-
-  /** headings, paragraphs, and code got to look like 
+/** headings, paragraphs, and code got to look like 
   on github wiki */
 
-  h1 {
+h1 {
     color: rgb(51, 51, 51);
     font-size: 36px;
     line-height: normal;
-  }
+}
 
-  h2 {
+h2 {
     color: rgb(51, 51, 51);
     border-bottom-color: rgb(238, 238, 238);
     border-bottom-style: solid;
     border-bottom-width: 1px;
     margin-bottom: 15px;
     margin-top: 25px;
-  }
+}
 
-  .highlight pre code {
-    font-size: 13px;
+.highlight pre code {
+	font-size: 13px;
     font-family: Consolas, "Liberation Mono", Courier, monospace;
     line-height: 19px;
-  }
+}
 
-  .navbar .brand{
+.navbar .brand{
     font-size:24px;
     font-weight: bold;
-  }
+}
 
-  /** for the home page **/
-  .news-row {
-    margin-bottom: 1em;
-  }
+/* */
 
-  .news-row h3 {
-    margin-top: 0;
-    line-height: 24px;
-  }
-  hr.soften {
-    margin: 40px 0;
-  }
+#stormcontent p {
+    line-height: 25px;
+}
 
-  .marketing {
+#stormcontent li{
+    line-height: 25px;
+}
+
+.marketing {
     color: #5a5a5a;
-  }
+}
 
-  .marketing h1 {
+.marketing h1 {
     color: #5a5a5a;
     margin: 15px 0;
     font-size: 60px;
@@ -152,96 +69,122 @@ and make it centered */
     line-height: 1;
     letter-spacing: -1px;
     height: auto;
-  }
+}
 
-  .marketing h2 {
+.marketing h2 {
     border-bottom: none;
     color: #5a5a5a;
     font-weight: 200;
     margin-top: 0px;
     margin-bottom: 10px;
-  }
+}
 
-  .marketing h3 {
+.marketing h3 {
     font-weight: 200;
-  }
+}
 
-  span.news-title {
+span.news-title {
     font-size: 24px;
     font-weight: 200;
     margin-right: 10px;
-  }
+}
 
-  .marketing h4 {
+.marketing h4 {
     font-weight: 200;
-  }
+}
 
-  .marketing p {
+.marketing p {
     line-height: 24px;
-  }
+}
 
 
-  .marketing ul li h4 a {
+.marketing ul li h4 a {
     color: #5a5a5a;
-  }
+}
 
-  .marketing ul li h4 a:hover {
+.marketing ul li h4 a:hover {
     color: #ad141e;
     text-decoration:none;
-  }
+}
 
-  .marketing h3 a {
+.marketing h3 a {
     color: #5a5a5a;
-  }
+}
 
-  .marketing h3 a:hover {
+.marketing h3 a:hover {
     color: #ad141e;
     text-decoration:none;
-  }
+}
 
-  .marketing h2 a {
+.marketing h2 a {
     color: #5a5a5a;
-  }
+}
 
-  .marketing h2 a:hover {
+.marketing h2 a:hover {
     color: #ad141e;
     text-decoration:none;
-  }
+}
 
-  /* Hero unit */
-  .hero-unit .container h1{
-    margin-bottom: 10px;
+.news-row {
+	margin-bottom: 1em;
+}
 
-  }
+.news-row h3 {
+    margin-top: 0;
+    line-height: 24px;
+}
 
-  .calendar { width: 80px; height: 50px; font-size: 0.8em; background: #eee; border: 1px solid; margin-bottom: 10px; }
-  .calendar > span { display: block; }
-  .calendar > .month { text-align: center; padding: 0px 0px 0px 0; background: #6086a6; color: #fff; font-weight: bold; }
-  .calendar > .day { text-align: center; font-weight: bold; font-size: 2.3em; background: #fff; margin-top: 4px; }
+#toc {
+	margin-left: 40px;
+	width: 250px;
+}
 
-  .calendar { 
-    -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; 
-  }
-  .calendar > .month { 
-    -webkit-border-top-left-radius: 5px; -moz-border-radius-topleft: 5px;
-    -webkit-border-top-right-radius: 5px; -moz-border-radius-topright: 5px;
-    border-top-left-radius: 5px; border-top-right-radius: 5px;
-  }
-  .calendar > .day {
-    -webkit-border-bottom-left-radius:  5px; -moz-border-radius-bottomleft:      5px;
-    -webkit-border-bottom-right-radius: 5px; -moz-border-radius-bottomright:     5px;
-  }
-  .calendar {
-    box-shadow: 0 0 5px #05587e; -moz-box-shadow: 0 0 5px #05587e; 
-    -webkit-box-shadow: 0 0 5px #05587e;
-  }
+/* Large desktop */
+@media (min-width: 1024px) { 
+	#content {
+		padding-left: 330px;
+		padding-right: 40px;
+	}
+}
+ 
+/* Portrait tablet to landscape and desktop */
+@media (min-width: 768px) and (max-width: 1023px) {
+	#toc {
+		display: none;
+	}
+	#content {
+		padding-left: 40px;
+		padding-right: 40px;
+	}
+}
+ 
+/* Landscape phone to portrait tablet */
+@media (max-width: 767px) { 
 
-  h3 code {
-    font-size: 1em;
-    line-height: 1.43;
-    background-color: rgba(0,0,0,0.04);
-  }
+	#content {
+		padding-left: 40px;
+		padding-right: 40px;
+	}
 
-  code {
-    color: #333;
-  }
+}
+ 
+/* Landscape phones and down */
+@media (max-width: 480px) { 
+
+	#content {
+		padding-left: 40px;
+		padding-right: 40px;	
+	}
+
+}
+
+/* 
+In order to position anchors under the height of a fixed element,
+format 'a' elements as follows:
+*/
+a[name] {
+    padding-top: 50px;
+    margin-top: -50px;
+    display: inline-block; /* required for webkit browsers */
+}
+

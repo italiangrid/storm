@@ -1,0 +1,29 @@
+
+
+<!-- Scripts included at the end  of the page -->
+    <script type="text/javascript" src="{{ site.baseurl }}/assets/js/jquery.js"></script>
+    <script type="text/javascript" src="{{ site.baseurl }}/assets/js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="{{ site.baseurl }}/assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="{{ site.baseurl }}/assets/js/jquery.tocify.min.js"></script>
+    <script type="text/javascript" src="{{ site.baseurl }}/assets/js/prettify.js"></script>
+	<script type="text/javascript">
+
+		$(document).ready(function(){
+  			$('table').addClass('table');
+  			$('table').addClass('table-bordered');
+		
+        /* create toc if present */
+  			var toc = $("#toc").tocify({
+        	selectors: "h2,h3,h4",
+          scrollTo: 50
+       	}).data("toc-tocify");
+
+        prettyPrint();
+        $(".optionName").popover({ trigger: "hover" });
+
+		});
+
+
+
+
+    </script>

@@ -7,12 +7,12 @@ title: StoRM Documentation
 
 ### Administrator guides
 
-#### [System Administration Guide]({{site.baseurl}}/documentation/sysadmin-guide/{{ site.sysadmin_guide_version }})
+#### [System Administration Guide]({{site.baseurl}}/documentation/sysadmin-guide/{{ site.sysadmin_guide_version }}) &nbsp;<span class="label label-success">UPDATED</span>
 
 Guide to install and configure StoRM.
 <br/>_Older versions_ : [1.11.7][sysadmin-1.11.7], [1.11.6][sysadmin-1.11.6], [1.11.5][sysadmin-1.11.5], [1.11.4][sysadmin-1.11.4], [1.11.3][sysadmin-1.11.3], [1.11.2][sysadmin-1.11.2], [1.11.1][sysadmin-1.11.1]
 
-#### [Configuration Examples]({{site.baseurl}}/documentation/examples/)
+#### [How-To: StoRM configuration examples]({{site.baseurl}}/documentation/examples/) &nbsp;<span class="label label-success">UPDATED</span>
 
 Some examples of StoRM configuration.
 
@@ -30,10 +30,10 @@ StoRM architecture, components, security management and deployment schemas.
 
 Explains how to use the StoRM SRM client.
 
-#### [WebDAV service user guide]({{site.baseurl}}/documentation/webdav-guide/{{ site.webdav_guide_version }})
+#### [StoRM WebDAV user guide]({{site.baseurl}}/documentation/storm-webdav-guide/{{ site.webdav_guide_version }}) &nbsp;<span class="label label-success">UPDATED</span>
 
-Explains the StoRM WebDAV interface, how to install, configure and use it.
-<br/>_Older versions_ : [3.0.0][webdav-3.0.0], [2.0.2][webdav-2.0.2]
+StoRM WebDAV service overview with use cases examples.
+<br/>_Older versions (with storm-gridhttps-server)_ : [3.0.1][webdav-3.0.1], [3.0.0][webdav-3.0.0], [2.0.2][webdav-2.0.2]
 
 #### [Frequently Asked Questions]({{site.baseurl}}/documentation/faq)
 
