@@ -4,7 +4,7 @@ title: StoRM Storage Resource Manager - Example of how to avoid a specific user 
 version: 1.11.4
 ---
 
-#### [StoRM Examples]({{site.baseurl}}/documentation/examples/)
+#### [Back to How-To]({{site.baseurl}}/documentation/examples/)
 
 ### Example of how to avoid a specific user to access a storage-area using Argus authorization system.
 

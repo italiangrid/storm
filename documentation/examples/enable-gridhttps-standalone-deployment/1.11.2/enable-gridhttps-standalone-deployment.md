@@ -4,7 +4,7 @@ title: StoRM Storage Resource Manager - Enable StoRM GridHTTPs on a standalone d
 version: 1.11.2
 ---
 
-#### [StoRM Examples]({{site.baseurl}}/documentation/examples)
+#### [Back to How-To]({{site.baseurl}}/documentation/examples)
 
 ### Enable StoRM GridHTTPs on a standalone deployment
 

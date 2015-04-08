@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% include head.html %}
+</head>
+
+<body>
+    
+    <!-- Header -->
+    <header>
+      {% include navbar.html %}
+    </header>
+
+    <div class="grid" id="stormcontent">
+      <div class="row-fluid fixed-height">
+        &nbsp;
+      </div> <!-- row-fluid -->
+      <div class="row-fluid">
+
+        {{content}}
+      
+      </div> <!-- row-fluid -->
+      <div class="row-fluid fixed-height">
+        &nbsp;
+      </div> <!-- row-fluid -->
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      {% include footer.html %}
+    </footer>
+    
+  {% include scripts.html %}
+</body>
+
+</html>
