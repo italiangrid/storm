@@ -19,6 +19,7 @@ package it.grid.storm.info;
 
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.types.SizeUnit;
+import it.grid.storm.config.Configuration;
 import it.grid.storm.info.BackgroundDUTasks.BgDUTask;
 import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.NamespaceDirector;
@@ -53,6 +54,9 @@ import com.google.common.base.Preconditions;
 public class SpaceInfoManager {
 
 	private static final SpaceInfoManager instance = new SpaceInfoManager();
+	
+	private static final String usedSpaceIniFilePath = Configuration
+		.getInstance().configurationDir() + "/used-space.ini".replaceAll("/+", "/");
 	
 	private static final Logger log = LoggerFactory
 		.getLogger(SpaceInfoManager.class);
@@ -97,13 +101,13 @@ public class SpaceInfoManager {
 		log.debug("Removed quota enabled storage spaces");
 		log.debug("There are {} storage space(s) to initialize", ssni.size());
 		
-		log.info("Check used-space initialization through ini files ... ");
+		log.debug("Check used-space initialization through ini files ... ");
 		ssni = initUsedSpaceFromINIFile(ssni);
 
 		log.debug("Initializing used-space on remaining {} storage spaces",
 			ssni.size());
 		int n = initUsedSpaceUsingDU(ssni);
-		log.info("Launched {} du on {} storage areas", n, ssni.size());
+		log.debug("Launched {} du on {} storage areas", n, ssni.size());
 	}
 	
 	public final int getQuotasDefined() {
@@ -349,7 +353,7 @@ public class SpaceInfoManager {
 
 		log.debug("Start DU background execution");
 		bDU.startExecution();
-		log.info("Submitted all the DU task.");
+		log.debug("Submitted all the {} DU task.", size);
 	}
 
 	private void setFakeUsedSpace(Collection<BgDUTask> tasksToSubmit) {
@@ -386,9 +390,9 @@ public class SpaceInfoManager {
 		
 		UsedSpaceFile usedSpaceFile = null;
 		try {
-			usedSpaceFile = new UsedSpaceFile();
+			usedSpaceFile = new UsedSpaceFile(usedSpaceIniFilePath);
 		} catch (FileNotFoundException e) {
-			log.info("No {} file found!");
+			log.info("No {} file found!", usedSpaceIniFilePath);
 		} catch (Throwable e) {
 			log.error("{}: {} ", e.getClass().getName(), e.getMessage());
 		} finally {
@@ -403,9 +407,10 @@ public class SpaceInfoManager {
 			if (usedSpaceFile.hasSA(saName)) {
 				log.debug("{} found! Updating used space on persistence... ", saName);
 				updateUsedSpaceOnPersistence(usedSpaceFile.getSAUsedSize(saName));
-				log.info("{} used-space updated from used-space ini file", saName);
+				log.info("{} used-space updated from {}", saName,
+					usedSpaceFile.getIniFile()		);
 			} else {
-				log.debug("{} not found into used-space file!", saName);
+				log.debug("{} not found into {}!", saName, usedSpaceIniFilePath);
 				notFound.add(ssd);
 			}
 		}

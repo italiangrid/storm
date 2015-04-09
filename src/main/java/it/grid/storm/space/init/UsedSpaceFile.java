@@ -17,14 +17,13 @@
 
 package it.grid.storm.space.init;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import it.grid.storm.config.IniReader;
 
 import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
@@ -37,7 +36,6 @@ import com.google.common.base.Preconditions;
 public class UsedSpaceFile {
 
 	private static Logger log = LoggerFactory.getLogger(UsedSpaceFile.class);
-	public static final String INI_FILENAME = "used-space.ini";
 
 	private static final String PATTERN_RFC2822 = "EEE, dd MMM yyyy HH:mm:ss Z";
 	private static final String PATTERN_DEFAULT = "EEE MMM dd HH:mm:ss z yyyy";
@@ -47,19 +45,19 @@ public class UsedSpaceFile {
 	}
 	
 	private Ini iniFile;
-	
-	public UsedSpaceFile() throws InvalidFileFormatException, IOException {
 
-		this(INI_FILENAME);
-	}
-
-	public UsedSpaceFile(String iniFileName) throws InvalidFileFormatException,
+	public UsedSpaceFile(String iniFilePath) throws InvalidFileFormatException,
 		IOException {
 
-		Preconditions.checkNotNull(iniFileName, "Received null iniFileName");
-		iniFile = new IniReader().getIniFile(iniFileName);
+		Preconditions.checkNotNull(iniFilePath, "Received null iniFilePath");
+		iniFile = new Ini(new File(iniFilePath));
 	}
 
+	public File getIniFile() {
+		
+		return iniFile.getFile();
+	}
+	
 	public List<String> getDefinedSA() {
 		
 		return new ArrayList<String>(iniFile.keySet());
@@ -89,12 +87,12 @@ public class UsedSpaceFile {
 				try {
 					updateTime = parseDate(section.get(optionKey));
 				} catch (ParseException e) {
-					log.warn("{}.{} is not a valid Date value. ParseException: {}",
+					log.error("{}.{} is not a valid Date value. ParseException: {}",
 						saName, optionKey, e.getMessage());
 				}
 				break;
 			default:
-				log.warn("{}.{} is not recognized as a valid key.", saName, optionKey);
+				log.error("{}.{} is not recognized as a valid key.", saName, optionKey);
 				break;
 			}
 		}

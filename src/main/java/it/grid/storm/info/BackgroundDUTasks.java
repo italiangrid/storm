@@ -22,7 +22,7 @@ public class BackgroundDUTasks {
 
 	public void addTask(TSpaceToken token, String path) throws SAInfoException {
 
-		addTask(new BgDUTask(token, true, path));
+		addTask(new BgDUTask(token, path));
 	}
 
 	public void addTask(BgDUTask task) {
@@ -108,13 +108,12 @@ public class BackgroundDUTasks {
      */
 	class BgDUTask implements Comparable<BgDUTask> {
 
-		private boolean isSARoot = false;
 		private String absPath;
 		private TSpaceToken spaceToken;
 		private DUResult duResult;
 		private int attempt = 0;
 
-		public BgDUTask(TSpaceToken sToken, boolean root, String absPath)
+		public BgDUTask(TSpaceToken sToken, String absPath)
 			throws SAInfoException {
 
 			Preconditions.checkNotNull(sToken, "Invalid null token");
@@ -133,16 +132,10 @@ public class BackgroundDUTasks {
 					"The path %s is not a directory.", absPath));
 			}
 			this.absPath = absPath;
-			this.isSARoot = root;
 			this.spaceToken = sToken;
 			taskId.incrementAndGet();
 			// This is the first attempt
 			this.attempt = 1;
-		}
-
-		public boolean isSARoot() {
-
-			return isSARoot;
 		}
 
 		public String getAbsPath() {
@@ -221,9 +214,7 @@ public class BackgroundDUTasks {
 		public String toString() {
 
 			StringBuilder builder = new StringBuilder();
-			builder.append("BgDUTask [isSARoot=");
-			builder.append(isSARoot);
-			builder.append(", absPath=");
+			builder.append("BgDUTask [absPath=");
 			builder.append(absPath);
 			builder.append(", spaceToken=");
 			builder.append(spaceToken);
