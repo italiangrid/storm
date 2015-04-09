@@ -44,7 +44,7 @@ public class BackgroundDUTasks {
 	public BgDUTask getTask(String absRootPath) {
 
 		for (BgDUTask task : tasks) {
-			if (task.absPathMatched(absRootPath)) {
+			if (task.absPathMatches(absRootPath)) {
 				return task;
 			}
 		}
@@ -55,7 +55,7 @@ public class BackgroundDUTasks {
 
 		for (Iterator<BgDUTask> i = tasks.iterator(); i.hasNext();) {
 			BgDUTask task = i.next();
-			if (task.absPathMatched(absRootPath)) {
+			if (task.absPathMatches(absRootPath)) {
 				tasks.remove(task);
 				return;
 			}
@@ -180,7 +180,7 @@ public class BackgroundDUTasks {
 			attempt++;
 		}
 		
-		public boolean absPathMatched(String absPath) {
+		public boolean absPathMatches(String absPath) {
 			
 			return FilenameUtils.equalsNormalized(getAbsPath(), absPath);
 		}
