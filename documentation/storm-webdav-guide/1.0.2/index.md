@@ -73,9 +73,15 @@ Users authentication within *StoRM WebDAV* is made through a valid VOMS proxy. A
 The most common way to authenticate and be authorized to read/write data into a Storage Area is by providing the right VOMS credentials through a valid VOMS Proxy. Otherwise, through the definition of a VOMS map file, a Storage Area can be configure to accept the list of VO members as obtained by running the `voms-admin list-users` command.
 When VOMS mapfiles are enabled, users can authenticate to the StoRM webdav
 service using the certificate in their browser and be granted VOMS attributes
-if their subject is listed in one of the supported VOMS mapfile (see more details [here][vomapfiles]).
+if their subject is listed in one of the supported VOMS mapfile. For each supported VO, a file having the same name as the VO is put in the voms-mapfiles directory (`/etc/storm/storm-webdav/vo-mapfiles.d`). 
 
-Read permissions of the content of a storage area can also be extendend to anonymous user (it's disabled by default).
+Example: to generate a VOMS mapfile for the cms VO, run the following command
+
+```bash
+  voms-admin --host voms.cern.ch --vo cms list-users > cms
+```
+
+See more details [here][vomapfiles]. Read permissions of the content of a storage area can also be extendend to anonymous user (it's disabled by default).
 
 ### Notes <a name="notes">&nbsp;</a>
 
@@ -249,4 +255,5 @@ To list all the properties of a remote file we can use the same 'allprop' XML bo
 {% include tab-template.liquid %}
 
 [storm-1-11-7]: {{ site.baseurl }}/release-notes/StoRM-v1.11.7.html
-[webdav-conf]: {{ site.baseurl }}/documentation/sysadmin-guide/1.11.8/#webdavconf
+[webdavconf]: {{ site.baseurl }}/documentation/sysadmin-guide/1.11.8/#webdavconf
+[vomapfiles]: https://github.com/italiangrid/storm-webdav/blob/master/etc/storm-webdav/vo-mapfiles.d/README.md
