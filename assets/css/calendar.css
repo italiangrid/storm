@@ -1,0 +1,21 @@
+  .calendar { width: 80px; height: 50px; font-size: 0.8em; background: #eee; border: 1px solid; margin-bottom: 10px; }
+  .calendar > span { display: block; }
+  .calendar > .month { text-align: center; padding: 0px 0px 0px 0; background: #6086a6; color: #fff; font-weight: bold; }
+  .calendar > .day { text-align: center; font-weight: bold; font-size: 2.3em; background: #fff; margin-top: 4px; }
+
+  .calendar { 
+    -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; 
+  }
+  .calendar > .month { 
+    -webkit-border-top-left-radius: 5px; -moz-border-radius-topleft: 5px;
+    -webkit-border-top-right-radius: 5px; -moz-border-radius-topright: 5px;
+    border-top-left-radius: 5px; border-top-right-radius: 5px;
+  }
+  .calendar > .day {
+    -webkit-border-bottom-left-radius:  5px; -moz-border-radius-bottomleft:      5px;
+    -webkit-border-bottom-right-radius: 5px; -moz-border-radius-bottomright:     5px;
+  }
+  .calendar {
+    box-shadow: 0 0 5px #05587e; -moz-box-shadow: 0 0 5px #05587e; 
+    -webkit-box-shadow: 0 0 5px #05587e;
+  }

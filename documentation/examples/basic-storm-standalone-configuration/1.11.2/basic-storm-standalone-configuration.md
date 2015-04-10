@@ -4,7 +4,7 @@ title: StoRM Storage Resource Manager - Example of basic YAIM standalone configu
 version: 1.11.2
 ---
 
-#### [StoRM Examples]({{site.baseurl}}/documentation/examples/)
+#### [Back to How-To]({{site.baseurl}}/documentation/examples/)
 
 ### A basic YAIM configuration for a StoRM standalone deployment
 

@@ -1,0 +1,30 @@
+downloadfile:
+    name: "downloadfile"
+downloadfileranges:
+    name: "downloadfileranges" 
+uploadfile:
+    name: "uploadfile"
+    output_description: "With increased verbosity:"
+existsfile:
+    name: "existsfile"
+    output_description: "With increased verbosity:"
+createdir:
+    name: "createdir"
+    output_description: "With increased verbosity:"
+deletefile:
+    name: "deletefile"
+    output_description: "With increased verbosity:"
+copyfile:
+    name: "copyfile"
+    curl_description: "COPY method duplicates the resource identified by the Request-URI to the resource identified by the <b>Destination</b> header URI. <b>Destination</b> header MUST be present. If destination resource already exists the <b>Overwrite</b> header value is evaluated. Available values are <b>T</b> (true, default) and <b>F</b> (false)."
+    output_description: "With increased verbosity:"
+movefile:
+    name: "movefile"
+    curl_description: "As already seen for COPY method, also for every MOVE the <b>Destination</b> header MUST be present."
+    output_description: "With increased verbosity:"
+propfinddir:
+    name: "propfinddir"
+    output_description: "The XML body received:"
+propfindfile:
+    name: "propfindfile"
+    output_description: "The XML body received:"
