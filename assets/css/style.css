@@ -10,12 +10,34 @@
     text-justify:inter-word;
 }
 
-.footer-bar,
-.footer-bar div,
-.footer-bar p {
-	background-image: none;
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 40px;
+}
+
+footer,
+.footer-bar {
     background-color: #3d3f42;
-    color: #cccccc;
+}
+.footer-bar {
+  position: absolute;
+  bottom: 0;
+  width: 120%;
+  /* Set the fixed height of the footer here */
+  height: 40px;
+  padding-top: 6px;
+  padding-left: 20px;
+  padding-right: 20px;
+  color: #cccccc;
+}
+
+.footer-bar img {
+    margin-right: 5px;
+    margin-left: 10px;
 }
 
 /** headings, paragraphs, and code got to look like 
