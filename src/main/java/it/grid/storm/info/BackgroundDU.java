@@ -106,18 +106,11 @@ public class BackgroundDU {
      */
 	public void startExecution() {
 
-		// how many futures there are to check
-		int remainingFutures = 0;
-
 		for (Callable<DUResult> tasks : todoTasks) {
-			remainingFutures++;
-			// keep track of the futures that get created so we can cancel them if
-			// necessary
 			toCheckTasks.add(completionService.submit(tasks));
 		}
 		// Clean todo Task list;
 		todoTasks.clear();
-		log.info("Submitted all the DU task.");
 		completionTaskHandle = singleExec.submit(new CompletionTask());
 	}
 

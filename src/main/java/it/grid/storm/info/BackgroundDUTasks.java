@@ -4,16 +4,15 @@ import it.grid.storm.space.DUResult;
 import it.grid.storm.srm.types.TSpaceToken;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FilenameUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 public class BackgroundDUTasks {
 
@@ -23,15 +22,14 @@ public class BackgroundDUTasks {
 
 	public void addTask(TSpaceToken token, String path) throws SAInfoException {
 
-		BgDUTask task = new BgDUTask(token, true, path);
-		tasks.add(task);
+		addTask(new BgDUTask(token, path));
 	}
 
 	public void addTask(BgDUTask task) {
 
 		tasks.add(task);
 	}
-
+	
 	public void updateTask(BgDUTask task) throws SAInfoException {
 
 		if (tasks.contains(task)) {
@@ -43,40 +41,34 @@ public class BackgroundDUTasks {
 		}
 	}
 
-	public BgDUTask getBgDUTask(String absRootPath) {
+	public BgDUTask getTask(String absRootPath) {
 
-		BgDUTask result = null;
 		for (BgDUTask task : tasks) {
-			if (FilenameUtils.equalsNormalized(task.getAbsPath(), absRootPath)) {
-				result = task;
+			if (task.absPathMatches(absRootPath)) {
+				return task;
 			}
 		}
-		return result;
+		return null;
 	}
 
 	public void removeTask(String absRootPath) {
 
-		BgDUTask result = null;
-		for (BgDUTask task : tasks) {
-			if (FilenameUtils.equalsNormalized(task.getAbsPath(), absRootPath)) {
-				result = task;
+		for (Iterator<BgDUTask> i = tasks.iterator(); i.hasNext();) {
+			BgDUTask task = i.next();
+			if (task.absPathMatches(absRootPath)) {
+				tasks.remove(task);
+				return;
 			}
-		}
-		if (result != null) {
-			tasks.remove(result);
 		}
 	}
 
 	public void removeSuccessTask() {
 
-		List<BgDUTask> succTask = new ArrayList<BgDUTask>();
-		for (BgDUTask task : tasks) {
-			if (task.duResult.isSuccess()) {
-				succTask.add(task);
+		for (Iterator<BgDUTask> i = tasks.iterator(); i.hasNext();) {
+			BgDUTask task = i.next();
+			if (task.getDuResult().isSuccess()) {
+				tasks.remove(task);
 			}
-		}
-		for (BgDUTask t : succTask) {
-			removeTask(t.getAbsPath());
 		}
 	}
 
@@ -116,15 +108,17 @@ public class BackgroundDUTasks {
      */
 	class BgDUTask implements Comparable<BgDUTask> {
 
-		private boolean isSARoot = false;
 		private String absPath;
 		private TSpaceToken spaceToken;
 		private DUResult duResult;
 		private int attempt = 0;
 
-		public BgDUTask(TSpaceToken sToken, boolean root, String absPath)
+		public BgDUTask(TSpaceToken sToken, String absPath)
 			throws SAInfoException {
 
+			Preconditions.checkNotNull(sToken, "Invalid null token");
+			Preconditions.checkNotNull(absPath, "Invalid null absPath");
+			
 			String pathNorm = FilenameUtils.normalize(FilenameUtils
 				.getFullPath(absPath + File.separator));
 			File cf = new File(pathNorm);
@@ -138,16 +132,10 @@ public class BackgroundDUTasks {
 					"The path %s is not a directory.", absPath));
 			}
 			this.absPath = absPath;
-			this.isSARoot = root;
 			this.spaceToken = sToken;
 			taskId.incrementAndGet();
 			// This is the first attempt
 			this.attempt = 1;
-		}
-
-		public boolean isSARoot() {
-
-			return isSARoot;
 		}
 
 		public String getAbsPath() {
@@ -184,7 +172,12 @@ public class BackgroundDUTasks {
 
 			attempt++;
 		}
-
+		
+		public boolean absPathMatches(String absPath) {
+			
+			return FilenameUtils.equalsNormalized(getAbsPath(), absPath);
+		}
+		
 		public int compareTo(BgDUTask other) {
 
 			int result = -1;
@@ -221,9 +214,7 @@ public class BackgroundDUTasks {
 		public String toString() {
 
 			StringBuilder builder = new StringBuilder();
-			builder.append("BgDUTask [isSARoot=");
-			builder.append(isSARoot);
-			builder.append(", absPath=");
+			builder.append("BgDUTask [absPath=");
 			builder.append(absPath);
 			builder.append(", spaceToken=");
 			builder.append(spaceToken);

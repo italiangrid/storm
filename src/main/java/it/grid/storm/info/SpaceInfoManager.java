@@ -18,13 +18,13 @@
 package it.grid.storm.info;
 
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.common.types.InvalidPFNAttributeException;
-import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.SizeUnit;
+import it.grid.storm.config.Configuration;
 import it.grid.storm.info.BackgroundDUTasks.BgDUTask;
 import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.Quota;
 import it.grid.storm.persistence.exceptions.DataAccessException;
@@ -36,145 +36,133 @@ import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
 import it.grid.storm.space.init.UsedSpaceFile;
 import it.grid.storm.space.init.UsedSpaceFile.SaUsedSize;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
-import it.grid.storm.srm.types.InvalidTSpaceTokenAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
+
 public class SpaceInfoManager {
 
-	private static final Logger log = 
-	  LoggerFactory.getLogger(SpaceInfoManager.class);
 	private static final SpaceInfoManager instance = new SpaceInfoManager();
-	private int timeOutDurationInSec = 7200; // 2 hours per task (This value is
-																						// multiplied by attempt)
+	
+	private static final String usedSpaceIniFilePath = Configuration
+		.getInstance().configurationDir() + "/used-space.ini".replaceAll("/+", "/");
+	
+	private static final Logger log = LoggerFactory
+		.getLogger(SpaceInfoManager.class);
+	
+	private int timeOutDurationInSec = 7200; // 2 hours per task (per attempt)
 	private BackgroundDU bDU;
 	private AtomicInteger tasksToComplete;
 	private AtomicInteger tasksToSave;
 	private AtomicInteger success;
 	private AtomicInteger failures;
 	private AtomicInteger numberOfTasks;
-
-	// Package variable used in testing mode (without DB)
-	AtomicBoolean testMode = new AtomicBoolean(false);
-
-	private final int MaxAttempt = 2;
-
+	
 	private CatalogUpdater persist = new CatalogUpdater();
+	
 	// Reference to the Catalog
 	private final ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
-
-	private int quotas = 0;
-	private int quotasDefined = 0;
-
-	private SpaceInfoManager() {
-		List<VirtualFSInterface> vfsS = retrieveSAtoInitializeWithQuota();
-		if (vfsS != null) {
-			this.quotasDefined = vfsS.size();
-		} else {
-			this.quotasDefined = 0;
-		}
-	}
-
-	public final int getQuotasDefined() {
-		return quotasDefined;
-	}
-
+	// Reference to the NamespaceDirector
+	private final NamespaceInterface namespace = NamespaceDirector.getNamespace();
+ 
 	private final BackgroundDUTasks bDUTasks = new BackgroundDUTasks();
-	private int attempt = 1;
+	private final int MaxAttempt = 2;
+	
+	private SpaceInfoManager() {
+	}
 
 	public static SpaceInfoManager getInstance() {
 		return instance;
 	}
 
-	public static boolean isInProgress() {
-		boolean result = false;
-		if (SpaceInfoManager.getInstance().tasksToComplete.get() > 0) {
-			result = true;
-		}
-		return result;
+	public void initializeUsedSpace() {
+		
+		log.info("Initializing used-space info for quota enabled GPFS SA");
+		GPFSQuotaManager.INSTANCE.start();
+				
+		log.debug("Getting the list of not initialized storage spaces ... ");
+		List<StorageSpaceData> ssni = spaceCatalog.getStorageSpaceNotInitialized();
+		log.debug("{} storage space(s) are not initialized", ssni.size());
+		List<StorageSpaceData> ssdqe = retrieveSSDtoInitializeWithQuota();
+		log.debug("{} quota enabled storage space(s) are not initialized",
+			ssdqe.size());
+		ssni.removeAll(ssdqe);
+		log.debug("Removed quota enabled storage spaces");
+		log.debug("There are {} storage space(s) to initialize", ssni.size());
+		
+		log.debug("Check used-space initialization through ini files ... ");
+		ssni = initUsedSpaceFromINIFile(ssni);
+
+		log.debug("Initializing used-space on remaining {} storage spaces",
+			ssni.size());
+		int n = initUsedSpaceUsingDU(ssni);
+		log.debug("Launched {} du on {} storage areas", n, ssni.size());
+	}
+	
+	public final int getQuotasDefined() {
+		
+		return retrieveSAtoInitializeWithQuota().size();
+	}
+	
+	public boolean isInProgress() {
+
+		return SpaceInfoManager.getInstance().tasksToComplete.get() > 0;
 	}
 
-	public static boolean isInProgress(TSpaceToken spaceToken) {
+	public boolean isInProgress(TSpaceToken spaceToken) {
 
-		boolean result = false;
-		if (SpaceInfoManager.getInstance().tasksToComplete.get() > 0) {
-			BackgroundDUTasks tasks = SpaceInfoManager.getInstance().bDUTasks;
-
-			// Looking for Task with the same SpaceToken passed as parameter
-			Collection<BgDUTask> ts = tasks.getTasks();
-			for (BgDUTask bgDUTask : ts) {
-				if (bgDUTask.getSpaceToken().equals(spaceToken)) {
-					result = true;
+		if (isInProgress()) {
+			for (BgDUTask task: bDUTasks.getTasks()) {
+				if (spaceToken.equals(task.getSpaceToken())) {
+					return true;
 				}
 			}
 		}
-		return result;
+		return false;
 	}
-
-	public void updateSpaceUsed() {
-
-		GPFSQuotaManager.INSTANCE.start();
+	
+	private int initUsedSpaceUsingDU(List<StorageSpaceData> ssds) {
+		
+		log.debug("Clear background du tasks ... ");
+		bDUTasks.clearTasks();
+		for (StorageSpaceData ssd : ssds) {
+			TSpaceToken st = ssd.getSpaceToken();
+			String sfns = ssd.getSpaceFileNameString();
+			try {
+				log.debug("Adding du task for [{}, {}] ... ", st.toString(), sfns);
+				bDUTasks.addTask(st, sfns);
+				log.debug("Added {} to the DU-Task Queue. (size: {})", sfns, 
+					bDUTasks.howManyTask());
+			} catch (SAInfoException e) {
+				log.error(e.getMessage(), e);
+			}
+		}
+		log.debug("Starting tasks ... ");
 		startBackGroundDU();
+		return bDUTasks.howManyTask();
 	}
+	
+	private void startBackGroundDU() {
 
-	public static int howManyBackgroundDU() {
-
-		return SpaceInfoManager.getInstance().bDUTasks.howManyTask();
+		submitTasks();
 	}
-
-	public void execGPFSQuota() {
-
-		GPFSQuotaManager.INSTANCE.start();
-	}
-
-	private int startBackGroundDU() {
-
-		int result = 0;
-		// This call populate the Task Queue: "bDUTasks"
-		SpaceInfoManager.getInstance().foundSAtoAnalyze();
-		result = SpaceInfoManager.getInstance().bDUTasks.howManyTask();
-		log.debug("Tasks: {}", result);
-		// Submit the tasks
-		SpaceInfoManager.getInstance().submitTasks(
-			SpaceInfoManager.getInstance().bDUTasks);
-		return result;
-	}
-
-	public int startTest(List<String> absPaths) {
-
-		int result = 0;
-		testMode = new AtomicBoolean(true);
-		SpaceInfoManager.getInstance().fakeSAtoAnalyze(absPaths);
-		result = SpaceInfoManager.getInstance().bDUTasks.howManyTask();
-		SpaceInfoManager.getInstance().submitTasks(
-			SpaceInfoManager.getInstance().bDUTasks);
-		return result;
-	}
-
+	
 	public static int stop() {
 
-		int result = 0;
 		SpaceInfoManager.getInstance().stopExecution();
-		result = SpaceInfoManager.getInstance().failures.get();
-		return result;
+		return SpaceInfoManager.getInstance().failures.get();
 	}
-
-	// ********************************************
-	// Package methods
-	// ********************************************
 
 	/**
 	 * @return a list of StorageSpaceData related to SA with quota enabled to be
@@ -194,45 +182,13 @@ public class SpaceInfoManager {
 		return ssdSet;
 	}
 
-	public StorageSpaceData getSSDfromQuotaName(String quotaName) {
-
-		StorageSpaceData ssd = null;
-		List<VirtualFSInterface> vfsList = retrieveSAtoInitializeWithQuota();
-		ReservedSpaceCatalog ssdCatalog = new ReservedSpaceCatalog();
-		for (VirtualFSInterface vfsEntry : vfsList) {
-			String qName = vfsEntry.getCapabilities().getQuota()
-				.getQuotaElementName();
-			if (qName.equals(quotaName)) {
-				String spaceTokenDesc = vfsEntry.getSpaceTokenDescription();
-				ssd = ssdCatalog.getStorageSpaceByAlias(spaceTokenDesc);
-			}
-		}
-		return ssd;
-	}
-
-	public List<String> retrieveQuotaNamesToUse() {
-
-		List<String> quotaNames = new ArrayList<String>();
-		List<VirtualFSInterface> vfsList = retrieveSAtoInitializeWithQuota();
-		for (VirtualFSInterface vfsEntry : vfsList) {
-			log.debug("vfsEntry (AliasName): {}", vfsEntry.getAliasName());
-			String quotaName = vfsEntry.getCapabilities().getQuota()
-				.getQuotaElementName();
-			log.debug("Found this quotaName to check: '{}'", quotaName); 
-			quotaNames.add(quotaName);
-		}
-		log.debug("Number of quotaNames: {}" ,quotaNames.size());
-		return quotaNames;
-	}
-
-	public List<VirtualFSInterface> retrieveSAtoInitializeWithQuota() {
+	private List<VirtualFSInterface> retrieveSAtoInitializeWithQuota() {
 
 		// Dispatch SA to compute in two categories: Quota and DU tasks
 		List<VirtualFSInterface> vfsSet = null;
 		;
 		try {
-			vfsSet = new ArrayList<VirtualFSInterface>(NamespaceDirector
-				.getNamespace().getAllDefinedVFS());
+			vfsSet = new ArrayList<VirtualFSInterface>(namespace.getAllDefinedVFS());
 		} catch (NamespaceException e) {
 		  log.error(e.getMessage(),e);
 			log.error("Returning an empty VFS list");
@@ -242,7 +198,7 @@ public class SpaceInfoManager {
 		List<VirtualFSInterface> vfsSetQuota = new ArrayList<VirtualFSInterface>();
 		if (vfsSet.size() > 0) { // Exists at least a VFS defined
 			for (VirtualFSInterface vfsItem : vfsSet) {
-				if (gpfsQuotaEnabled(vfsItem)) {
+				if (isGPFSQuotaEnabled(vfsItem)) {
 					vfsSetQuota.add(vfsItem);
 				}
 			}
@@ -251,98 +207,34 @@ public class SpaceInfoManager {
 		return vfsSetQuota;
 	}
 
-	private boolean gpfsQuotaEnabled(VirtualFSInterface vfsItem) {
+	private boolean isGPFSQuotaEnabled(VirtualFSInterface vfsItem) {
 
-		boolean result = false;
-		if (vfsItem != null) {
-			CapabilityInterface cap = null;
-			Quota quota = null;
-			String fsType = "Unknown";
-			fsType = vfsItem.getFSType();
-			if (fsType != null) {
-				if (fsType.trim().toLowerCase().equals("gpfs")) {
-					cap = vfsItem.getCapabilities();
-					if (cap != null) {
-						quota = cap.getQuota();
-					}
-					if (quota != null) {
-						result = ((quota.getDefined()) && (quota.getEnabled()));
-					}
-				}
-			}
+		Preconditions.checkNotNull(vfsItem, "vfsItem must not be null!");
+		
+		String fsType = vfsItem.getFSType();
+		if (fsType == null) {
+			log.debug("isGPFSQuotaEnabled: fsType is null!");
+			return false;
 		}
-		return result;
+		if (!fsType.trim().toLowerCase().equals("gpfs")) {
+			log.debug("isGPFSQuotaEnabled: fsType is not gpfs, exiting...");
+			return false;
+		}
+		CapabilityInterface cap = vfsItem.getCapabilities();
+		if (cap == null) {
+			log.debug("isGPFSQuotaEnabled: fs capabilities are null!");
+			return false;
+		}
+		Quota	quota = cap.getQuota();
+		if (quota == null) {
+			log.debug("isGPFSQuotaEnabled: quota is null!");
+			return false;
+		}
+		return (quota.getDefined() && quota.getEnabled());
 	}
-
-	/**
-	 * Populate with DU tasks
-	 */
-	private void fakeSAtoAnalyze(List<String> absPaths) {
-
-		// Create a list of SSD using the list of AbsPaths
-		List<StorageSpaceData> toAnalyze = new ArrayList<StorageSpaceData>();
-		for (String path : absPaths) {
-			path = path + File.separator;
-			String pathNorm = FilenameUtils
-				.normalize(FilenameUtils.getFullPath(path));
-			StorageSpaceData ssd = new StorageSpaceData();
-			try {
-				PFN spaceFN = PFN.make(pathNorm);
-				log.trace("PFN : " , spaceFN);
-				ssd.setSpaceToken(TSpaceToken.make(new it.grid.storm.common.GUID()
-					.toString()));
-
-				ssd.setSpaceFileName(spaceFN);
-				toAnalyze.add(ssd);
-			} catch (InvalidTSpaceTokenAttributesException e) {
-				log.error("Unable to create Space Token. {}", e.getMessage(), e);
-			} catch (InvalidPFNAttributeException e) {
-				log.error("Unable to create PFN. {}", e.getMessage(),e);
-			}
-		}
-
-		for (StorageSpaceData ssd : toAnalyze) {
-			TSpaceToken sT = ssd.getSpaceToken();
-			String absPath = ssd.getSpaceFileNameString();
-			try {
-				bDUTasks.addTask(sT, absPath);
-				log.debug("Added {} to the DU-Task Queue. (Task queue size: {})", 
-				  absPath,
-					bDUTasks.howManyTask());
-			} catch (SAInfoException e) {
-			  log.error(e.getMessage(), e);
-			}
-		}
-		log.info("Background DU tasks size: {}", bDUTasks.getTasks().size());
-	}
-
-	private void foundSAtoAnalyze() {
-
-		List<StorageSpaceData> toAnalyze = spaceCatalog
-			.getStorageSpaceNotInitialized();
-		for (StorageSpaceData ssd : toAnalyze) {
-			TSpaceToken sT = ssd.getSpaceToken();
-			String absPath = ssd.getSpaceFileNameString();
-			if (sT == null || absPath == null) {
-				log
-					.error("Unable to submit DU test, StorageSpaceData returns "
-					  + "null values: SpaceToken={}, SpaceFileNameString={}",
-					  sT, absPath);
-			} else {
-
-				try {
-					bDUTasks.addTask(sT, absPath);
-					log.debug("Added {} to the DU-Task Queue. (size: {})",
-					  absPath, bDUTasks.howManyTask());
-
-				} catch (SAInfoException e) {
-				  log.error(e.getMessage(),e);
-				}
-			}
-		}
-	}
-
+	
 	void stopExecution() {
+
 	  log.trace("SpaceInfoManager.stopExecution");
 		bDU.stopExecution(true);
 		persist.stopSaver();
@@ -351,7 +243,7 @@ public class SpaceInfoManager {
 	void updateSA(DUResult result) {
 
 		// Retrieve BDUTask
-		BgDUTask task = bDUTasks.getBgDUTask(result.getAbsRootPath());
+		BgDUTask task = bDUTasks.getTask(result.getAbsRootPath());
 
 		// Update the BDU task with the result
 		task.setDuResult(result);
@@ -404,9 +296,9 @@ public class SpaceInfoManager {
 					bTask.increaseAttempt();
 					if (bTask.getAttempt() > MaxAttempt) {
 
-						log.error("Unable to compute Space Used for the SA with root {}. Reason: {}",
-						  bTask.getAbsPath(),
-						  bTask.getDuResult().getCmdResult());
+						log.error("Unable to compute Space Used for the SA with root {}. "
+							+ "Reason: {}", bTask.getAbsPath(), 
+							bTask.getDuResult().getCmdResult());
 						
 						failures.incrementAndGet();
 					} else {
@@ -437,44 +329,43 @@ public class SpaceInfoManager {
 		log.debug("Result saved..");
 	}
 
-	void submitTasks(BackgroundDUTasks tasks) {
+	void submitTasks() {
 
-		bDU = new BackgroundDU(timeOutDurationInSec * attempt, TimeUnit.SECONDS);
+		bDU = new BackgroundDU(timeOutDurationInSec, TimeUnit.SECONDS);
 
-		Collection<BgDUTask> tasksToSubmit = tasks.getTasks();
-		log.debug("tasks to submit: {}", tasksToSubmit);
-		int size = tasksToSubmit.size();
+		log.debug("Tasks to submit: {}", bDUTasks.getTasks());
+		int size = bDUTasks.getTasks().size();
 		this.numberOfTasks = new AtomicInteger(size);
 		this.tasksToComplete = new AtomicInteger(size);
 		this.tasksToSave = new AtomicInteger(size);
 		this.failures = new AtomicInteger(0);
 		this.success = new AtomicInteger(0);
 
-		log.info("Submitting {} DU tasks.", tasksToComplete);
+		log.debug("Submitting {} DU tasks.", tasksToComplete);
 
-		for (BgDUTask task : tasksToSubmit) {
+		for (BgDUTask task : bDUTasks.getTasks()) {
+			log.info("Submitting DU task on {}", task.getAbsPath());
 			bDU.addStorageArea(task.getAbsPath(), task.getTaskId());
 		}
 
-		log.info("Setting fake used space to {} DU tasks.", tasksToComplete);
-		setFakeUsedSpace(tasksToSubmit);
+		log.debug("Setting fake used space to {} DU tasks.", tasksToComplete);
+		setFakeUsedSpace(bDUTasks.getTasks());
 
-		log.info("Start DU background execution");
+		log.debug("Start DU background execution");
 		bDU.startExecution();
+		log.debug("Submitted all the {} DU task.", size);
 	}
 
 	private void setFakeUsedSpace(Collection<BgDUTask> tasksToSubmit) {
 
-		ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
 		for (BgDUTask task : tasksToSubmit) {
 			TSpaceToken sToken = task.getSpaceToken();
 			StorageSpaceData ssd = null;
 			try {
 				ssd = spaceCatalog.getStorageSpace(sToken);
 			} catch (TransferObjectDecodingException e) {
-				log
-					.error("Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: {}",
-					  e.getMessage(),e);
+				log.error("Unable to build StorageSpaceData from StorageSpaceTO. "
+					+ "TransferObjectDecodingException: {}", e.getMessage(), e);
 			} catch (DataAccessException e) {
 				log.error("Unable to build get StorageSpaceTO. DataAccessException: {}",
 				  e.getMessage(),e);
@@ -492,108 +383,67 @@ public class SpaceInfoManager {
 		}
 	}
 
-	public int initSpaceFromINIFile() {
+	public List<StorageSpaceData> initUsedSpaceFromINIFile(
+		List<StorageSpaceData> ssds) {
 
-		List<StorageSpaceData> toAnalyze = spaceCatalog
-			.getStorageSpaceNotInitialized();
-		ArrayList<String> toAnalyzeAlias = new ArrayList<String>();
-		for (StorageSpaceData ssd : toAnalyze) {
-			toAnalyzeAlias.add(ssd.getSpaceTokenAlias());
-		}
-		printInitializedStorageAreas(toAnalyzeAlias);
-		int storageSpaceUpdated = 0;
-		UsedSpaceFile usedSpaceFile = new UsedSpaceFile(toAnalyzeAlias);
-		List<SaUsedSize> saUsedSizeList = usedSpaceFile.getDefinedSizes();
-		for (SaUsedSize saUsedSize : saUsedSizeList) {
-			if (saUsedSize.hasUpdateTime()) {
-				try {
-					updateUsedSpaceOnPersistence(saUsedSize.getSaName(),
-						saUsedSize.getUsedSize(), saUsedSize.getUpdateTime());
-					storageSpaceUpdated++;
-				} catch (IllegalArgumentException e) {
-				  log.error("Error updating used space for SA {} to value {} with update time {}. {}",
-				    saUsedSize.getSaName(),
-				    saUsedSize.getUsedSize(),
-				    saUsedSize.getUpdateTime(),
-				    e.getMessage(),
-				    e);
-				}
-			} else {
-				try {
-					updateUsedSpaceOnPersistence(saUsedSize.getSaName(),
-						saUsedSize.getUsedSize());
-					storageSpaceUpdated++;
-				} catch (IllegalArgumentException e) {
-				  log.error("Error updating used space for SA {} to value {} with update time {}. {}",
-				    saUsedSize.getSaName(),
-				    saUsedSize.getUsedSize(),
-				    saUsedSize.getUpdateTime(),
-				    e.getMessage(),
-				    e);
-				}
-			}
-		}
-
-		return storageSpaceUpdated;
-	}
-
-	private void printInitializedStorageAreas(List<String> saAlias) {
-
+		List<StorageSpaceData> notFound = new ArrayList<StorageSpaceData>();
+		
+		UsedSpaceFile usedSpaceFile = null;
 		try {
-			for (VirtualFSInterface vfs : NamespaceDirector.getNamespace()
-				.getAllDefinedVFS()) {
-				if (!(saAlias.contains(vfs.getSpaceTokenDescription()))) {
-					log.debug("SA {} already initialized", vfs.getAliasName());
-				}
+			usedSpaceFile = new UsedSpaceFile(usedSpaceIniFilePath);
+		} catch (FileNotFoundException e) {
+			log.info("No {} file found!", usedSpaceIniFilePath);
+		} catch (Throwable e) {
+			log.error("{}: {} ", e.getClass().getName(), e.getMessage());
+		} finally {
+			if (usedSpaceFile == null) {
+				log.info("Exiting used-space initialization from ini file");
+				return ssds;
 			}
-		} catch (NamespaceException e) {
-		  log.error(e.getMessage(), e);
 		}
-	}
-
-	private void updateUsedSpaceOnPersistence(String saName, Long usedSize)
-		throws IllegalArgumentException {
-
-		if (saName == null || usedSize == null) {
-		  log.error("Null arguments: saName={} usedSize={}",
-		    saName, usedSize);
-			throw new IllegalArgumentException("Received null arguments: saName = "
-				+ saName + " usedSize = " + usedSize);
-		}
-		updateUsedSpaceOnPersistence(saName, usedSize, null);
-	}
-
-	private void updateUsedSpaceOnPersistence(String saName, Long usedSize,
-		Date updateTime) throws IllegalArgumentException {
-
-		if (saName == null || usedSize == null) {
-		  log.error("Null arguments: saName={} usedSize={}",
-		    saName, usedSize);
-			throw new IllegalArgumentException("Received null arguments: saName = "
-				+ saName + " usedSize = " + usedSize);
-		}
-		StorageSpaceData ssd = spaceCatalog.getStorageSpaceByAlias(saName);
-		if (ssd != null) {
-			try {
-				ssd.setUsedSpaceSize(TSizeInBytes.make(usedSize, SizeUnit.BYTES));
-			} catch (InvalidTSizeAttributesException e) {
-			  log.error(e.getMessage(),e);
-				throw new IllegalArgumentException("Invalid Used Size: " + usedSize
-					+ " Unable to update Storage Space");
-			}
-			// Persist the change.
-			if (updateTime == null) {
-				spaceCatalog.updateStorageSpace(ssd);
+		for (StorageSpaceData ssd : ssds) {
+			String saName = ssd.getSpaceTokenAlias();
+			log.debug("Evaluating StorageSpaceData: {}", saName);
+			if (usedSpaceFile.hasSA(saName)) {
+				log.debug("{} found! Updating used space on persistence... ", saName);
+				updateUsedSpaceOnPersistence(usedSpaceFile.getSAUsedSize(saName));
+				log.info("{} used-space updated from {}", saName,
+					usedSpaceFile.getIniFile()		);
 			} else {
-				spaceCatalog.updateStorageSpace(ssd, updateTime);
+				log.debug("{} not found into {}!", saName, usedSpaceIniFilePath);
+				notFound.add(ssd);
 			}
-			log.debug("StorageSpace table updated for SA: '{}' with used size = {}",
-			  saName, usedSize);
-
-		} else {
-			log.warn("Unable to retrieve StorageSpaceData with Alias: {}", saName);
-			throw new IllegalArgumentException(
-				"Unable to retrieve StorageSpaceData with Alias: " + saName);
 		}
+		return notFound;
+	}
+
+	private void updateUsedSpaceOnPersistence(SaUsedSize usedSize) {
+
+		Preconditions.checkNotNull(usedSize, "Received null usedSize!");
+
+		StorageSpaceData ssd = spaceCatalog.getStorageSpaceByAlias(usedSize
+			.getSaName());
+		
+		Preconditions
+			.checkNotNull(ssd, "Unable to retrieve StorageSpaceData with Alias: "
+				+ usedSize.getSaName());
+		
+		try {
+			ssd.setUsedSpaceSize(TSizeInBytes.make(usedSize.getUsedSize(),
+				SizeUnit.BYTES));
+		} catch (InvalidTSizeAttributesException e) {
+			log.error(e.getMessage(), e);
+			throw new IllegalArgumentException("Invalid Used Size: " + usedSize
+				+ " Unable to update Storage Space");
+		}
+		// Persist the change.
+		if (usedSize.hasUpdateTime()) {
+			spaceCatalog.updateStorageSpace(ssd, usedSize.getUpdateTime());
+		} else {
+			spaceCatalog.updateStorageSpace(ssd);
+		}
+		log.debug("StorageSpace table updated for SA: '{}' with used size = {}",
+			usedSize.getSaName(), usedSize.getUsedSize());
+
 	}
 }
