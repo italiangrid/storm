@@ -987,7 +987,6 @@ configuration file.
 |   ```extraslashes.rfio```                     |   Add extra slashes after the "authority" part of a TURL for rfio protocol.
 |   ```extraslashes.root```                     |   Add extra slashes after the "authority" part of a TURL for root protocol.
 |   ```extraslashes.file```                     |   Add extra slashes after the "authority" part of a TURL for file protocol.
-|   ```checksum.enabled```                      |   Flag to enable or not the support of *Adler32* checksum computation. Default: **false**
 |   ```synchcall.directoryManager.maxLsEntry``` |   Maximum number of entries returned by an *srmLs* call. Since in case of recursive *srmLs* results can be in order of million, this prevent a server overload. Default: **500**
 |   ```directory.automatic-creation```          |   Flag to enable authomatic missing directory creation upon *srmPrepareToPut* requests.<br/>Default: **false**
 |   ```directory.writeperm```                   |   Flag to enable directory write permission setting upon *srmMkDir* requests on created dyrectories. Default: **false**
