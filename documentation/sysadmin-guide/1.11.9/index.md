@@ -1823,8 +1823,8 @@ service argus-pdp reloadpolicy
 
 
 
-[X509_SA_conf_example]: {{site.baseurl}}/documentation/examples/storage-area-configuration-examples/1.11.3/storage-area-configuration-examples.html#sa-anonymous-rw-x509
+[X509_SA_conf_example]: {{site.baseurl}}/documentation/how-to/storage-area-configuration-examples/1.11.3/index.html#sa-anonymous-rw-x509
 [SPLguide]: https://twiki.cern.ch/twiki/bin/view/EGEE/SimplifiedPolicyLanguage
 [pap_admin_CLI]: https://twiki.cern.ch/twiki/bin/view/EGEE/AuthZPAPCLI
-[LDAPconfiguration]: http://italiangrid.github.io/storm/documentation/examples/how-to-share-users-openldap/1.11.4/how-to-share-users-openldap.html
+[LDAPconfiguration]: http://italiangrid.github.io/storm/documentation/how-to/how-to-share-users-openldap/1.11.4/
 [webdav-guide]: storm-webdav-guide.html

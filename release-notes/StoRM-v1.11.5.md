@@ -25,6 +25,8 @@ rfcs:
   title: StoRM publishes inconsistent values due to an approximation problem
 - id: STOR-678
   title: Storage area used/free sizes stored on db are misaligned with real values
+- id: STOR-693
+  title: YAIM-StoRM ignores STORM_SURL_ENDPOINT_LIST value
 features:
 - id: STOR-654
   title: Refactor StoRM dynamic info provider service

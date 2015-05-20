@@ -9,6 +9,8 @@ rfcs:
   title: Refactor StoRM dynamic info provider service
 - id: STOR-671
   title: StoRM publishes inconsistent values due to an approximation problem
+- id: STOR-693
+  title: YAIM-StoRM ignores STORM_SURL_ENDPOINT_LIST value
 ---
 
 ## YAIM StoRM v. 4.3.6

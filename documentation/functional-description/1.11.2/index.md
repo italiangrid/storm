@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: toc
 title: StoRM Storage Resource Manager - Functional Description
 ---
 

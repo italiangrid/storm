@@ -1,0 +1,73 @@
+administrator-guides:
+
+  - title: "System Administration Guide"
+    relative-link: "/documentation/sysadmin-guide/1.11.9"
+    description: "Guide to install and configure StoRM."
+    last-update: "19/05/2015"
+    older-versions:
+      - name: "1.11.8"
+        relative-link: "/documentation/sysadmin-guide/1.11.8"
+      - name: "1.11.7"
+        relative-link: "/documentation/sysadmin-guide/1.11.7"
+      - name: "1.11.6"
+        relative-link: "/documentation/sysadmin-guide/1.11.6"
+      - name: "1.11.5"
+        relative-link: "/documentation/sysadmin-guide/1.11.5"
+      - name: "1.11.4"
+        relative-link: "/documentation/sysadmin-guide/1.11.4"
+      - name: "1.11.3"
+        relative-link: "/documentation/sysadmin-guide/1.11.3"
+      - name: "1.11.2"
+        relative-link: "/documentation/sysadmin-guide/1.11.2"
+      - name: "1.11.1"
+        relative-link: "/documentation/sysadmin-guide/1.11.1"
+
+  - title: "How-To"
+    relative-link: "/documentation/how-to/"
+    description: "Several StoRM advanced configuration examples."
+    last-update: "19/05/2015"
+    older-versions: []
+
+user-guides:
+
+  - title: "StoRM Overview"
+    relative-link: "/documentation/functional-description/1.11.2"
+    description: "StoRM architecture, components, security management and deployment schemas."
+    last-update: "05/03/2015"
+    older-versions: []
+
+  - title: "StoRM clientSRM user guide"
+    relative-link: "/documentation/clientsrm-guide/"
+    description: "Explains how to use the StoRM SRM client."
+    last-update: "05/03/2015"
+    older-versions: []
+
+  - title: "StoRM WebDAV user guide"
+    relative-link: "/documentation/storm-webdav-guide/1.0.2"
+    description: "StoRM WebDAV service overview with use cases examples."
+    last-update: "31/03/2015"
+    older-versions:
+      - name: "3.0.1 (StoRM GridHTTPs)"
+        relative-link: "/documentation/webdav-guide/3.0.1/"
+      - name: "3.0.0"
+        relative-link: "/documentation/webdav-guide/3.0.0/"
+      - name: "2.0.2"
+        relative-link: "/documentation/webdav-guide/2.0.2/"
+
+  - title: "Frequently Asked Question"
+    relative-link: "/documentation/faq/"
+    description: "Questions from the StoRM user community."
+    last-update: "05/03/2015"
+    older-versions: []
+
+  - title: "Troubleshooting"
+    relative-link: "/documentation/troubleshooting/"
+    description: "Common issues: analysis and solution."
+    last-update: "05/03/2015"
+    older-versions: []
+
+  - title: "Conferences and tutorials"
+    relative-link: "/documentation/tutorials-conferences-presentations/"
+    description: "Conferences, tutorials, presentations and papers."
+    last-update: "05/03/2015"
+    older-versions: []
