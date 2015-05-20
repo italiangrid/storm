@@ -21,23 +21,24 @@ body {
 
 footer,
 .footer-bar {
-    background-color: #3d3f42;
+  background-color: #3d3f42;
 }
 .footer-bar {
   position: absolute;
   bottom: 0;
-  width: 120%;
   /* Set the fixed height of the footer here */
   height: 40px;
   padding-top: 6px;
-  padding-left: 20px;
-  padding-right: 20px;
   color: #cccccc;
+  text-align: center;
 }
 
 .footer-bar img {
     margin-right: 5px;
-    margin-left: 10px;
+}
+
+footer .container {
+  text-align: left;
 }
 
 /** headings, paragraphs, and code got to look like 

@@ -3,6 +3,8 @@ layout: default
 title: "StoRM v.1.11.9 - release notes"
 release_date: "29.05.2015"
 rfcs:
+- id: STOR-280
+  title: used-space.ini can be used to initialize quota managed storage areas
 - id: STOR-474
   title: Change LCMAPS logging setup in StoRM
 - id: STOR-782
