@@ -54,10 +54,11 @@ individual components release notes.
 
 ### Installation and configuration
 
-This release doesn't require a YAIM reconfiguration. You must only restart the backend service:
+This release doesn't require a YAIM reconfiguration. You must only restart the updated services:
 
 ```bash
 service storm-backend-server restart
+service storm-webdav restart
 ```
 
 You can find more information about upgrade, clean installation and configuration of
