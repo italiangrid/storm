@@ -5,8 +5,8 @@ release_date: "29.05.2015"
 rfcs:
 - id: STOR-280
   title: used-space.ini can be used to initialize quota managed storage areas
-- id: STOR-474
-  title: Change LCMAPS logging setup in StoRM
+- id: STOR-471
+  title: Streamline LCAS/LCMAPS configuration for the StoRM Backend and gridftp
 - id: STOR-792
   title: Avoid du on quota-enabled storage areas at Backend launch
 ---
@@ -19,7 +19,7 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.9]({{ site.baseurl }
 
 This release fixes the improper launch of command line du on quota-enabled storage areas at Backend launch.
 
-### Bug fixes
+### Bug fixes and improvements
 
 {% include list-rfcs.liquid %}
 

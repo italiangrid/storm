@@ -5,8 +5,8 @@ release_date: "29.05.2015"
 rfcs:
 - id: STOR-280
   title: used-space.ini can be used to initialize quota managed storage areas
-- id: STOR-474
-  title: Change LCMAPS logging setup in StoRM
+- id: STOR-471
+  title: Streamline LCAS/LCMAPS configuration for the StoRM Backend and gridftp
 - id: STOR-782
   title: Check storm-info-provider exit code in order to block yaim execution in case of error
 - id: STOR-789
@@ -53,7 +53,7 @@ individual components release notes.
 
 {% include list-components.liquid %}
 
-### Bug fixes
+### Bug fixes and improvements
 
 {% include list-rfcs.liquid %}
 
