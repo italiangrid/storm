@@ -15,6 +15,7 @@ This is the latest release for StoRM, available on StoRM repositories.
 | Component            | Version    |
 |:---------------------|:-----------|
 |StoRM Backend         |[1.11.9]({{site.baseurl}}/release-notes/storm-backend-server/1.11.9/)|
+|StoRM Frontend        |[1.8.9]({{site.baseurl}}/release-notes/storm-frontend-server/1.8.9/)|
 |StoRM WebDAV          |[1.0.3]({{site.baseurl}}/release-notes/storm-webdav/1.0.3/)|
 |YAIM StoRM            |[4.3.8]({{site.baseurl}}/release-notes/yaim-storm/4.3.8/)|
 |StoRM Info Provider   |[1.7.8-2]({{site.baseurl}}/release-notes/yaim-storm/1.7.8-2/)|

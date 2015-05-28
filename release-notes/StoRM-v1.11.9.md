@@ -17,10 +17,15 @@ rfcs:
   title: Missing glite-info-provider-service dependency
 - id: STOR-795
   title: Storage area matching fails with COPY/MOVE
+- id: STOR-817
+  title: A call to SRM Copy on StoRM endpoint should return SRM_NOT_SUPPORTED
 components:
     - name: StoRM Backend
       package: storm-backend-server
       version: 1.11.9
+    - name: StoRM Frontend
+      package: storm-frontend-server
+      version: 1.8.9
     - name: StoRM WebDAV
       package: storm-webdav
       version: 1.0.3
@@ -58,6 +63,7 @@ This release doesn't require a YAIM reconfiguration. You must only restart the u
 
 ```bash
 service storm-backend-server restart
+service storm-frontend-server restart
 service storm-webdav restart
 ```
 
