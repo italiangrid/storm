@@ -1,10 +1,8 @@
 ---
-layout: default
+layout: howto
 title: StoRM Storage Resource Manager - Example of how to avoid a specific user to access a storage-area using Argus
 version: 1.11.4
 ---
-
-#### [Back to How-To]({{site.baseurl}}/documentation/examples/)
 
 ### Example of how to avoid a specific user to access a storage-area using Argus authorization system.
 
@@ -18,10 +16,6 @@ You need:
 - an Argus authorization system installed (see [Argus twiki][argustwiki])
 
 #### StoRM configuration
-
-
-
-
 
 In order to create and manage a list of banned users, StoRM can be configured to use ARGUS authorization system.
 The Argus authorization service allows administrators to define policies that answer questions like _Can user X perform action Y on resource Z at this time?_ See [Argus twiki](https://twiki.cern.ch/twiki/bin/view/EGEE/AuthZIntro) to get more information about this framework.

@@ -36,13 +36,13 @@ user-guides:
     last-update: "05/03/2015"
     older-versions: []
 
-  - title: "StoRM clientSRM user guide"
+  - title: "StoRM clientSRM"
     relative-link: "/documentation/clientsrm-guide/"
     description: "Explains how to use the StoRM SRM client."
     last-update: "05/03/2015"
     older-versions: []
 
-  - title: "StoRM WebDAV user guide"
+  - title: "StoRM WebDAV"
     relative-link: "/documentation/storm-webdav-guide/1.0.2"
     description: "StoRM WebDAV service overview with use cases examples."
     last-update: "31/03/2015"

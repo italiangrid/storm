@@ -1,10 +1,8 @@
 ---
-layout: default
+layout: howto
 title: StoRM Storage Resource Manager - How to customize JVM options
 version: 1.11.4
 ---
-
-#### [Back to How-To]({{site.baseurl}}/documentation/examples/)
 
 ## Customizing JVM options
 

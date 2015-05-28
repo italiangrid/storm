@@ -1,10 +1,8 @@
 ---
-layout: default
+layout: howto
 title: StoRM Storage Resource Manager - Example of how to change storm-gridhttps-server service user
 version: 1.11.4
 ---
-
-#### [Back to How-To]({{site.baseurl}}/documentation/examples/)
 
 ### Example of how to change storm-gridhttps-server service user.
 

@@ -1,9 +1,7 @@
 ---
-layout: default
+layout: howto
 title: StoRM How-To - Example of basic StoRM all-in-one deployment configuration
 ---
-
-#### [Back to How-To]({{site.baseurl}}/documentation/examples)
 
 # Quick all-in-one deployment
 

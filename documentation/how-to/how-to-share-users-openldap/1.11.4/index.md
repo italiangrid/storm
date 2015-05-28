@@ -1,10 +1,8 @@
 ---
-layout: default
+layout: howto
 title: StoRM Storage Resource Manager - Enable StoRM GridHTTPs on a standalone deployment
 version: 1.11.2
 ---
-
-#### [Back to How-To]({{site.baseurl}}/documentation/examples)
 
 ### How-to configure LDAP Server to share users' accounts
 

@@ -1,9 +1,7 @@
 ---
-layout: default
+layout: howto
 title: StoRM How-To - StoRM EMIR Configuration
 ---
-
-#### [Back to How-To]({{site.baseurl}}/documentation/examples)
 
 # StoRM EMIR Configuration
 

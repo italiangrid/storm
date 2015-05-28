@@ -1,9 +1,7 @@
 ---
-layout: default
+layout: howto
 title: StoRM How-To - Initialize Storage Area used space
 ---
-
-#### [Back to How-To]({{site.baseurl}}/documentation/examples)
 
 # StoRM Backend Storage Usage Initialization
 

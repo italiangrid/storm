@@ -1,10 +1,8 @@
 ---
-layout: default
+layout: howto
 title: StoRM Storage Resource Manager - Storage Area configuration examples
 version: 1.11.2
 ---
-
-#### [Back to How-To]({{site.baseurl}}/documentation/examples/)
 
 ## Storage Area configuration examples
 
