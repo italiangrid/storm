@@ -17,7 +17,8 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.9]({{ site.baseurl }
 
 ### Description
 
-This release fixes the improper launch of command line du on quota-enabled storage areas at Backend launch.
+This release fixes a race condition in the backend startup logic that caused the 
+incorrect launch of du commands on quota-enabled storage areas.
 
 ### Bug fixes and improvements
 

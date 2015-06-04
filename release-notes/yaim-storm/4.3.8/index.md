@@ -15,8 +15,10 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.9]({{ site.baseurl }
 
 ### Description
 
-This release fixes the missing check of the storm-info-provider configuration exit code. YAIM execution now blocks in case of error.
-In addiction, ```NTP_HOSTS_IP``` is no more a mandatory variable in order to allow site administrators to manage their own ntp.conf file.
+This release provides the following improvements:
+
+- YAIM execution now blocks in case of errors
+- ```NTP_HOSTS_IP``` is no more a mandatory variable in order to allow site administrators to manage their own ntp.conf file
 
 ### Bug fixes
 

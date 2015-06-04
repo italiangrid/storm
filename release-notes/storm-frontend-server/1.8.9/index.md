@@ -3,6 +3,9 @@ layout: default
 title: "StoRM Frontend v.1.8.9 release notes"
 release_date: "29.05.2015"
 rfcs:
+- id: STOR-818
+  title: storm frontend shutdown should be faster
+
 - id: STOR-817
   title: A call to SRM Copy on StoRM endpoint should return SRM_NOT_SUPPORTED
 ---
@@ -13,7 +16,8 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.9]({{ site.baseurl }
 
 ### Description
 
-With this update, now StoRM Frontend returns SRM\_NOT\_SUPPORTED for each srmCopy or srmStatusOfCopy requests.
+StoRM Frontend now correctly returns SRM\_NOT\_SUPPORTED for srmCopy and srmStatusOfCopy requests.
+The frontend shutdown procedure has been tweaked to take less time.
 
 ### Bug fixes
 

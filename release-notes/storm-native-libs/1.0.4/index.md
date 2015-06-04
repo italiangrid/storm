@@ -13,7 +13,7 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.9]({{ site.baseurl }
 
 ### Description
 
-This release removes SYS\_LOG destination of LCMAPS logging by turning it into only USR\_LOG.
+StoRM native libs now configure the LCMAPS APIs to log only to USR\_LOG.
 
 ### Bug fixes and improvements
 

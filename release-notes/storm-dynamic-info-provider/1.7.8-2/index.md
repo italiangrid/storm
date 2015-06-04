@@ -11,10 +11,6 @@ rfcs:
 
 Released on **{{ page.release_date }}** with [StoRM v. 1.11.9]({{ site.baseurl }}/release-notes/StoRM-v1.11.9.html).
 
-### Description
-
-This release fix only a dependency issue.
-
 ### Bug fixes
 
 {% include list-rfcs.liquid %}

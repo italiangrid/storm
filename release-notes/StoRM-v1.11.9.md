@@ -59,7 +59,8 @@ individual components release notes.
 
 ### Installation and configuration
 
-This release doesn't require a YAIM reconfiguration. You must only restart the updated services:
+This release doesn't require a YAIM reconfiguration. The updated services must
+be restarted:
 
 ```bash
 service storm-backend-server restart

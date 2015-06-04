@@ -11,6 +11,11 @@ rfcs:
 
 Released on **{{ page.release_date }}** with [StoRM v. 1.11.9][release-notes].
 
+### Description
+
+This releases fixes an issue in the path resolution logic that could cause
+authorization failures on COPY and MOVE requests.
+
 ### Bug fixes
 
 {% include list-rfcs.liquid %}
