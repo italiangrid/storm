@@ -19,6 +19,8 @@ rfcs:
   title: Storage area matching fails with COPY/MOVE
 - id: STOR-817
   title: A call to SRM Copy on StoRM endpoint should return SRM_NOT_SUPPORTED
+- id: STOR-818
+  title: storm frontend shutdown should be faster
 components:
     - name: StoRM Backend
       package: storm-backend-server
