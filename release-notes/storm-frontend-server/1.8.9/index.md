@@ -6,7 +6,11 @@ rfcs:
 - id: STOR-817
   title: A call to SRM Copy on StoRM endpoint should return SRM_NOT_SUPPORTED
 - id: STOR-818
+<<<<<<< HEAD
   title: StoRM Frontend shutdown should be faster
+=======
+  title: storm frontend shutdown should be faster
+>>>>>>> bbe4a35dbfe47f1427a1e92c522e3ed744250cb6
 ---
 
 ## StoRM Frontend v.1.8.9
