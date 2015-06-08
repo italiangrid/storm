@@ -5,55 +5,37 @@ title: StoRM Documentation
 
 ## ![Books]({{site.baseurl}}/assets/images/books.png) Documentation
 
-### Administrator guides
+##### _Administrator guides_
 
-#### [System Administration Guide]({{site.baseurl}}/documentation/sysadmin-guide/{{ site.sysadmin_guide_version }}) &nbsp;<span class="label label-success">UPDATED</span>
+{% for doc in site.data.docs.administrator-guides  %}
+<div class="row-fluid marketing news-row">
+  <div class="span4">
+    <h4><a href="{{ site.baseurl }}{{ doc.relative-link }}">{{ doc.title }}</a></h4>
+  </div>
+  <div class="span8">
+    {{ doc.description }}
+    {% if doc.older-versions.size > 0 %}
+    <p><i>Older versions</i> : {% for oldv in doc.older-versions %}<a href="{{ site.baseurl }}{{ oldv.relative-link }}">{{ oldv.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %}
+    {% endif %}
+    <br/><i><small>Last update: {{ doc.last-update }}</small></i>
+  </div>
+</div>
+{% endfor %}
 
-Guide to install and configure StoRM.
-<br/>_Older versions_ : [1.11.7][sysadmin-1.11.7], [1.11.6][sysadmin-1.11.6], [1.11.5][sysadmin-1.11.5], [1.11.4][sysadmin-1.11.4], [1.11.3][sysadmin-1.11.3], [1.11.2][sysadmin-1.11.2], [1.11.1][sysadmin-1.11.1]
 
-#### [How-To: StoRM configuration examples]({{site.baseurl}}/documentation/examples/) &nbsp;<span class="label label-success">UPDATED</span>
+##### _User guides_
 
-Some examples of StoRM configuration.
-
-#### [Cookbook]({{site.baseurl}}/documentation/cookbook)
-
-Useful recipes for StoRM advanced configuration.
-
-### User guides
-
-#### [StoRM overview]({{site.baseurl}}/documentation/functional-description/{{ site.functional_description_version }})
-
-StoRM architecture, components, security management and deployment schemas.
-
-#### [StoRM clientSRM user guide]({{site.baseurl}}/documentation/clientsrm-guide/)
-
-Explains how to use the StoRM SRM client.
-
-#### [StoRM WebDAV user guide]({{site.baseurl}}/documentation/storm-webdav-guide/{{ site.webdav_guide_version }}) &nbsp;<span class="label label-success">UPDATED</span>
-
-StoRM WebDAV service overview with use cases examples.
-<br/>_Older versions (with storm-gridhttps-server)_ : [3.0.1][webdav-3.0.1], [3.0.0][webdav-3.0.0], [2.0.2][webdav-2.0.2]
-
-#### [Frequently Asked Questions]({{site.baseurl}}/documentation/faq)
-
-Questions from the StoRM user community.
-
-#### [Troubleshooting]({{site.baseurl}}/documentation/troubleshooting)
-
-Common issues: analysis and solution.
-
-#### [Conferences and tutorials]({{site.baseurl}}/documentation/tutorials-conferences-presentations)
-
-Conferences, tutorials, presentations and papers.
-
-[sysadmin-1.11.7]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.7/
-[sysadmin-1.11.6]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.6/
-[sysadmin-1.11.5]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.5/
-[sysadmin-1.11.4]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.4/
-[sysadmin-1.11.3]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.3/
-[sysadmin-1.11.2]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.2/
-[sysadmin-1.11.1]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.1/
-[webdav-3.0.1]: {{site.baseurl}}/documentation/webdav-guide/3.0.1/
-[webdav-3.0.0]: {{site.baseurl}}/documentation/webdav-guide/3.0.0/
-[webdav-2.0.2]: {{site.baseurl}}/documentation/webdav-guide/2.0.2/
+{% for doc in site.data.docs.user-guides  %}
+<div class="row-fluid marketing news-row">
+  <div class="span4">
+    <h4><a href="{{ site.baseurl }}{{ doc.relative-link }}">{{ doc.title }}</a></h4>
+  </div>
+  <div class="span8">
+    {{ doc.description }}
+    {% if doc.older-versions.size > 0 %}
+    <p><i>Older versions</i> : {% for oldv in doc.older-versions %}<a href="{{ site.baseurl }}{{ oldv.relative-link }}">{{ oldv.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %}
+    {% endif %}
+    <br/><i><small>Last update: {{ doc.last-update }}</small></i>
+  </div>
+</div>
+{% endfor %}
