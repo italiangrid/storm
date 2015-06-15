@@ -30,7 +30,7 @@ components:
       version: 1.8.9
     - name: StoRM WebDAV
       package: storm-webdav
-      version: 1.0.3
+      version: 1.0.3-2
     - name: StoRM Info Provider
       package: storm-dynamic-info-provider
       version: 1.7.8-2
