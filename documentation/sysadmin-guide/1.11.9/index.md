@@ -2,6 +2,8 @@
 layout: toc
 title: StoRM Storage Resource Manager - System Administration Guide
 version: 1.11.9
+redirect_from:
+  - /documentation/sysadmin-guide/
 ---
 
 # StoRM System Administration Guide

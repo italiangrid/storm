@@ -111,6 +111,6 @@ service storm-webdav status
 [REPOSETTINGS]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.7/index.html#reposettings
 
 
-[sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/{{ site.sysadmin_guide_version }}
+[sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/
 
 [enable-example]: {{site.baseurl}}/documentation/examples/enable-gridhttps-standalone-deployment/1.11.2/enable-gridhttps-standalone-deployment.html

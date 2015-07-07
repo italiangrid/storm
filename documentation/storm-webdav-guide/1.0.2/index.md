@@ -1,6 +1,8 @@
 ---
 layout: toc
 title: StoRM Documentation - StoRM WebDAV user guide
+redirect_from:
+  - /documentation/storm-webdav-guide/
 ---
 
 # StoRM WebDAV User Guide
