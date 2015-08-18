@@ -40,9 +40,14 @@ import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TSpaceType;
 import it.grid.storm.srm.types.TStorageSystemInfo;
 import it.grid.storm.srm.types.TUserID;
+
 import java.util.Date;
+import java.util.regex.Pattern;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Predicate;
 
 public class StorageSpaceData {
 
@@ -897,4 +902,33 @@ public class StorageSpaceData {
 		builder.append("-- ^^^^^^^^^^^^^^^^ -- ");
 		return builder.toString();
 	}
+	
+	@Override
+	public int hashCode() {
+
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+			+ ((spaceToken == null) ? 0 : spaceToken.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		StorageSpaceData other = (StorageSpaceData) obj;
+		if (spaceToken == null) {
+			if (other.spaceToken != null)
+				return false;
+		} else if (!spaceToken.equals(other.spaceToken))
+			return false;
+		return true;
+	}
+
 }
