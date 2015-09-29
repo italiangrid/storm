@@ -38,7 +38,7 @@ and enable Frontend's user blacklisting with:
 
 	STORM_FE_USER_BLACKLISTING = true
 
-The StoRM configuration is completed. But before running YAIM configuration it's necessary to define at least a policy for every VO that your StoRM instance supports. To do this, we have to add some valid policies. We can write a file in [Simplified Policy Language][SPLguide] and then import it or we can use the [pap-admin CLI][pap_admin_CLI] directly.
+The StoRM configuration is completed. But before running YAIM configuration it's necessary to define at least a policy for every VO that your StoRM instance supports. To do this, we have to add some valid policies. We can write a file in [Simplified Policy Language][SPLguide] and then import it or we can use the [pap-admin CLI][papadminCLI] directly.
 For example, if your StoRM instance supports ```testers.eu-emi.eu``` and ```dteam``` VOs, you have to write the following policies:
 
 ```bash
@@ -125,6 +125,8 @@ SRM Response:
 ============================================================
 ```
 
-
+[X509_SA_conf_example]: {{site.baseurl}}/documentation/how-to/storage-area-configuration-examples/1.11.3/index.html#sa-anonymous-rw-x509
+[SPLguide]: https://twiki.cern.ch/twiki/bin/view/EGEE/SimplifiedPolicyLanguage
+[papadminCLI]: https://twiki.cern.ch/twiki/bin/view/EGEE/AuthZPAPCLI
 [standalone]: {{site.baseurl}}/documentation/examples/basic-storm-standalone-configuration/1.11.2/basic-storm-standalone-configuration.html
 [argustwiki]: https://twiki.cern.ch/twiki/bin/view/EGEE/AuthorizationFramework
