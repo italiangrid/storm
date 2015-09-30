@@ -4,6 +4,9 @@ markdown: redcarpet
 redcarpet:
   extensions: [ "tables" ]
 
+gems:
+  - jekyll-redirect-from
+
 baseurl: /storm
 
 issue_base_url: "https://issues.infn.it/browse/"
