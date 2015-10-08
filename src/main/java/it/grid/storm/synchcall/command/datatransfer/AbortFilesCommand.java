@@ -137,56 +137,52 @@ public class AbortFilesCommand extends DataTransferCommand implements Command {
 
       SURLStatusManager manager = SURLStatusManagerFactory
         .newSURLStatusManager();
+      
+      boolean hasErrors = false;
       try {
 
         manager.abortRequest(user, requestToken, "Request aborted by user.");
 
       } catch (UnknownTokenException e) {
 
+        hasErrors = true;
         log.info("Unable to update surls status on token {}: {}", requestToken,
           e.getMessage(), e);
-
         globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
           "Invalid request token");
 
-        outputData.setArrayOfFileStatuses(null);
-        outputData.setReturnStatus(globalStatus);
-
-        CommandHelper.printRequestOutcome(SRM_COMMAND, log, globalStatus,
-          inputData, inputData.getRequestToken());
-
-        return outputData;
-
       } catch (ExpiredTokenException e) {
 
+        hasErrors = true;
         log.info("Expired token: {}. {}", requestToken, e.getMessage(), e);
-
-
         globalStatus = new TReturnStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
           "Request expired");
-        
-        outputData.setArrayOfFileStatuses(null);
-        outputData.setReturnStatus(globalStatus);
-
-        CommandHelper.printRequestOutcome(SRM_COMMAND, log, globalStatus,
-          inputData, inputData.getRequestToken());
-
-        return outputData;
       
       } catch (AuthzException e) {
 
+        hasErrors = true;
         log.info("Authorization error: {}", e);
         globalStatus = new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
           e.getMessage());
         
-        outputData.setArrayOfFileStatuses(null);
-        outputData.setReturnStatus(globalStatus);
+      } catch (IllegalArgumentException e) {
         
-        CommandHelper.printRequestOutcome(SRM_COMMAND, log, globalStatus,
-          inputData, inputData.getRequestToken());
+        hasErrors = true;
+        log.info("Invalid request error: {}", e);
+        globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
+          e.getMessage());
         
-        return outputData;
+      } finally {
         
+        if (hasErrors) {
+          
+          outputData.setArrayOfFileStatuses(null);
+          outputData.setReturnStatus(globalStatus);
+          CommandHelper.printRequestOutcome(SRM_COMMAND, log, globalStatus,
+            inputData, inputData.getRequestToken());
+          return outputData;
+          
+        }
       }
 
       RequestSummaryCatalog.getInstance().updateFromPreviousGlobalStatus(
