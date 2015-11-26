@@ -36,7 +36,6 @@ import it.grid.storm.synchcall.command.DataTransferCommand;
 import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
-import it.grid.storm.synchcall.data.datatransfer.AnonymousManageFileTransferRequestFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferOutputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestFilesInputData;
