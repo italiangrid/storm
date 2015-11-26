@@ -1075,7 +1075,7 @@ public class PtPChunkDAO {
 			expectedStatusCode, newStatusCode, explanation, false, true, true);
 	}
 
-	public synchronized void updateStatusOnMatchingStatus(
+	public synchronized int updateStatusOnMatchingStatus(
 		TRequestToken requestToken, int[] surlsUniqueIDs, String[] surls,
 		TStatusCode expectedStatusCode, TStatusCode newStatusCode)
 		throws IllegalArgumentException {
@@ -1088,11 +1088,11 @@ public class PtPChunkDAO {
 					+ "invalid arguments: requestToken=" + requestToken
 					+ "surlsUniqueIDs=" + surlsUniqueIDs + " surls=" + surls);
 		}
-		doUpdateStatusOnMatchingStatus(requestToken, surlsUniqueIDs, surls,
+		return doUpdateStatusOnMatchingStatus(requestToken, surlsUniqueIDs, surls,
 			expectedStatusCode, newStatusCode, null, true, true, false);
 	}
 
-	private void doUpdateStatusOnMatchingStatus(TRequestToken requestToken,
+	private int doUpdateStatusOnMatchingStatus(TRequestToken requestToken,
 		int[] surlsUniqueIDs, String[] surls, TStatusCode expectedStatusCode,
 		TStatusCode newStatusCode, String explanation, boolean withRequestToken,
 		boolean withSurls, boolean withExplanation) throws IllegalArgumentException {
@@ -1111,7 +1111,7 @@ public class PtPChunkDAO {
 		if (!checkConnection()) {
 			log
 				.error("PTP CHUNK DAO: updateStatusOnMatchingStatus - unable to get a valid connection!");
-			return;
+			return 0;
 		}
 		String str = "UPDATE "
 			+ "status_Put sp JOIN (request_Put rp, request_queue rq) ON sp.request_PutID=rp.ID AND rp.request_queueID=rq.ID "
@@ -1127,6 +1127,7 @@ public class PtPChunkDAO {
 			str += " AND " + buildSurlsWhereClause(surlsUniqueIDs, surls);
 		}
 
+		int count = 0;
 		PreparedStatement stmt = null;
 		try {
 			stmt = con.prepareStatement(str);
@@ -1139,7 +1140,7 @@ public class PtPChunkDAO {
 			logWarnings(stmt.getWarnings());
 
 			log.trace("PTP CHUNK DAO - updateStatusOnMatchingStatus: {}", stmt.toString());
-			int count = stmt.executeUpdate();
+			count = stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
 			if (count == 0) {
 				log.trace("PTP CHUNK DAO! No chunk of PTP request was updated "
@@ -1154,6 +1155,7 @@ public class PtPChunkDAO {
 		} finally {
 			close(stmt);
 		}
+		return count;
 	}
 
 	public Collection<PtPChunkDataTO> find(int[] surlsUniqueIDs,

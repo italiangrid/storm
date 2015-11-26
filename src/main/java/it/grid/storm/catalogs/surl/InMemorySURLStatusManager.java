@@ -339,7 +339,7 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
   }
 
   @Override
-  public void markSURLsReadyForRead(TRequestToken token, List<TSURL> surls) {
+  public int markSURLsReadyForRead(TRequestToken token, List<TSURL> surls) {
 
     SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
 
@@ -347,10 +347,8 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
       LOGGER.debug("PutDone on SURLs on in memory cache for token {}", token);
 
       try {
-        store.checkedUpdate(token, surls, TStatusCode.SRM_SPACE_AVAILABLE,
+        return store.checkedUpdate(token, surls, TStatusCode.SRM_SPACE_AVAILABLE,
           TStatusCode.SRM_SUCCESS, "Put done. SURL ready.");
-
-        return;
 
       } catch (Throwable e) {
 
@@ -361,7 +359,7 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
     }
 
     LOGGER.debug("PutDone on SURLs on DB for token {}", token);
-    super.markSURLsReadyForRead(token, surls);
+    return super.markSURLsReadyForRead(token, surls);
   }
 
   @Override

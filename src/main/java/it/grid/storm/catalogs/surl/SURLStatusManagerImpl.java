@@ -210,10 +210,10 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
   }
 
   @Override
-  public void markSURLsReadyForRead(TRequestToken token, List<TSURL> surls) {
+  public int markSURLsReadyForRead(TRequestToken token, List<TSURL> surls) {
 
     final SURLStatusDAO dao = new SURLStatusDAO();
-    dao.markSURLsReadyForRead(token, surls);
+    return dao.markSURLsReadyForRead(token, surls);
 
   }
 
