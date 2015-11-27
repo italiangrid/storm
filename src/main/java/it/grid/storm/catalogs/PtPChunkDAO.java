@@ -686,17 +686,18 @@ public class PtPChunkDAO {
 	 */
 	public synchronized List<Long> getExpiredSRM_SPACE_AVAILABLE() {
 
+        List<Long> ids = new ArrayList<Long>();
+
 		if (!checkConnection()) {
 			log
 				.error("PtP CHUNK DAO: getExpiredSRM_SPACE_AVAILABLE - unable to get a valid connection!");
-			return new ArrayList<Long>();
+			return ids;
 		}
 
 		String idsstr = "SELECT rp.ID FROM "
 			+ "status_Put sp JOIN (request_Put rp, request_queue rq) ON sp.request_PutID=rp.ID AND rp.request_queueID=rq.ID "
 			+ "WHERE sp.statusCode=? AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(rq.timeStamp) >= rq.pinLifetime ";
 
-		ArrayList<Long> ids = new ArrayList<Long>();
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 
@@ -717,13 +718,11 @@ public class PtPChunkDAO {
 			logWarnings(stmt.getWarnings());
 
 			while (rs.next()) {
-				ids.add(new Long(rs.getLong("rp.ID")));
+			    ids.add(new Long(rs.getLong("rp.ID")));
 			}
 		} catch (SQLException e) {
 			log.error("PtPChunkDAO! Unable to select expired "
 				+ "SRM_SPACE_AVAILABLE chunks of PtP requests. {}", e.getMessage(), e);
-			/* make an empty list! */
-			ids = new ArrayList<Long>();
 
 		} finally {
 			close(rs);
@@ -736,7 +735,7 @@ public class PtPChunkDAO {
 	 * Method that updates chunks in SRM_SPACE_AVAILABLE state, into SRM_SUCCESS.
 	 * An array of long representing the primary key of each chunk is required.
 	 * This is needed when the client invokes srmPutDone() In case of any error
-	 * nothing happens and no exception is thrown, but proper messagges get
+	 * nothing happens and no exception is thrown, but proper messages get
 	 * logged.
 	 */
 	public synchronized void transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(
@@ -786,6 +785,75 @@ public class PtPChunkDAO {
 			close(stmt);
 		}
 	}
+	
+    /**
+     * Method that updates chunks in SRM_SPACE_AVAILABLE state, into
+     * SRM_FILE_LIFETIME_EXPIRED. An array of Long representing the primary key
+     * of each chunk is required. This is needed when the client forgets to invoke
+     * srmPutDone() In case of any error no exception is
+     * thrown, but the returned int value will be zero or less than the input List size.
+     * 
+     * @return The number of the updated records into the db
+     */
+    public int transitExpiredSRM_SPACE_AVAILABLEtoSRM_FILE_LIFETIME_EXPIRED(List<Long> ids) {
+
+        if (!checkConnection()) {
+            log.error("Unable to get a valid connection to the database!");
+            return 0;
+        }
+
+        String querySQL = "UPDATE status_Put sp "
+            + "JOIN (request_Put rp, request_queue rq) ON sp.request_PutID=rp.ID AND rp.request_queueID=rq.ID "
+            + "SET sp.statusCode=?, sp.explanation=? "
+            + "WHERE sp.statusCode=? AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(rq.timeStamp) >= rq.pinLifetime ";
+        
+        if (ids == null || ids.isEmpty()) {
+            querySQL += "AND rp.ID IN " + makeWhereString(ids);
+        }
+
+        PreparedStatement stmt = null;
+        int count = 0;
+        try {
+            stmt = con.prepareStatement(querySQL);
+            logWarnings(con.getWarnings());
+
+            stmt.setInt(1, StatusCodeConverter.getInstance()
+                .toDB(TStatusCode.SRM_FILE_LIFETIME_EXPIRED));
+            logWarnings(stmt.getWarnings());
+            
+            stmt.setString(2, "Expired pinLifetime");
+            logWarnings(stmt.getWarnings());
+
+            stmt.setInt(3, StatusCodeConverter.getInstance()
+                .toDB(TStatusCode.SRM_SPACE_AVAILABLE));
+            logWarnings(stmt.getWarnings());
+
+            log.trace(
+                "PtP CHUNK DAO - transit SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED: {}",
+                stmt.toString());
+
+            count = stmt.executeUpdate();
+            logWarnings(stmt.getWarnings());
+
+        } catch (SQLException e) {
+            log.error(
+                "PtPChunkDAO! Unable to transit chunks from "
+                    + "SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED! {}",
+                e.getMessage(), e);
+        } finally {
+            close(stmt);
+        }
+        if (count == 0) {
+            log.trace("PtPChunkDAO! No chunk of PtP request was "
+                + "transited from SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED.");
+        } else {
+            log.info(
+                "PtPChunkDAO! {} chunks of PtP requests were transited "
+                    + "from SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED.",
+                count);
+        }
+        return count;
+    }
 
 	/**
 	 * Method that transits chunks in SRM_SPACE_AVAILABLE to SRM_ABORTED, for the
@@ -965,18 +1033,18 @@ public class PtPChunkDAO {
 		}
 	}
 
-	public synchronized void updateStatus(int[] surlsUniqueIDs, String[] surls,
+	public synchronized int updateStatus(int[] surlsUniqueIDs, String[] surls,
 		TStatusCode statusCode, String explanation) throws IllegalArgumentException {
 
 		if (explanation == null) {
 			throw new IllegalArgumentException("Unable to perform the updateStatus, "
 				+ "invalid arguments: explanation=" + explanation);
 		}
-		doUpdateStatus(null, surlsUniqueIDs, surls, statusCode, explanation, false,
+		return doUpdateStatus(null, surlsUniqueIDs, surls, statusCode, explanation, false,
 			true);
 	}
 
-	public synchronized void updateStatus(TRequestToken requestToken,
+	public synchronized int updateStatus(TRequestToken requestToken,
 		int[] surlsUniqueIDs, String[] surls, TStatusCode statusCode,
 		String explanation) throws IllegalArgumentException {
 
@@ -986,11 +1054,11 @@ public class PtPChunkDAO {
 				+ "invalid arguments: requestToken=" + requestToken + " explanation="
 				+ explanation);
 		}
-		doUpdateStatus(requestToken, surlsUniqueIDs, surls, statusCode,
+		return doUpdateStatus(requestToken, surlsUniqueIDs, surls, statusCode,
 			explanation, true, true);
 	}
 
-	private void doUpdateStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
+	private int doUpdateStatus(TRequestToken requestToken, int[] surlsUniqueIDs,
 		String[] surls, TStatusCode statusCode, String explanation,
 		boolean withRequestToken, boolean withExplaination)
 		throws IllegalArgumentException {
@@ -1005,7 +1073,7 @@ public class PtPChunkDAO {
 		if (!checkConnection()) {
 			log
 				.error("PTP CHUNK DAO: updateStatus - unable to get a valid connection!");
-			return;
+			return 0;
 		}
 		String str = "UPDATE status_Put sp JOIN (request_Put rp, request_queue rq) ON sp.request_PutID=rp.ID AND "
 			+ "rp.request_queueID=rq.ID " + "SET sp.statusCode=? ";
@@ -1020,6 +1088,7 @@ public class PtPChunkDAO {
 			+ makeSURLUniqueIDWhere(surlsUniqueIDs) + " AND rp.targetSURL IN "
 			+ makeSurlString(surls) + " ) ";
 		PreparedStatement stmt = null;
+		int count = 0;
 		try {
 			stmt = con.prepareStatement(str);
 			logWarnings(con.getWarnings());
@@ -1027,7 +1096,7 @@ public class PtPChunkDAO {
 			logWarnings(stmt.getWarnings());
 
 			log.trace("PTP CHUNK DAO - updateStatus: {}", stmt.toString());
-			int count = stmt.executeUpdate();
+			count = stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
 			if (count == 0) {
 				log.trace("PTP CHUNK DAO! No chunk of PTP request was updated to {}.", 
@@ -1042,9 +1111,10 @@ public class PtPChunkDAO {
 		} finally {
 			close(stmt);
 		}
+		return count;
 	}
 
-	public synchronized void updateStatusOnMatchingStatus(
+	public synchronized int updateStatusOnMatchingStatus(
 		TRequestToken requestToken, TStatusCode expectedStatusCode,
 		TStatusCode newStatusCode, String explanation) {
 
@@ -1055,11 +1125,11 @@ public class PtPChunkDAO {
 					+ "invalid arguments: requestToken=" + requestToken + " explanation="
 					+ explanation);
 		}
-		doUpdateStatusOnMatchingStatus(requestToken, null, null,
+		return doUpdateStatusOnMatchingStatus(requestToken, null, null,
 			expectedStatusCode, newStatusCode, explanation, true, false, true);
 	}
 
-	public synchronized void updateStatusOnMatchingStatus(int[] surlsUniqueIDs,
+	public synchronized int updateStatusOnMatchingStatus(int[] surlsUniqueIDs,
 		String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode,
 		String explanation) throws IllegalArgumentException {
 
@@ -1071,7 +1141,7 @@ public class PtPChunkDAO {
 					+ "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs + " surls="
 					+ surls + " explanation=" + explanation);
 		}
-		doUpdateStatusOnMatchingStatus(null, surlsUniqueIDs, surls,
+		return doUpdateStatusOnMatchingStatus(null, surlsUniqueIDs, surls,
 			expectedStatusCode, newStatusCode, explanation, false, true, true);
 	}
 
