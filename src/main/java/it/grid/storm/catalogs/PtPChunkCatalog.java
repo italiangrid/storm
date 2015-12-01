@@ -101,22 +101,28 @@ public class PtPChunkCatalog {
 				List<Long> ids = getExpiredSRM_SPACE_AVAILABLE();
 
 				if (ids.isEmpty()) {
+				    log.info("PtPChunkCatalog - transitTask: Nothing to do.");
 					return;
 				}
 
+				log.info("PtPChunkCatalog - transitTask: found {} request expired", ids.size());
 				Collection<ReducedPtPChunkData> reduced = lookupReducedPtPChunkData(ids
-					.toArray(new Long[ids.size()]));
-
+				  .toArray(new Long[ids.size()]));    
+				log.info("PtPChunkCatalog - transitTask: reduced expired requests size is {}", reduced.size());
+				
 				if (reduced.isEmpty()) {
 					log.error("ATTENTION in PtP CHUNK CATALOG! Attempt to handle physical "
 						+ "files for transited expired entries failed! No data could be "
 						+ "translated from persitence for PtP Chunks with ID {}", ids);
 				}
 				ArrayList<TSURL> surls = new ArrayList<TSURL>(reduced.size());
+				List<Long> ids_reduced = new LinkedList<Long>();
 				for (ReducedPtPChunkData data : reduced) {
 					surls.add(data.toSURL());
+					ids_reduced.add(data.primaryKey());
 				}
 				PutDoneCommand.executePutDone(surls, null);
+				transitExpiredSRM_SPACE_AVAILABLEtoSRM_FILE_LIFETIME_EXPIRED(ids_reduced);
 			}
 		};
 		transiter.scheduleAtFixedRate(transitTask, delay, period);
@@ -721,90 +727,55 @@ public class PtPChunkCatalog {
 	}
 
 	/**
-	 * Method used to force transition to SRM_SUCCESS from SRM_SPACE_AVAILABLE, of
-	 * all PtP Requests whose pinLifetime has expired and the state still has not
-	 * been changed (a user forgot to run srmPutDone)! The method returns a List
-	 * containing all ids of transited chunks that are also Volatile.
+	 * Method used to get the Request.ID from all the PtP Requests whose 
+	 * pinLifetime has expired. The method returns a Map containing all SURLs
+	 * and their relative request-id.
 	 */
 	synchronized public List<Long> getExpiredSRM_SPACE_AVAILABLE() {
 
 		return dao.getExpiredSRM_SPACE_AVAILABLE();
 	}
 
-	/**
-	 * Method used to transit the specified Collection of ReducedPtPChunkData of
-	 * the request identified by the supplied TRequestToken, from
-	 * SRM_SPACE_AVAILABLE to SRM_SUCCESS. Chunks in any other starting state are
-	 * not transited. <code>null</code> entries in the collection are permitted
-	 * and skipped. In case of any error nothing is done, but proper error
-	 * messages get logged.
-	 */
-	synchronized public void transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(
-	// Collection<ReducedPtPChunkData> chunks) {
-		TRequestToken token, List<TSURL> surls) {
+	
+	public int transitExpiredSRM_SPACE_AVAILABLEtoSRM_FILE_LIFETIME_EXPIRED(List<Long> ids) {
 
-		if (token == null || surls == null || surls.size() == 0) {
-			return;
-		}
-		Collection<ReducedPtPChunkDataTO> tos = dao.findReduced(token.getValue(),
-			null);
-		LinkedList<Long> primaryKeys = new LinkedList<Long>();
-		for (ReducedPtPChunkDataTO to : tos) {
-			for (TSURL surl : surls) {
-				if (to.toSURL().equals(surl)) {
-					primaryKeys.add(to.primaryKey());
-					break;
-				}
-			}
-		}
-		dao.transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(primaryKeys);
+	    return dao.transitExpiredSRM_SPACE_AVAILABLEtoSRM_FILE_LIFETIME_EXPIRED(ids);
 	}
 
-	/**
-	 * This method is intended to be used by srmRm to transit all PtP chunks on
-	 * the given SURL which are in the SRM_SPACE_AVAILABLE state, to SRM_ABORTED.
-	 * The supplied String will be used as explanation in those chunks return
-	 * status. The global status of the request is not changed. The TURL of those
-	 * requests will automatically be set to empty. Notice that both
-	 * removeAllJit(SURL) and removeVolatile(SURL) are automatically invoked on
-	 * PinnedFilesCatalog, to remove any entry and corresponding physical ACLs.
-	 * Beware, that the chunks may be part of requests that have finished, or that
-	 * still have not finished because other chunks are being processed.
-	 */
-	synchronized public void transitSRM_SPACE_AVAILABLEtoSRM_ABORTED(TSURL surl,
-		String explanation) {
-
-		if (surl == null) {
-			log
-				.error("ATTENTION in PtP CHUNK CATALOG! Attempt to invoke transitSRM_SPACE_AVAILABLEtoSRM_ABORTED with a null SURL!");
-			return;
-		}
-		if (explanation == null) {
-			explanation = "";
-		}
-		dao.transitSRM_SPACE_AVAILABLEtoSRM_ABORTED(surl.uniqueId(),
-			surl.toString(), explanation);
-	}
-
-	public void updateStatus(TRequestToken requestToken, TSURL surl,
+	public int updateStatus(TRequestToken requestToken, TSURL surl,
 		TStatusCode statusCode, String explanation) {
 
-		dao.updateStatus(requestToken, new int[] { surl.uniqueId() },
+		return dao.updateStatus(requestToken, new int[] { surl.uniqueId() },
 			new String[] { surl.rawSurl() }, statusCode, explanation);
 	}
 
-	public void updateStatus(TSURL surl, TStatusCode statusCode,
+	public int updateStatus(TSURL surl, TStatusCode statusCode,
+      String explanation) {
+      
+	  List<TSURL> surlList = new ArrayList<TSURL>();
+	  surlList.add(surl);
+      return updateStatus(surlList, statusCode, explanation);
+    }
+	
+	public int updateStatus(List<TSURL> surlList, TStatusCode statusCode,
 		String explanation) {
 
-		dao.updateStatus(new int[] { surl.uniqueId() },
-			new String[] { surl.rawSurl() }, statusCode, explanation);
+        int[] ids = new int[surlList.size()];
+        String[] surls = new String[surlList.size()];
+        int i = 0;
+        for (TSURL surl: surlList) {
+          ids[i] = surl.uniqueId();
+          surls[i] = surl.rawSurl();
+          i++;
+        }
+		return dao.updateStatus(ids, surls, statusCode, explanation);
 	}
 
-	public void updateFromPreviousStatus(TRequestToken requestToken,
+	public int updateFromPreviousStatus(TRequestToken requestToken,
 		TStatusCode expectedStatusCode, TStatusCode newStatusCode,
 		String explanation) {
 
-		dao.updateStatusOnMatchingStatus(requestToken, expectedStatusCode,
+		return dao.updateStatusOnMatchingStatus(requestToken, expectedStatusCode,
 			newStatusCode, explanation);
 	}
 
@@ -824,11 +795,11 @@ public class PtPChunkCatalog {
 			expectedStatusCode, newStatusCode);
 	}
 
-	public void updateFromPreviousStatus(TSURL surl,
+	public int updateFromPreviousStatus(TSURL surl,
 		TStatusCode expectedStatusCode, TStatusCode newStatusCode,
 		String explanation) {
 
-		dao.updateStatusOnMatchingStatus(new int[] { surl.uniqueId() },
+		return dao.updateStatusOnMatchingStatus(new int[] { surl.uniqueId() },
 			new String[] { surl.rawSurl() }, expectedStatusCode, newStatusCode,
 			explanation);
 	}

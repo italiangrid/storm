@@ -77,5 +77,11 @@ public interface StorageSpaceDAO {
 
 	public Collection<StorageSpaceTO> getStorageSpaceByPreviousLastUpdate(
 		Date lastUpdateTimestamp) throws DataAccessException;
+	
+    public int increaseUsedSpace(String spaceToken, long usedSpaceToAdd)
+        throws DataAccessException;
+
+    public int decreaseUsedSpace(String spaceToken, long usedSpaceToRemove)
+      throws DataAccessException;
 
 }

@@ -50,11 +50,9 @@ import it.grid.storm.synchcall.surl.UnknownTokenException;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,12 +73,6 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     .getLogger(PutDoneCommand.class);
   private static final String funcName = "PutDone: ";
 
-  private static final Set<String> lockedSurls = new HashSet<String>();
-  private static final Object lock = new Object();
-
-  private static final TReturnStatus anotherPutDoneActiveReturnStatus = CommandHelper
-    .buildStatus(TStatusCode.SRM_FAILURE,
-      "There is another PutDone in execution on this SURL.");
   private static final String SRM_COMMAND = "srmPutDone";
 
   public PutDoneCommand() {
@@ -160,38 +152,42 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     }
 
     LinkedList<TSURL> spaceAvailableSURLs = new LinkedList<TSURL>();
+    
     boolean atLeastOneSuccess = false;
     boolean atLeastOneFailure = false;
     boolean atLeastOneAborted = false;
+    
     for (TSURLReturnStatus surlStatus : surlsStatuses.getArray()) {
+
       TReturnStatus newStatus;
       TReturnStatus currentStatus = surlStatus.getStatus();
+
       switch (currentStatus.getStatusCode()) {
+
       case SRM_SPACE_AVAILABLE:
 
-        if (lockSurl(surlStatus.getSurl())) {
-          spaceAvailableSURLs.add(surlStatus.getSurl());
-
-          newStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS,
-            "Success");
-          atLeastOneSuccess = true;
-        } else { // there is an active PutDone on this SURL
-          newStatus = anotherPutDoneActiveReturnStatus;
-        }
+        spaceAvailableSURLs.add(surlStatus.getSurl());
+        newStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS,
+          "Success");
+        atLeastOneSuccess = true;
         break;
+
       case SRM_SUCCESS:
+
         newStatus = CommandHelper.buildStatus(
-
-        TStatusCode.SRM_DUPLICATION_ERROR, "Duplication error");
-
+          TStatusCode.SRM_DUPLICATION_ERROR, "Duplication error");
         atLeastOneFailure = true;
         break;
+
       case SRM_ABORTED:
+
         newStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
           "PtP status for this SURL is SRM_ABORTED");
         atLeastOneAborted = true;
         break;
+
       default:
+
         newStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
           "Check StatusOfPutRequest for more information");
         atLeastOneFailure = true;
@@ -224,14 +220,6 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         return new ManageFileTransferOutputData(globalStatus);
       }
     }
-
-    for (TSURL surl : spaceAvailableSURLs) {
-      if (surl != null) {
-        unlockSurl(surl);
-      }
-    }
-
-    log.debug("Number of SURLs locked: " + lockedSurls.size());
 
     if (atLeastOneSuccess) {
       if (!atLeastOneFailure && !atLeastOneAborted) {
@@ -458,35 +446,4 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     }
   }
 
-  public static void executeImplicitPutDone(List<TSURL> spaceAvailableSURLs) {
-
-    for (TSURL surl : spaceAvailableSURLs) {
-
-      if (surl == null) {
-        continue;
-      }
-
-      if (lockSurl(surl)) {
-        ArrayList<TSURL> elementList = new ArrayList<TSURL>(1);
-        elementList.add(surl);
-        executePutDone(elementList, null);
-      } else {
-        continue;
-      }
-    }
-  }
-
-  private static boolean lockSurl(TSURL surl) {
-
-    synchronized (lock) {
-      return lockedSurls.add(surl.getSURLString());
-    }
-  }
-
-  private static void unlockSurl(TSURL surl) {
-
-    synchronized (lock) {
-      lockedSurls.remove(surl.getSURLString());
-    }
-  }
 }

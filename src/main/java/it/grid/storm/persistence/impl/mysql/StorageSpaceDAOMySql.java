@@ -574,4 +574,66 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements
 		}
 		return result;
 	}
+
+    @Override
+    public int increaseUsedSpace(String spaceToken, long usedSpaceToAdd)
+        throws DataAccessException {
+      
+        Connection conn = getConnection();
+        ResultSet res = null;
+        PreparedStatement prepStatement = null;
+
+        int n = 0;
+      
+        try {
+            prepStatement = helper.increaseUsedSpaceByTokenQuery(conn, spaceToken, usedSpaceToAdd);
+            log.debug("DB query = {}" , prepStatement.toString());
+
+            n = prepStatement.executeUpdate();
+          
+            log.debug("query result = {}" , n);
+            if (n == 0) {
+                log.debug("No rows updated for query : {}" , prepStatement.toString());
+                throw new DataAccessException("No storage space updated!");
+            }
+
+        } catch (SQLException e) {
+            log.error(e.getMessage(), e);
+            throw new DataAccessException("Error while executing DB query", e);
+        } finally {
+            releaseConnection(res, prepStatement, conn);
+        }
+        return n;
+    }
+ 
+    @Override
+    public int decreaseUsedSpace(String spaceToken, long usedSpaceToRemove)
+        throws DataAccessException {
+      
+        Connection conn = getConnection();
+        ResultSet res = null;
+        PreparedStatement prepStatement = null;
+
+        int n = 0;
+      
+        try {
+            prepStatement = helper.decreaseUsedSpaceByTokenQuery(conn, spaceToken, usedSpaceToRemove);
+            log.debug("DB query = {}" , prepStatement.toString());
+
+            n = prepStatement.executeUpdate();
+          
+            log.debug("query result = {}" , n);
+            if (n == 0) {
+                log.debug("No rows updated for query : {}" , prepStatement.toString());
+                throw new DataAccessException("No storage space updated!");
+            }
+
+        } catch (SQLException e) {
+            log.error(e.getMessage(), e);
+            throw new DataAccessException("Error while executing DB query", e);
+        } finally {
+            releaseConnection(res, prepStatement, conn);
+        }
+        return n;
+    }
 }
