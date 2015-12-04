@@ -1,7 +1,9 @@
 ---
 layout: toc
 title: StoRM Storage Resource Manager - System Administration Guide
-version: 1.11.9
+version: 1.11.10
+redirect_from:
+  - /documentation/sysadmin-guide/
 ---
 
 # StoRM System Administration Guide
@@ -597,7 +599,7 @@ and check the other variables to evaluate if you like the default set or if you 
 |STORM\_FSTYPE                          |File System Type (default value for all Storage Areas). Note: you may change the settings for each SA acting on $STORM\_{SA}\_FSTYPE variable.<br/>Optional variable. Available values: posixfs, gpfs. Default value: **posixfs**
 |STORM\_GRIDFTP\_POOL\_LIST             |GridFTP servers pool list (default value for all Storage Areas). Note: you may change the settings for each SA acting on $STORM\_{SA}\_GRIDFTP\_POOL\_LIST variable.<br/>ATTENTION: this variable define a list of pair values space-separated: host weight, e.g.: STORM\_GRIDFTP\_POOL\_LIST="host1 weight1, host2 weight2, host3 weight3" Weight has 0-100 range; if not specified, weight will be 100.<br/>Mandatory variable. Default value: **$STORM\_BACKEND\_HOST**
 |STORM\_GRIDFTP\_POOL\_STRATEGY         |Load balancing strategy for GridFTP server pool (default value for all Storage Areas). Note: you may change the settings for each SA acting on $STORM\_{SA}\_GRIDFTP\_POOL\_STRATEGY variable.<br/>Optional variable. Available values: round-robin, smart-rr, random, weight. Default value: **round-robin**
-|STORM\_GRIDHTTPS\_PUBLIC\_HOST         |StoRM GridHTTPs service public host. It's used by StoRM Info Provider to publish the WebDAV endpoint into the Resource BDII.<br/>Optional variable. Default value: **$STORM\_BACKEND\_HOST**
+|STORM\_GRIDHTTPS\_PUBLIC\_HOST         |StoRM GridHTTPs service public host. It's used by StoRM Info Provider to publish the WebDAV endpoint into the Resource BDII.<br/>Optional variable, **mandatory administrator wants to publish a WebDAV endpoint". Default value: **$STORM\_BACKEND\_HOST**
 |STORM\_INFO\_FILE\_SUPPORT             |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip.<br/>Optional variable. Available values: true, false. Default value: **true**
 |STORM\_INFO\_GRIDFTP\_SUPPORT          |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip.<br/>Optional variable. Available values: true, false. Default value: **true**
 |STORM\_INFO\_RFIO\_SUPPORT             |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip. <br/>Optional variable. Available values: true, false. Default value: **false**

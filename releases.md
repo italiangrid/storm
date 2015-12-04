@@ -7,10 +7,24 @@ title: StoRM releases
 
 The following is the list of last StoRM releases, with the released components list and a link to the release notes.
 
-<span class="label" style="margin-top: -20px;">29.05.2015</span> <span class="label label-info" style="margin-top: -20px;">current</span>
-### StoRM v.1.11.9
+<span class="label" style="margin-top: -20px;">20.11.2015</span> <span class="label label-info" style="margin-top: -20px;">current</span>
+### StoRM v.1.11.10
 
 This is the latest release for StoRM, available on StoRM repositories.
+
+| Component            | Version    |
+|:---------------------|:-----------|
+|StoRM Backend         |[1.11.10]({{site.baseurl}}/release-notes/storm-backend-server/1.11.10/)|
+|StoRM WebDAV          |[1.0.4]({{site.baseurl}}/release-notes/storm-webdav/1.0.4/)|
+|StoRM GridHTTPs       |[3.0.4]({{site.baseurl}}/release-notes/storm-gridhttps-server/3.0.4/)|
+|StoRM Info Provider   |[1.7.9]({{site.baseurl}}/release-notes/yaim-storm/1.7.9/)|
+
+See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.10.html).
+
+___
+
+<span class="label" style="margin-top: -20px;">29.05.2015</span>
+### StoRM v.1.11.9
 
 | Component            | Version    |
 |:---------------------|:-----------|
@@ -24,6 +38,7 @@ See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.
 
 ___
 
+<span class="label" style="margin-top: -20px;">13.03.2015</span>
 ### StoRM v.1.11.8
 
 This is the latest release for StoRM, available on StoRM repositories.
@@ -152,7 +167,7 @@ ___
 ### Old versions
 
 <span class="label" style="margin-top: -20px;">11.03.2013</span>
-#### StoRM v1.11.0 - EMI3 Montebianco 
+#### StoRM v1.11.0 - EMI3 Montebianco
 This was the StoRM released in EMI-3. [Release notes](http://www.eu-emi.eu/releases/emi-3-montebianco/products/-/asset_publisher/5dKm/content/storm-se-2).
 
 <span class="label" style="margin-top: -20px;">20.07.2012</span>
@@ -160,8 +175,5 @@ This was the StoRM released in EMI-3. [Release notes](http://www.eu-emi.eu/relea
 This was the first update for StoRM in EMI-2. [Release notes](http://www.eu-emi.eu/emi-2-matterhorn/updates/-/asset_publisher/9AgN/content/update-1-20-07-2012#StoRM_SE_v_1_10_0_task_30816).
 
 <span class="label" style="margin-top: -20px;">21.05.2012</span>
-#### StoRM v1.9.0 
+#### StoRM v1.9.0
 This was the StoRM released with EMI-2. [Release notes](http://www.eu-emi.eu/emi-2-matterhorn-products/-/asset_publisher/B4Rk/content/storm-se-1).
-
-
- 
