@@ -54,7 +54,7 @@ ntp-4.2.2p1-9.el5_4.1
 $ chkconfig --list | grep ntpd
 ntpd            0:off   1:off   2:on    3:on    4:on    5:on    6:off
 ```
-	
+
 **To install**:
 
 ```bash
@@ -94,7 +94,7 @@ $ service network restart
 
 #### Host needs a valid X.509 certificate
 
-Hosts participating to the StoRM-SE (FE, BE, GridHTTP and GridFTP hosts) service must be configured with X.509 certificates signed by a trusted Certification Authority (CA). 
+Hosts participating to the StoRM-SE (FE, BE, GridHTTP and GridFTP hosts) service must be configured with X.509 certificates signed by a trusted Certification Authority (CA).
 Usually, the **hostcert.pem** and **hostkey.pem** certificates are located in the /etc/grid-security/ directory, and they must have permission 0644 and 0400 respectively:
 
 **To check**:
@@ -118,10 +118,10 @@ $ chmod 0644 /etc/grid-security/hostcert.pem
 
 ### System users <a name="systemusers">&nbsp;</a>
 
-StoRM Backend has to be run by a specific STORM\_USER. By default STORM\_USER is *storm*, but admins can also configure it (see [Backend Configuration](#beconf)). 
-If you need a GridHTTPs node, this service also has to be run by another specific user, STORM\_GRIDHTTPS\_USER, which must belong to the STORM\_USER group. 
-By default STORM\_GRIDHTTPS\_USER is *gridhttps*, but admins can also configure it (see [GridHTTPs Configuration](#ghttpconf)). 
-It is advisable to manually configure host(s) with this two users before install services. 
+StoRM Backend has to be run by a specific STORM\_USER. By default STORM\_USER is *storm*, but admins can also configure it (see [Backend Configuration](#beconf)).
+If you need a GridHTTPs node, this service also has to be run by another specific user, STORM\_GRIDHTTPS\_USER, which must belong to the STORM\_USER group.
+By default STORM\_GRIDHTTPS\_USER is *gridhttps*, but admins can also configure it (see [GridHTTPs Configuration](#ghttpconf)).
+It is advisable to manually configure host(s) with this two users before install services.
 For example, to create *storm* and *gridhttps* users you can launch the following commands:
 
 ```bash
@@ -150,7 +150,7 @@ Another valid solution to share GID and UID among different hosts and provide a 
 StoRM uses the ACLs on files and directories to implement the security model. In so doing, StoRM uses the native access to the file system. Therefore in order to ensure a proper running, ACLs need to be enabled on the underlying file system (sometimes they are enabled by default) and work properly.
 
 **To check**:
-	
+
 ```bash
 $ touch test
 $ setfacl -m u:storm:rw test
@@ -185,7 +185,7 @@ $ vi /etc/fstab
 /dev/hda3     /storage		ext3     defaults, acl     1 2
   ...
 ```
- 
+
 Then you need to remount the affected partitions as follows:
 
 ```bash
@@ -208,6 +208,7 @@ $ getfattr -d testfile
 # file: testfile
 user.testea="test"
 $ rm -f testfile
+```
 
 If the getfattr and setfattrl commands are not available on your host, **install** *attr* package:
 
@@ -232,7 +233,7 @@ $ mount -o remount /storage
 
 ### Storage Area's permissions <a name="sapermissions">&nbsp;</a>
 
-If your installation has some storage area that already exist, those storage areas must have the right permissions. 
+If your installation has some storage area that already exist, those storage areas must have the right permissions.
 For example, it needs ${STORM\_USER} as owner of the storage area root directory and recoursively of the all subdirectories and files contained.
 To set the correct permissions on a storage area that has ${dir} as root directory, you can launche the following commands:
 
@@ -282,7 +283,7 @@ Please take a look at the [Launching YAIM configuration](#launchyaim) section fo
 
 ### Repository settings <a name="reposettings">&nbsp;</a>
 
-In order to install all the stuff requested by StoRM, some repositories have to be necessarily configured in the /etc/yum.repos.d directory. 
+In order to install all the stuff requested by StoRM, some repositories have to be necessarily configured in the /etc/yum.repos.d directory.
 These are EPEL, EGI and EMI and have to be installed, as prerequisite, as we have already seen in the paragraph [general EMI 3 installation instructions](#emi3instructions).
 
 #### Common repository settings <a name="commonreposettings">&nbsp;</a>
@@ -307,7 +308,7 @@ To install **EGI Trust Anchors Repository** follow [EGI instructions](https://wi
 
 You must disable the **DAG repository** if enabled. To check if it is enabled:
 
-```bash	
+```bash
 $ grep enabled /etc/yum.repos.d/dag.repo
  enabled=0
 ```
@@ -494,7 +495,7 @@ Specific YAIM variables are in the following file:
 $ /opt/glite/yaim/exaples/siteinfo/services/se_storm_backend
 ```
 
-Please copy and edit that file in your CONFDIR/services directory. 
+Please copy and edit that file in your CONFDIR/services directory.
 You have to set at least these variables:
 
 - STORM\_BACKEND\_HOST
@@ -560,7 +561,7 @@ Then, for each Storage Area listed in the STORM\_STORAGEAREA\_LIST variable, whi
 
 <div class="alert alert-warning">
 	<h4>Warning!</h4>
-For the DNS-like names, that use special characters as '.' or '-' you have to remove the '.' and '-'.<br/>	
+For the DNS-like names, that use special characters as '.' or '-' you have to remove the '.' and '-'.<br/>
 For example the {SA} value for the storage area "testers.eu-emi.eu" must be TESTERSEUEMIEU:
 <pre>
 STORM_TESTERSEUEMIEU_VONAME=testers.eu-emi.eu
@@ -613,7 +614,7 @@ You can edit the optional variables summarized in Table 5.
 ### GridHTTPs configuration <a name="ghttpconf">&nbsp;</a>
 
 Specific variables are in the following file:
-	
+
 ```bash
 $ /opt/glite/yaim/examples/siteinfo/services/se_storm_gridhttps
 ```
@@ -682,11 +683,11 @@ Please note that most of the configuration parameters of StoRM can be automatica
 ### Frontend Advanced Configuration <a name="fe_advconf">&nbsp;</a>
 
 The Frontend component relies on a single configuration file that contains all the configurable parameters. This file is:
-	
-	/etc/storm/frontend-server/storm-frontend-server.conf 
-	
+
+	/etc/storm/frontend-server/storm-frontend-server.conf
+
 containing a list of:
-	
+
 	key = value
 
 pairs that can be used to configure the Frontend server. In case a parameter is modified, the Frontend service has to be restarted in order to read the new value.
@@ -706,8 +707,8 @@ pairs that can be used to configure the Frontend server. In case a parameter is 
 
 |	Property Name	|	Description		|
 |:------------------|:------------------|
-|	fe.port							|	Frontend port. Default is **8444**	
-|	fe.threadpool.threads.number	|	Size of the worker thread pool. Default is **50**	
+|	fe.port							|	Frontend port. Default is **8444**
+|	fe.threadpool.threads.number	|	Size of the worker thread pool. Default is **50**
 |	fe.threadpool.maxpending		|	Size of the internal queue used to maintain SRM tasks in case there are no free worker threads. Default is **200**
 |	fe.gsoap.maxpending				|	Size of the GSOAP queue used to maintain pending SRM requests. Default is **2000**
 
@@ -773,7 +774,7 @@ pairs that can be used to configure the Frontend server. In case a parameter is 
 #### Logging files and logging level <a name="loggingfe_advconf">&nbsp;</a>
 
 The Frontend logs information on the service status and the SRM requests received and managed by the process. The Frontend's log supports different level of logging (ERROR, WARNING, INFO, DEBUG, DEBUG2) that can be set from the dedicated parameter in _storm-frontend-server.conf_ configuration file.
-The Frontend log file named _storm-frontend-server.log_ is placed in the _/var/log/storm directory_. At start-up time, the FE prints here the whole set of configuration parameters, this can be useful to check desired values. When a new SRM request is managed, the FE logs information about the user (DN and FQANs) and the requested parameters. 
+The Frontend log file named _storm-frontend-server.log_ is placed in the _/var/log/storm directory_. At start-up time, the FE prints here the whole set of configuration parameters, this can be useful to check desired values. When a new SRM request is managed, the FE logs information about the user (DN and FQANs) and the requested parameters.
 At each SRM request, the FE logs also this important information:
 
 	03/19 11:51:42 0x88d4ab8 main: AUDIT - Active tasks: 3
@@ -791,19 +792,19 @@ At each Monitoring Round, a single row is printed on log. This row reports both 
 - how many failed,
 - how many produced an error,
 - the average execution time,
-- the minimum execution time, 
+- the minimum execution time,
 - the maximum execution time.
 
 This row reports the **Monitoring Summary** and this is the default behaviour of the monitoring service.
 
 **_Example_**:
 
-	03/20 14:19:11 : [# 22927 lifetime=95:33:18] 
-				S [OK:47,F:15,E:0,m:0.085,M:3.623,Avg:0.201] 
-				A [OK:16,F:0,E:0,m:0.082,M:0.415,Avg:0.136] 
-				Last:(S [OK:12,F:5,E:0,m:0.091,M:0.255] 
+	03/20 14:19:11 : [# 22927 lifetime=95:33:18]
+				S [OK:47,F:15,E:0,m:0.085,M:3.623,Avg:0.201]
+				A [OK:16,F:0,E:0,m:0.082,M:0.415,Avg:0.136]
+				Last:(S [OK:12,F:5,E:0,m:0.091,M:0.255]
 				A [OK:6,F:0,E:0,m:0.121,M:0.415])
-	
+
 Furthermore it can be requested a more detailed Frontend Monitoring activity by setting the configuration property _monitoring.detailed_ to _true_. Doing this, at each Monitoring Round for each kind of srm operation performed in the Monitoring Round (srmls, srmPtp, srmRm, ...) the following information are printed in a section with header "Last round details:":
 
 - how many request succeded,
@@ -821,10 +822,10 @@ This is called the **Detailed Monitoring Round**. After this, the Monitoring Sum
 	03/20 14:19:11 : Last round details:
 	03/20 14:19:11 : [PTP] [OK:3,F:0,E:0,Avg:0.203,Std Dev:0.026,m:0.183,M:0.240]
 	03/20 14:19:11 : [Put done] [OK:2,F:0,E:0,Avg:0.155,Std Dev:0.018,m:0.136,M:0.173]
-	03/20 14:19:11 : [# 22927 lifetime=95:33:18] 
-				S [OK:47,F:15,E:0,m:0.085,M:3.623,Avg:0.201] 
+	03/20 14:19:11 : [# 22927 lifetime=95:33:18]
+				S [OK:47,F:15,E:0,m:0.085,M:3.623,Avg:0.201]
 				A [OK:16,F:0,E:0,m:0.082,M:0.415,Avg:0.136]  
-				Last:(S [OK:12,F:5,E:0,m:0.091,M:0.255] 
+				Last:(S [OK:12,F:5,E:0,m:0.091,M:0.255]
 				A [OK:6,F:0,E:0,m:0.121,M:0.415])
 	03/20 14:19:11 : Details:
 	03/20 14:19:11 : [PTP] [OK:7,F:0,E:0,Avg:0.141,Std Dev:0.057,m:0.085,M:0.240]
@@ -883,7 +884,7 @@ To change/set a new value, or add a new parameter, just edit the *storm.properti
 |	pinLifetime.maximum					|	Maximum *PinLifetime* allowed in seconds.<br/>Default: **1814400**
 |	SRM22Client.PinLifeTime				|	Default *PinLifeTime* in seconds used by StoRM in case of *SrmCopy* operation. This value is the one specified in the remote *SrmPrepareToGet* request. Default: **259200**
 |	fileLifetime.default				|	Default *FileLifetime* in seconds used for VOLATILE file in case of SRM request without *FileLifetime* parameter specified. Default: **3600**
-|	extraslashes.gsiftp					|	Add extra slashes after the "authority" part of a TURL for gsiftp protocol. 
+|	extraslashes.gsiftp					|	Add extra slashes after the "authority" part of a TURL for gsiftp protocol.
 |	extraslashes.rfio					|	Add extra slashes after the "authority" part of a TURL for rfio protocol.
 |	extraslashes.root					|	Add extra slashes after the "authority" part of a TURL for root protocol.
 |	extraslashes.file					|	Add extra slashes after the "authority" part of a TURL for file protocol.
@@ -1019,7 +1020,7 @@ To change/set a new value, or add a new parameter, just edit the *storm.properti
 ### Backend Storage Information: namespace.xml <a name="besti_advconf">&nbsp;</a>
 
 Information about storage managed by StoRM is stored in a configuration file named namespace.xml located at */etc/storm/backend-server/* on StoRM Backend host. One of the information stored into namespace.xml file is what is needed to perform the ***mapping functionality***.
-The *mapping functionality* is the process of retrieving or building the transport URL (TURL) of a file addressed by a Site URL (SURL) together with grid user credential. The Fig 3 shows the different schema of SURL and TURL. 
+The *mapping functionality* is the process of retrieving or building the transport URL (TURL) of a file addressed by a Site URL (SURL) together with grid user credential. The Fig 3 shows the different schema of SURL and TURL.
 
 {% assign image_src="surl-turl-schema.png" %}
 {% assign image_width="100%" %}
@@ -1043,11 +1044,11 @@ In StoRM, the mapping functionality is provided by the namespace component (NS).
 
 The basic features of the namespace component are:
 
-- The configuration is modular and structured (representation is based on XML) 
+- The configuration is modular and structured (representation is based on XML)
 - An efficient structure of namespace configuration lives in memory.
 - No access to disk or database is performed
 - The loading and the parsing of the configuration file occurs:
-	* at start-up of the back-end service 
+	* at start-up of the back-end service
 	* when configuration file is modified
 
 
@@ -1135,7 +1136,7 @@ This is and example of the FS element:
 			</pool>
 		</capabilities>
 		<defaults-values>
-			<space lifetime="86400" type="volatile" guarsize="291" 
+			<space lifetime="86400" type="volatile" guarsize="291"
 				totalsize="291"/>
 			<file lifetime="3600" type="volatile"/>
 		</defaults-values>
@@ -1158,7 +1159,7 @@ This is and example of the FS element:
 	    <TotalOnlineSize unit="GB" limited-size="true">291</TotalOnlineSize>
 	    <TotalNearlineSize unit="GB">0</TotalNearlineSize>
 	</properties>
-	
+
 in details:
 
 - ```<RetentionPolicy>replica</RetentionPolicy>``` : Retention Policy of the Storage Area. Possible values are: *replica*, *custodial*.
@@ -1167,7 +1168,7 @@ in details:
 - ```<TotalOnlineSize unit="GB" limited-size="true">291</TotalOnlineSize>``` Total on-line size of the Storage Area in GigaBytes. In case the attribute *limited-size*="true", StoRM enforce this limit at SRM level. When the space used for the Storage Area is at least equal to the size specified, every further SRM request to write files will fail with SRM\_NO\_FREE\_SPACE error code.
 - ```<TotalNearlineSize unit="GB">0</TotalNearlineSize>``` : Total near-line size of the Storage Area. This only means in case the Storage Area is in some way attached to a MSS storage system (such as TSM with GPFS).
 
-> ***Storage area capabilities***: 
+> ***Storage area capabilities***:
 
 	<aclMode>AoT</aclMode>
 
@@ -1185,15 +1186,15 @@ This is the Default ACL list. A list of ACL entry (that specify a local user (*u
 > **_Access and Transfer protocol supported_**
 
 The ```file``` protocol:
-       
+
 	<prot name="file">
 		<schema>file</schema>
 	</prot>
 
 The **file** protocol means the capability to perform local access on file and directory. If user performs an SRM request (*srmPtG* or *srmPtP*) specifying the file protocol, and it is supported by the selected Storage Area, StoRM return a TURL structured as:
-	
+
 	file:///atlas/atlasmcdisk/filename
-	
+
 This TURL can be used through GFAL or other SRM clients to perform a direct access on the file.
 
 	<prot name="gsiftp">
@@ -1205,7 +1206,7 @@ This TURL can be used through GFAL or other SRM clients to perform a direct acce
 
 The ```gsiftp``` protocol:
 
-The **gsiftp** protocol means the GridFTP transfer system from Globus widely adopted in many Grid environments. This capability element contains all the information about the GridFTP server to use with this Storage Area. Site administrator can decide to have different server (or pools of server) for different Storage Areas. The *id* is the server identifier to be used when defining a pool. The *schema* have to be gsiftp. *host* is the hostname of the server (or the DNS alias used to aggregate more than one server). The *port* is the GridFTP server port, typically 2811. If user performs an SRM request (*srmPtG* or *srmPtP*) specifying the *gsiftp* protocol, and it is supported by the selected Storage Area, StoRM return a TURL structured as: 
+The **gsiftp** protocol means the GridFTP transfer system from Globus widely adopted in many Grid environments. This capability element contains all the information about the GridFTP server to use with this Storage Area. Site administrator can decide to have different server (or pools of server) for different Storage Areas. The *id* is the server identifier to be used when defining a pool. The *schema* have to be gsiftp. *host* is the hostname of the server (or the DNS alias used to aggregate more than one server). The *port* is the GridFTP server port, typically 2811. If user performs an SRM request (*srmPtG* or *srmPtP*) specifying the *gsiftp* protocol, and it is supported by the selected Storage Area, StoRM return a TURL structured as:
 
 	gsiftp://gridftp-dteam.cnaf.infn.it:2811/atlas/atlasmcdisk/filename.
 
@@ -1216,8 +1217,8 @@ The ```rfio``` protocol:
 		<host>rfio-dteam.cnaf.infn.it</host>
 		<port>5001</port>
 	</prot>
-	
-This capability element contains all the information about the **rfio** server to use with this Storage Area. Like for GridFTP, site administrator can decide to have different server (or pools of server) for different Storage Areas. The *id* is the server identifier. The *schema* have to be rfio. *host* is the hostname of the server (or the DNS alias used to aggregate more than one server). The *port* is the rfio server port, typically 2811. If user performs an SRM request (*srmPtG* or *srmPtP*) specifying the rfio protocol, and it is supported by the selected Storage Area, StoRM return a TURL structured as: 
+
+This capability element contains all the information about the **rfio** server to use with this Storage Area. Like for GridFTP, site administrator can decide to have different server (or pools of server) for different Storage Areas. The *id* is the server identifier. The *schema* have to be rfio. *host* is the hostname of the server (or the DNS alias used to aggregate more than one server). The *port* is the rfio server port, typically 2811. If user performs an SRM request (*srmPtG* or *srmPtP*) specifying the rfio protocol, and it is supported by the selected Storage Area, StoRM return a TURL structured as:
 
 	rfio://rfio-dteam.cnaf.infn.it:5001/atlas/atlasmcdisk/filename.
 
@@ -1229,7 +1230,7 @@ The ```root``` protocol:
 		<port>1094</port>
 	</prot>
 
-This capability element contains all the information about the **root** server to use with this Storage Area. Like for other protocols, site administrator can decide to have different server (or pools of server) for different Storage Areas. The *id* is the server identifier. The *schema* have to be root. *host* is the hostname of the server (or the DNS alias used to aggregate more than one server). The *port* is the root server port, typically 1094. If user performs an SRM request (*srmPtG* or *srmPtP*) specifying the root protocol, and it is supported by the selected Storage Area, StoRM return a TURL structured as: 
+This capability element contains all the information about the **root** server to use with this Storage Area. Like for other protocols, site administrator can decide to have different server (or pools of server) for different Storage Areas. The *id* is the server identifier. The *schema* have to be root. *host* is the hostname of the server (or the DNS alias used to aggregate more than one server). The *port* is the root server port, typically 1094. If user performs an SRM request (*srmPtG* or *srmPtP*) specifying the root protocol, and it is supported by the selected Storage Area, StoRM return a TURL structured as:
 
 	root://root-dteam.cnaf.infn.it:1094/atlas/atlasmcdisk/filename.
 
@@ -1270,7 +1271,7 @@ Load balancing strategies details:
     		</member>
   		</members>
 	</pool>
-	
+
 > ***Default values***
 
 	<defaults-values>
@@ -1289,14 +1290,14 @@ A **mapping rule** define how a certain NS-Filesystem, that correspond to a Stor
 		</map-rule>
 	</mapping-rules>
 
-The ```<stfn-root>``` is the path used to build SURL referring to that Storage Area. The mapping rule above define that the NS-Filesystem named *dteam-FS* has to be mapped in the */dteam* SURL path. Following the NS-Filesystem element defined in the previous section, the SURL: 
+The ```<stfn-root>``` is the path used to build SURL referring to that Storage Area. The mapping rule above define that the NS-Filesystem named *dteam-FS* has to be mapped in the */dteam* SURL path. Following the NS-Filesystem element defined in the previous section, the SURL:
 
 	srm://storm-fe.cr.cnaf.infn.it:8444/dteam/testfile
-	
-following the root expressed in the *dteam-FS* NF-Filesystem element, is mapped in the physical root path on the file system: 
+
+following the root expressed in the *dteam-FS* NF-Filesystem element, is mapped in the physical root path on the file system:
 
 	/storage/dteam
-	
+
 This approach works similar to an alias, from the SURL *stfn-root* path to the NS-Filesystem root.
 
 > ***Approachable rules***
@@ -1363,7 +1364,7 @@ This file can be produced in two ways:
 StoRM Backend will load used-space.ini file at bootstrap and initialize the used space of newly created Storge Areas to its values.
 
 > **NOTE**: running YAIM on StoRM Backend profile will produce a new used-space.ini file and backup any existent version with the extension .bkp_. Take this into account if you want to produce the used-space.ini file by hand.
- 
+
 ### Backend logging: logging.xml <a name="belog_advconf">&nbsp;</a>
 
 The Backend log files provide information on the execution process of all SRM requests. All the Backend log files are placed in the */var/log/storm* directory. Backend logging operations are based on the *logback* framework. Logback provides a way to set the level of verbosity depending on the use case. The level supported are FATAL, ERROR, INFO, WARN, DEBUG. The **/etc/storm/backend-server/logging.xml** contains this information:
@@ -1401,7 +1402,7 @@ An hearthbeat.log entry example:
 |```ASynch [PTG:2450 PTP:3422]```	|Number of *srmPrepareToGet* and *srmPrepareToPut* requests executed from start-up.
 |```Last:( [#PTG=10 OK=10 M.Dur.=150]```	|Number of *srmPrepareToGet* executed in the last beat, with the number of request terminated with success (OK=10) and average time in millisecond (M.Dur.=150)
 |```[#PTP=5 OK=5 M.Dur.=300]```		|Number of srmPrepareToPut executed in the last beat, with number of request terminated with success and average time in milliseconds.
-			
+
 This log information can be really useful to gain a global view on the overall system status. A tail on this file is the first thing to do if you want to check the health of your StoRM installation. From here you can understand if the system is receiving SRM requests or if the system is overloaded by SRM request or if PtG and PtP are running without problem or if the interaction with the filesystem is exceptionally low (in case the M.Dur. is much more than usual).
 
 ### Backend Space Authorization: authz.db <a name="besa_advconf">&nbsp;</a>
@@ -1464,7 +1465,7 @@ The EMI3 GridHTTPs is the component responsible to provide:
 
 The GridHTTPs component relies on a single configuration file that contains all the configurable parameters. This file is:
 
-	/etc/storm/gridhttps-server/server.ini 
+	/etc/storm/gridhttps-server/server.ini
 
 containing a list of:
 
@@ -1568,7 +1569,7 @@ You can use EMIR-SERP to publish StoRM information to EMIR. EMIR-SERP uses the i
 First check that the resource bdii is up and running. Executing
 
 	ldapsearch -x -h localhost -p 2170 -b 'GLUE2GroupID=resource,o=glue' objectCLass=GLUE2Service
-	
+
 it should return two services for each vo installed on the machine. If this is not the case, there is some problem with your installation.
 Then install serp:
 
@@ -1582,14 +1583,14 @@ and edit the configuration file */etc/emi/emir-serp/emir-serp.ini*, providing th
 	[servicesFromResourceBDII]
 	resource_bdii_url = ldap://localhost:2170/GLUE2GroupID=resource,o=glue
 	...
-	
+
 You can change the update interval
 
 	# Period of registration/update messages
 	# Mandatory configuration parameter
 	# Value is given in hours
 	period = 1
-	
+
 and the time of registration entry validity:
 
 	# Time of registration entry validity
@@ -1639,12 +1640,12 @@ Then, edit **/etc/openldap/slapd.conf**. We have to edit 5 entries: *database*, 
 	  database        bdb
 	  suffix          "dc=example,dc=com"
 	  rootdn          "cn=Manager,dc=example,dc=com"
-	  # Cleartext passwords, especially for the rootdn, should be avoided. 
+	  # Cleartext passwords, especially for the rootdn, should be avoided.
 	  # See slappasswd(8) and slapd.conf(5) for details.
 	  # Use of strong authentication encouraged.
 	  # rootpw        secret
 	  directory 	  /var/lib/ldap
-	
+
 For example, define ourselves as a company called storm.cnaf.infn.it. We can leave default value for *database* entry, *bdb*, that stands for Berkeley Database. The *suffix* entry is our main domain or organization. So, we can changed it to:
 
 	  suffix          "dc=storm,dc=cnaf,dc=infn.it"
@@ -1692,7 +1693,7 @@ Then we have to create the DB_CONFIG file into /var/lib/ldap/ directory (or copy
 	  #set_lg_dir logs
 	  # Note: special DB_CONFIG flags are no longer needed for "quick"
 	  # slapadd(8) or slapindex(8) access (see their -q option).
-	
+
 To initialize the LDAP database we have to create a pair of files, one for the organization and one for the root DN. For example, create storm.cnaf.infn.it.ldif as follow:
 
 	  dn: dc=storm,dc=cnaf,dc=infn.it
@@ -1700,7 +1701,7 @@ To initialize the LDAP database we have to create a pair of files, one for the o
 	  objectClass: organization
 	  dc: storm
 	  o: StoRM
-	
+
 It contains the organization entry. Then create root.storm.cnaf.infn.it.ldif as follow:
 
 	  dn: cn=root,dc=storm,dc=cnaf,dc=infn.it
@@ -1714,12 +1715,12 @@ $ echo "" | slapadd -f /etc/openldap/slapd.conf
 ```
 
 This is required, otherwise you will get this error:
-	  
+
 	  bdb_db_open: database "dc=example,dc=com": db_open(/var/lib/ldap/id2entry.bdb) failed:
 	  No such file or directory (2).
 
 Now, only if host is SL6, convert configuration file into dynamic configuration under /etc/openldap/slapd.d directory:
-	
+
 ```bash  
 $ slaptest -f /etc/openldap/slapd.conf -F /etc/openldap/slapd.d
 ```
@@ -1727,7 +1728,7 @@ $ slaptest -f /etc/openldap/slapd.conf -F /etc/openldap/slapd.d
 For both SL5 and SL6, set permissions:
 
 ```bash
-	  chown -R ldap:ldap /var/lib/ldap 
+	  chown -R ldap:ldap /var/lib/ldap
 ```
 
 and, only on SL6, add:
@@ -1759,7 +1760,7 @@ So we are ready to add to our LDAP database the necessary users and groups. In p
 	  objectClass: top
  	  ou: Group
 
-Then, we can define storm and gridhttps users and groups, as follow: 
+Then, we can define storm and gridhttps users and groups, as follow:
 
 **storm.People.storm.cnaf.infn.it.ldif**:
 
@@ -1773,7 +1774,7 @@ Then, we can define storm and gridhttps users and groups, as follow:
 	  homeDirectory: /home/storm
 	  uid: storm
 	  uidNumber: 495
-	
+
 **storm.Group.storm.cnaf.infn.it.ldif**:
 
 	  dn: cn=storm,ou=Group,dc=storm,dc=cnaf,dc=infn.it
@@ -1781,7 +1782,7 @@ Then, we can define storm and gridhttps users and groups, as follow:
 	  objectClass: top
 	  cn: storm
 	  gidNumber: 494
-	
+
 **gridhttps.People.storm.cnaf.infn.it.ldif**:
 
 	  dn: uid=gridhttps,ou=People,dc=storm,dc=cnaf,dc=infn.it
@@ -1809,7 +1810,7 @@ Set the various GIDs and UIDs values as you want. Then we can add the users and 
 	  slapadd -l gridhttps.Group.storm.cnaf.infn.it.ldif
 	  slapadd -l storm.People.storm.cnaf.infn.it.ldif
 	  slapadd -l gridhttps.People.storm.cnaf.infn.it.ldif
-	
+
 Using a free program like Apache Directory Studio we can easily connect to the LDAP server and add other entries, export ldif configurations, etc. Important: as you can see from the files above, a user must contain account, posixAccount and shadowAccount objectClasses, a group instead must define only a posixGroup objectClass.
 
 To start server:
@@ -1840,17 +1841,17 @@ $ service nscd status
 ```
 
 Modify **/etc/nsswitch.conf** by adding "*ldap*" to the following lines:
-	     
+
 	  passwd: files ldap
 	  shadow: files ldap
 	  group: files ldap
 
 If SL5, modify both **/etc/ldap.conf** and **/etc/openldap/ldap.conf** by adding:
-	
+
 	  uri ldap://<ldap-server-hostname>
 	  base dc=storm,dc=cnaf,dc=infn.it
 
-If SL6 modify both **/etc/openldap/ldap.conf** and **/etc/nslcd.conf** by adding: 
+If SL6 modify both **/etc/openldap/ldap.conf** and **/etc/nslcd.conf** by adding:
 
 	  uri ldap://<ldap-server-hostname>
 	  base dc=storm,dc=cnaf,dc=infn.it
@@ -1870,7 +1871,7 @@ $ ldapsearch -x "uid=storm"
 $ ldapsearch -x "group=storm"
 ```
 
-or you can get the UID or GID of a username: 
+or you can get the UID or GID of a username:
 
 ```bash
 $ id -u storm

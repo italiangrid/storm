@@ -225,6 +225,7 @@ $ getfattr -d testfile
 # file: testfile
 user.testea="test"
 $ rm -f testfile
+```
 
 If the getfattr and setfattrl commands are not available on your host, **install** *attr* package:
 
