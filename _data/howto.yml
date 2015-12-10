@@ -63,3 +63,9 @@
   description: "EMIR-SERP can be set to publish StoRM information to EMIR."
   last-update: "05/03/2015"
   older-versions: []
+
+- title: "Upgrade StoRM from EMI2 version to EMI3"
+  relative-link: "/documentation/how-to/upgrade-to-emi3/"
+  description: "What's necessary during the update from old StoRM releases"
+  last-update: "09/12/2015"
+  older-versions: []

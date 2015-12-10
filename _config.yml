@@ -2,7 +2,7 @@ exclude: [README.md, _bin, run-jekyll.sh]
 
 markdown: redcarpet
 redcarpet:
-  extensions: [ "tables" ]
+  extensions: [ "tables", "with_toc_data", "no_intra_emphasis", "fenced_code_blocks", "autolink", "highlight", "footnotes" ]
 
 gems:
   - jekyll-redirect-from
