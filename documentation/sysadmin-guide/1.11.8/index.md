@@ -55,7 +55,7 @@ ntp-4.2.2p1-9.el5_4.1
 $ chkconfig --list | grep ntpd
 ntpd            0:off   1:off   2:on    3:on    4:on    5:on    6:off
 ```
-    
+
 **To install**:
 
 ```bash
@@ -95,7 +95,7 @@ $ service network restart
 
 #### Host needs a valid X.509 certificate
 
-Hosts participating to the StoRM-SE (FE, BE, GridHTTP and GridFTP hosts) service must be configured with X.509 certificates signed by a trusted Certification Authority (CA). 
+Hosts participating to the StoRM-SE (FE, BE, GridHTTP and GridFTP hosts) service must be configured with X.509 certificates signed by a trusted Certification Authority (CA).
 Usually, the **hostcert.pem** and **hostkey.pem** certificates are located in the /etc/grid-security/ directory, and they must have permission 0644 and 0400 respectively:
 
 **To check**:
@@ -225,6 +225,7 @@ $ getfattr -d testfile
 # file: testfile
 user.testea="test"
 $ rm -f testfile
+```
 
 If the getfattr and setfattrl commands are not available on your host, **install** *attr* package:
 
@@ -374,7 +375,7 @@ To install **EGI Trust Anchors Repository** follow [EGI instructions](https://wi
 
 You must disable the **DAG repository** if enabled. To check if it is enabled:
 
-```bash 
+```bash
 $ grep enabled /etc/yum.repos.d/dag.repo
  enabled=0
 ```
@@ -569,7 +570,7 @@ Backend specific YAIM variables are in the following file:
 $ /opt/glite/yaim/exaples/siteinfo/services/se_storm_backend
 ```
 
-Please copy and edit that file in your CONFDIR/services directory. 
+Please copy and edit that file in your CONFDIR/services directory.
 You have to set at least these variables:
 
 - STORM\_BACKEND\_HOST
@@ -688,7 +689,7 @@ The GridHTTPs server is deprecated. Install and configure the storm-webdav servi
 </div>
 
 Specific variables are in the following file:
-    
+
 ```bash
 $ /opt/glite/yaim/examples/siteinfo/services/se_storm_gridhttps
 ```
@@ -762,11 +763,11 @@ optimize performance and results.
 ### StoRM Frontend service<a name="fe_advconf">&nbsp;</a>
 
 The Frontend component relies on a single configuration file that contains all the configurable parameters. This file is:
-    
-    /etc/storm/frontend-server/storm-frontend-server.conf 
-    
+
+    /etc/storm/frontend-server/storm-frontend-server.conf
+
 containing a list of:
-    
+
     key = value
 
 pairs that can be used to configure the Frontend server. In case a parameter is modified, the Frontend service has to be restarted in order to read the new value.
@@ -856,7 +857,7 @@ pairs that can be used to configure the Frontend server. In case a parameter is 
 #### Frontend Logging <a name="loggingfe_advconf">&nbsp;</a>
 
 The Frontend logs information on the service status and the SRM requests received and managed by the process. The Frontend's log supports different level of logging (ERROR, WARNING, INFO, DEBUG, DEBUG2) that can be set from the dedicated parameter in _storm-frontend-server.conf_ configuration file.
-The Frontend log file named _storm-frontend-server.log_ is placed in the _/var/log/storm directory_. At start-up time, the FE prints here the whole set of configuration parameters, this can be useful to check desired values. When a new SRM request is managed, the FE logs information about the user (DN and FQANs) and the requested parameters. 
+The Frontend log file named _storm-frontend-server.log_ is placed in the _/var/log/storm directory_. At start-up time, the FE prints here the whole set of configuration parameters, this can be useful to check desired values. When a new SRM request is managed, the FE logs information about the user (DN and FQANs) and the requested parameters.
 At each SRM request, the FE logs also this important information:
 
     03/19 11:51:42 0x88d4ab8 main: AUDIT - Active tasks: 3
@@ -881,19 +882,19 @@ Synchronous and Asynchronous requests and tell the user:
 - how many failed,
 - how many produced an error,
 - the average execution time,
-- the minimum execution time, 
+- the minimum execution time,
 - the maximum execution time.
 
 This row reports the **Monitoring Summary** and this is the default behaviour of the monitoring service.
 
 **_Example_**:
 
-    03/20 14:19:11 : [# 22927 lifetime=95:33:18] 
-                S [OK:47,F:15,E:0,m:0.085,M:3.623,Avg:0.201] 
-                A [OK:16,F:0,E:0,m:0.082,M:0.415,Avg:0.136] 
-                Last:(S [OK:12,F:5,E:0,m:0.091,M:0.255] 
+    03/20 14:19:11 : [# 22927 lifetime=95:33:18]
+                S [OK:47,F:15,E:0,m:0.085,M:3.623,Avg:0.201]
+                A [OK:16,F:0,E:0,m:0.082,M:0.415,Avg:0.136]
+                Last:(S [OK:12,F:5,E:0,m:0.091,M:0.255]
                 A [OK:6,F:0,E:0,m:0.121,M:0.415])
-    
+
 Furthermore it can be requested a more detailed Frontend Monitoring activity by setting the configuration property _monitoring.detailed_ to _true_. Doing this, at each Monitoring Round for each kind of srm operation performed in the Monitoring Round (srmls, srmPtp, srmRm, ...) the following information are printed in a section with header "Last round details:":
 
 - how many request succeded,
@@ -911,10 +912,10 @@ This is called the **Detailed Monitoring Round**. After this, the Monitoring Sum
     03/20 14:19:11 : Last round details:
     03/20 14:19:11 : [PTP] [OK:3,F:0,E:0,Avg:0.203,Std Dev:0.026,m:0.183,M:0.240]
     03/20 14:19:11 : [Put done] [OK:2,F:0,E:0,Avg:0.155,Std Dev:0.018,m:0.136,M:0.173]
-    03/20 14:19:11 : [# 22927 lifetime=95:33:18] 
-                S [OK:47,F:15,E:0,m:0.085,M:3.623,Avg:0.201] 
+    03/20 14:19:11 : [# 22927 lifetime=95:33:18]
+                S [OK:47,F:15,E:0,m:0.085,M:3.623,Avg:0.201]
                 A [OK:16,F:0,E:0,m:0.082,M:0.415,Avg:0.136]  
-                Last:(S [OK:12,F:5,E:0,m:0.091,M:0.255] 
+                Last:(S [OK:12,F:5,E:0,m:0.091,M:0.255]
                 A [OK:6,F:0,E:0,m:0.121,M:0.415])
     03/20 14:19:11 : Details:
     03/20 14:19:11 : [PTP] [OK:7,F:0,E:0,Avg:0.141,Std Dev:0.057,m:0.085,M:0.240]
@@ -983,7 +984,7 @@ configuration file.
 |   ```pinLifetime.maximum```                   |   Maximum *PinLifetime* allowed in seconds.<br/>Default: **1814400**
 |   ```SRM22Client.PinLifeTime```               |   Default *PinLifeTime* in seconds used by StoRM in case of *SrmCopy* operation. This value is the one specified in the remote *SrmPrepareToGet* request. Default: **259200**
 |   ```fileLifetime.default```                  |   Default *FileLifetime* in seconds used for VOLATILE file in case of SRM request without *FileLifetime* parameter specified. Default: **3600**
-|   ```extraslashes.gsiftp```                   |   Add extra slashes after the "authority" part of a TURL for gsiftp protocol. 
+|   ```extraslashes.gsiftp```                   |   Add extra slashes after the "authority" part of a TURL for gsiftp protocol.
 |   ```extraslashes.rfio```                     |   Add extra slashes after the "authority" part of a TURL for rfio protocol.
 |   ```extraslashes.root```                     |   Add extra slashes after the "authority" part of a TURL for root protocol.
 |   ```extraslashes.file```                     |   Add extra slashes after the "authority" part of a TURL for file protocol.
@@ -1124,7 +1125,7 @@ configuration file.
 #### namespace.xml <a name="besti_advconf">&nbsp;</a>
 
 Information about storage managed by StoRM is stored in a configuration file named namespace.xml located at */etc/storm/backend-server/* on StoRM Backend host. One of the information stored into namespace.xml file is what is needed to perform the ***mapping functionality***.
-The *mapping functionality* is the process of retrieving or building the transport URL (TURL) of a file addressed by a Site URL (SURL) together with grid user credential. The Fig 3 shows the different schema of SURL and TURL. 
+The *mapping functionality* is the process of retrieving or building the transport URL (TURL) of a file addressed by a Site URL (SURL) together with grid user credential. The Fig 3 shows the different schema of SURL and TURL.
 
 {% assign image_src="surl-turl-schema.png" %}
 {% assign image_width="100%" %}
@@ -1148,11 +1149,11 @@ In StoRM, the mapping functionality is provided by the namespace component (NS).
 
 The basic features of the namespace component are:
 
-- The configuration is modular and structured (representation is based on XML) 
+- The configuration is modular and structured (representation is based on XML)
 - An efficient structure of namespace configuration lives in memory.
 - No access to disk or database is performed
 - The loading and the parsing of the configuration file occurs:
-    * at start-up of the back-end service 
+    * at start-up of the back-end service
     * when configuration file is modified
 
 
@@ -1240,7 +1241,7 @@ This is and example of the FS element:
             </pool>
         </capabilities>
         <defaults-values>
-            <space lifetime="86400" type="volatile" guarsize="291" 
+            <space lifetime="86400" type="volatile" guarsize="291"
                 totalsize="291"/>
             <file lifetime="3600" type="volatile"/>
         </defaults-values>
@@ -1263,7 +1264,7 @@ This is and example of the FS element:
         <TotalOnlineSize unit="GB" limited-size="true">291</TotalOnlineSize>
         <TotalNearlineSize unit="GB">0</TotalNearlineSize>
     </properties>
-    
+
 in details:
 
 - ```<RetentionPolicy>replica</RetentionPolicy>``` : Retention Policy of the Storage Area. Possible values are: *replica*, *custodial*.
@@ -1272,7 +1273,7 @@ in details:
 - ```<TotalOnlineSize unit="GB" limited-size="true">291</TotalOnlineSize>``` Total on-line size of the Storage Area in GigaBytes. In case the attribute *limited-size*="true", StoRM enforce this limit at SRM level. When the space used for the Storage Area is at least equal to the size specified, every further SRM request to write files will fail with SRM\_NO\_FREE\_SPACE error code.
 - ```<TotalNearlineSize unit="GB">0</TotalNearlineSize>``` : Total near-line size of the Storage Area. This only means in case the Storage Area is in some way attached to a MSS storage system (such as TSM with GPFS).
 
-> ***Storage area capabilities***: 
+> ***Storage area capabilities***:
 
     <aclMode>AoT</aclMode>
 
@@ -1290,15 +1291,15 @@ This is the Default ACL list. A list of ACL entry (that specify a local user (*u
 > **_Access and Transfer protocol supported_**
 
 The ```file``` protocol:
-       
+
     <prot name="file">
         <schema>file</schema>
     </prot>
 
 The **file** protocol means the capability to perform local access on file and directory. If user performs an SRM request (*srmPtG* or *srmPtP*) specifying the file protocol, and it is supported by the selected Storage Area, StoRM return a TURL structured as:
-    
+
     file:///atlas/atlasmcdisk/filename
-    
+
 This TURL can be used through GFAL or other SRM clients to perform a direct access on the file.
 
     <prot name="gsiftp">
@@ -1310,7 +1311,7 @@ This TURL can be used through GFAL or other SRM clients to perform a direct acce
 
 The ```gsiftp``` protocol:
 
-The **gsiftp** protocol means the GridFTP transfer system from Globus widely adopted in many Grid environments. This capability element contains all the information about the GridFTP server to use with this Storage Area. Site administrator can decide to have different server (or pools of server) for different Storage Areas. The *id* is the server identifier to be used when defining a pool. The *schema* have to be gsiftp. *host* is the hostname of the server (or the DNS alias used to aggregate more than one server). The *port* is the GridFTP server port, typically 2811. If user performs an SRM request (*srmPtG* or *srmPtP*) specifying the *gsiftp* protocol, and it is supported by the selected Storage Area, StoRM return a TURL structured as: 
+The **gsiftp** protocol means the GridFTP transfer system from Globus widely adopted in many Grid environments. This capability element contains all the information about the GridFTP server to use with this Storage Area. Site administrator can decide to have different server (or pools of server) for different Storage Areas. The *id* is the server identifier to be used when defining a pool. The *schema* have to be gsiftp. *host* is the hostname of the server (or the DNS alias used to aggregate more than one server). The *port* is the GridFTP server port, typically 2811. If user performs an SRM request (*srmPtG* or *srmPtP*) specifying the *gsiftp* protocol, and it is supported by the selected Storage Area, StoRM return a TURL structured as:
 
     gsiftp://gridftp-dteam.cnaf.infn.it:2811/atlas/atlasmcdisk/filename.
 
@@ -1321,8 +1322,8 @@ The ```rfio``` protocol:
         <host>rfio-dteam.cnaf.infn.it</host>
         <port>5001</port>
     </prot>
-    
-This capability element contains all the information about the **rfio** server to use with this Storage Area. Like for GridFTP, site administrator can decide to have different server (or pools of server) for different Storage Areas. The *id* is the server identifier. The *schema* have to be rfio. *host* is the hostname of the server (or the DNS alias used to aggregate more than one server). The *port* is the rfio server port, typically 2811. If user performs an SRM request (*srmPtG* or *srmPtP*) specifying the rfio protocol, and it is supported by the selected Storage Area, StoRM return a TURL structured as: 
+
+This capability element contains all the information about the **rfio** server to use with this Storage Area. Like for GridFTP, site administrator can decide to have different server (or pools of server) for different Storage Areas. The *id* is the server identifier. The *schema* have to be rfio. *host* is the hostname of the server (or the DNS alias used to aggregate more than one server). The *port* is the rfio server port, typically 2811. If user performs an SRM request (*srmPtG* or *srmPtP*) specifying the rfio protocol, and it is supported by the selected Storage Area, StoRM return a TURL structured as:
 
     rfio://rfio-dteam.cnaf.infn.it:5001/atlas/atlasmcdisk/filename.
 
@@ -1334,7 +1335,7 @@ The ```root``` protocol:
         <port>1094</port>
     </prot>
 
-This capability element contains all the information about the **root** server to use with this Storage Area. Like for other protocols, site administrator can decide to have different server (or pools of server) for different Storage Areas. The *id* is the server identifier. The *schema* have to be root. *host* is the hostname of the server (or the DNS alias used to aggregate more than one server). The *port* is the root server port, typically 1094. If user performs an SRM request (*srmPtG* or *srmPtP*) specifying the root protocol, and it is supported by the selected Storage Area, StoRM return a TURL structured as: 
+This capability element contains all the information about the **root** server to use with this Storage Area. Like for other protocols, site administrator can decide to have different server (or pools of server) for different Storage Areas. The *id* is the server identifier. The *schema* have to be root. *host* is the hostname of the server (or the DNS alias used to aggregate more than one server). The *port* is the root server port, typically 1094. If user performs an SRM request (*srmPtG* or *srmPtP*) specifying the root protocol, and it is supported by the selected Storage Area, StoRM return a TURL structured as:
 
     root://root-dteam.cnaf.infn.it:1094/atlas/atlasmcdisk/filename.
 
@@ -1375,7 +1376,7 @@ Load balancing strategies details:
             </member>
         </members>
     </pool>
-    
+
 > ***Default values***
 
     <defaults-values>
@@ -1394,14 +1395,14 @@ A **mapping rule** define how a certain NS-Filesystem, that correspond to a Stor
         </map-rule>
     </mapping-rules>
 
-The ```<stfn-root>``` is the path used to build SURL referring to that Storage Area. The mapping rule above define that the NS-Filesystem named *dteam-FS* has to be mapped in the */dteam* SURL path. Following the NS-Filesystem element defined in the previous section, the SURL: 
+The ```<stfn-root>``` is the path used to build SURL referring to that Storage Area. The mapping rule above define that the NS-Filesystem named *dteam-FS* has to be mapped in the */dteam* SURL path. Following the NS-Filesystem element defined in the previous section, the SURL:
 
     srm://storm-fe.cr.cnaf.infn.it:8444/dteam/testfile
-    
-following the root expressed in the *dteam-FS* NF-Filesystem element, is mapped in the physical root path on the file system: 
+
+following the root expressed in the *dteam-FS* NF-Filesystem element, is mapped in the physical root path on the file system:
 
     /storage/dteam
-    
+
 This approach works similar to an alias, from the SURL *stfn-root* path to the NS-Filesystem root.
 
 > ***Approachable rules***
@@ -1523,7 +1524,7 @@ An hearthbeat.log entry example:
 |```ASynch [PTG:2450 PTP:3422]```   |Number of *srmPrepareToGet* and *srmPrepareToPut* requests executed from start-up.
 |```Last:( [#PTG=10 OK=10 M.Dur.=150]```    |Number of *srmPrepareToGet* executed in the last beat, with the number of request terminated with success (OK=10) and average time in millisecond (M.Dur.=150)
 |```[#PTP=5 OK=5 M.Dur.=300]```     |Number of srmPrepareToPut executed in the last beat, with number of request terminated with success and average time in milliseconds.
-            
+
 This log information can be really useful to gain a global view on the overall system status. A tail on this file is the first thing to do if you want to check the health of your StoRM installation. From here you can understand if the system is receiving SRM requests or if the system is overloaded by SRM request or if PtG and PtP are running without problem or if the interaction with the filesystem is exceptionally low (in case the M.Dur. is much more than usual).
 
 ### StoRM GridFTP service <a name="gftp_advconf">&nbsp;</a>
@@ -1576,7 +1577,7 @@ The EMI3 GridHTTPs is the component responsible to provide:
 
 The GridHTTPs component relies on a single configuration file that contains all the configurable parameters. This file is:
 
-    /etc/storm/gridhttps-server/server.ini 
+    /etc/storm/gridhttps-server/server.ini
 
 containing a list of:
 
@@ -1687,7 +1688,7 @@ You can use EMIR-SERP to publish StoRM information to EMIR. EMIR-SERP uses the i
 First check that the resource bdii is up and running. Executing
 
     ldapsearch -x -h localhost -p 2170 -b 'GLUE2GroupID=resource,o=glue' objectCLass=GLUE2Service
-    
+
 it should return two services for each vo installed on the machine. If this is not the case, there is some problem with your installation.
 Then install serp:
 
@@ -1701,14 +1702,14 @@ and edit the configuration file */etc/emi/emir-serp/emir-serp.ini*, providing th
     [servicesFromResourceBDII]
     resource_bdii_url = ldap://localhost:2170/GLUE2GroupID=resource,o=glue
     ...
-    
+
 You can change the update interval
 
     # Period of registration/update messages
     # Mandatory configuration parameter
     # Value is given in hours
     period = 1
-    
+
 and the time of registration entry validity:
 
     # Time of registration entry validity
