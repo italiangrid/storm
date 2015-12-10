@@ -41,7 +41,7 @@ footer .container {
   text-align: left;
 }
 
-/** headings, paragraphs, and code got to look like 
+/** headings, paragraphs, and code got to look like
   on github wiki */
 
 h1 {
@@ -163,13 +163,13 @@ span.news-title {
 }
 
 /* Large desktop */
-@media (min-width: 1024px) { 
+@media (min-width: 1024px) {
 	#content {
 		padding-left: 330px;
 		padding-right: 40px;
 	}
 }
- 
+
 /* Portrait tablet to landscape and desktop */
 @media (min-width: 768px) and (max-width: 1023px) {
 	#toc {
@@ -180,9 +180,9 @@ span.news-title {
 		padding-right: 40px;
 	}
 }
- 
+
 /* Landscape phone to portrait tablet */
-@media (max-width: 767px) { 
+@media (max-width: 767px) {
 
 	#content {
 		padding-left: 40px;
@@ -190,18 +190,18 @@ span.news-title {
 	}
 
 }
- 
+
 /* Landscape phones and down */
-@media (max-width: 480px) { 
+@media (max-width: 480px) {
 
 	#content {
 		padding-left: 40px;
-		padding-right: 40px;	
+		padding-right: 40px;
 	}
 
 }
 
-/* 
+/*
 In order to position anchors under the height of a fixed element,
 format 'a' elements as follows:
 */
@@ -211,3 +211,23 @@ a[name] {
     display: inline-block; /* required for webkit browsers */
 }
 
+.anchor h1, .anchor h2, .anchor h3, .anchor h4, .anchor h5,
+.anchor div[id^="Table"] {
+
+  margin-top: -50px;
+  padding-top: 60px;
+
+}
+
+p.note {
+  padding: 2px 8px;
+  border-bottom: 1px solid lightgray;
+  background: royalblue;
+  color: white;
+  border-radius: 4px;
+}
+
+blockquote p {
+  font-size: 14px;
+  line-height: 20px;
+}

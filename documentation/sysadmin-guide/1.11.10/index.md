@@ -6,50 +6,47 @@ redirect_from:
   - /documentation/sysadmin-guide/
 ---
 
-# StoRM System Administration Guide
+#StoRM System Administration Guide
 
 version: {{ page.version }}
 
-#### Table of contents
+**Table of contents**
 
-* [Installation Prerequisites](#installprereq)
-  * [General EMI 3 instructions](#emi3instructions)
-  * [System users and file limits](#systemusers)
-  * [ACL support](#aclsupport)
-  * [Extended Attribute support](#easupport)
-  * [Storage Area's permissions](#sapermissions)
-* [Installation guide](#installationguide)
-  * [StoRM Upgrade to EMI3](#upgradetoemi3)
-  * [Repository settings](#reposettings)
-  * [Install StoRM nodes](#stormnodes)
+* [Installation Prerequisites](#installation-prerequisites)
+  * [General EMI 3 instructions](#general-emi-3-instructions)
+  * [System users and file limits](#system-users-and-file-limits)
+  * [ACL support](#acl-support)
+  * [Extended Attribute support](#extended-attribute-support)
+  * [Storage Area's permissions](#storage-area-39-s-permissions)
+* [Installation guide](#installation-guide)
+  * [Repository settings](#repository-settings)
+  * [Install StoRM nodes](#install-storm-nodes)
 * [Configuration](#configuration)
-  * [General YAIM variables](#yaimvariables)
-  * [StoRM Frontend variables](#feconf)
-  * [StoRM Backend variables](#beconf)
-  * [StoRM WebDAV variables](#webdavconf)
-  * [StoRM GridHTTPs variables](#ghttpconf)
-  * [Launching YAIM](#launchyaim)
-* [Advanced Configuration](#advconf)
-  * [StoRM Frontend service](#fe_advconf)
-  * [StoRM Backend service](#be_advconf)
-  * [StoRM GridFTP service](#gftp_advconf)
-  * [StoRM GridHTTPs service](#ghttp_advconf)
-  * [StoRM EMIR Configuration](#emir_advconf)
-  * [Users blacklisting with ARGUS](#argus_advconf)
+  * [General YAIM variables](#general-yaim-variables)
+  * [StoRM Frontend variables](#storm-frontend-variables)
+  * [StoRM Backend variables](#storm-backend-variables)
+  * [StoRM WebDAV variables](#storm-webdav-variables)
+  * [Launching YAIM](#launching-yaim)
+* [Advanced Configuration](#advanced-configuration)
+  * [StoRM Frontend service](#storm-frontend-service)
+  * [StoRM Backend service](#storm-backend-service)
+  * [StoRM GridFTP service](#storm-gridftp-service)
+* [Services information](#services-information)
+  * [StoRM Info Provider](#storm-info-provider)
 
-## Installation Prerequisites <a name="installprereq">&nbsp;</a>
+##Installation Prerequisites
 
-All the StoRM components are certified to work on Scientific Linux SL5/64 (x86\_64) and Scientific Linux SL6/64 (x86\_64) both with an EPEL repository for external dependencies. Therefore **install a proper version of Scientific Linux on your machine(s)**.
-All the information about the OS Scientific Linux can be found at [here](http://www.scientificlinux.org). SL5 and SL6 are also available in the [SL5.X](http://linuxsoft.cern.ch/scientific/5x/) and [SL6.X](http://linuxsoft.cern.ch/scientific/6x/) repositories respectively mirrored at CERN. There are no specific minimum hardware requirements but it is advisable to have at least 1GB of RAM on Backend host.
+All the StoRM components are certified to work on Scientific Linux SL5/64 (x86_64) and Scientific Linux SL6/64 (x86_64) both with an EPEL repository for external dependencies. Therefore **install a proper version of Scientific Linux on your machine(s)**.
+All the information about the OS Scientific Linux can be found at [here][Scientific Linux]. SL5 and SL6 are also available in the [SL5.X][SL5] and [SL6.X][SL6] repositories respectively mirrored at CERN. There are no specific minimum hardware requirements but it is advisable to have at least 1GB of RAM on Backend host.
 
-### General EMI 3 instructions <a name="emi3instructions">&nbsp;</a>
+###General EMI 3 instructions
 
-Official releases are done in the contest of the EMI project so follow the [general EMI 3 installation instructions](https://twiki.cern.ch/twiki/bin/view/EMI/GenericInstallationConfigurationEMI3) as first installation prerequisite.
+Official releases are done in the contest of the EMI project so follow the [general EMI 3 installation instructions][EMI3 Instructions] as first installation prerequisite.
 In particular, check the followings:
 
-#### NTP service must be installed
+####NTP service must be installed
 
-**To check**:
+Check if ntp is installed as follow:
 
 ```bash
 $ rpm -qa | grep ntp-
@@ -58,7 +55,7 @@ $ chkconfig --list | grep ntpd
 ntpd            0:off   1:off   2:on    3:on    4:on    5:on    6:off
 ```
 
-**To install**:
+If you need to install, run:
 
 ```bash
 $ yum install ntp
@@ -66,11 +63,11 @@ $ chkconfig ntpd on
 $ service ntpd restart
 ```
 
-#### Hostname must be set correctly
+####Hostname must be set correctly
 
 Hostname must be a *Fully Qualified Domain Name* (FQDN).
 
-**To check**:
+To check if your hostname is a FQDN, run:
 
 ```bash
 $ hostname -f
@@ -78,7 +75,7 @@ $ hostname -f
 
 The command must return the host FQDN.
 
-**To correct**: Unless you are using bind or NIS for host lookups you can change the FQDN and the DNS domain name, which is part of the FQDN, in the /etc/hosts file.
+If you need to correct it and you are using bind or NIS for host lookups, you can change the FQDN and the DNS domain name, which is part of the FQDN, in the /etc/hosts file.
 
 ```bash
 $ cat /etc/hosts
@@ -95,33 +92,33 @@ Set your own MYHOSTNAME and MYDOMAIN and restart the network service:
 $ service network restart
 ```
 
-#### Host needs a valid X.509 certificate
+####Host needs a valid X.509 certificate
 
-Hosts participating to the StoRM-SE (FE, BE, GridHTTP and GridFTP hosts) service must be configured with X.509 certificates signed by a trusted Certification Authority (CA).
-Usually, the **hostcert.pem** and **hostkey.pem** certificates are located in the /etc/grid-security/ directory, and they must have permission 0644 and 0400 respectively:
-
-**To check**:
+Hosts participating to the StoRM-SE (FE, BE, GridHTTP and GridFTP hosts) service must be configured with X.509 certificates signed by a trusted Certification Authority (CA). Usually, the **hostcert.pem** and **hostkey.pem** certificates are located in the */etc/grid-security* directory, and they must have permission *0644* and *0400* respectively:
 
 ```bash
 $ ls -l /etc/grid-security/hostkey.pem
 -r-------- 1 root root 887 Mar  1 17:08 /etc/grid-security/hostkey.pem
 $ ls -l /etc/grid-security/hostcert.pem
 -rw-r--r-- 1 root root 1440 Mar  1 17:08 /etc/grid-security/hostcert.pem
-$ openssl x509 -checkend 0 -in hostcert.pem
 ```
 
-Certificate will not expire.
+Check if certificate is expired as follow:
 
-**To change permission**:
+```bash
+$ openssl x509 -checkend 0 -in /etc/grid-security/hostcert.pem
+```
+
+To change permissions, if necessary:
 
 ```bash
 $ chmod 0400 /etc/grid-security/hostkey.pem
 $ chmod 0644 /etc/grid-security/hostcert.pem
 ```
 
-### System users and file limits <a name="systemusers">&nbsp;</a>
+###System users and file limits
 
-The StoRM frontend, backend and WebDAV services run by default as user **storm**.
+The StoRM Frontend, Backend and WebDAV services run by default as user **storm**.
 It's recommended to keep the default settings and use the same user for all
 the services.
 
@@ -138,20 +135,18 @@ the text contained in angled brackets with the appropriate
 numerical value for your installation):
 
 ```bash
-$ useradd -M storm -u <MY_STORM_UID> -g <MY_STORM_GID>
+$ useradd -M storm -u MY_STORM_UID -g MY_STORM_GID
 ```
+{% assign label_caption="Important" %}
+{% include open_note.liquid %}
+> Keep UIDs and GIDs aligned for StoRM users and groups on distributed deployments (i.e. when the services are installed on different machines).<br/>
+> This can be done using NIS (see a tutorial [here][how-to-nis] or LDAP (see [How-to example][LDAPconfiguration]).
 
-<span class="label label-info">Important</span> Keep UIDs and GIDs aligned for
-the StoRM users and groups on distributed deployments (i.e. when the services
-are installed on different machines). This can be done using NIS (see a tutorial
-[here](http://www.tldp.org/HOWTO/NIS-HOWTO/index.html)) or LDAP (see [Appendix
-A][LDAPconfiguration]).
-
-#### File limits
+####File limits
 
 The following settings are recommended to safely run the StoRM services.  Put
-these settings in `/etc/security/limits.conf` or in a file contained in the
-`/etc/security/limits.d` directory (recommended):
+these settings in */etc/security/limits.conf* or in a file contained in the
+*/etc/security/limits.d* directory (recommended):
 
 ```bash
 # StoRM frontend, backend and webdav services
@@ -159,14 +154,14 @@ storm hard nofile 65535
 storm soft nofile 65535
 ```
 
-### ACL support <a name="aclsupport">&nbsp;</a>
+###ACL support
 
 StoRM uses the ACLs on files and directories to implement the security model.
 In so doing, StoRM uses the native access to the file system. Therefore in
 order to ensure a proper running, ACLs need to be enabled on the underlying
 file system (sometimes they are enabled by default) and work properly.
 
-**To check**:
+To check:
 
 ```bash
 $ touch test
@@ -188,13 +183,14 @@ other::r--
 $ rm -f test
 ```
 
-If the getfacl and setfacl commands are not available on your host you have to **install** *acl* package:
+If the *getfacl* and *setfacl* commands are not available on your host you have to **install** *acl* package:
 
 ```bash
 $ yum install acl
 ```
 
-To **enable** ACLs (if needed), you must add the acl property to the relevant file system in your /etc/fstab file. For example:
+To enable ACLs (if needed), you must add the acl property to the relevant file system in your */etc/fstab* file.
+For example:
 
 ```bash
 $ vi /etc/fstab
@@ -211,14 +207,14 @@ $ mount -o remount /storage
 
 This is valid for different file system types (i.e., ext3, xfs, gpfs and others).
 
-### Extended Attribute support <a name="easupport">&nbsp;</a>
+###Extended Attribute support
 
 StoRM uses the Extended Attributes (EA) on files to store some metadata related
 to the file (e.g. the checksum value); therefore in order to ensure a proper
 running, the EA support needs to be enabled on the underlying file system and
 work properly.
 
-**To check**:
+To check:
 
 ```bash
 $ touch testfile
@@ -227,14 +223,16 @@ $ getfattr -d testfile
 # file: testfile
 user.testea="test"
 $ rm -f testfile
+```
 
-If the getfattr and setfattrl commands are not available on your host, **install** *attr* package:
+If the *getfattr* and *setfattrl* commands are not available on your host, **install** *attr* package:
 
 ```bash
 $ yum install attr
 ```
 
-To **enable** EA (if needed) you must add the *user_xattr* property to the relevant file systems in your /etc/fstab file. For example:
+To enable EA (if needed) you must add the *user_xattr* property to the relevant file systems in your */etc/fstab* file.
+For example:
 
 ```bash
 $ vi /etc/fstab
@@ -249,10 +247,10 @@ Then you need to remount the affected partitions as follows:
 $ mount -o remount /storage
 ```
 
-### Storage Area's permissions <a name="sapermissions">&nbsp;</a>
+###Storage Area's permissions
 
-All the Storage Areas managed by StoRM needs to be owned by the STORM\_USER.
-This means that if STORM\_USER is _storm_, for example, the storage-area _test_
+All the Storage Areas managed by StoRM needs to be owned by the STORM_USER.
+This means that if STORM_USER is *storm*, for example, the storage-area *test*
 root directory permissions must be:
 
 ```bash
@@ -262,7 +260,7 @@ drwxr-x---+  2 storm storm
 YAIM-StoRM doesn't set the correct permissions if the SA's root directory
 already exists. So, the site administrator has to take care of it. To set the
 correct permissions on a storage area, you can launch the following commands
-(assuming that storm runs as user `storm`, which is the default):
+(assuming that storm runs as user *storm*, which is the default):
 
 ```bash
 chown -RL storm:storm <sa-root-directory>
@@ -277,86 +275,16 @@ directory for all the storage-areas):
 chmod o+x <sa-root-directory-parent>
 ```
 
-#### StoRM GridHTTPs permissions
+##Installation guide
 
-<div class="alert alert-error">
-<h5>Important!</h5>
-the GridHTTPs server is now deprecated.
-You should upgrade to the StoRM WebDAV service, which by default runs as user
-storm. You can skip the rest of this section if you are running the StoRM
-WebDAV service.
-</div>
+###Repository settings
 
-If the storm GridHTTPs server is also enabled for a storage area, you also have
-to make sure that the GridHTTPs service can access the files.
+In order to install all the stuff requested by StoRM, some repositories have to
+be necessarily configured in the */etc/yum.repos.d* directory.
 
-The easiest way to make things work as expected is to run the GridHTTPs service
-as user `storm`. This can be done by setting the `STORM_GRIDHTTPS_USER` yaim variable
-as follows:
+####Install EPEL Repository
 
-```bash
-STORM_GRIDHTTPS_USER=storm
-```
-
-By default, the GridHTTPs will run as user `gridhttps`. In this case, you have
-to set the correct permissions on the storage area also for the `gridhttps`
-user:
-
-```bash
-find <sa-root-directory> -type d -exec setfacl -m g:gridhttps:x {} \;
-```
-
-## Installation guide <a name="installationguide">&nbsp;</a>
-
-### StoRM Upgrade to EMI3 <a name="upgradetoemi3">&nbsp;</a>
-
-In order to upgrade your current version of StoRM from EMI1 or EMI2 to EMI3 you
-need to install the EMI3 repos.<br> Depending on your platform, download and
-install the right EMI release package, as described in the [Repository
-settings](#emireposettings) section.
-
-Then execute:
-
-```bash
-$ yum clean all
-$ yum -y update
-```
-
-<div class="alert alert-error">
-    <h5>Important!</h5>
-    If you are upgrading a StoRM installation that runs on top of GPFS, be sure to install the `storm-native-libs-gpfs` package after the update has completed, issuing
-the following command:
-<pre>
-$ yum install storm-native-libs-gpfs
-</pre>
-</div>
-
-If you are also upgrading the StoRM GridHTTPs server component, after the
-installation you can remove tomcat because it's no more used by EMI3 GridHTTPs.
-Of course, you can do this if you are not using tomcat for other purposes:
-
-```bash
-$ yum remove tomcat5
-```
-
-To configure your StoRM services please read the [Configuration](#configuration) section.
-<br/>
-An example of YAIM use for configuring all the services on the same host is reported below:
-
-```bash
-$ /opt/glite/yaim/bin/yaim -c -d 6 -s /etc/storm/siteinfo/storm.def -n se_storm_backend -n se_storm_frontend -n se_storm_gridftp -n se_storm_gridhttps
-```
-
-Please take a look at the [Launching YAIM configuration](#launchyaim) section for further details.
-
-### Repository settings <a name="reposettings">&nbsp;</a>
-
-In order to install all the stuff requested by StoRM, some repositories have to be necessarily configured in the /etc/yum.repos.d directory.
-These are EPEL, EGI and EMI and have to be installed, as prerequisite, as we have already seen in the paragraph [general EMI 3 installation instructions](#emi3instructions).
-
-#### Common settings <a name="commonreposettings">&nbsp;</a>
-
-To install **EPEL Repository** download and install the EPEL release file.
+Install **EPEL Repository** from EPEL release rpm:
 
 SL5:
 
@@ -367,12 +295,14 @@ $ yum localinstall --nogpgcheck epel-release-5-4.noarch.rpm
 
 SL6:
 
-```bash    
+```bash
 $ wget http://www.nic.funet.fi/pub/mirrors/fedora.redhat.com/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 $ yum localinstall --nogpgcheck epel-release-6-8.noarch.rpm
 ```
 
-To install **EGI Trust Anchors Repository** follow [EGI instructions](https://wiki.egi.eu/wiki/EGI_IGTF_Release#Using_YUM_package_management).
+#### Install EGI Trust Anchors Repository
+
+Install **EGI Trust Anchors Repository** by following [EGI instructions][egi-instructions].
 
 You must disable the **DAG repository** if enabled. To check if it is enabled:
 
@@ -381,7 +311,7 @@ $ grep enabled /etc/yum.repos.d/dag.repo
  enabled=0
 ```
 
-To disable the DAG repository, if needed, you must set to 0 the enabled property in your /etc/yum.repos.d/dag.repo file:
+To disable the DAG repository, if needed, you must set to 0 the enabled property in your */etc/yum.repos.d/dag.repo* file:
 
 ```bash
 $ vi /etc/yum.repos.d/dag.repo
@@ -390,9 +320,9 @@ $ vi /etc/yum.repos.d/dag.repo
   ...
 ```
 
-#### EMI settings <a name="emireposettings">&nbsp;</a>
+####Install EMI repository
 
-To install **EMI repository** download and install the EMI release file:
+Download and install **EMI repository** from EMI release rpm:
 
 SL5:
 
@@ -408,7 +338,7 @@ $ wget http://emisoft.web.cern.ch/emisoft/dist/EMI/3/sl6/x86_64/base/emi-release
 $ yum localinstall --nogpgcheck emi-release-3.0.0-2.el6.noarch.rpm
 ```
 
-#### StoRM settings
+####StoRM repository
 
 StoRM can also be installed from StoRM PT own repositories.
 
@@ -422,7 +352,7 @@ To install the repository files, run the following commands (as root):
     (SL6) $ wget http://italiangrid.github.io/storm/repo/storm_sl6.repo -O /etc/yum.repos.d/storm_sl6.repo
 ```
 
-### Install StoRM nodes <a name="stormnodes">&nbsp;</a>
+###Install StoRM nodes
 
 In order to install StoRM components refresh the yum cache:
 
@@ -430,30 +360,32 @@ In order to install StoRM components refresh the yum cache:
 $ yum clean all
 ```
 
-Install the StoRM metapackages you need in every node partecipating to the StoRM instance.
+To install the StoRM metapackages necessary to the SRM interface, install:
 
 ```bash
 $ yum install emi-storm-backend-mp
-   ...
 $ yum install emi-storm-frontend-mp
-   ...
 $ yum install emi-storm-globus-gridftp-mp
-   ...
+```
+
+If you want to add a WebDAV endpoint install also:
+
+```bash
 $ yum install storm-webdav
 ```
 
-The storm-srm-client is distributed with the UI EMI components, but if you need it on your node you can install it using the command:
+The storm-srm-client is distributed with the UI EMI components,
+but if you need it on your node you can install it using the command:
 
 ```bash
 $ yum install emi-storm-srm-client-mp
 ```
 
-<hr/>
+##Configuration
 
-## Configuration <a name="configuration">&nbsp;</a>
-
-StoRM is configured by using the YAIM tool, that is a set of configuration scripts that read a set of configuration files.
-It's **recommended** to follow the [yaim configuration](#configuration) or the [advanced configuration](#advconf) guides to set up your StoRM deployment.
+StoRM is currently configured by using the YAIM tool, that is a set of
+configuration scripts that read a set of configuration files.
+If you want to go through the configuration, see the [advanced configuration](#advanced-configuration) guide.
 
 Optionally, as a *quick start*, you can follow these instructions to quickly configure StoRM.
 
@@ -485,30 +417,31 @@ $ /opt/glite/yaim/bin/yaim -c -d 6 -s /etc/storm/siteinfo/storm.def \
   -n se_storm_webdav
 ```
 
-as better explained [here](#launchyaim).
+as better explained [here](#launching-yaim).
 
-### General YAIM variables <a name="yaimvariables">&nbsp;</a>
+###General YAIM variables
 
-Create a **site-info.def** file in your CONFDIR/ directory. Edit this file by providing a value to the general variables summarized in Tab.1.
+Create a **site-info.def** file in your CONFDIR/ directory.
+Edit this file by providing a value to the general variables summarized in Tab.1.
 
 | Var. Name         | Description   | Mandatory |
 |:------------------|:--------------|:---------:|
-|SITE\_NAME         |It's the human-readable name of your site used to set the Glue-SiteName attribute.<br/>Example: SITE\_NAME="INFN EMI TESTBED" | Yes
-|BDII\_HOST         |BDII hostname.<br/>Example: BDII\_HOST="emitb-bdii-site.cern.ch" | Yes
-|NTP\_HOSTS\_IP <br/><span class="label label-success">UPDATED</span>    |Space separated list of the IP addresses of the NTP servers (preferably set a local ntp server and a public one, e.g. pool.ntp.org). If defined, /etc/ntp.conf will be overwritten during YAIM configuration. If not defined, the site administrator will be manage on his own the ntp service and its configuration. <br/>Example: NTP\_HOSTS\_IP="131.154.1.103" | No
-|USERS\_CONF        |Path to the file containing the list of Linux users (pool accounts) to be created. This file must be created by the site administrator. It contains a plain list of the users and their IDs. An example of this configuration file is given in /opt/glite/yaim/examples/users.conf file. More details can be found in the User configuration section in the YAIM guide. | Yes
-|GROUPS\_CONF       |Path to the file containing information on the map- ping between VOMS groups and roles to local groups. An example of this configuration file is given in /opt/glite/yaim/examples/groups.conf file. More details can be found in the Group configuration section in the YAIM guide. | Yes
-|MYSQL\_PASSWORD    |mysql root password.<br/>Example: MYSQL\_PASSWORD="carpediem" | Yes
+|SITE_NAME          |It's the human-readable name of your site used to set the Glue-SiteName attribute.<br/>Example: SITE_NAME="INFN EMI TESTBED" | Yes
+|BDII_HOST          |BDII hostname.<br/>Example: BDII_HOST="emitb-bdii-site.cern.ch" | Yes
+|NTP_HOSTS_IP       |Space separated list of the IP addresses of the NTP servers (preferably set a local ntp server and a public one, e.g. pool.ntp.org). If defined, /etc/ntp.conf will be overwritten during YAIM configuration. If not defined, the site administrator will be manage on his own the ntp service and its configuration. <br/>Example: NTP_HOSTS_IP="131.154.1.103" | No
+|USERS_CONF         |Path to the file containing the list of Linux users (pool accounts) to be created. This file must be created by the site administrator. It contains a plain list of the users and their IDs. An example of this configuration file is given in /opt/glite/yaim/examples/users.conf file. More details can be found in the User configuration section in the YAIM guide. | Yes
+|GROUPS_CONF        |Path to the file containing information on the map- ping between VOMS groups and roles to local groups. An example of this configuration file is given in /opt/glite/yaim/examples/groups.conf file. More details can be found in the Group configuration section in the YAIM guide. | Yes
+|MYSQL_PASSWORD     |mysql root password.<br/>Example: MYSQL_PASSWORD="carpediem" | Yes
 |VOS                |List of supported VOs.<br/>Example: VOS="testers.eu-emi.eu dteam" | Yes
-|STORM\_BE\_XMLRPC\_TOKEN   |Token used in communication to the StoRM Backend | Yes
+|STORM_BE_XMLRPC_TOKEN   |Token used in communication to the StoRM Backend | Yes
 
 
 {% assign label_title="Table 1" %}
+{% assign label_id="Table1" %}
 {% assign label_description="General YAIM Variables." %}
 {% include documentation/label.html %}
 
-
-### StoRM Frontend variables<a name="feconf">&nbsp;</a>
+###StoRM Frontend variables
 
 Frontend specific YAIM variables are in the following file:
 
@@ -516,54 +449,42 @@ Frontend specific YAIM variables are in the following file:
 $ /opt/glite/yaim/examples/siteinfo/services/se_storm_frontend
 ```
 
-Please copy and edit that file in your CONFDIR/services directory. You have to set at least the STORM\_DB\_PWD variable and check the other variables to evaluate if you like the default set or if you want to change those settings. Tab.2 summaries YAIM variables for StoRM Frontend component.
+Please copy and edit that file in your CONFDIR/services directory. You have to set at least the STORM_DB_PWD variable and check the other variables to evaluate if you like the default set or if you want to change those settings. Tab.2 summaries YAIM variables for StoRM Frontend component.
 
 |   Var. Name                           |   Description |
 |:--------------------------------------|:--------------|
-|ARGUS\_PEPD\_ENDPOINTS                 |The complete service endpoint of Argus PEP server. Mandatory if STORM\_FE\_USER\_BLACKLISTING is true. Example: https://host.domain:8154/authz
-|STORM\_BACKEND\_REST\_SERVICES\_PORT   |StoRM backend server rest port. Optional variable. Default value: **9998**
-|STORM\_BE\_XMLRPC\_PATH                |StoRM Backend XMLRPC server path. <br/>Optional variable. Default value: **/RPC2**
-|STORM\_BE\_XMLRPC\_PORT                |StoRM Backend XMLRPC server port. <br/>Optional variable. Default value: **8080**
-|STORM\_CERT\_DIR                       |Host certificate directory for StoRM Frontend service. Optional variable. Default value: **/etc/grid-security/${STORM\_USER}**
-|STORM\_DB\_HOST                        |Host for database connection. <br/>Optional variable. Default value: **localhost**
-|STORM\_DB\_PWD                         |Password for database connection. **Mandatory**.
-|STORM\_DB\_USER                        |User for database connection. Default value: **storm**
-|STORM\_FE\_ENABLE\_MAPPING             |Enable the check in gridmapfile for client DN. <br/>Optional variable. Available values: true, false. Default value: **false**
-|STORM\_FE\_ENABLE\_VOMSCHECK           |Enable the check in gridmapfile for client VOMS attributes. <br/>Optional variable. Available values: true, false. Default value: **false**
-|STORM\_FE\_GSOAP\_MAXPENDING           |Max number of request pending in the GSOAP queue. Optional variable. Default value: **2000**
-|STORM\_FE\_LOG\_FILE                   |StoRM frontend log file.<br/>Optional variable. Default value: **/var/log/storm/storm-frontend.log**
-|STORM\_FE\_LOG\_LEVEL                  |StoRM Frontend log level.<br/>Optional variable. Available values: KNOWN, ERROR, WARNING, INFO, DEBUG, DEBUG2.<br/>Default value: **INFO**
-|STORM\_FE\_MONITORING\_DETAILED        |Flag to enable/disable detailed SRM requests Monitoring. Optional variable. Available values: true, false. Default value: **false**
-|STORM\_FE\_MONITORING\_ENABLED         |Flag to enable/disable SRM requests Monitoring.<br/>Optional variable. Available values: true, false. Default value: **true**
-|STORM\_FE\_MONITORING\_TIME\_INTERVAL  |Time intervall in seconds between each Monitoring round. Optional variable. Default value: **60**
-|STORM\_FE\_THREADS\_MAXPENDING         |Max number of request pending in the Threads queue. Optional variable. Default value: **200**
-|STORM\_FE\_THREADS\_NUMBER             |Max number of threads to manage user's requests. Optional variable. Default value: **50**
-|STORM\_FE\_USER\_BLACKLISTING          |Flag to enable/disable user blacklisting.<br/>Optional variable. Available values: true, false. Default value: **false**
-|STORM\_FE\_WSDL                        |WSDL to be returned to a GET request.<br/>Optional variable. Default value: **/usr/share/wsdl/srm.v2.2.wsdl**
-|STORM\_FRONTEND\_OVERWRITE             |This parameter tells YAIM to overwrite storm-frondend.conf configuration file.<br/>Optional variable. Available values: true, false. Default value: **true**
-|STORM\_FRONTEND\_PORT                  |StoRM Frontend service port. Optional variable. Default value: **8444**
-|STORM\_PEPC\_RESOURCEID                |Argus StoRM resource identifier. Optional variable. Default value: **storm**
-|STORM\_PROXY\_HOME                     |Directory used to exchange proxies.<br/>Optional variable. Default value: **/etc/storm/tmp**
-|STORM\_USER                            |Service user.<br/>Optional variable. Default value: **storm**
+|ARGUS_PEPD_ENDPOINTS                 |The complete service endpoint of Argus PEP server. Mandatory if STORM_FE_USER_BLACKLISTING is true. Example: https://host.domain:8154/authz
+|STORM_BACKEND_REST_SERVICES_PORT   |StoRM backend server rest port. Optional variable. Default value: **9998**
+|STORM_BE_XMLRPC_PATH                |StoRM Backend XMLRPC server path. <br/>Optional variable. Default value: **/RPC2**
+|STORM_BE_XMLRPC_PORT                |StoRM Backend XMLRPC server port. <br/>Optional variable. Default value: **8080**
+|STORM_CERT_DIR                       |Host certificate directory for StoRM Frontend service. Optional variable. Default value: **/etc/grid-security/${STORM_USER}**
+|STORM_DB_HOST                        |Host for database connection. <br/>Optional variable. Default value: **localhost**
+|STORM_DB_PWD                         |Password for database connection. **Mandatory**.
+|STORM_DB_USER                        |User for database connection. Default value: **storm**
+|STORM_FE_ENABLE_MAPPING             |Enable the check in gridmapfile for client DN. <br/>Optional variable. Available values: true, false. Default value: **false**
+|STORM_FE_ENABLE_VOMSCHECK           |Enable the check in gridmapfile for client VOMS attributes. <br/>Optional variable. Available values: true, false. Default value: **false**
+|STORM_FE_GSOAP_MAXPENDING           |Max number of request pending in the GSOAP queue. Optional variable. Default value: **2000**
+|STORM_FE_LOG_FILE                   |StoRM frontend log file.<br/>Optional variable. Default value: **/var/log/storm/storm-frontend.log**
+|STORM_FE_LOG_LEVEL                  |StoRM Frontend log level.<br/>Optional variable. Available values: KNOWN, ERROR, WARNING, INFO, DEBUG, DEBUG2.<br/>Default value: **INFO**
+|STORM_FE_MONITORING_DETAILED        |Flag to enable/disable detailed SRM requests Monitoring. Optional variable. Available values: true, false. Default value: **false**
+|STORM_FE_MONITORING_ENABLED         |Flag to enable/disable SRM requests Monitoring.<br/>Optional variable. Available values: true, false. Default value: **true**
+|STORM_FE_MONITORING_TIME_INTERVAL  |Time intervall in seconds between each Monitoring round. Optional variable. Default value: **60**
+|STORM_FE_THREADS_MAXPENDING         |Max number of request pending in the Threads queue. Optional variable. Default value: **200**
+|STORM_FE_THREADS_NUMBER             |Max number of threads to manage user's requests. Optional variable. Default value: **50**
+|STORM_FE_USER_BLACKLISTING          |Flag to enable/disable user blacklisting.<br/>Optional variable. Available values: true, false. Default value: **false**
+|STORM_FE_WSDL                        |WSDL to be returned to a GET request.<br/>Optional variable. Default value: **/usr/share/wsdl/srm.v2.2.wsdl**
+|STORM_FRONTEND_OVERWRITE             |This parameter tells YAIM to overwrite storm-frondend.conf configuration file.<br/>Optional variable. Available values: true, false. Default value: **true**
+|STORM_FRONTEND_PORT                  |StoRM Frontend service port. Optional variable. Default value: **8444**
+|STORM_PEPC_RESOURCEID                |Argus StoRM resource identifier. Optional variable. Default value: **storm**
+|STORM_PROXY_HOME                     |Directory used to exchange proxies.<br/>Optional variable. Default value: **/etc/storm/tmp**
+|STORM_USER                            |Service user.<br/>Optional variable. Default value: **storm**
 
 {% assign label_title="Table 2" %}
+{% assign label_id="Table2" %}
 {% assign label_description="Specific StoRM Frontend Variables." %}
 {% include documentation/label.html %}
 
-**NOTE** - **_The following table contains the YAIM variables no more used from StoRM v.1.11.2_**:
-
-|   Var. Name                   |   Description |
-|:------------------------------|:--------------|
-|STORM\_FE\_BE\_XMLRPC\_HOST    |**DELETED** It was used to tell to the Frontend the XMLRPC endpoint. But this endpoint, for the Frontend, is **always** the StoRM Backend hostname which value is already contained by STORM\_BACKEND\_HOST variable. So yaim now sets _be.xmlrpc.host_ frontend's variable with STORM\_BACKEND\_HOST.
-|STORM\_FE\_BE\_XMLRPC\_PATH    |**RENAMED** into STORM\_BE\_XMLRPC\_PATH, see Table 2
-|STORM\_FE\_BE\_XMLRPC\_PORT    |**RENAMED** into STORM\_BE\_XMLRPC\_PORT, see Table 2
-
-{% assign label_title="Table 3" %}
-{% assign label_description="YAIM variables no more used from StoRM v.1.11.2" %}
-{% include documentation/label.html %}
-
-
-### StoRM Backend variables<a name="beconf">&nbsp;</a>
+###StoRM Backend variables
 
 Backend specific YAIM variables are in the following file:
 
@@ -574,161 +495,126 @@ $ /opt/glite/yaim/exaples/siteinfo/services/se_storm_backend
 Please copy and edit that file in your CONFDIR/services directory.
 You have to set at least these variables:
 
-- STORM\_BACKEND\_HOST
-- STORM\_DEFAULT\_ROOT
-- STORM\_DB\_PWD
+- STORM_BACKEND_HOST
+- STORM_DEFAULT_ROOT
+- STORM_DB_PWD
 
-and check the other variables to evaluate if you like the default set or if you want to change those settings. Tab.3 summaries YAIM variables for StoRM Backend component.
+and check the other variables to evaluate if you like the default set or if you want to change those settings. [Table 3](#Table3) summaries YAIM variables for StoRM Backend component.
 
 |   Var. Name                           |   Description |
 |:--------------------------------------|:--------------|
-|STORM\_ACLMODE                         |ACL enforcing mechanism (default value for all Storage Areas). Note: you may change the settings for each SA acting on STORM\_{SA}\_ACLMODE variable. Available values: aot, jit (use aot for WLCG experiments).<br/>Optional variable. Default value: **aot**
-|STORM\_ANONYMOUS\_HTTP\_READ           |Storage Area anonymous read access via HTTP. Note: you may change the settings for each SA acting on STORM\_{SA}\_ANONYMOUS\_HTTP\_READ variable.<br/>Optional variable. Available values: true, false. Default value: **false**
-|STORM\_AUTH                            |Authorization mechanism (default value for all Storage Areas). Note: you may change the settings for each SA acting on $STORM\_{SA}\_AUTH variable Available values: permit-all, deny-all, FILENAME.<br/>Optional variable. Default value: **permit-all**
-|STORM\_BACKEND\_HOST                   |Host name of the StoRM Backend server. **Mandatory**.
-|STORM\_BACKEND\_REST\_SERVICES\_PORT   |StoRM backend server rest port. Optional variable. Default value: **9998**
-|STORM\_CERT\_DIR                       |Host certificate directory for StoRM Backend service.<br/>Optional variable. Default value: **/etc/grid-security/${STORM\_USER}**
-|STORM\_DEFAULT\_ROOT                   |Default directory for Storage Areas. **Mandatory**.
-|STORM\_DB\_HOST                        |Host for database connection.<br/>Optional variable. Default value: **localhost**
-|STORM\_DB\_PWD                         |Password for database connection. **Mandatory**.
-|STORM\_DB\_USER                        |User for database connection.<br/>Optional variable. Default value: **storm**
-|STORM\_FRONTEND\_HOST\_LIST            |StoRM Frontend service host list: SRM endpoints can be more than one virtual host different from STORM\_BACKEND\_HOST (i.e. dynamic DNS for multiple StoRM Frontends).<br/>Mandatory variable. Default value: **$STORM\_BACKEND\_HOST**
-|STORM\_FRONTEND\_PATH                  |StoRM Frontend service path.<br/>Optional variable. Default value: **/srm/managerv2**
-|STORM\_FRONTEND\_PORT                  |StoRM Frontend service port. Optional variable. Default value: **8444**
-|STORM\_FRONTEND\_PUBLIC\_HOST          |StoRM Frontend service public host. It's used by StoRM Info Provider to publish the SRM endpoint into the Resource BDII.<br/>Mandatory variable. Default value: **$STORM\_BACKEND\_HOST**
-|STORM\_FSTYPE                          |File System Type (default value for all Storage Areas). Note: you may change the settings for each SA acting on $STORM\_{SA}\_FSTYPE variable.<br/>Optional variable. Available values: posixfs, gpfs. Default value: **posixfs**
-|STORM\_GRIDFTP\_POOL\_LIST             |GridFTP servers pool list (default value for all Storage Areas). Note: you may change the settings for each SA acting on $STORM\_{SA}\_GRIDFTP\_POOL\_LIST variable.<br/>ATTENTION: this variable define a list of pair values space-separated: host weight, e.g.: STORM\_GRIDFTP\_POOL\_LIST="host1 weight1, host2 weight2, host3 weight3" Weight has 0-100 range; if not specified, weight will be 100.<br/>Mandatory variable. Default value: **$STORM\_BACKEND\_HOST**
-|STORM\_GRIDFTP\_POOL\_STRATEGY         |Load balancing strategy for GridFTP server pool (default value for all Storage Areas). Note: you may change the settings for each SA acting on $STORM\_{SA}\_GRIDFTP\_POOL\_STRATEGY variable.<br/>Optional variable. Available values: round-robin, smart-rr, random, weight. Default value: **round-robin**
-|STORM\_GRIDHTTPS\_PUBLIC\_HOST         |StoRM GridHTTPs service public host. It's used by StoRM Info Provider to publish the WebDAV endpoint into the Resource BDII.<br/>Optional variable, **mandatory administrator wants to publish a WebDAV endpoint". Default value: **$STORM\_BACKEND\_HOST**
-|STORM\_INFO\_FILE\_SUPPORT             |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip.<br/>Optional variable. Available values: true, false. Default value: **true**
-|STORM\_INFO\_GRIDFTP\_SUPPORT          |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip.<br/>Optional variable. Available values: true, false. Default value: **true**
-|STORM\_INFO\_RFIO\_SUPPORT             |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip. <br/>Optional variable. Available values: true, false. Default value: **false**
-|STORM\_INFO\_ROOT\_SUPPORT             |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip.<br/>Optional variable. Available values: true, false. Default value: **false**
-|STORM\_INFO\_HTTP\_SUPPORT             |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip.<br/>Optional variable. Available values: true, false. Default value: **false**
-|STORM\_INFO\_HTTPS\_SUPPORT            |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip.<br/>Optional variable. Available values: true, false. Default value: **false**
-|STORM\_INFO\_OVERWRITE                 |This parameter tells YAIM to overwrite static-file-StoRM.ldif configuration file.<br/>Optional variable. Available values: true, false. Default value: **true**
-|STORM\_NAMESPACE\_OVERWRITE            |This parameter tells YAIM to overwrite namespace.xml configuration file. Optional variable. Available values: true, false. Default value: **true**
-|STORM\_PROXY\_HOME                     |Directory used to exchange proxies.<br/>Optional variable. Default value: **/etc/storm/tmp**
-|STORM\_RFIO\_HOST                      |Rfio server (default value for all Storage Areas). Note: you may change the settings for each SA acting on $STORM\_{SA}\_RFIO\_HOST variable.<br/>Optional variable. Default value: **$STORM\_BACKEND\_HOST**
-|STORM\_ROOT\_HOST                      |Root server (default value for all Storage Areas). Note: you may change the settings for each SA acting on $STORM\_{SA}\_ROOT\_HOST variable.<br/>Optional variable. Default value: **$STORM\_BACKEND\_HOST**
-|STORM\_SERVICE\_SURL\_DEF\_PORTS       |Comma-separated list of managed SURL's default ports used to check SURL validity.<br/>Optional variable. Default value: **8444**
-|STORM\_SIZE\_LIMIT                     |Limit Maximum available space on the Storage Area (default value for all Storage Areas).<br/>Note: you may change the settings for each SA acting on $STORM\_{SA}\_SIZE\_LIMIT variable. Optional variable. Available values: true, false. Default value: **true**
-|STORM\_STORAGEAREA\_LIST               |List of supported Storage Areas. Usually at least one Storage Area for each VO specified in $VOS should be created.<br/>Optional variable. Default value: **$VOS**
-|STORM_STORAGECLASS                     |Storage Class type (default value for all Storage Areas). Note: you may change the settings for each SA acting on $STORM\_{SA}\_STORAGECLASS variable. <br/>Optional variable. Available values: T0D1, T1D0, T1D1. No default value.
-|STORM\_SURL\_ENDPOINT\_LIST            |This is a comma separated list of the SRM endpoints managed by the Backend. A SURL is accepted only if this list contains the endpoint specified. It's an optional variable with default value: **srm://${STORM\_FRONTEND\_PUBLIC\_HOST}:${STORM\_FRONTEND\_PORT}/${STORM\_FRONTEND\_PATH}**. So, if you want to accept requests with incoming SURLs that has the ip address instead of the FQDN hostname, add the full srm endpoint to this list.
-|STORM\_USER                            |Service user. Optional variable. Default value: **storm**
-|STORM\_ENDPOINT\_QUALITY\_LEVEL        |Endpoint maturity level to be published by the StoRM gip. Optional variable. Default value: **2**
-|STORM\_ENDPOINT\_SERVING\_STATE        |Endpoint serving state to be published by the StoRM gip. Optional variable. Default value: **4**
-|STORM\_ENDPOINT\_CAPABILITY            |Capability according to OGSA to be published by the StoRM gip. Optional variable. Default value: **data.management.storage**
+|STORM_ACLMODE                         |ACL enforcing mechanism (default value for all Storage Areas). Note: you may change the settings for each SA acting on STORM_`SA`_ACLMODE variable. Available values: aot, jit (use aot for WLCG experiments).<br/>Optional variable. Default value: **aot**
+|STORM_ANONYMOUS_HTTP_READ           |Storage Area anonymous read access via HTTP. Note: you may change the settings for each SA acting on STORM_`SA`_ANONYMOUS_HTTP_READ variable.<br/>Optional variable. Available values: true, false. Default value: **false**
+|STORM_AUTH                            |Authorization mechanism (default value for all Storage Areas). Note: you may change the settings for each SA acting on STORM_`SA`_AUTH variable Available values: permit-all, deny-all, FILENAME.<br/>Optional variable. Default value: **permit-all**
+|STORM_BACKEND_HOST                   |Host name of the StoRM Backend server. **Mandatory**.
+|STORM_BACKEND_REST_SERVICES_PORT   |StoRM backend server rest port. Optional variable. Default value: **9998**
+|STORM_CERT_DIR                       |Host certificate directory for StoRM Backend service.<br/>Optional variable. Default value: **/etc/grid-security/STORM_USER**
+|STORM_DEFAULT_ROOT                   |Default directory for Storage Areas. **Mandatory**.
+|STORM_DB_HOST                        |Host for database connection.<br/>Optional variable. Default value: **localhost**
+|STORM_DB_PWD                         |Password for database connection. **Mandatory**.
+|STORM_DB_USER                        |User for database connection.<br/>Optional variable. Default value: **storm**
+|STORM_FRONTEND_HOST_LIST            |StoRM Frontend service host list: SRM endpoints can be more than one virtual host different from STORM_BACKEND_HOST (i.e. dynamic DNS for multiple StoRM Frontends).<br/>Mandatory variable. Default value: **STORM_BACKEND_HOST**
+|STORM_FRONTEND_PATH                  |StoRM Frontend service path.<br/>Optional variable. Default value: **/srm/managerv2**
+|STORM_FRONTEND_PORT                  |StoRM Frontend service port. Optional variable. Default value: **8444**
+|STORM_FRONTEND_PUBLIC_HOST          |StoRM Frontend service public host. It's used by StoRM Info Provider to publish the SRM endpoint into the Resource BDII.<br/>Mandatory variable. Default value: **STORM_BACKEND_HOST**
+|STORM_FSTYPE                          |File System Type (default value for all Storage Areas). Note: you may change the settings for each `SA` acting on STORM_`SA`_FSTYPE variable.<br/>Optional variable. Available values: posixfs, gpfs. Default value: **posixfs**
+|STORM_GRIDFTP_POOL_LIST             |GridFTP servers pool list (default value for all Storage Areas). Note: you may change the settings for each `SA` acting on STORM_`SA`\_GRIDFTP\_POOL\_LIST variable.<br/>ATTENTION: this variable define a list of pair values space-separated: host weight, e.g.: STORM_GRIDFTP_POOL_LIST="host1 weight1, host2 weight2, host3 weight3" Weight has 0-100 range; if not specified, weight will be 100.<br/>Mandatory variable. Default value: **STORM_BACKEND_HOST**
+|STORM_GRIDFTP_POOL_STRATEGY         |Load balancing strategy for GridFTP server pool (default value for all Storage Areas). Note: you may change the settings for each `SA` acting on STORM_`SA`\_GRIDFTP\_POOL\_STRATEGY variable.<br/>Optional variable. Available values: round-robin, smart-rr, random, weight. Default value: **round-robin**
+|STORM_GRIDHTTPS_PUBLIC_HOST         |StoRM GridHTTPs service public host. It's used by StoRM Info Provider to publish the WebDAV endpoint into the Resource BDII.<br/>Optional variable, **mandatory if the administrator wants to publish a WebDAV endpoint**. Default value: **STORM_BACKEND_HOST**
+|STORM_INFO_FILE_SUPPORT             |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip.<br/>Optional variable. Available values: true, false. Default value: **true**
+|STORM_INFO_GRIDFTP_SUPPORT          |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip.<br/>Optional variable. Available values: true, false. Default value: **true**
+|STORM_INFO_RFIO_SUPPORT             |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip. <br/>Optional variable. Available values: true, false. Default value: **false**
+|STORM_INFO_ROOT_SUPPORT             |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip.<br/>Optional variable. Available values: true, false. Default value: **false**
+|STORM_INFO_HTTP_SUPPORT             |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip.<br/>Optional variable. Available values: true, false. Default value: **false**
+|STORM_INFO_HTTPS_SUPPORT            |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip.<br/>Optional variable. Available values: true, false. Default value: **false**
+|STORM_INFO_OVERWRITE                 |This parameter tells YAIM to overwrite static-file-StoRM.ldif configuration file.<br/>Optional variable. Available values: true, false. Default value: **true**
+|STORM_NAMESPACE_OVERWRITE            |This parameter tells YAIM to overwrite namespace.xml configuration file. Optional variable. Available values: true, false. Default value: **true**
+|STORM_PROXY_HOME                     |Directory used to exchange proxies.<br/>Optional variable. Default value: **/etc/storm/tmp**
+|STORM_RFIO_HOST                      |Rfio server (default value for all Storage Areas). Note: you may change the settings for each `SA` acting on STORM_`SA`\_RFIO\_HOST variable.<br/>Optional variable. Default value: **STORM_BACKEND_HOST**
+|STORM_ROOT_HOST                      |Root server (default value for all Storage Areas). Note: you may change the settings for each `SA` acting on STORM_`SA`\_ROOT\_HOST variable.<br/>Optional variable. Default value: **STORM_BACKEND_HOST**
+|STORM_SERVICE_SURL_DEF_PORTS       |Comma-separated list of managed SURL's default ports used to check SURL validity.<br/>Optional variable. Default value: **8444**
+|STORM_SIZE_LIMIT                     |Limit Maximum available space on the Storage Area (default value for all Storage Areas).<br/>Note: you may change the settings for each `SA` acting on STORM_`SA`\_SIZE\_LIMIT variable. Optional variable. Available values: true, false. Default value: **true**
+|STORM_STORAGEAREA_LIST               |List of supported Storage Areas. Usually at least one Storage Area for each VO specified in VOS should be created.<br/>Optional variable. Default value: **VOS**
+|STORM_STORAGECLASS                     |Storage Class type (default value for all Storage Areas). Note: you may change the settings for each `SA` acting on STORM_`SA`_STORAGECLASS variable. <br/>Optional variable. Available values: T0D1, T1D0, T1D1. No default value.
+|STORM_SURL_ENDPOINT_LIST            |This is a comma separated list of the SRM endpoints managed by the Backend. A SURL is accepted only if this list contains the endpoint specified. It's an optional variable with default value: **srm://STORM_FRONTEND_PUBLIC_HOST:STORM_FRONTEND_PORT/STORM_FRONTEND_PATH**. So, if you want to accept requests with incoming SURLs that has the ip address instead of the FQDN hostname, add the full srm endpoint to this list.
+|STORM_USER                            |Service user. Optional variable. Default value: **storm**
+|STORM_ENDPOINT_QUALITY_LEVEL        |Endpoint maturity level to be published by the StoRM gip. Optional variable. Default value: **2**
+|STORM_ENDPOINT_SERVING_STATE        |Endpoint serving state to be published by the StoRM gip. Optional variable. Default value: **4**
+|STORM_ENDPOINT_CAPABILITY            |Capability according to OGSA to be published by the StoRM gip. Optional variable. Default value: **data.management.storage**
 
-{% assign label_title="Table 4" %}
+{% assign label_title="Table 3" %}
+{% assign label_id="Table3" %}
 {% assign label_description="Specific StoRM Backend Variables." %}
 {% include documentation/label.html %}
 
-Then, for each Storage Area listed in the STORM\_STORAGEAREA\_LIST variable, which is not the name of a valid VO, you have to edit the STORM\_{SA}\_VONAME compulsory variable (detailed in Table 5). {SA} has to be written in capital letters as in the other variables included in the **site-info.def** file, otherwise default values will be used.
+Then, for each Storage Area listed in the STORM_STORAGEAREA_LIST variable, which is not the name of a valid VO, you have to edit the STORM_`SA`\_VONAME compulsory variable (detailed in [Table 4](#Table4)). `SA` has to be written in capital letters as in the other variables included in the **site-info.def** file, otherwise default values will be used.
 
-<div class="alert alert-warning">
-    <h5>Warning!</h5>
-For the DNS-like names, that use special characters as '.' or '-' you have to remove the '.' and '-'.<br/>  
-For example the {SA} value for the storage area "testers.eu-emi.eu" must be TESTERSEUEMIEU:
-<pre>
-STORM_TESTERSEUEMIEU_VONAME=testers.eu-emi.eu
-</pre>
-</div>
+{% assign label_caption="Warning" %}
+{% include open_note.liquid %}
+> For the DNS-like names, that use special characters as '.' or '-' you have to remove the '.' and '-'.<br/>
+> For example the `SA` value for the storage area "testers.eu-emi.eu" must be TESTERSEUEMIEU:
 
-For each {SA} listed in STORM\_STORAGEAREA\_LIST you have to set at least these variables: STORM\_{SA}\_ONLINE_SIZE
-You can edit the optional variables summarized in Table 5.
+```bash
+  STORM_TESTERSEUEMIEU_VONAME=testers.eu-emi.eu
+```
+
+For each storage area `SA` listed in STORM_STORAGEAREA_LIST you have to set at least these variables: STORM_`SA`\_ONLINE\_SIZE
+You can edit the optional variables summarized in [Table 5](#Table5).
 
 |   Var. Name                           |   Description |
 |:--------------------------------------|:--------------|
-|STORM\_{SA}\_VONAME                    |Name of the VO that will use the Storage Area. Use the complete name, e.g., "lights.infn.it" or **'*'** to specify that there is no VO associated to the storage area (it's readable and writable from everyone - less than other filters). This variable becames **mandatory if the value of {SA} is not the name of a VO**.
-|STORM\_{SA}\_ANONYMOUS\_HTTP\_READ     |Storage Area anonymous read access via HTTP.<br/>Optional variable. Available values: true, false. Default value: **false**
-|STORM\_{SA}\_ACCESSPOINT               |List space-separated of paths exposed by the SRM into the SURL. Optional variable. Default value: **{SA}**
-|STORM\_{SA}\_ACLMODE                   |See STORM\_ACLMODE definition. Optional variable. Default value: **$STORM\_ACLMODE**
-|STORM\_{SA}\_AUTH                      |See STORM\_AUTH definition. Optional variable. Default value: **$STORM\_AUTH**
-|STORM\_{SA}\_DEFAULT\_ACL\_LIST        |A list of ACL entries that specifies a set of local groups with corresponding permissions (R, W, RW) using the following syntax: groupname1:permission1 \[groupname2:permission2\] \[...\]
-|STORM\_{SA}\_DN\_C\_REGEX              |Regular expression specifying the format of C (Country) field of DNs that will use the Storage Area. Optional variable.
-|STORM\_{SA}\_DN\_O\_REGEX              |Regular expression specifying the format of O (Organization name) field of DNs that will use the Storage Area. Optional variable.
-|STORM\_{SA}\_DN\_OU\_REGEX             |Regular expression specifying the format of OU (Organizational Unit) field of DNs that will use the Storage Area. Optional variable.
-|STORM\_{SA}\_DN\_L\_REGEX              |Regular expression specifying the format of L (Locality) field of DNs that will use the Storage Area. Optional variable.
-|STORM\_{SA}\_DN\_CN\_REGEX             |Regular expression specifying the format of CN (Common Name) field of DNs that will use the Storage Area. Optional variable.
-|STORM\_{SA}\_FILE\_SUPPORT             |Enable the corresponding protocol. Optional variable. Default value: **$STORM\_INFO\_{PROTOCOL}\_SUPPORT**
-|STORM\_{SA}\_GRIDFTP\_SUPPORT          |Enable the corresponding protocol. Optional variable. Default value: **$STORM\_INFO\_{PROTOCOL}\_SUPPORT**
-|STORM\_{SA}\_RFIO\_SUPPORT             |Enable the corresponding protocol. Optional variable. Default value: **$STORM\_INFO\_{PROTOCOL}\_SUPPORT**
-|STORM\_{SA}\_ROOT\_SUPPORT             |Enable the corresponding protocol. Optional variable. Default value: **$STORM\_INFO\_{PROTOCOL}\_SUPPORT**
-|STORM\_{SA}\_HTTP\_SUPPORT             |Enable the corresponding protocol. Optional variable. Default value: **$STORM\_INFO\_{PROTOCOL}\_SUPPORT**
-|STORM\_{SA}\_HTTPS\_SUPPORT            |Enable the corresponding protocol. Optional variable. Default value: **$STORM\_INFO\_{PROTOCOL}\_SUPPORT**
-|STORM\_{SA}\_FSTYPE                    |See STORM\_{SA}\_FSTYPE definition. Optional variable. Available values: posixfs, gpfs. Default value: **$STORM\_FSTYPE**
-|STORM\_{SA}\_GRIDFTP\_POOL\_LIST       |See STORM\_GRIDFTP\_POOL\_LIST definition. Optional variable. Default value: **$STORM\_GRIDFTP\_POOL\_LIST**
-|STORM\_{SA}\_GRIDFTP\_POOL\_STRATEGY   |See STORM\_GRIDFTP\_POOL\_STRATEGY definition. Optional variable. Default value: **$STORM\_GRIDFTP\_POOL\_STRATEGY**
-|STORM\_{SA}\_ONLINE\_SIZE              |Total size assigned to the Storage Area Expressed in GB. Must be an integer value. **Mandatory**.
-|STORM\_{SA}\_USED\_ONLINE\_SIZE        |Storage space currently used in the Storage Area expressed in Bytes. Must be an integer value. Used by YAIM to populate used-space.ini file.
-|STORM\_{SA}\_QUOTA                     |Enables the quota management for the Storage Area and it works only on GPFS filesystem. Optional variable. Available values: true, false. Default value: **false**
-|STORM\_{SA}\_QUOTA\_DEVICE             |GPFS device on which the quota is enabled. It is mandatory if STORM\_{SA}\_QUOTA variable is set. No default value.
-|STORM\_{SA}\_QUOTA\_USER               |GPFS quota scope. Only one of the following three will be used (the first one with the highest priority in this order: USER, then GROUP, then FILESET). Optional variable. No default value.
-|STORM\_{SA}\_QUOTA\_GROUP              |GPFS quota scope. Only one of the following three will be used (the first one with the highest priority in this order: USER, then GROUP, then FILESET). Optional variable. No default value.
-|STORM\_{SA}\_QUOTA\_FILESET            |GPFS quota scope. Only one of the following three will be used (the first one with the highest priority in this order: USER, then GROUP, then FILESET). Optional variable. No default value.
-|STORM\_{SA}\_RFIO_HOST                 |See STORM\_RFIO\_HOST definition. Optional variable. Default value: **$STORM\_RFIO\_HOST**
-|STORM\_{SA}\_ROOT                      |Physical storage path for the VO. Optional variable. Default value: **$STORM\_DEFAULT\_ROOT/{SA}**
-|STORM\_{SA}\_ROOT\_HOST                |See STORM\_ROOT\_HOST definition. Optional variable. Default value: **$STORM\_ROOT\_HOST**
-|STORM\_{SA}\_SIZE\_LIMIT               |See STORM\_SIZE\_LIMIT definition. Default value: **$STORM\_SIZE\_LIMIT**
-|STORM\_{SA}\_STORAGECLASS              |See STORM\_STORAGECLASS definition. Available values: T0D1, T1D0, T1D1, null. No default value.
-|STORM\_{SA}\_TOKEN                     |Storage Area token, e.g: LHCb\_RAW, INFNGRID\_DISK. No default value.
+|STORM_`SA`_VONAME   |Name of the VO that will use the Storage Area. Use the complete name, e.g., "lights.infn.it" to specify that there is no VO associated to the storage area (it's readable and writable from everyone - less than other filters). This variable becomes **mandatory if the value of SA is not the name of a VO**.
+|STORM_`SA`\_ANONYMOUS\_HTTP\_READ     |Storage Area anonymous read access via HTTP.<br/>Optional variable. Available values: true, false. Default value: **false**
+|STORM_`SA`_ACCESSPOINT               |List space-separated of paths exposed by the SRM into the SURL. Optional variable. Default value: `SA`
+|STORM_`SA`_ACLMODE                   |See STORM_ACLMODE definition. Optional variable. Default value: **STORM_ACLMODE**
+|STORM_`SA`_AUTH                      |See STORM_AUTH definition. Optional variable. Default value: **STORM_AUTH**
+|STORM_`SA`\_DEFAULT\_ACL\_LIST        |A list of ACL entries that specifies a set of local groups with corresponding permissions (R, W, RW) using the following syntax: groupname1:permission1 [groupname2:permission2] [...]
+|STORM_`SA`_DN_C_REGEX              |Regular expression specifying the format of C (Country) field of DNs that will use the Storage Area. Optional variable.
+|STORM_`SA`_DN_O_REGEX              |Regular expression specifying the format of O (Organization name) field of DNs that will use the Storage Area. Optional variable.
+|STORM_`SA`_DN_OU_REGEX             |Regular expression specifying the format of OU (Organizational Unit) field of DNs that will use the Storage Area. Optional variable.
+|STORM_`SA`_DN_L_REGEX              |Regular expression specifying the format of L (Locality) field of DNs that will use the Storage Area. Optional variable.
+|STORM_`SA`_DN_CN_REGEX             |Regular expression specifying the format of CN (Common Name) field of DNs that will use the Storage Area. Optional variable.
+|STORM_`SA`_FILE_SUPPORT             |Enable the corresponding protocol. Optional variable. Default value: **STORM_INFO_FILE_SUPPORT**
+|STORM_`SA`_GRIDFTP_SUPPORT          |Enable the corresponding protocol. Optional variable. Default value: **STORM_INFO_GRIDFTP_SUPPORT**
+|STORM_`SA`_RFIO_SUPPORT             |Enable the corresponding protocol. Optional variable. Default value: **STORM_INFO_RFIO_SUPPORT**
+|STORM_`SA`_ROOT_SUPPORT             |Enable the corresponding protocol. Optional variable. Default value: **STORM_INFO_ROOT_SUPPORT**
+|STORM_`SA`_HTTP_SUPPORT             |Enable the corresponding protocol. Optional variable. Default value: **STORM_INFO_HTTP_SUPPORT**
+|STORM_`SA`_HTTPS_SUPPORT            |Enable the corresponding protocol. Optional variable. Default value: **STORM_INFO_HTTPS_SUPPORT**
+|STORM_`SA`\_FSTYPE                    |See STORM_`SA`\_FSTYPE definition. Optional variable. Available values: posixfs, gpfs. Default value: **STORM_FSTYPE**
+|STORM_`SA`\_GRIDFTP\_POOL\_LIST       |See STORM_GRIDFTP_POOL_LIST definition. Optional variable. Default value: **STORM_GRIDFTP_POOL_LIST**
+|STORM_`SA`\_GRIDFTP\_POOL\_STRATEGY   |See STORM_GRIDFTP_POOL_STRATEGY definition. Optional variable. Default value: **STORM_GRIDFTP_POOL_STRATEGY**
+|STORM_`SA`\_ONLINE\_SIZE              |Total size assigned to the Storage Area Expressed in GB. Must be an integer value. **Mandatory**.
+|STORM_`SA`\_USED\_ONLINE\_SIZE        |Storage space currently used in the Storage Area expressed in Bytes. Must be an integer value. Used by YAIM to populate used-space.ini file.
+|STORM_`SA`_QUOTA                     |Enables the quota management for the Storage Area and it works only on GPFS filesystem. Optional variable. Available values: true, false. Default value: **false**
+|STORM_`SA`_QUOTA_DEVICE             |GPFS device on which the quota is enabled. It is mandatory if STORM_`SA`_QUOTA variable is set. No default value.
+|STORM_`SA`\_QUOTA\_USER               |GPFS quota scope. Only one of the following three will be used (the first one with the highest priority in this order: USER, then GROUP, then FILESET). Optional variable. No default value.
+|STORM_`SA`_QUOTA_GROUP              |GPFS quota scope. Only one of the following three will be used (the first one with the highest priority in this order: USER, then GROUP, then FILESET). Optional variable. No default value.
+|STORM_`SA`_QUOTA_FILESET            |GPFS quota scope. Only one of the following three will be used (the first one with the highest priority in this order: USER, then GROUP, then FILESET). Optional variable. No default value.
+|STORM_`SA`_RFIO_HOST                 |See STORM_RFIO_HOST definition. Optional variable. Default value: **STORM_RFIO_HOST**
+|STORM_`SA`_ROOT                      |Physical storage path for the VO. Optional variable. Default value: **STORM_DEFAULT_ROOT/`SA`**
+|STORM_`SA`_ROOT_HOST                |See STORM_ROOT_HOST definition. Optional variable. Default value: **STORM_ROOT_HOST**
+|STORM_`SA`_SIZE_LIMIT               |See STORM_SIZE_LIMIT definition. Default value: **STORM_SIZE_LIMIT**
+|STORM_`SA`_STORAGECLASS              |See STORM_STORAGECLASS definition. Available values: T0D1, T1D0, T1D1, null. No default value.
+|STORM_`SA`_TOKEN                     |Storage Area token, e.g: LHCb_RAW, INFNGRID_DISK. No default value.
 
-{% assign label_title="Table 5" %}
+{% assign label_title="Table 4" %}
+{% assign label_id="Table4" %}
 {% assign label_description="Storage Area Variables." %}
 {% include documentation/label.html %}
 
-### StoRM WebDAV variables<a name="webdavconf">&nbsp;</a>
+###StoRM WebDAV variables
 
-Refer to the [StoRM WebDAV service installation and configuration guide][webdav-guide].
+The StoRM WebDAV service replaces the StoRM GridHTTPS service.
+To learn how to configure it refer to the [StoRM WebDAV service installation and configuration guide][webdav-guide].
 
-### StoRM GridHTTPs variables<a name="ghttpconf">&nbsp;</a>
+> Read [here][storm-gridhttps-guide] to learn how to configure the deprecated storm-gridhttps-server component.
 
-<div class="alert alert-error">
-The GridHTTPs server is deprecated. Install and configure the storm-webdav service instead.
-</div>
+###Launching YAIM
 
-Specific variables are in the following file:
-
-```bash
-$ /opt/glite/yaim/examples/siteinfo/services/se_storm_gridhttps
-```
-
-Please copy and edit that file in your CONFDIR/services directory. You have to set at least these variables:
-
-- STORM\_BACKEND\_HOST
-
-and check the other variables to evaluate if you like the default set or if you want to change those settings. Table 6 summaries YAIM variables for StoRM GridHTTPs component.
-
-|   Var. Name                           |   Description |
-|:--------------------------------------|:--------------|
-|STORM\_BACKEND\_HOST                   |Host name of the StoRM Backend server. **Mandatory**.
-|STORM\_BACKEND\_REST\_SERVICES\_PORT   |StoRM Backend server REST port. Optional variable. Default value: **9998**
-|STORM\_BE\_XMLRPC\_PORT                |StoRM Backend server XMLRPC port. Optional variable. Default value: **8080**
-|STORM\_FRONTEND\_PORT                  |StoRM Frontend server SRM port. Optional variable. Default value: **8444**
-|STORM\_GRIDHTTPS\_CERT\_DIR            |Host certificate folder for SSL connector. Optional variable. <br/>Default value: **/etc/grid-security/${STORM\_GRIDHTTPS\_USER}**
-|STORM\_GRIDHTTPS\_HTTP\_ENABLED        |Flag that enables/disables http connections. Optional variable. Available values: true, false. <br/>Default value: **true**
-|STORM\_GRIDHTTPS\_HTTP\_PORT           |StoRM GridHTTPs http port. Optional variable. <br/>Default value: **8085**
-|STORM\_GRIDHTTPS\_HTTPS\_PORT          |StoRM GridHTTPs https port Optional variable. <br/>Default value: **8443**
-|STORM\_GRIDHTTPS\_USER                 |StoRM GridHTTPs service user. Optional variable. <br/>Default value: **gridhttps**
-|STORM\_SRM\_ENDPOINT                   |StoRM SRM EndPoint. Optional variable. <br/>Default value: **${STORM\_BACKEND\_HOST}:<br/>${STORM\_FRONTEND\_PORT}**
-|STORM\_USER                            |StoRM Backend service user. Optional variable. <br/>Default value: **storm**
-|X509\_CERT\_DIR                        |The location of certificates truststore. Optional variable. <br/>Default value: **/etc/grid-security/certificates**
-|X509\_HOST\_CERT                       |Host certificate location. <br/>Default value: **/etc/grid-security/hostcert.pem**
-|X509\_HOST\_KEY                        |Host certificate key location. Optional variable. <br/>Default value: **/etc/grid-security/hostkey.pem**
-|CANL\_UPDATE\_INTERVAL                 |Canl truststore update time interval expressed in milliseconds. Optional variable. Default value: **600000** (1 minute)
-
-{% assign label_title="Table 6" %}
-{% assign label_description="Specific StoRM GridHTTPs Variables." %}
-{% include documentation/label.html %}
-
-### Launching YAIM <a name="launchyaim">&nbsp;</a>
-
-After having built the **site-info.def** services file, you can configure the needed profile by using YAIM as follows:
+After having built the **site-info.def** file, you can configure the needed profile by using YAIM as follows:
 
 ```bash
-$ /opt/glite/yaim/bin/yaim -c -d 6 -s <site-info.def> -n <profile>
+$ /opt/glite/yaim/bin/yaim -c -d 6 -s <site-info.def> -n <profile-name>
 ```
 
 But if in your StoRM deployment scenario more than a StoRM service has been installed on a single host you have to provide **a single site-info.def services file** containing **all** the required YAIM variables. Then you can configure all service profiles at once with a single YAIM call:
@@ -737,9 +623,9 @@ But if in your StoRM deployment scenario more than a StoRM service has been inst
 $ /opt/glite/yaim/bin/yaim -c -d 6 -s siteinfo.def -n se_storm_backend se_storm_frontend se_storm_gridftp se_storm_webdav
 ```
 
-> NOTE: if you are configuring on the same host profiles *se\_storm\_backend* and *se\_storm\_frontend*, you have to specify those profiles in this order to YAIM. This is also the case of profiles *se\_storm\_backend* and *se\_storm\_gridhttps*.
+> **NOTE**: if you are configuring on the same host profiles *se_storm_backend* and *se_storm_frontend*, you have to specify those profiles in this order to YAIM. This is also the case of profiles *se_storm_backend* and *se_storm_webdav*.
 
-In case of a distributed deployment, on every host that run almost one of the StoRM components, you have to run yaim specifying only the profiles of the installed components.
+In case of a distributed deployment, on every host that run almost one of the StoRM components, you have to run YAIM specifying only the profiles of the installed components.
 
 To check StoRM services status run:
 
@@ -750,7 +636,7 @@ $ service storm-globus-gridftp status
 $ service storm-webdav status
 ```
 
-## Advanced Configuration <a name="advconf">&nbsp;</a>
+##Advanced Configuration
 
 Please note that most of the configuration parameters of StoRM can be
 automatically managed directly by YAIM. This means that for standard
@@ -761,7 +647,7 @@ administrators the opportunity to learn about StoRM details and internal
 behaviours, in order to allow advanced configuration and ad-hoc set up, to
 optimize performance and results.
 
-### StoRM Frontend service<a name="fe_advconf">&nbsp;</a>
+###StoRM Frontend service
 
 The Frontend component relies on a single configuration file that contains all the configurable parameters. This file is:
 
@@ -771,11 +657,15 @@ containing a list of:
 
     key = value
 
-pairs that can be used to configure the Frontend server. In case a parameter is modified, the Frontend service has to be restarted in order to read the new value.
+pairs that can be used to configure the Frontend server.
 
-#### storm-frontend-server.conf <a name="fesi_advconf">&nbsp;</a>
+{% assign label_caption="Important" %}
+{% include open_note.liquid %}
+> In case a parameter is modified, the Frontend service has to be restarted in order to read the new value.
 
-> **_Database settings_**
+####storm-frontend-server.conf
+
+#####Database settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -783,26 +673,23 @@ pairs that can be used to configure the Frontend server. In case a parameter is 
 | ```db.user``` | User for database connection. Default is **storm**        |
 | ```db.passwd``` | Password for database connection. Default is **password**   |
 
-<br/>
-> **_Frontend service settings_**
+#####Frontend service settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
-|   ```fe.port```                           |   Frontend port. Default is **8444**  
-|   ```fe.threadpool.threads.number```  |   Size of the worker thread pool. Default is **50**   
+|   ```fe.port```   |   Frontend port. Default is **8444**
+|   ```fe.threadpool.threads.number```  |   Size of the worker thread pool. Default is **50**
 |   ```fe.threadpool.maxpending```      |   Size of the internal queue used to maintain SRM tasks in case there are no free worker threads. Default is **200**
 |   ```fe.gsoap.maxpending```               |   Size of the GSOAP queue used to maintain pending SRM requests. Default is **2000**
 
-<br/>
-> **_Log settings_**
+#####Log settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   ```log.filename```  |   Log file name, complete whit path.<br/>Default is **/var/log/storm/storm-frontend.log**
 |   ```log.debuglevel```    |   Loggin level. Possible value are: ERROR, WARN, INFO, DEBUG, DEBUG2. Default is **INFO**
 
-<br/>
-> **_Monitoring settings_**
+#####Monitoring settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -810,8 +697,7 @@ pairs that can be used to configure the Frontend server. In case a parameter is 
 |   ```monitoring.timeInterval```   |   Time intervall in seconds between each Monitoring round. <br/>Default is **60**
 |   ```monitoring.detailed```       |   Flag to enable/disable detailed SRM requests Monitoring. <br/>Default is **false**
 
-<br/>
-> **_XML-RPC communication settings_**
+#####XML-RPC communication settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -821,23 +707,20 @@ pairs that can be used to configure the Frontend server. In case a parameter is 
 |   ```be.xmlrpc.path```    |   XML-RPC server path. Default is **/RPC2**
 |   ```be.xmlrpc.check.ascii``` |   Flag to enable/disable ASCII checking on strings to be sent via XML-RPC. Default is **true**
 
-<br/>
-> **_REST communication settings_**
+#####REST communication settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   ```be.recalltable.port```   |   REST server port running on the Backend machine. Default is **9998**
 
-<br/>
-> **_Blacklisting settings_**
+#####Blacklisting settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   ```check.user.blacklisting```   |   Flag to enable/disable user blacklisting. Default is **false**
 |   ```argus-pepd-endpoint```   |   The complete service endpoint of Argus PEP server. Mandatory if check.user.blacklisting is true. <br/>Example: _https://host.domain:8154/authz_
 
-<br/>
-> **_Proxy settings_**
+#####Proxy settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -846,16 +729,14 @@ pairs that can be used to configure the Frontend server. In case a parameter is 
 |   ```security.enable.vomscheck``` |   Flag to enable/disable checking proxy VOMS credentials. Default is **true**.
 |   ```security.enable.mapping```   |   Flag to enable/disable DN->userid mapping via gridmap-file. Default is **false**
 
-<br/>
-> **_General settings_**
+#####General settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   ```wsdl.file``` |   WSDL file, complete with path, to be returned in case of GET request
 
 
-
-#### Frontend Logging <a name="loggingfe_advconf">&nbsp;</a>
+####Frontend Logging
 
 The Frontend logs information on the service status and the SRM requests received and managed by the process. The Frontend's log supports different level of logging (ERROR, WARNING, INFO, DEBUG, DEBUG2) that can be set from the dedicated parameter in _storm-frontend-server.conf_ configuration file.
 The Frontend log file named _storm-frontend-server.log_ is placed in the _/var/log/storm directory_. At start-up time, the FE prints here the whole set of configuration parameters, this can be useful to check desired values. When a new SRM request is managed, the FE logs information about the user (DN and FQANs) and the requested parameters.
@@ -866,7 +747,7 @@ At each SRM request, the FE logs also this important information:
 
 about the status of the worker pool threads and the pending process queue. _Active tasks_ is the number of worker threads actually running. _Pending tasks_ is the number of SRM requests queued in the worker pool queue. These data gives important information about the Frontend load.
 
-##### monitoring.log
+#####monitoring.log
 
 Monitoring service, if enabled, provides information about the operations
 executed in a certain amount of time writing them on file
@@ -879,14 +760,14 @@ time (Aggregate Monitoring). Informations reported are generated from both
 Synchronous and Asynchronous requests and tell the user:
 
 - how many requests have been performed in the last Monitoring Round,
-- how many of them were successfull,
+- how many of them were successful,
 - how many failed,
 - how many produced an error,
 - the average execution time,
 - the minimum execution time,
 - the maximum execution time.
 
-This row reports the **Monitoring Summary** and this is the default behaviour of the monitoring service.
+This row reports the **Monitoring Summary** and this is the default behavior of the monitoring service.
 
 **_Example_**:
 
@@ -896,9 +777,9 @@ This row reports the **Monitoring Summary** and this is the default behaviour of
                 Last:(S [OK:12,F:5,E:0,m:0.091,M:0.255]
                 A [OK:6,F:0,E:0,m:0.121,M:0.415])
 
-Furthermore it can be requested a more detailed Frontend Monitoring activity by setting the configuration property _monitoring.detailed_ to _true_. Doing this, at each Monitoring Round for each kind of srm operation performed in the Monitoring Round (srmls, srmPtp, srmRm, ...) the following information are printed in a section with header "Last round details:":
+Furthermore it can be requested a more detailed Frontend Monitoring activity by setting the configuration property _monitoring.detailed_ to _true_. Doing this, at each Monitoring Round for each kind of SRM operation performed in the Monitoring Round (srmls, srmPtp, srmRm, ...) the following information are printed in a section with header "Last round details:":
 
-- how many request succeded,
+- how many request succeeded,
 - how many failed,
 - how many produced an error,
 - the average execution time,
@@ -906,7 +787,7 @@ Furthermore it can be requested a more detailed Frontend Monitoring activity by 
 - the maximum execution time,
 - the execution time standard deviation.
 
-This is called the **Detailed Monitoring Round**. After this, the Monitoring Summary is printed. Then, considering the whole frontend execution time, in a section with header "Details:", a similar detailed summary is printed. This is called the **Aggregate Detailed Monitoring**.
+This is called the **Detailed Monitoring Round**. After this, the Monitoring Summary is printed. Then, considering the whole Frontend execution time, in a section with header "Details:", a similar detailed summary is printed. This is called the **Aggregate Detailed Monitoring**.
 
 **_Example_**:
 
@@ -915,7 +796,7 @@ This is called the **Detailed Monitoring Round**. After this, the Monitoring Sum
     03/20 14:19:11 : [Put done] [OK:2,F:0,E:0,Avg:0.155,Std Dev:0.018,m:0.136,M:0.173]
     03/20 14:19:11 : [# 22927 lifetime=95:33:18]
                 S [OK:47,F:15,E:0,m:0.085,M:3.623,Avg:0.201]
-                A [OK:16,F:0,E:0,m:0.082,M:0.415,Avg:0.136]  
+                A [OK:16,F:0,E:0,m:0.082,M:0.415,Avg:0.136]
                 Last:(S [OK:12,F:5,E:0,m:0.091,M:0.255]
                 A [OK:6,F:0,E:0,m:0.121,M:0.415])
     03/20 14:19:11 : Details:
@@ -930,28 +811,27 @@ This is called the **Detailed Monitoring Round**. After this, the Monitoring Sum
 - Operations never performed are not printed in Aggregate Detailed Monitoring.
 - Operation performed in current Monitoring Round are aggregated in Aggregate Detailed Monitoring.
 
-##### gSOAP tracefile
+#####gSOAP tracefile
 
 If you have problem at gSOAP level, and you have already looked at the troubleshooting section of the StoRM site without finding a solution, and you are brave enough, you could try to find some useful information on the gSOAP log file.
-To enable gSOAP logging, set the following environment variables :
+To enable gSOAP logging, set the following environment variables:
 
     $CGSI_TRACE=1
     $CGSI_TRACEFILE=/tmp/tracefile
 
-and restart the Frontend daemon by calling directly the init script /etc/init.d/storm-frontend-server and see if the error messages contained in /tmp/tracefile could help. Please be very careful, it prints really a huge amount of information.
+and restart the Frontend daemon by calling directly the init script */etc/init.d/storm-frontend-server* and see if the error messages contained in */tmp/tracefile* could help. Please be very careful, it prints really a huge amount of information.
 
-### StoRM Backend service<a name="be_advconf">&nbsp;</a>
+###StoRM Backend service
 
 The Backend is the core of StoRM. It executes all SRM requests, interacts with
 other Grid service, with database to retrieve SRM requests, with file-system to
 set up space and file, etc. It has a modular architecture made by several
 internal components. The Backend needs to be configured for two main aspects:
 
-- _Service information_: this section contains all the parameter regarding the StoRM service details. It relies on the **storm.properties** configuration file.
-- _Storage information_: this section contains all the information regarding Storage Area and other storage details. It relies on the **namespace.xml** file.
+- _service information_: this section contains all the parameter regarding the StoRM service details. It relies on the **storm.properties** configuration file.
+- _storage information_: this section contains all the information regarding Storage Area and other storage details. It relies on the **namespace.xml** file.
 
-
-#### storm.properties <a name="besi_advconf">&nbsp;</a>
+####Service information: storm.properties
 
 The file:
 
@@ -966,11 +846,11 @@ service. The most important (and mandatory) parameters are configured by
 default trough YAIM with a standard installation of StoRM. All the other
 parameters are optionals and can be used to make advanced tuning of the
 Backend. To change/set a new value, or add a new parameter, just edit the
-*storm.properties* file and restart the Backend daemon. When the BackeEnd
+*storm.properties* file and restart the Backend daemon. When the BackEnd
 starts, it writes into the log file the whole set of parameters read from the
 configuration file.
 
-> **_Service information_**
+#####Service information
 
 |   Property Name                               |   Description     |
 |:----------------------------------------------|:------------------|
@@ -995,8 +875,7 @@ configuration file.
 |   ```default.overwrite```                     |   Default file overwrite mode to use upon *srmPrepareToPut* and *srmCopy* requests. Default: **A**. Possible values are: N, A, D. Please note that N stands for *Never*, A stands for *Always* and D stands for *When files differs*.
 |   ```default.storagetype```                   |   Default File Storage Type to be used for *srmPrepareToPut* and *srmCopy* requests in case is not provided in the request. Default: **V**. Possible values are: V, P, D. Please note that V stands for *Volatile*, P stands for *Permanent* and D stands for *Durable*.
 
-<br/>
-> **_Requests garbage collector_**
+#####Requests garbage collector
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -1006,16 +885,14 @@ configuration file.
 |   ```purge.delay```           |   Initial delay before starting the requests garbage collection process, in seconds. Default: **10**
 |   ```expired.request.time```  |   Time in seconds to consider a request expired after its submission. Default: **604800**
 
-<br/>
-> **_Garbage collector_**
+#####Garbage collector
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   ```gc.pinnedfiles.cleaning.delay```     |   Initial delay before starting the reserved space, JIT ACLs and pinned files garbage collection process, in seconds. Default: **10**
 |   ```gc.pinnedfiles.cleaning.interval```  |   Time interval in seconds between successive purging run. Default: **300**
 
-<br/>
-> **_Synchronous call_**
+#####Synchronous call
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -1025,15 +902,13 @@ configuration file.
 |   ```synchcall.xmlrpc.token```                |   The token that the backend will require to be present for accepting XML-RPC requests. Mandatory if synchcall.xmlrpc.token.enabled is true
 
 
-<br/>
-> **_REST interface parameters_**
+#####REST interface parameters
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   ```storm.rest.services.port```  |   REST services port. Default: **9998**
 
-<br/>
-> **_Database connection parameters_**
+#####Database connection parameters
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -1049,8 +924,7 @@ configuration file.
 |   ```persistence.internal-db.connection-pool.maxActive```     |   Database connection pool max active connections. Default: **10**
 |   ```persistence.internal-db.connection-pool.maxWait```   |   Database connection pool max wait time to provide a connection. Default: **50**
 
-<br/>
-> **_SRM Requests Picker_**
+#####SRM Requests Picker
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -1059,8 +933,7 @@ configuration file.
 |   ```asynch.PickingMaxBatchSize```    |   Maximum number of requests picked up at each polling time. Default: **100**
 |   ```scheduler.serial```          |   **DEPRECATED** Flag to enable the execution of all the request on a single thread. Default: **false**
 
-<br/>
-> **_Worker threads_**
+#####Worker threads
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -1080,8 +953,7 @@ configuration file.
 |   ```scheduler.chunksched.copy.workerMaxPoolSize```   |   *Copy* worker pool max size. Default: **50**
 |   ```scheduler.chunksched.copy.queueSize```           |   *Copy* request queue maximum size. Default: **500**
 
-<br/>
-> **_HTTP(S) protocol_**
+#####HTTP(S) protocol
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -1090,15 +962,13 @@ configuration file.
 |   ```gridhttps.server.port``` |   The port on StoRM GridHTTPs host where GridHTTPs accepts HTTP connections. Default:**8088**
 |   ```gridhttps.plugin.classname```    |   The complete class-name of the HTTPSPluginInterface implementation to be used. Default: **it.grid.storm.https.HTTPSPluginInterfaceStub**
 
-<br/>
-> **_Protocol balancing_**
+#####Protocol balancing
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   ```gridftp-pool.status-check.timeout``` |   Time in milliseconds after which the status of a GridFTP has to be verified. Default: **20000** (20 secs)
 
-<br/>
-> **_Tape recall_**
+#####Tape recall
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -1106,8 +976,7 @@ configuration file.
 |   ```tape.buffer.group.read```    |   System group to be assigned to files migrated from tape storage. Default: **storm-SA-read**
 |   ```tape.buffer.group.write```   |   System group to be assigned to files migrated to tape storage. Default: **storm-SA-write**
 
-<br/>
-> **_srmCopy parameters_**
+#####srmCopy parameters
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -1121,8 +990,7 @@ configuration file.
 |   ```asynch.gridftpclient```              |   The complete class-name of the GridFTPTransfer-Client implementation providing GridFTP client features to be used to perform file transfer to fulfill *srmCopy* requests. Default: **it.grid.storm.asynch.NaiveGridFTPTransferClient**
 
 
-
-#### namespace.xml <a name="besti_advconf">&nbsp;</a>
+####Storage information: namespace.xml
 
 Information about storage managed by StoRM is stored in a configuration file named namespace.xml located at */etc/storm/backend-server/* on StoRM Backend host. One of the information stored into namespace.xml file is what is needed to perform the ***mapping functionality***.
 The *mapping functionality* is the process of retrieving or building the transport URL (TURL) of a file addressed by a Site URL (SURL) together with grid user credential. The Fig 3 shows the different schema of SURL and TURL.
@@ -1178,6 +1046,7 @@ The Fig.4 shows the main concepts of Namespace Component:
 
 This is and example of the FS element:
 
+```xml
     <filesystem name="dteam-FS" fs_type="ext3">
         <space-token-description>DTEAM_TOKEN</space-token-description>
         <root>/storage/dteam</root>
@@ -1246,6 +1115,7 @@ This is and example of the FS element:
             <file lifetime="3600" type="volatile"/>
         </defaults-values>
     </filesystem>
+```
 
 ***Attributes meaning***:
 
@@ -1253,10 +1123,11 @@ This is and example of the FS element:
 - ```<space-token-description>DTEAM_TOKEN</space-token-description>``` : Storage Area space token description.
 - ```<root>/storage/dteam</root>``` : Physical root directory of the Storage Area on the file system.
 - ```<filesystem-driver>it.grid.storm.filesystem.swig.posixfs</filesystem-driver>``` : Driver loaded by the Backend for filesystem interaction. This driver is used mainly to set up ACLs on space and files.
-- ```<spacesystem-driver>it.grid.storm.filesystem.MockSpaceSystem</spacesystem-driver>``` Driver loaded by the Backend for filesystem interaction. This is driver is used to manage space allocation. (E.g. on GPFS it uses the _gpfs\_prealloc()_ call).
+- ```<spacesystem-driver>it.grid.storm.filesystem.MockSpaceSystem</spacesystem-driver>``` Driver loaded by the Backend for filesystem interaction. This is driver is used to manage space allocation. (E.g. on GPFS it uses the _gpfs_prealloc()_ call).
 
 > ***Storage Area properties***
 
+```xml
     <properties>
         <RetentionPolicy>replica</RetentionPolicy>
         <AccessLatency>online</AccessLatency>
@@ -1264,27 +1135,32 @@ This is and example of the FS element:
         <TotalOnlineSize unit="GB" limited-size="true">291</TotalOnlineSize>
         <TotalNearlineSize unit="GB">0</TotalNearlineSize>
     </properties>
+```
 
 in details:
 
 - ```<RetentionPolicy>replica</RetentionPolicy>``` : Retention Policy of the Storage Area. Possible values are: *replica*, *custodial*.
 - ```<AccessLatency>online</AccessLatency>``` : Access Latency of the Storage Area. Possible values: *online*, *nearline*.
 - ```<ExpirationMode>neverExpire</ExpirationMode>``` : Expiration Mode of the Storage Area. **Deprecated**.
-- ```<TotalOnlineSize unit="GB" limited-size="true">291</TotalOnlineSize>``` Total on-line size of the Storage Area in GigaBytes. In case the attribute *limited-size*="true", StoRM enforce this limit at SRM level. When the space used for the Storage Area is at least equal to the size specified, every further SRM request to write files will fail with SRM\_NO\_FREE\_SPACE error code.
+- ```<TotalOnlineSize unit="GB" limited-size="true">291</TotalOnlineSize>``` Total on-line size of the Storage Area in GigaBytes. In case the attribute *limited-size*="true", StoRM enforce this limit at SRM level. When the space used for the Storage Area is at least equal to the size specified, every further SRM request to write files will fail with SRM_NO_FREE_SPACE error code.
 - ```<TotalNearlineSize unit="GB">0</TotalNearlineSize>``` : Total near-line size of the Storage Area. This only means in case the Storage Area is in some way attached to a MSS storage system (such as TSM with GPFS).
 
 > ***Storage area capabilities***:
 
+```xml
     <aclMode>AoT</aclMode>
+```
 
 This is the ACL enforcing approach. Possible values are: *AoT*, *JiT*. In case of *AheadOfTime*(**AoT**) approach StoRM sets up a physical ACL on file and directories for the local group (*gid*) in which the user is mapped. (The mapping is done querying the LCMAPS service con the BE machine passing both user DN and FQANs). The group ACL remains for the whole lifetime of the file. In case of *JustInTime*(**JiT**) approach StoRM sets up and ACL for the local user (*uid*) the user is mapped. The ACL remains in place only for the lifetime of the SRM request, then StoRM removes it. (This is to avoid to grant access to pool account uid in case of reallocation on different users.)
 
+```xml
     <default-acl>
         <acl-entry>
             <groupName>lhcb</groupName>
             <permissions>RW</permissions>
         </acl-entry>
     </default-acl>
+```
 
 This is the Default ACL list. A list of ACL entry (that specify a local user (*uid*) or group id (*gid*) and a permission (R,W,RW). This ACL are automatically by StoRM at each read or write request. Useful for use cases where experiment want to allow local access to file on group different than the one that made the SRM request operation.
 
@@ -1292,9 +1168,11 @@ This is the Default ACL list. A list of ACL entry (that specify a local user (*u
 
 The ```file``` protocol:
 
+```xml
     <prot name="file">
         <schema>file</schema>
     </prot>
+```
 
 The **file** protocol means the capability to perform local access on file and directory. If user performs an SRM request (*srmPtG* or *srmPtP*) specifying the file protocol, and it is supported by the selected Storage Area, StoRM return a TURL structured as:
 
@@ -1302,12 +1180,14 @@ The **file** protocol means the capability to perform local access on file and d
 
 This TURL can be used through GFAL or other SRM clients to perform a direct access on the file.
 
+```xml
     <prot name="gsiftp">
         <id>0</id>
         <schema>gsiftp</schema>
         <host>gridftp-dteam.cnaf.infn.it</host>
         <port>2811</port>
     </prot>
+```
 
 The ```gsiftp``` protocol:
 
@@ -1317,11 +1197,13 @@ The **gsiftp** protocol means the GridFTP transfer system from Globus widely ado
 
 The ```rfio``` protocol:
 
+```xml
     <prot name="rfio">
         <schema>rfio</schema>
         <host>rfio-dteam.cnaf.infn.it</host>
         <port>5001</port>
     </prot>
+```
 
 This capability element contains all the information about the **rfio** server to use with this Storage Area. Like for GridFTP, site administrator can decide to have different server (or pools of server) for different Storage Areas. The *id* is the server identifier. The *schema* have to be rfio. *host* is the hostname of the server (or the DNS alias used to aggregate more than one server). The *port* is the rfio server port, typically 2811. If user performs an SRM request (*srmPtG* or *srmPtP*) specifying the rfio protocol, and it is supported by the selected Storage Area, StoRM return a TURL structured as:
 
@@ -1329,11 +1211,13 @@ This capability element contains all the information about the **rfio** server t
 
 The ```root``` protocol:
 
+```xml
     <prot name="root">
         <schema>root</schema>
         <host>root-dteam.cnaf.infn.it</host>
         <port>1094</port>
     </prot>
+```
 
 This capability element contains all the information about the **root** server to use with this Storage Area. Like for other protocols, site administrator can decide to have different server (or pools of server) for different Storage Areas. The *id* is the server identifier. The *schema* have to be root. *host* is the hostname of the server (or the DNS alias used to aggregate more than one server). The *port* is the root server port, typically 1094. If user performs an SRM request (*srmPtG* or *srmPtP*) specifying the root protocol, and it is supported by the selected Storage Area, StoRM return a TURL structured as:
 
@@ -1341,6 +1225,7 @@ This capability element contains all the information about the **root** server t
 
 > ***Pool of protocol servers***
 
+```xml
     <pool>
         <balance-strategy>round-robin</balance-strategy>
         <members>
@@ -1348,6 +1233,7 @@ This capability element contains all the information about the **root** server t
             <member member-id="1"></member>
         </members>
     </pool>
+```
 
 Here is defined a *pool of protocol servers*. Within the pool element pool *members* are declared identified by their *id*, the list of members have to be homogenious with respect to their schema. This id is the server identifier specified in the *prot* element. The *balance-strategy* represent the load balancing strategy with which the pool has to be managed. Possible values are: *round-robin*, *smart-rr*, *random* and *weight*.
 <br/>
@@ -1365,6 +1251,7 @@ Load balancing strategies details:
 
 **NOTE**: The weight has to be specified in a *weight* element inside the member element:
 
+```xml
     <pool>
         <balance-strategy>WEIGHT</balance-strategy>
         <members>
@@ -1376,24 +1263,29 @@ Load balancing strategies details:
             </member>
         </members>
     </pool>
+```
 
 > ***Default values***
 
+```xml
     <defaults-values>
         <space lifetime="86400" type="volatile" guarsize="291" totalsize="291"/>
         <file lifetime="3600" type="volatile"/>
     </defaults-values>
+```
 
 > ***Mapping rules***
 
 A **mapping rule** define how a certain NS-Filesystem, that correspond to a Storage Area in SRM meaning of terms, is exposed in Grid:
 
+```xml
     <mapping-rules>
         <map-rule name="dteam-maprule">
             <stfn-root>/dteam</stfn-root>
             <mapped-fs>dteam-FS</mapped-fs>
         </map-rule>
     </mapping-rules>
+```
 
 The ```<stfn-root>``` is the path used to build SURL referring to that Storage Area. The mapping rule above define that the NS-Filesystem named *dteam-FS* has to be mapped in the */dteam* SURL path. Following the NS-Filesystem element defined in the previous section, the SURL:
 
@@ -1410,6 +1302,7 @@ This approach works similar to an alias, from the SURL *stfn-root* path to the N
 **Approachable rules** defines which users (or which class of users) can approach a certain Storage Area, always expressed as NS-Filesystem element. If a user can approach a Storage Area, he can use it for all SRM operations. If a user is not allowed to approach a Storage Area, and he try to specify it in any SRM request, he will receive an SRM\_INVALID\_PATH. In practics, if a user cannot approach a Storage Area, for him that specific path does not exists at all.
 Here is an example of approachable rule for the *dteam-FS* element:
 
+```xml
     <approachable-rules>
         <app-rule name="dteam-rule">
             <subjects>
@@ -1420,14 +1313,13 @@ Here is an example of approachable rule for the *dteam-FS* element:
             <space-rel-path>/</space-rel-path>
         </app-rule>
     </approachable-rules>
+```
 
-- ```<dn>*</dn>``` means that everybody can access the storage Area. Here you can define regular expression on DN fields to define more complex approachable rules.
+- `<dn>*</dn>` means that everybody can access the storage Area. Here you can define regular expression on DN fields to define more complex approachable rules.
 
-- ```<vo-name>*</vo-name>``` means that everybody belonging to a VO access the storage Area. Please note that user without FQANs extension will not be recognized as belonging to VOs then they will not be allowed to approach the SA. Remove or comment this line if the Storage Area have to be open to users without VOMS extensions.
+- `<vo-name>dteam</vo-name>` means that only users belonging to the VO dteam will be allowed to access the Storage Area. This entry can be a list of comma separeted VO-name.
 
-- ```<vo-name>dteam</vo-name>``` means that only users belonging to the VO dteam will be allowed to access the Storage Area. This entry can be a list of comma separeted VO-name.
-
-#### used-space.ini <a name="besui_advconf">&nbsp;</a>
+#####used-space.ini
 
 StoRM maintains the information about the status of managed storage areas (such
 as free, used, busy, available, guaranteed and reserved space), and store them
@@ -1446,16 +1338,17 @@ configuration file, the used-space.ini configuration file, that it will be
 parsed at bootstrap time and only one time. The structure of the content of
 **used-space.ini** is quite simple: a list of sections corresponding to the
 Storage Area in which are defined the used size, and eventually, the checktime.
-For each Storage Area to be initializated there is a section named with the
+For each Storage Area to be initialized there is a section named with the
 same alias *space-token-description* defined in the *namespace.xml*, that are
-defined with YAIM variables STORM\{SA}\_ACCESSPOINT. Within the section there
+defined with YAIM variables STORM\_{SA}\_ACCESSPOINT. Within the section there
 are two properties: *usedsize* and *checktime*:
 
 - *usedsize*: The used space in the Storage Area expressed in Bytes. Must be an value without digits after the decimal mark. **MANDATORY**
-- *checktime*: The timestamp of the time to wich the usedsize computation refers. Must be a date in RFC-2822 format. Optional.
+- *checktime*: The timestamp of the time to which the usedsize computation refers. Must be a date in RFC-2822 format. Optional.
 
 Here is a sample of *used-space.ini*:
 
+```bash
     [sa-alias-1]
     checktime = Fri, 23 Sep 2011 11:56:53 +0200
     usedsize = 1848392893847
@@ -1464,42 +1357,40 @@ Here is a sample of *used-space.ini*:
     usedsize = 2839937589367
     [sa-alias-3]
     usedsize = 1099511627776
+```
 
-This file can be produced in two ways:
+This file can be produced in two ways,
 
-1. by hand after StoRM Backend service configuration
+1. by hand after StoRM Backend service configuration:
 
-    * write your own used-space.ini file adding a section for each Storage Area you want to initialize
+  * write your own used-space.ini file adding a section for each Storage Area you want to initialize;
+  * as section name use the *space-token-description* value as in namespace.xml;
+  * set the value of usedsize property as in the example;
+  * set the value of checktime property as in the example. To obtain an RFC-2822 timestamp of the current time you can execute the command *date --rfc-2822*.
 
-    * as section name use the *space-token-description* value as in namespace.xml
+2. by YAIM at StoRM Backend service configuration time:
 
-    * set the value of usedsize property as in the example.
-
-    * set the value of checktime property as in the example. To obtain an RFC-2822 timestamp of the current time you can execute the command *date --rfc-2822*
-
-2. by YAIM at StoRM Backend service configuration time
-
-    * add a variable STORM\_{SA}\_USED\_ONLINE\_SIZE to your YAIM configuration file for each Storage Area you want to initialize where {SA} is the name of the Storage Area as in STORM\_STORAGEAREA\_LIST YAIM variable
-
-    * run YAIM on StoRM profiles installed on this host
+  * add a variable STORM\_{SA}\_USED\_ONLINE\_SIZE to your YAIM configuration file for each Storage Area you want to initialize where {SA} is the name or the Storage Area as in STORM\_STORAGEAREA\_LIST YAIM variable;
+  * run YAIM on StoRM profiles installed on this host.
 
 StoRM Backend will load used-space.ini file at bootstrap and initialize the used space of newly created Storge Areas to its values.
 
 > **NOTE**: running YAIM on StoRM Backend profile will produce a new used-space.ini file and backup any existent version with the extension .bkp_. Take this into account if you want to produce the used-space.ini file by hand.
 
-#### Backend Logging <a name="belog_advconf">&nbsp;</a>
+####Backend Logging
 
 The Backend log files provide information on the execution process of all SRM requests. All the Backend log files are placed in the */var/log/storm* directory. Backend logging operations are based on the *logback* framework. Logback provides a way to set the level of verbosity depending on the use case. The level supported are FATAL, ERROR, INFO, WARN, DEBUG. The **/etc/storm/backend-server/logging.xml** contains this information:
 
+```xml
     <logger name="it.grid.storm" additivity="false">
         <level value="DEBUG" />
         <appender-ref ref="PROCESS" />
     </logger>
+```
 
 the *value* can be setted to the desired log level. Please be careful that logging operation can impact on system performance (even 30% slower with DEBUG in the worst case). The suggest logging level for production endpoint is INFO. In case the log level is modified, the Backend have to be restarted to read the new value.
 
-
-From [StoRM 1.11.2]({{ site.baseurl }}/release-notes/storm-backend-server/1.11.2/) the Backend log files have been unified in one and only file:
+From [StoRM 1.11.2][storm-v1-11-2] the Backend log files have been unified in one and only file:
 
 -  **storm-backend.log**. All the information about the SRM execution process, error or warning are logged here depending on the log level. At startup time, the BE logs here all the storm.properties value, this can be useful to check value effectively used by the system. After that, the BE logs the result of the namespace initialization, reporting errors or misconfiguration. At the INFO level, the BE logs for each SRM operation at least who have request the operation (DN and FQANs), on which files (SURLs) and the operation result. At DEBUG level, much more information are printed regarding the status of many StoRM internal component, depending on the SRM request type. DEBUG level has to be used carefully only for troubleshooting operation. If ERROR or FATAL level are used, the only event logged in the file are due to error condition.
 
@@ -1508,12 +1399,13 @@ StoRM provides a bookkeeping framework that elaborates informations on SRM reque
 - **heartbeat.log**
 This useful file contains information on the SRM requests process by the system from its startup, adding new information at each beat. The beat time interval can be configured, by default is 60 seconds. At each beat, the hearthbeat component logs an entry.
 
-An hearthbeat.log entry example:
+A heartbeat.log entry example:
 
+```bash
     [#.....71 lifetime=1:10.01]
         Heap Free:59123488 SYNCH [500] ASynch [PTG:2450 PTP:3422]
         Last:( [#PTG=10 OK=10 M.Dur.=150] [#PTP=5 OK=5 M.Dur.=300] )
-
+```
 
 |   Log     |   Meaning     |
 |:----------|:--------------|
@@ -1527,7 +1419,7 @@ An hearthbeat.log entry example:
 
 This log information can be really useful to gain a global view on the overall system status. A tail on this file is the first thing to do if you want to check the health of your StoRM installation. From here you can understand if the system is receiving SRM requests or if the system is overloaded by SRM request or if PtG and PtP are running without problem or if the interaction with the filesystem is exceptionally low (in case the M.Dur. is much more than usual).
 
-### StoRM GridFTP service <a name="gftp_advconf">&nbsp;</a>
+###StoRM GridFTP service
 
 At each transfer request, the GridFTP uses LCMAPS to get user mapping and start
 a new processes on behalf of the user to proceed with data transfer. GridFTP
@@ -1535,12 +1427,11 @@ relies on a different db file to get the plugin to use. Obviously LCMAPS has to
 answer to GridFTP requests and StoRM requests in coeherent way. The GridFTP
 uses the LCMAPS configuration file located at */etc/lcmaps/lcmaps.db*.
 
-#### GridFTP Logging <a name="gftplog_advconf">&nbsp;</a>
+####GridFTP Logging
 
 GridFTP produce two separated log files:
 
 - */var/log/storm/gridftp-session.log* for the command session information
-
 - */var/log/storm/globus-gridftp.log* for the transfer logs
 
 The logging level can be specified by editing the configuration file:
@@ -1549,284 +1440,226 @@ The logging level can be specified by editing the configuration file:
 
 The supported logging levels are: ERROR, WARN, INFO, DUMP and ALL.
 
+####Redirect LCMAPS logging
 
-#### Redirect LCMAPS logging
-
-Administrators can redirect the LCMAPS logging to a different log file than the one used by syslog by setting the ```LLGT_LOG_FILE``` environment variable.
+Administrators can redirect the LCMAPS logging to a different log file than the one used by syslog by setting the `LLGT_LOG_FILE` environment variable.
 As example, consider the following setup for the gridftp service:
 
+```
     vim /etc/sysconfig/globus-gridftp
+```
 
 insert:
 
+```bash
     export LLGT_LOG_FILE="/var/log/storm/storm-gridftp-lcmaps.log"
+```
 
 After restarting the service, all LCMAPS calls will be logged to the new file.
 
+####IPC Channel
 
+The IPC channel is used between a Globus GridFTP server head node and its
+disk servers, e.g. for striped transfers (read more into
+the [GridFTP System Administrator’s Guide][gridftp-admin-striped]).
+In the default behavior of StoRM deployment the IPC channel is not used.
+In fact, StoRM is mainly installed on a single host with one gridftp server
+which read/write directly on disk.
+In the cases it is a distributed deployment, there are usually n gridftp servers
+which read/write data directly on disk, behind a haproxy or a dns for example,
+so there are no separate frontends and one or more disk node servers.
+However, it's important to know that **the IPC channel must be kept firewalled for any hosts outside the SE system**.
 
-### StoRM GridHTTPs service<a name="ghttp_advconf">&nbsp;</a>
+{% assign label_caption="Important" %}
+{% include open_note.liquid %}
+>**The IPC channel must be kept firewalled for any hosts outside the SE system**.
 
-<div class="alert alert-error">The GridHTTPs server is deprecated. Install and configure the storm-webdav service instead.</div>
+##Services information
 
-The EMI3 GridHTTPs is the component responsible to provide:
+The WLCG Information System is used to discover services and get status information about WLCG resources.
+The **BDII** (Berkeley Database Information Index) is a Perl / BDB 'glue' used to manage LDAP updates.
+See https://twiki.cern.ch/twiki//bin/view/EGEE/BDII for more details.
 
-- HTTP(s) file-transfer capabilities: it's possible to GET/PUT data via HTTP protocol but this is authorized only if a valid SRM prepare-to-get or SRM prepare-to-put has been successfully done before;
-- a WebDAV interface to the StoRM endpoint that conceals the details of the SRM protocol and allows users to mount remote Grid storage as a volume on their own desktops;
-- a mapping-service used by Backend that convert a real file path to a valid file-transfer URL.
+###StoRM Info Provider
 
-The GridHTTPs component relies on a single configuration file that contains all the configurable parameters. This file is:
+`StoRM Dynamic Info Provider` is the StoRM component that manages how and what information are published on the BDII.
+By default, the BDII uses three directories to obtain information sources:
 
-    /etc/storm/gridhttps-server/server.ini
+* **ldif**: static LDIF files should be placed in this directory;
+* **provider**: here information providers are placed and run once at bdii startup;
+* **plugin**: scripts periodically run to update information.
 
-containing a list of:
+These directories are located by default into /var/lib/bdii/gip.
 
-    key = value
+####Configuration
 
-pairs that can be used to configure the GridHTTPs server. In case a parameter is modified, the GridHTTPs service has to be restarted in order to read the new value.
+StoRM DIP has not a configuration file, its behavior and outputs depend on the site configuration which is processed by yaim-storm and stored into */etc/storm/info-provider/storm-yaim-variables.conf*.
 
-#### server.ini <a name="ghttpsi_advconf">&nbsp;</a>
+However, from [StoRM DIP v1.7.7][info-provider-177] a new YAIM variable has been introduced: `STORM_GRIDHTTPS_PUBLIC_HOST`.
 
-EMI3 StoRM GridHTTPs server no longer needs Tomcat, cause it is now a web component residing in an embedded Jetty server. About Jetty server and its connectors configuration you can manage the following variables:
+Similar to the meaning of `STORM_FRONTEND_PUBLIC_HOST`, it represents the FQDN of the hostname where a webdav endpoint is installed, or the public FQDN name of the webdav endpoint hostname in case there's a DNS load balancing, for example.
 
-|   Var. name           |   Description             |
-|:----------------------|:--------------------------|
-|```http.enabled```     |Flag to enable anonymous webdav and file-transfer connections. Available values: true, false. Default value: **true**
-|```http.port```        |Gridhttps http port for anonymous webdav and file-transfer connections. Default value: **8085**
-|```https.port```       |Gridhttps https port for secure webdav and file-transfer connections. Default value: **8443**
-|```mapper.servlet.port```  |Mapping-service http port.<br/>Default value: **8086**
-|```max.active.threads```   |Maximum number of active threads for server's requests.<br/>Default value: **150**
-|```max.queued.threads```   |Maximum number of queued threads for server's requests.<br/>Default value: **300**
-|```x509.host-certificate```    |x509 host certificate for SSL connector.<br/>Default value: **/etc/grid-security/gridhttps/hostcert.pem**
-|```x509.host-key```    |x509 host key for SSL connector.<br/>Default value: **/etc/grid-security/gridhttps/hostkey.pem**
-|```x509.truststore.directory```    |Truststore location.<br/>Default value: **/etc/grid-security/certificates**
-|```x509.truststore.refresh-interval``` |Canl truststore update time interval expressed in milliseconds.<br/>Default value: **600000** (1 minute)
+StoRM DIP will publish `STORM_GRIDHTTPS_PUBLIC_HOST` as a WebDAV endpoint only if `STORM_GRIDHTTPS_ENABLED` is true.
 
-<br/>
-GridHTTPs' log file is configurable:
-
-|   Var. name           |   Description             |
-|:----------------------|:--------------------------|
-|```log.configuration-file```   |GridHTTPs logging configuration file.<br/>Default value: **/etc/storm/gridhttps-server/logback.xml**
-
-<br/>
-GridHTTPs interacts with StoRM Backend to configure itself in bootstrap phase, to check user's authorization access to resources, to perform SRM operation, to set checksum value on a file, etc. So it needs to know information about BE location and ports:
-
-|   Var. name           |   Description             |
-|:----------------------|:--------------------------|
-|```backend.hostname```     |StoRM Backend server full hostname. <br/>**Mandatory**
-|```backend.authorization-service.port```   |StoRM Backend server REST port.<br/>Default value: **9998**
-|```backend.srm-service.port``` |StoRM Backend server XMLRPC port.<br/>Default value: **8080**
-|```backend.xmlrpc.token``` |Token used for communicating with the backend service. Mandatory, has no default
-
-<br/>
-GridHTTPs works with SURLs so it needs to know a valid SRM endpoint:
-
-|   Var. name           |   Description             |
-|:----------------------|:--------------------------|
-|```srm.endpoint```         |StoRM SRM EndPoint.<br/>Default value: **$STORM\_BACKEND\_HOSTNAME:8444**
-
-<br/>
-GridHTTPs manage file transfers and file creation. So it computes checksum during transfers. The computed checksum type is *adler32*. This capability can be disabled.
-
-|   Var. name           |   Description             |
-|:----------------------|:--------------------------|
-|```compute-checksum```     |If compute-checksum is true, for every file created a valid adler32 checksum value is computed. Available values: true, false.<br/>Default value: **true**
-
-
-
-#### GridHTTPs Logging<a name="ghttplog_advconf">&nbsp;</a>
-
-GridHTTPs' log files are located in */var/log/storm/* directory. They are the followings:
-
-- **storm-gridhttps-server.log** For managed requests
-This is the main log file of StoRM GridHTTPs. All the information about the WebDAV, HTTP file-transfer and mapping requests, error or warning are logged here depending on the log level. At the INFO level, the GridHTTPs logs, for each operation, who have request the operation (DN and FQANs if not anonymous), on which file(s) (SURLs) and the operation result. At DEBUG level, much more information are printed regarding the status of many StoRM internal component, depending on the request type. DEBUG level has to be used carefully only for troubleshooting operation. If ERROR or FATAL level are used, the only event logged in the file are due to error condition.
-
-- **storm-backend.stdout**
-This file contains the standard out of the GridHTTPs process. Usually it does not contains any useful information.
-
-- **storm-backend.stderr**
-This file contains the event logged as ERROR or FATAL conditions. This event logs are presents both in the *storm-gridhttps-server.log* file and here.
-
-The logging level of these files can be specified editing the configuration file **logback.xml** located in */etc/storm/gridhttps-server/* directory modifying the *level* value of:
-
-    <logger name="it.grid.storm" level="INFO">
-        <appender-ref ref="PROCESS" />
-    </logger>
-
-The supported logging levels are: FATAL, ERROR, WARN, INFO, DEBUG and TRACE.
-<br/><br/>
-The suggest logging level for production endpoint is INFO. In case the log level is modified, GridHTTPs service has to be restarted to read the new value.
-
-
-
-#### GridHTTPs plugin information<a name="ghttpplug_advconf">&nbsp;</a>
-
-StoRM GridHTTPs Plugin is shipped with StoRM Backend metapackage and it is installed on Backend host. Its configuration information are stored in:
-
-    /etc/storm/gridhttps-plugin/storm.gridhttps.plugin.properties
-
-This file contains a list of:
-
-    key = value
-
-pairs that can be used to configure the GridHTTPs Plugin.
-The GridHTTPs Plugin lives within Backend Java process; in case a parameter is modified, the Backend service have to be restarted in order to read the new value.
-
-|   Property name       |   Description             |
-|:----------------------|:--------------------------|
-|```gridhttps.server.user.uid```    |The User ID associated to the local user running the GridHTTPs server service
-|```gridhttps.server.user.gid```    |The primary Group ID associated to the local user running the GridHTTPs server service
-
-
-
-### StoRM EMIR Configuration <a name="emir_advconf">&nbsp;</a>
-
-You can use EMIR-SERP to publish StoRM information to EMIR. EMIR-SERP uses the information already available in the resource resource bdii (aka ERIS) and publish it to an EMIR DSR endpoint.
-<br/>
-<br/>
-First check that the resource bdii is up and running. Executing
-
-    ldapsearch -x -h localhost -p 2170 -b 'GLUE2GroupID=resource,o=glue' objectCLass=GLUE2Service
-
-it should return two services for each vo installed on the machine. If this is not the case, there is some problem with your installation.
-Then install serp:
-
-    sudo yum install emir-serp
-
-and edit the configuration file */etc/emi/emir-serp/emir-serp.ini*, providing the url for the EMIR DSR and the url for the resource bdii
-
-    ...
-    url = http://emitbdsr1.cern.ch:9126
-    ...
-    [servicesFromResourceBDII]
-    resource_bdii_url = ldap://localhost:2170/GLUE2GroupID=resource,o=glue
-    ...
-
-You can change the update interval
-
-    # Period of registration/update messages
-    # Mandatory configuration parameter
-    # Value is given in hours
-    period = 1
-
-and the time of registration entry validity:
-
-    # Time of registration entry validity
-    # Mandatory configuration parameter
-    # Value is given in hours
-    validity = 2
-
-You might want to set the logging level to debug the first time you start the service:
-
-    verbosity = debug
-
-Start the service:
-
-    sudo service emir-serp start
-
-Verify the pubblication by inspecting this <a href="http://emitbdsr1.cern.ch:9126/services">page</a> searching for an entity with "Name" attribute equal to StoRM YAIM variable "SITE\_NAME". It is recommended to set back the logging level to error and restart the service. Stopping emier-serp will cause the entry to be deleted.
-
-### Users blacklisting with ARGUS <a name="argus_advconf">&nbsp;</a>
-
-In order to create and manage a list of banned users, StoRM can be configured
-to use ARGUS authorization system. The Argus authorization service allows
-administrators to define policies that answer questions like _Can user X
-perform action Y on resource Z at this time?_ See [Argus
-twiki](https://twiki.cern.ch/twiki/bin/view/EGEE/AuthZIntro) to get more
-information about this framework. StoRM doesn't integrate all the services
-provided by Argus. It allows only to define a list of banned users. To
-configure the Frontend to communicate with Argus PEP server you must set the
-following YAIM variables.
-
-First of all we need to tell YAIM that you want to use ARGUS:
-
-    USE_ARGUS = yes
-
-and specify the complete service endpoint of Argus PEP server:
-
-    ARGUS_PEPD_ENDPOINTS = "https://<ARGUS-service-hostname>:8154/authz"
-
-Then you have to choose an entity identifier for StoRM service (it's a string that represents the entity-id that you'll use for each StoRM's Argus policy):
-
-    STORM_PEPC_RESOURCEID = "storm"
-
-and enable Frontend's user blacklisting with:
-
-    STORM_FE_USER_BLACKLISTING = true
-
-The StoRM configuration is completed. But before running YAIM configuration it's necessary to define at least a policy for every VO that your StoRM instance supports. To do this, we have to add some valid policies. We can write a file in [Simplified Policy Language][SPLguide] and then import it or we can use the [pap-admin CLI][pap_admin_CLI] directly.
-For example, if your StoRM instance supports ```testers.eu-emi.eu``` and ```dteam``` VOs, you have to write the following policies:
+####Usage
 
 ```bash
-resource "storm" {
-    obligation "http://glite.org/xacml/obligation/local-environment-map" {}
-    action ".*" {
-        rule permit { vo="testers.eu-emi.eu" }
-    }
-}
-resource "storm" {
-    obligation "http://glite.org/xacml/obligation/local-environment-map" {}
-    action ".*" {
-        rule permit { vo="dteam" }
-    }
-}
-```
-See [Simplified Policy Language guide][SPLguide] to learn how to write valid Argus policies.
-If you have a storage area not owned by a VO but readable and writable with a particular x509 certificate (see [this example][X509_SA_conf_example]), you can add an ARGUS policy as follow:
-
-```bash
-resource "storm" {
-    action ".*" {
-        rule permit { subject-issuer="CN=Test CA,O=IGI,C=IT" }
-    }
-}
-```
-Finally, if you want to ban a particular user you can add a policy as follow:
-
-```bash
-resource ".*" {
-    action ".*" {
-        rule deny { subject="CN=Enrico Vianello, L=CNAF, OU=Personal Certificate, O=INFN, C=IT" }
-    }
-}
+$ /usr/libexec/storm-info-provider -h
+usage: storm-info-provider [-h] [-v LOG_LEVEL] [-o LOG_FILENAME]
+                           {configure,get-static-ldif,get-update-ldif} ...
 ```
 
-Save all these policies on a file and import it via pap-admin command ```add-policies-from-file```:
+* `-v`: `LOG_LEVEL` can be `10` (DEBUG), `20` (INFO - default), `30` (WARNING) and `40` (ERROR)
+* `-o`: all the log messages are printed on stderr by default but they can be redirected to an external `LOG_FILENAME` by specifying this option
+
+#####Usage - `configure`
 
 ```bash
-pap-admin add-policies-from-file <filepath>
+$ /usr/libexec/storm-info-provider configure -h
+usage: storm-info-provider configure [-h] [-f FILEPATH]
+                                     [-g {glue13,glue2,all}]
+optional arguments:
+  -h, --help            show this help message and exit
+  -f FILEPATH
+  -g {glue13,glue2,all}
 ```
 
-This command append the contained policies so, if you want to replace the existing policies, you have to do a:
+* `-f`: the path of the file which contains all the StoRM related YAIM variables with their key-value pairs (default is `/etc/storm/info-provider/storm-yaim-variables.conf` which is the file created by yaim-storm))
+* `-g`: GLUE version selector (default: `all`)
+
+During configuration, yaim-storm creates `storm-yaim-variables.conf` and runs the StoRM Dynamic Info Provider script as follow:
 
 ```bash
-pap-admin remove-all-policies
+$ /usr/libexec/storm-info-provider -v LOG_LEVEL configure -g all -f /etc/storm/info-provider/storm-yaim-variables.conf
 ```
 
-before, and then import your file.
-Clear the cache and reload the policies to finish:
+Example of output with LOG_LEVEL = 20:
 
 ```bash
-service argus-pepd clearcache
-service argus-pdp reloadpolicy
+$ /usr/libexec/storm-info-provider configure
+2014-09-04 10:40:34,271 root        : INFO Successfully created /etc/storm/info-provider/glite-info-glue13-service-storm.conf !
+2014-09-04 10:40:34,271 root        : INFO Successfully created /var/lib/bdii/gip/provider/storm-glue13-provider !
+2014-09-04 10:40:34,272 root        : INFO Successfully created /var/lib/bdii/gip/plugin/storm-glue13-plugin !
+2014-09-04 10:40:34,321 root        : INFO Successfully created /var/lib/bdii/gip/ldif/storm-glue13-static.ldif !
+2014-09-04 10:40:34,322 root        : INFO Successfully created /etc/storm/info-provider/glite-info-glue2-service-storm.conf !
+2014-09-04 10:40:34,322 root        : INFO Successfully created /etc/storm/info-provider/glite-info-glue2-service-storm-endpoint-srm.conf !
+2014-09-04 10:40:34,322 root        : INFO Successfully created /var/lib/bdii/gip/provider/storm-glue2-provider !
+2014-09-04 10:40:34,323 root        : INFO Successfully created /var/lib/bdii/gip/plugin/storm-glue2-plugin !
+2014-09-04 10:40:34,365 root        : INFO Successfully created /var/lib/bdii/gip/ldif/storm-glue2-static.ldif !
+2014-09-04 10:40:34,365 root        : INFO Received configure - It took 0.04 sec
 ```
 
-You can add your policies also by using only the pap-admin CLI. In our case you can launch:
+#####Usage - `get-static-ldif`
 
 ```bash
-pap-admin-rap
-pap-admin add-policy --resource "storm" --action ".*" --obligation "http://glite.org/xacml/obligation/local-environment-map" permit vo="testers.eu-emi.eu"
-pap-admin add-policy --resource "storm" --action ".*" permit subject-issuer="CN=Test CA,O=IGI,C=IT"
-pap-admin ban subject "CN=Enrico Vianello, L=CNAF, OU=Personal Certificate, O=INFN, C=IT"
-service argus-pepd clearcache
-service argus-pdp reloadpolicy
+$ /usr/libexec/storm-info-provider get-static-ldif -h
+usage: storm-info-provider get-static-ldif [-h] [-f FILEPATH]
+                                           [-g {glue13,glue2}]
+optional arguments:
+  -h, --help         show this help message and exit
+  -f FILEPATH
+  -g {glue13,glue2}
+```
+
+* `-f`: the path of the file which contains all the StoRM related YAIM variables with their key-value pairs (default is `/etc/storm/info-provider/storm-yaim-variables.conf` which is the file created by yaim-storm))
+* `-g`: GLUE version selector (default: `glue2`)
+
+Example of a filtered output to obtain only the `dn` of the generated entries:
+
+```bash
+$ /usr/libexec/storm-info-provider get-static-ldif -g glue13 2>/dev/null | grep dn
+dn: GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
+dn: GlueSALocalID=tape:custodial:nearline,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
+dn: GlueVOInfoLocalID=testers.eu-emi.eu,GlueSALocalID=tape:custodial:nearline,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
+dn: GlueSALocalID=igi:replica:online,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
+dn: GlueSALocalID=noauth:replica:online,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
+dn: GlueSALocalID=nested:replica:online,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
+dn: GlueVOInfoLocalID=testers.eu-emi.eu,GlueSALocalID=nested:replica:online,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
+dn: GlueSALocalID=dteam:replica:online,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
+dn: GlueVOInfoLocalID=dteam,GlueSALocalID=dteam:replica:online,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
+dn: GlueSALocalID=testerseuemieu:replica:online,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
+dn: GlueVOInfoLocalID=testers.eu-emi.eu,GlueSALocalID=testerseuemieu:replica:online,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
+dn: GlueSEControlProtocolLocalID=srm_v2.2,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
+dn: GlueSEAccessProtocolLocalID=file,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
+dn: GlueSEAccessProtocolLocalID=gsiftp,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
+dn: GlueSEAccessProtocolLocalID=xroot,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
+dn: GlueSEAccessProtocolLocalID=http,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
+dn: GlueSEAccessProtocolLocalID=https,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
+dn: GlueSEAccessProtocolLocalID=webdav,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
+```
+
+The action `get-static-ldif` is not used by the installed scripts. However its functionality is internally used by the `configure` action to generate the static ldif files.
+
+#####Usage - `get-update-ldif`
+
+```bash
+$ /usr/libexec/storm-info-provider get-update-ldif -h
+usage: storm-info-provider get-static-ldif [-h] [-f FILEPATH]
+                                           [-g {glue13,glue2}]
+optional arguments:
+  -h, --help         show this help message and exit
+  -f FILEPATH
+  -g {glue13,glue2}
+```
+
+* `-f`: the path of the file which contains all the StoRM related YAIM variables with their key-value pairs (default is `/etc/storm/info-provider/storm-yaim-variables.conf` which is the file created by yaim-storm))
+* `-g`: GLUE version selector (default: `glue2`)
+
+The plugin files created during `configure` phase runs StoRM DIP `get-update-ldif`.
+If StoRM service is down, an error is logged and user obtains the LDIF output useful to update the serving-state value of the endpoints.
+
+Example of a filtered output to obtain only the `dn` of the generated entries:
+
+```bash
+$ /usr/libexec/storm-info-provider get-update-ldif -g glue2 2>/dev/null | grep dn
+dn: GLUE2EndpointID=cloud-vm45.cloud.cnaf.infn.it/storage/endpoint/SRM,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+dn: GLUE2EndpointID=cloud-vm45.cloud.cnaf.infn.it/storage/endpoint/HTTP,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+dn: GLUE2EndpointID=cloud-vm45.cloud.cnaf.infn.it/storage/endpoint/HTTPS,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+dn: GLUE2StorageServiceCapacityID=cloud-vm45.cloud.cnaf.infn.it/storage/capacity/online,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+dn: GLUE2StorageServiceCapacityID=cloud-vm45.cloud.cnaf.infn.it/storage/capacity/nearline,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+dn: GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/tape,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+dn: GLUE2StorageShareCapacityID=cloud-vm45.cloud.cnaf.infn.it/storage/share/tape/capacity/online,GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/tape,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+dn: GLUE2StorageShareCapacityID=cloud-vm45.cloud.cnaf.infn.it/storage/share/tape/capacity/nearline,GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/tape,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+dn: GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/igi,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+dn: GLUE2StorageShareCapacityID=cloud-vm45.cloud.cnaf.infn.it/storage/share/igi/capacity/online,GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/igi,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+dn: GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/noauth,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+dn: GLUE2StorageShareCapacityID=cloud-vm45.cloud.cnaf.infn.it/storage/share/noauth/capacity/online,GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/noauth,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+dn: GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/nested,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+dn: GLUE2StorageShareCapacityID=cloud-vm45.cloud.cnaf.infn.it/storage/share/nested/capacity/online,GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/nested,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+dn: GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/dteam,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+dn: GLUE2StorageShareCapacityID=cloud-vm45.cloud.cnaf.infn.it/storage/share/dteam/capacity/online,GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/dteam,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+dn: GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/testerseuemieu,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+dn: GLUE2StorageShareCapacityID=cloud-vm45.cloud.cnaf.infn.it/storage/share/testerseuemieu/capacity/online,GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/testerseuemieu,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+```
+
+Example of the output generated when StoRM service is down:
+
+```bash
+$ service storm-backend-server stop
+Stopping storm-backend-server                              [  OK  ]
+$ /usr/libexec/storm-info-provider get-update-ldif -g glue2 2>/dev/null
+dn: GLUE2EndpointID=cloud-vm45.cloud.cnaf.infn.it/storage/endpoint/SRM,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+GLUE2EndpointServingState: closed
+dn: GLUE2EndpointID=cloud-vm45.cloud.cnaf.infn.it/storage/endpoint/HTTP,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+GLUE2EndpointServingState: closed
+dn: GLUE2EndpointID=cloud-vm45.cloud.cnaf.infn.it/storage/endpoint/HTTPS,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
+GLUE2EndpointServingState: closed
 ```
 
 
-
-[X509_SA_conf_example]: {{site.baseurl}}/documentation/how-to/storage-area-configuration-examples/1.11.3/index.html#sa-anonymous-rw-x509
+[Scientific Linux]: http://www.scientificlinux.org
+[SL5]: http://linuxsoft.cern.ch/scientific/5x/
+[SL6]: http://linuxsoft.cern.ch/scientific/6x/
+[EMI3 Instructions]: https://twiki.cern.ch/twiki/bin/view/EMI/GenericInstallationConfigurationEMI3
+[how-to-nis]: http://www.tldp.org/HOWTO/NIS-HOWTO/index.html
+[egi-instructions]: https://wiki.egi.eu/wiki/EGI_IGTF_Release#Using_YUM_package_management
 [SPLguide]: https://twiki.cern.ch/twiki/bin/view/EGEE/SimplifiedPolicyLanguage
 [pap_admin_CLI]: https://twiki.cern.ch/twiki/bin/view/EGEE/AuthZPAPCLI
-[LDAPconfiguration]: http://italiangrid.github.io/storm/documentation/how-to/how-to-share-users-openldap/1.11.4/
+[gridftp-admin-striped]: http://toolkit.globus.org/toolkit/docs/6.0/gridftp/admin/index.html#gridftp-admin-striped
+
+[X509_SA_conf_example]: {{site.baseurl}}/documentation/how-to/storage-area-configuration-examples/1.11.3/index.html#sa-anonymous-rw-x509
+[LDAPconfiguration]: {{site.baseurl}}/documentation/how-to/how-to-share-users-openldap/1.11.4/
 [webdav-guide]: storm-webdav-guide.html
+[storm-gridhttps-guide]: storm-gridhttps-guide.html
+[storm-v1-11-2]: {{site.baseurl}}/release-notes/storm-backend-server/1.11.2/
+[info-provider-177]: {{site.baseurl}}/release-notes/storm-dynamic-info-provider/1.7.7/
