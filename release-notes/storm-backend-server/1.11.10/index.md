@@ -1,10 +1,12 @@
 ---
 layout: default
 title: "StoRM BackEnd v. 1.11.10 release notes"
-release_date: "20.11.2015"
+release_date: "18.12.2015"
 rfcs:
 - id: STOR-234
   title: Storm BE does not manage correctly abort requests of expired tokens
+- id: STOR-835
+  title: Improper management of SURL status can lead to PutDone errors and locked SURLs
 ---
 
 ## StoRM Backend v. 1.11.10

@@ -1,12 +1,10 @@
 ---
 layout: default
 title: "StoRM WebDAV v. 1.0.4 release notes"
-release_date: "20.11.2015"
+release_date: "18.12.2015"
 features:
 - id: STOR-700
   title: Add support for RFC 3230 in StoRM WebDAV service
-- id: STOR-834
-  title: Update Milton version to face its security vulnerability
 ---
 
 ## StoRM WebDAV v. 1.0.4
@@ -15,13 +13,16 @@ Released on **{{ page.release_date }}** as an update of [StoRM v. 1.11.10][relea
 
 ### Description
 
-This release mainly fixes a security vulnerability that affects the used [Milton library][Milton-site] and add the support for [RFC-3230][RFC-3230]. In shorts, RFC-3230 allows a client to request the checksum for a file, then HEAD and GET responses should include a header like:
+This release:
+
+- updates the version of [Milton library][Milton-site];
+- adds the support for [RFC-3230][RFC-3230]: HEAD and GET responses will include a header like:
 
 ```{html}
   Digest: adler32=8a23d4f8
 ```
 
-The checksum type and value must be read into the Digest header.
+in compliance with [RFC-3230][RFC-3230] specific.
 
 ### New features
 
