@@ -50,177 +50,61 @@ import it.grid.storm.synchcall.surl.UnknownTokenException;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
+
 /**
  * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
- * <p>
- * Authors:
- * 
- * @author=lucamag luca.magnoniATcnaf.infn.it
- * @author Alberto Forti
- * @date = Oct 10, 2008
  */
 
 public class PutDoneCommand extends DataTransferCommand implements Command {
 
   private static final Logger log = LoggerFactory
     .getLogger(PutDoneCommand.class);
-  private static final String funcName = "PutDone: ";
 
   private static final String SRM_COMMAND = "srmPutDone";
-
+  
   public PutDoneCommand() {
 
   };
+  
+  private void inputDataSanityCheck(InputData inputData)
+    throws PutDoneCommandException {
 
-  /**
-   * Implements the srmPutDone. Used to notify the SRM that the client completed
-   * a file transfer to the TransferURL in the allocated space (by a
-   * PrepareToPut).
-   */
-  public OutputData execute(InputData absData) {
-
-    ManageFileTransferRequestFilesInputData inputData = (ManageFileTransferRequestFilesInputData) absData;
-    TReturnStatus globalStatus = null;
-    log.debug(funcName + "Started.");
-
-    if (inputData == null || inputData.getRequestToken() == null
-      || inputData.getArrayOfSURLs() == null
-      || inputData.getArrayOfSURLs().size() < 1) {
-      log.error(funcName + "Invalid input parameter specified");
-      globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
-        "Missing mandatory parameters");
-      if (inputData == null) {
-        log.error("srmPutDone: Requestfailed with [status: " + globalStatus
-          + "]");
-      } else {
-        printRequestOutcome(globalStatus, inputData);
-      }
-      return new ManageFileTransferOutputData(globalStatus);
-    }
-
-    TRequestToken requestToken = inputData.getRequestToken();
-    ArrayList<TSURL> listOfSURLs = inputData.getArrayOfSURLs().getArrayList();
-
-    ArrayOfTSURLReturnStatus surlsStatuses;
     try {
-      surlsStatuses = loadSURLsStatus(getUserFromInputData(inputData),
-        requestToken, listOfSURLs);
-    } catch (AuthzException e) {
-      log.error(e.getMessage(), e);
-      globalStatus = CommandHelper.buildStatus(
-        TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
-
-      printRequestOutcome(globalStatus, inputData);
-      return new ManageFileTransferOutputData(globalStatus);
-
-    } catch (IllegalArgumentException e) {
-      log.error(funcName + "Unexpected IllegalArgumentException: "
-        + e.getMessage());
-      globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
-        "Request Failed, retry.");
-      printRequestOutcome(globalStatus, inputData);
-      return new ManageFileTransferOutputData(globalStatus);
-    } catch (RequestUnknownException e) {
-      log.info(funcName
-        + "Invalid request token and surl. RequestUnknownException: "
-        + e.getMessage());
-      globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
-        "Invalid request token and surls");
-      printRequestOutcome(globalStatus, inputData);
-      return new ManageFileTransferOutputData(globalStatus);
-    } catch (UnknownTokenException e) {
-      log.info(funcName + "Invalid request token. UnknownTokenException: "
-        + e.getMessage());
-      globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
-        "Invalid request token");
-      printRequestOutcome(globalStatus, inputData);
-      return new ManageFileTransferOutputData(globalStatus);
-    } catch (ExpiredTokenException e) {
-      log.info(funcName + "The request is expired: ExpiredTokenException: "
-        + e.getMessage());
-      globalStatus = CommandHelper.buildStatus(
-        TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired");
-      printRequestOutcome(globalStatus, inputData);
-      return new ManageFileTransferOutputData(globalStatus);
-    }
-
-    LinkedList<TSURL> spaceAvailableSURLs = new LinkedList<TSURL>();
     
-    boolean atLeastOneSuccess = false;
-    boolean atLeastOneFailure = false;
-    boolean atLeastOneAborted = false;
+    Preconditions.checkNotNull(inputData, "PutDone: Invalid null input data");
+    Preconditions.checkArgument(
+      inputData instanceof ManageFileTransferRequestFilesInputData,
+      "PutDone: Invalid input data class");
+    ManageFileTransferRequestFilesInputData data = (ManageFileTransferRequestFilesInputData) inputData;
+    Preconditions.checkNotNull(data.getRequestToken(),
+      "PutDone: Invalid null request token");
+    Preconditions.checkNotNull(data.getArrayOfSURLs(),
+      "PutDone: Invalid null array of SURL");
+    Preconditions.checkArgument(data.getArrayOfSURLs().size() > 0,
+      "PutDone: Invalid empty array of SURL");
+
+    } catch (Throwable e) {
+      
+      log.error("PutDone: Invalid input parameters specified [{}: {}]",
+        e.getClass().getName(), e.getMessage());
+      throw new PutDoneCommandException(CommandHelper
+        .buildStatus(TStatusCode.SRM_INVALID_REQUEST, e.getMessage()), e);
+      
+    }
+  }
+  
+  private TReturnStatus buildGlobalStatus(boolean atLeastOneSuccess,
+    boolean atLeastOneFailure, boolean atLeastOneAborted) {
+
+    TReturnStatus globalStatus = null;
     
-    for (TSURLReturnStatus surlStatus : surlsStatuses.getArray()) {
-
-      TReturnStatus newStatus;
-      TReturnStatus currentStatus = surlStatus.getStatus();
-
-      switch (currentStatus.getStatusCode()) {
-
-      case SRM_SPACE_AVAILABLE:
-
-        spaceAvailableSURLs.add(surlStatus.getSurl());
-        newStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS,
-          "Success");
-        atLeastOneSuccess = true;
-        break;
-
-      case SRM_SUCCESS:
-
-        newStatus = CommandHelper.buildStatus(
-          TStatusCode.SRM_DUPLICATION_ERROR, "Duplication error");
-        atLeastOneFailure = true;
-        break;
-
-      case SRM_ABORTED:
-
-        newStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
-          "PtP status for this SURL is SRM_ABORTED");
-        atLeastOneAborted = true;
-        break;
-
-      default:
-
-        newStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
-          "Check StatusOfPutRequest for more information");
-        atLeastOneFailure = true;
-        break;
-      }
-      surlsStatuses.updateStatus(surlStatus, newStatus);
-    }
-
-    GridUserInterface user;
-    if (inputData instanceof IdentityInputData) {
-      user = ((IdentityInputData) inputData).getUser();
-    } else {
-      user = null;
-    }
-    executePutDone(spaceAvailableSURLs, user);
-
-    SURLStatusManager checker = SURLStatusManagerFactory.newSURLStatusManager();
-
-    if (!spaceAvailableSURLs.isEmpty()) {
-      try {
-
-        checker.markSURLsReadyForRead(requestToken, spaceAvailableSURLs);
-
-      } catch (IllegalArgumentException e) {
-        log.error(funcName + "Unexpected IllegalArgumentException: "
-          + e.getMessage());
-        globalStatus = CommandHelper.buildStatus(
-          TStatusCode.SRM_INTERNAL_ERROR, "Request Failed, retry.");
-        printRequestOutcome(globalStatus, inputData);
-        return new ManageFileTransferOutputData(globalStatus);
-      }
-    }
-
     if (atLeastOneSuccess) {
       if (!atLeastOneFailure && !atLeastOneAborted) {
         globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS,
@@ -241,50 +125,216 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
       } else {
         if (atLeastOneAborted) {
           globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_ABORTED,
-            "Request " + requestToken.toString());
+            "Request aborted");
         } else {
           // unexpected
-          log
-            .error("None of the surls is success, failed or aborted, Unexpeced! SurlStatus = "
-              + surlsStatuses.getArray());
+          log.error(
+            "None of the surls is success, failed or aborted, unexpected!");
           globalStatus = CommandHelper.buildStatus(
             TStatusCode.SRM_INTERNAL_ERROR,
             "Request Failed, no surl status recognized, retry.");
         }
       }
     }
-    log.debug(funcName + "Finished with status: " + globalStatus.toString());
+    return globalStatus;
+  }
 
+  private void markSURLsReadyForRead(TRequestToken requestToken, List<TSURL> spaceAvailableSURLs) throws PutDoneCommandException {
+    
+    if (spaceAvailableSURLs.isEmpty()) {
+      log.debug("markSURLsReadyForRead: empty spaceAvailableSURLs");
+      return;
+    }
+    
+    SURLStatusManager checker = SURLStatusManagerFactory.newSURLStatusManager();
+    try {
+    
+      checker.markSURLsReadyForRead(requestToken, spaceAvailableSURLs);
+
+    } catch (IllegalArgumentException e) {
+        
+      log.error("PutDone: Unexpected IllegalArgumentException '{}'", e.getMessage());
+      throw new PutDoneCommandException(CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "Request Failed, retry."), e);
+    }
+  }
+  
+  private ArrayOfTSURLReturnStatus loadSURLsStatuses(
+    ManageFileTransferRequestFilesInputData inputData)
+      throws PutDoneCommandException {
+    
+    TRequestToken requestToken = inputData.getRequestToken();
+    ArrayList<TSURL> listOfSURLs = inputData.getArrayOfSURLs().getArrayList();
+    
+    ArrayOfTSURLReturnStatus surlsStatuses = null;
+    try {
+
+      surlsStatuses = loadSURLsStatus(getUserFromInputData(inputData), requestToken, listOfSURLs);
+
+    } catch (AuthzException e) {
+
+      log.error("PutDone: {}", e.getMessage(), e);
+      throw new PutDoneCommandException(CommandHelper
+        .buildStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage()));
+
+    } catch (IllegalArgumentException e) {
+
+      log.error("PutDone: Unexpected IllegalArgumentException: {}",
+        e.getMessage(), e);
+      throw new PutDoneCommandException(CommandHelper
+        .buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "Request Failed, retry."));
+
+    } catch (RequestUnknownException e) {
+
+      log.info(
+        "PutDone: Invalid request token and surl. RequestUnknownException: {}",
+        e.getMessage(), e);
+      throw new PutDoneCommandException(CommandHelper.buildStatus(
+        TStatusCode.SRM_INVALID_REQUEST, "Invalid request token and surls"));
+
+    } catch (UnknownTokenException e) {
+
+      log.info("PutDone: Invalid request token. UnknownTokenException: {}",
+        e.getMessage(), e);
+      throw new PutDoneCommandException(CommandHelper
+        .buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token"));
+
+    } catch (ExpiredTokenException e) {
+
+      log.info("PutDone: The request is expired: ExpiredTokenException: {}",
+        e.getMessage());
+      throw new PutDoneCommandException(CommandHelper
+        .buildStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired"));
+    }
+
+    return surlsStatuses;
+  }
+  
+  
+  /**
+   * Implements the srmPutDone. Used to notify the SRM that the client completed
+   * a file transfer to the TransferURL in the allocated space (by a
+   * PrepareToPut).
+   */
+  public OutputData execute(InputData absData) {
+
+    log.debug("PutDone: Started.");
+    
+    TReturnStatus globalStatus = null;
+    ArrayOfTSURLReturnStatus surlsStatuses = null;
+    
+    boolean atLeastOneSuccess = false;
+    boolean atLeastOneFailure = false;
+    boolean atLeastOneAborted = false;
+    
+    try {
+      
+      inputDataSanityCheck(absData);
+    
+    } catch (PutDoneCommandException e) {
+      
+      printRequestOutcome(e.getReturnStatus());
+      return new ManageFileTransferOutputData(e.getReturnStatus());
+    }
+    
+    ManageFileTransferRequestFilesInputData inputData = (ManageFileTransferRequestFilesInputData) absData;
+    GridUserInterface user = inputData instanceof IdentityInputData
+      ? ((IdentityInputData) inputData).getUser() : null;
+    TRequestToken requestToken = inputData.getRequestToken();
+    List<TSURL> spaceAvailableSURLs = new ArrayList<TSURL>();
+      
+    try {
+      
+      surlsStatuses = loadSURLsStatuses(inputData);
+      
+    } catch (PutDoneCommandException e) {
+      
+      printRequestOutcome(e.getReturnStatus(), inputData);
+      return new ManageFileTransferOutputData(e.getReturnStatus()); 
+    }
+      
+    
+    for (TSURLReturnStatus surlStatus : surlsStatuses.getArray()) {
+      
+      TReturnStatus newStatus;
+      TReturnStatus currentStatus = surlStatus.getStatus();
+      
+      switch (currentStatus.getStatusCode()) {
+
+        case SRM_SPACE_AVAILABLE:
+
+          spaceAvailableSURLs.add(surlStatus.getSurl());
+          // DO PutDone
+          try {
+            executePutDone(surlStatus.getSurl(), user);
+          } catch (PutDoneCommandException e) {
+            newStatus = e.getReturnStatus();
+            atLeastOneFailure = true;
+            break;
+          }
+          newStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS,
+            "Success");
+          atLeastOneSuccess = true;
+
+          break;
+
+        case SRM_SUCCESS:
+
+          newStatus = CommandHelper.buildStatus(
+            TStatusCode.SRM_DUPLICATION_ERROR, "Duplication error");
+          atLeastOneFailure = true;
+          break;
+
+        case SRM_ABORTED:
+
+          newStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
+            "PtP status for this SURL is SRM_ABORTED");
+          atLeastOneAborted = true;
+          break;
+
+        default:
+
+          newStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
+            "Check StatusOfPutRequest for more information");
+          atLeastOneFailure = true;
+          break;
+      }
+      
+      surlsStatuses.updateStatus(surlStatus, newStatus);
+    }
+    
+    try {
+	
+      markSURLsReadyForRead(requestToken, spaceAvailableSURLs);
+
+    } catch (PutDoneCommandException e) {
+      
+      printRequestOutcome(e.getReturnStatus(), inputData);
+      return new ManageFileTransferOutputData(e.getReturnStatus()); 
+    }
+      
+    log.debug("PutDone: Computing final global status ...");
+    globalStatus = buildGlobalStatus(atLeastOneSuccess, atLeastOneFailure,
+      atLeastOneAborted);
+    
+    log.debug("PutDone: Finished with status {}", globalStatus.toString());
     printRequestOutcome(globalStatus, inputData);
+    
     return new ManageFileTransferOutputData(globalStatus, surlsStatuses);
   }
 
-  private static void printRequestOutcome(TReturnStatus status,
-    ManageFileTransferRequestFilesInputData inputData) {
-
-    if (inputData != null) {
-      if (inputData.getArrayOfSURLs() != null) {
-        if (inputData.getRequestToken() != null) {
-          CommandHelper.printRequestOutcome(SRM_COMMAND, log, status,
-            inputData, inputData.getRequestToken(), inputData.getArrayOfSURLs()
-              .asStringList());
-        } else {
-          CommandHelper.printRequestOutcome(SRM_COMMAND, log, status,
-            inputData, inputData.getArrayOfSURLs().asStringList());
-        }
-
-      } else {
-        if (inputData.getRequestToken() != null) {
-          CommandHelper.printRequestOutcome(SRM_COMMAND, log, status,
-            inputData, inputData.getRequestToken());
-        } else {
-          CommandHelper
-            .printRequestOutcome(SRM_COMMAND, log, status, inputData);
-        }
-      }
-    } else {
-      CommandHelper.printRequestOutcome(SRM_COMMAND, log, status);
-    }
+  private static void printRequestOutcome(TReturnStatus status) {
+    
+    Preconditions.checkNotNull(status);
+    CommandHelper.printRequestOutcome(SRM_COMMAND, log, status);
+  }
+  
+  private static void printRequestOutcome(TReturnStatus status, ManageFileTransferRequestFilesInputData inputData) {
+    
+    Preconditions.checkNotNull(inputData);
+    Preconditions.checkNotNull(status);
+    
+    CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData,
+      inputData.getRequestToken(), inputData.getArrayOfSURLs().asStringList());
   }
 
   private ArrayOfTSURLReturnStatus loadSURLsStatus(GridUserInterface user,
@@ -301,8 +351,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
       requestToken, inputSURLs);
 
     if (surlsStatuses.isEmpty()) {
-      log.info(funcName
-        + "No one of the requested surls found for the provided token");
+      log.info("PutDone: No one of the requested surls found for the provided token");
       throw new RequestUnknownException(
         "No one of the requested surls found for the provided token");
     }
@@ -310,13 +359,13 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     TReturnStatus status = null;
     for (TSURL surl : inputSURLs) {
 
-      log.debug(funcName + "Checking SURL " + surl);
+      log.debug("PutDone: Checking SURL " + surl);
 
       if (surlsStatuses.containsKey(surl)) {
-        log.debug(funcName + "SURL \'" + surl + "\' found!");
+        log.debug("PutDone: SURL '{}' found!", surl);
         status = surlsStatuses.get(surl);
       } else {
-        log.debug(funcName + "SURL \'" + surl + "\' NOT found in the DB!");
+        log.debug("PutDone: SURL '{}' NOT found in the DB!", surl);
         status = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
           "SURL does not refer to an existing file for the specified request token");
       }
@@ -326,124 +375,98 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     return returnStatuses;
   }
 
-  /**
-   * Executes the PutDone for the given SURLs. Function called also from the
-   * purge thread of PtPChunkCatalog.
-   * 
-   * @param spaceAvailableSURLs
-   *          list of SURLs for which to execute the PutDone.
-   * @param arrayOfFileStatus
-   *          array of file status for each of the given SURL (<code>null</code>
-   *          when called from the purge thread of PtPChunkCatalog)
-   * @param user
-   *          the user requesting the PutDone (<code>null</code> when called
-   *          from the purge thread of PtPChunkCatalog)
-   * @param localUser
-   *          the local user associate to the Grid user (<code>null</code> when
-   *          called from the purge thread of PtPChunkCatalog)
-   */
-  public static void executePutDone(List<TSURL> spaceAvailableSURLs,
-    GridUserInterface user) {
 
-    for (TSURL surl : spaceAvailableSURLs) {
+	public static boolean executePutDone(TSURL surl, GridUserInterface user)
+		throws PutDoneCommandException {
 
-      if (surl == null) {
-        continue;
-      }
+		Preconditions.checkNotNull(surl, "Null SURL received");
 
-      log.debug("Executing PutDone for SURL: " + surl.getSURLString());
+		log.debug("Executing PutDone for SURL: {}", surl.getSURLString());
 
-      StoRI stori = null;
+		String userStr = user == null ? "Anonymous" : user.toString();
+		StoRI stori = null;
 
-      if (user == null) {
-        try {
-          stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
-        } catch (IllegalArgumentException e) {
-          log.error(String.format(
-            "Unable to build a stori for surl %s, %s: %s", surl, e.getClass()
-              .getName(), e.getMessage()));
-          continue;
-        } catch (Exception e) {
-          log.info(String.format("Unable to build a stori for surl %s, %s: %s",
-            surl, e.getClass().getName(), e.getMessage()));
-          continue;
-        }
-      } else {
-        try {
-          stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl,
-            user);
-        } catch (IllegalArgumentException e) {
-          log.error(String.format(
-            "User %s is unable to build a stori for surl %s, %s: %s", user,
-            surl, e.getClass().getName(), e.getMessage()));
-          continue;
-        } catch (Exception e) {
-          log.info(String.format(
-            "User %s is unable to build a stori for surl %s, %s: %s", user,
-            surl, e.getClass().getName(), e.getMessage()));
-          continue;
-        }
-      }
+		try {
 
-      // 1- if the SURL is volatile update the entry in the Volatile table
-      if (VolatileAndJiTCatalog.getInstance().exists(stori.getPFN())) {
-        try {
-          VolatileAndJiTCatalog.getInstance().setStartTime(stori.getPFN(),
-            Calendar.getInstance());
-        } catch (Exception e) {
-          // impossible because of the "exists" check
-        }
-      }
+			stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl, user);
 
-      // 2- JiTs must me removed from the TURL;
-      if (stori.hasJustInTimeACLs()) {
-        log.debug(funcName + "JiT case, removing ACEs on SURL: "
-          + surl.toString());
-        // Retrieve the PFN of the SURL parents
-        List<StoRI> storiParentsList = stori.getParents();
-        List<PFN> pfnParentsList = new ArrayList<PFN>(storiParentsList.size());
+		} catch (IllegalArgumentException e) {
 
-        for (StoRI parentStoRI : storiParentsList) {
-          pfnParentsList.add(parentStoRI.getPFN());
-        }
-        LocalUser localUser = null;
-        try {
-          if (user != null) {
-            localUser = user.getLocalUser();
-          }
-        } catch (CannotMapUserException e) {
-          log.warn(funcName + "Unable to get the local user for user " + user
-            + ". CannotMapUserException: " + e.getMessage());
-        }
-        if (localUser != null) {
-          VolatileAndJiTCatalog.getInstance().expirePutJiTs(stori.getPFN(),
-            localUser);
-        } else {
-          VolatileAndJiTCatalog.getInstance().removeAllJiTsOn(stori.getPFN());
-        }
-      }
+			log.error(
+				String.format("User %s is unable to build a stori for surl %s, %s: %s",
+					userStr, surl, e.getClass().getName(), e.getMessage()));
+			throw new PutDoneCommandException(CommandHelper
+				.buildStatus(TStatusCode.SRM_INTERNAL_ERROR, e.getMessage()), e);
 
-      // 3- compute the checksum and store it in an extended attribute
-      LocalFile localFile = stori.getLocalFile();
+		} catch (Exception e) {
 
-      VirtualFSInterface vfs = null;
-      try {
-        vfs = NamespaceDirector.getNamespace().resolveVFSbyLocalFile(localFile);
-      } catch (NamespaceException e) {
-        log.error(e.getMessage());
-        continue;
-      }
+			log.info(
+				String.format("User %s is unable to build a stori for surl %s, %s: %s",
+					userStr, surl, e.getClass().getName(), e.getMessage()));
+			return false;
 
-      // 4- Tape stuff management.
-      if (vfs.getStorageClassType().isTapeEnabled()) {
-        String fileAbosolutePath = localFile.getAbsolutePath();
-        StormEA.removePinned(fileAbosolutePath);
-        StormEA.setPremigrate(fileAbosolutePath);
-      }
+		}
+		
+		// 1- if the SURL is volatile update the entry in the Volatile table
+		if (VolatileAndJiTCatalog.getInstance().exists(stori.getPFN())) {
+			try {
+				VolatileAndJiTCatalog.getInstance().setStartTime(stori.getPFN(),
+					Calendar.getInstance());
+			} catch (Exception e) {
+				// impossible because of the "exists" check
+			}
+		}
 
-      // 5- Update UsedSpace into DB
-      vfs.increaseUsedSpace(localFile.getSize());
-    }
-  }
+		// 2- JiTs must me removed from the TURL;
+		if (stori.hasJustInTimeACLs()) {
+			log.debug("PutDone: JiT case, removing ACEs on SURL: " + surl.toString());
+			// Retrieve the PFN of the SURL parents
+			List<StoRI> storiParentsList = stori.getParents();
+			List<PFN> pfnParentsList = new ArrayList<PFN>(storiParentsList.size());
+
+			for (StoRI parentStoRI : storiParentsList) {
+				pfnParentsList.add(parentStoRI.getPFN());
+			}
+			LocalUser localUser = null;
+			try {
+				if (user != null) {
+					localUser = user.getLocalUser();
+				}
+			} catch (CannotMapUserException e) {
+				log.warn(
+					"PutDone: Unable to get the local user for user {}. CannotMapUserException: {}",
+					user, e.getMessage());
+			}
+			if (localUser != null) {
+				VolatileAndJiTCatalog.getInstance().expirePutJiTs(stori.getPFN(),
+					localUser);
+			} else {
+				VolatileAndJiTCatalog.getInstance().removeAllJiTsOn(stori.getPFN());
+			}
+		}
+
+		// 3- compute the checksum and store it in an extended attribute
+		LocalFile localFile = stori.getLocalFile();
+
+		VirtualFSInterface vfs = null;
+		try {
+			vfs = NamespaceDirector.getNamespace().resolveVFSbyLocalFile(localFile);
+		} catch (NamespaceException e) {
+			log.error(e.getMessage());
+			return false;
+		}
+
+		// 4- Tape stuff management.
+		if (vfs.getStorageClassType().isTapeEnabled()) {
+			String fileAbosolutePath = localFile.getAbsolutePath();
+			StormEA.removePinned(fileAbosolutePath);
+			StormEA.setPremigrate(fileAbosolutePath);
+		}
+
+		// 5- Update UsedSpace into DB
+		vfs.increaseUsedSpace(localFile.getSize());
+
+		return true;
+	}
 
 }

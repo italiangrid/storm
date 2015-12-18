@@ -34,13 +34,18 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 /**
  * DAO class for PtPChunkCatalog. This DAO is specifically designed to connect
@@ -540,7 +545,7 @@ public class PtPChunkDAO {
 				String str = "SELECT rq.fileLifetime, rq.config_FileStorageTypeID, rp.ID, rp.targetSURL, rp.normalized_targetSURL_StFN, rp.targetSURL_uniqueID, sp.statusCode "
 					+ "FROM request_queue rq JOIN (request_Put rp, status_Put sp) "
 					+ "ON (rp.request_queueID=rq.ID AND sp.request_PutID=rp.ID) "
-					+ "WHERE rp.ID IN " + makeWhereString(ids);
+					+ "WHERE rp.ID IN (" + StringUtils.join(ids.toArray(), ',') + ")";
 				find = con.prepareStatement(str);
 				logWarnings(con.getWarnings());
 
@@ -679,14 +684,14 @@ public class PtPChunkDAO {
 	}
 
 	/**
-	 * Method that updates all expired requests in SRM_SPACE_AVAILABLE state, into
-	 * SRM_FILE_LIFTIME_EXPIRED. It returns a List containing the ID of the
-	 * requests that were transited. This is needed when the client forgets to
-	 * invoke srmPutDone().
+	 * Method that retrieves all expired requests in SRM_SPACE_AVAILABLE state.
+	 * 
+	 * @return a Map containing the ID of the request as key and the relative
+	 * SURL as value
 	 */
-	public synchronized List<Long> getExpiredSRM_SPACE_AVAILABLE() {
+	public synchronized Map<Long,String> getExpiredSRM_SPACE_AVAILABLE() {
 
-        List<Long> ids = new ArrayList<Long>();
+		Map<Long,String> ids = new HashMap<Long,String>();
 
 		if (!checkConnection()) {
 			log
@@ -694,7 +699,7 @@ public class PtPChunkDAO {
 			return ids;
 		}
 
-		String idsstr = "SELECT rp.ID FROM "
+		String idsstr = "SELECT rp.ID, rp.targetSURL FROM "
 			+ "status_Put sp JOIN (request_Put rp, request_queue rq) ON sp.request_PutID=rp.ID AND rp.request_queueID=rq.ID "
 			+ "WHERE sp.statusCode=? AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(rq.timeStamp) >= rq.pinLifetime ";
 
@@ -718,7 +723,7 @@ public class PtPChunkDAO {
 			logWarnings(stmt.getWarnings());
 
 			while (rs.next()) {
-			    ids.add(new Long(rs.getLong("rp.ID")));
+			    ids.put(new Long(rs.getLong("rp.ID")), rs.getString("rp.targetSURL"));
 			}
 		} catch (SQLException e) {
 			log.error("PtPChunkDAO! Unable to select expired "
@@ -749,8 +754,8 @@ public class PtPChunkDAO {
 
 		String str = "UPDATE "
 			+ "status_Put sp JOIN (request_Put rp, request_queue rq) ON sp.request_PutID=rp.ID AND rp.request_queueID=rq.ID "
-			+ "SET sp.statusCode=? " + "WHERE sp.statusCode=? AND rp.ID IN "
-			+ makeWhereString(ids);
+			+ "SET sp.statusCode=? " + "WHERE sp.statusCode=? AND rp.ID IN ("
+			+ StringUtils.join(ids.toArray(), ',') + ")";
 
 		PreparedStatement stmt = null;
 		try {
@@ -790,13 +795,17 @@ public class PtPChunkDAO {
      * Method that updates chunks in SRM_SPACE_AVAILABLE state, into
      * SRM_FILE_LIFETIME_EXPIRED. An array of Long representing the primary key
      * of each chunk is required. This is needed when the client forgets to invoke
-     * srmPutDone() In case of any error no exception is
-     * thrown, but the returned int value will be zero or less than the input List size.
+     * srmPutDone(). In case of any error or exception, the returned int value 
+     * will be zero or less than the input List size.
+     * 
+     * @param the list of the request id to update
      * 
      * @return The number of the updated records into the db
      */
-    public int transitExpiredSRM_SPACE_AVAILABLEtoSRM_FILE_LIFETIME_EXPIRED(List<Long> ids) {
+    public synchronized int transitExpiredSRM_SPACE_AVAILABLEtoSRM_FILE_LIFETIME_EXPIRED(List<Long> ids) {
 
+        Preconditions.checkNotNull(ids, "Invalid list of id");
+        
         if (!checkConnection()) {
             log.error("Unable to get a valid connection to the database!");
             return 0;
@@ -807,8 +816,9 @@ public class PtPChunkDAO {
             + "SET sp.statusCode=?, sp.explanation=? "
             + "WHERE sp.statusCode=? AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(rq.timeStamp) >= rq.pinLifetime ";
         
-        if (ids == null || ids.isEmpty()) {
-            querySQL += "AND rp.ID IN " + makeWhereString(ids);
+        
+        if (!ids.isEmpty()) {
+            querySQL += "AND rp.ID IN (" + StringUtils.join(ids.toArray(), ',') + ")";
         }
 
         PreparedStatement stmt = null;
@@ -843,20 +853,13 @@ public class PtPChunkDAO {
         } finally {
             close(stmt);
         }
-        if (count == 0) {
-            log.trace("PtPChunkDAO! No chunk of PtP request was "
-                + "transited from SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED.");
-        } else {
-            log.info(
-                "PtPChunkDAO! {} chunks of PtP requests were transited "
-                    + "from SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED.",
-                count);
-        }
+        log.trace("PtPChunkDAO! {} chunks of PtP requests were transited "
+          + "from SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED.", count);
         return count;
     }
 
 	/**
-	 * Method that transits chunks in SRM_SPACE_AVAILABLE to SRM_ABORTED, for the
+	 * Method that transit chunks in SRM_SPACE_AVAILABLE to SRM_ABORTED, for the
 	 * given SURL: the overall request status of the requests containing that
 	 * chunk, is not changed! The TURL is set to null. Beware, that the chunks may
 	 * be part of requests that have finished, or that still have not finished
@@ -959,24 +962,7 @@ public class PtPChunkDAO {
 	}
 
 	/**
-	 * Private method that returns a String of all IDs retrieved by the last
-	 * SELECT.
-	 */
-	private String makeWhereString(List<Long> rowids) {
-
-		StringBuffer sb = new StringBuffer("(");
-		for (Iterator<Long> i = rowids.iterator(); i.hasNext();) {
-			sb.append(i.next());
-			if (i.hasNext()) {
-				sb.append(",");
-			}
-		}
-		sb.append(")");
-		return sb.toString();
-	}
-
-	/**
-	 * Auxiliary method that sets up the conenction to the DB.
+	 * Auxiliary method that sets up the connection to the DB.
 	 */
 	private boolean setUpConnection() {
 

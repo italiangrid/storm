@@ -684,6 +684,7 @@ public class ReservedSpaceCatalog {
 				"No errors caught but it seems no used space updates done on space token {}",
 				spaceToken);
 		}
+		log.debug("{} increaseUsedSpace += {}", spaceToken, usedSpaceToAdd);
 		return n > 0;
 	}
 
@@ -714,6 +715,7 @@ public class ReservedSpaceCatalog {
 				"No errors caught but it seems no used space updates done on space token {}",
 				spaceToken);
 		}
+		log.debug("{} decreaseUsedSpace -= {}", spaceToken, usedSpaceToRemove);
 		return n > 0;
 	}
 }

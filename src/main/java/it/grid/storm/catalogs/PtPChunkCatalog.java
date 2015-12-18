@@ -38,15 +38,12 @@ import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TTURL;
-import it.grid.storm.synchcall.command.datatransfer.PutDoneCommand;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,39 +90,7 @@ public class PtPChunkCatalog {
 	 */
 	private PtPChunkCatalog() {
 
-		TimerTask transitTask = new TimerTask() {
-
-			@Override
-			public void run() {
-
-				List<Long> ids = getExpiredSRM_SPACE_AVAILABLE();
-
-				if (ids.isEmpty()) {
-				    log.info("PtPChunkCatalog - transitTask: Nothing to do.");
-					return;
-				}
-
-				log.info("PtPChunkCatalog - transitTask: found {} request expired", ids.size());
-				Collection<ReducedPtPChunkData> reduced = lookupReducedPtPChunkData(ids
-				  .toArray(new Long[ids.size()]));    
-				log.info("PtPChunkCatalog - transitTask: reduced expired requests size is {}", reduced.size());
-				
-				if (reduced.isEmpty()) {
-					log.error("ATTENTION in PtP CHUNK CATALOG! Attempt to handle physical "
-						+ "files for transited expired entries failed! No data could be "
-						+ "translated from persitence for PtP Chunks with ID {}", ids);
-				}
-				ArrayList<TSURL> surls = new ArrayList<TSURL>(reduced.size());
-				List<Long> ids_reduced = new LinkedList<Long>();
-				for (ReducedPtPChunkData data : reduced) {
-					surls.add(data.toSURL());
-					ids_reduced.add(data.primaryKey());
-				}
-				PutDoneCommand.executePutDone(surls, null);
-				transitExpiredSRM_SPACE_AVAILABLEtoSRM_FILE_LIFETIME_EXPIRED(ids_reduced);
-			}
-		};
-		transiter.scheduleAtFixedRate(transitTask, delay, period);
+		transiter.scheduleAtFixedRate(new TransitExpiredPutRequestTimerTask(), delay, period);
 	}
 
 	/**
@@ -168,26 +133,6 @@ public class PtPChunkCatalog {
 
 		}
 		dao.update(to);
-	}
-
-	/**
-	 * Method that synchronizes the supplied PtPChunkData with the information
-	 * present in Persistence. BE WARNED: a new object is returned, and the
-	 * original PtPChunkData is left untouched! null is returned in case of any
-	 * error.
-	 */
-	synchronized public PtPPersistentChunkData refreshStatus(
-		PtPPersistentChunkData inputChunk) {
-
-		PtPChunkDataTO auxTO = dao.refresh(inputChunk.getPrimaryKey());
-		log.debug("PtP CHUNK CATALOG refreshStatus: retrieved data {}", auxTO);
-		if (auxTO == null) {
-			log.warn("PtP CHUNK CATALOG! Empty TO found in persistence for specified "
-				+ "request: {}", inputChunk.getPrimaryKey());
-			return null;
-		}
-		PtPPersistentChunkData data = makeOne(auxTO, inputChunk.getRequestToken());
-		return data;
 	}
 
 	/**
@@ -502,22 +447,6 @@ public class PtPChunkCatalog {
 			&& (reducedChunkTO.surlUniqueID() != null);
 	}
 
-	/**
-	 * Method that returns a Collection of ReducedPtPChunkData Objects associated
-	 * to the supplied TRequestToken. If any of the data retrieved for a given
-	 * chunk is not well formed and so does not allow a ReducedPtPChunkData Object
-	 * to be created, then that chunk is dropped and gets logged, while processing
-	 * continues with the next one. All valid chunks get returned: the others get
-	 * dropped. If there are no chunks associated to the given TRequestToken, then
-	 * an empty Collection is returned and a messagge gets logged. All
-	 * ReducedChunks, regardless of their status, are returned.
-	 */
-	synchronized public Collection<ReducedPtPChunkData> lookupReducedPtPChunkData(
-		TRequestToken rt) {
-
-		return lookupReducedPtPChunkData(rt, new ArrayList<TSURL>(0));
-	}
-
 	public Collection<ReducedPtPChunkData> lookupReducedPtPChunkData(
 		TRequestToken requestToken, Collection<TSURL> surls) {
 
@@ -525,11 +454,6 @@ public class PtPChunkCatalog {
 			requestToken.getValue(), surls);
 		log.debug("PtP CHUNK CATALOG: retrieved data {}", reducedChunkDataTOs);
 		return buildReducedChunkDataList(reducedChunkDataTOs);
-	}
-
-	public Collection<PtPPersistentChunkData> lookupPtPChunkData(TSURL surl) {
-
-		return lookupPtPChunkData((List<TSURL>) Arrays.asList(new TSURL[] { surl }));
 	}
 
 	public Collection<PtPPersistentChunkData> lookupPtPChunkData(TSURL surl,
@@ -552,22 +476,6 @@ public class PtPChunkCatalog {
 		}
 		Collection<PtPChunkDataTO> chunkDataTOs = dao.find(surlsUniqueIDs,
 			surlsArray, user.getDn());
-		log.debug("PtP CHUNK CATALOG: retrieved data {}", chunkDataTOs);
-		return buildChunkDataList(chunkDataTOs);
-	}
-
-	public Collection<PtPPersistentChunkData> lookupPtPChunkData(List<TSURL> surls) {
-
-		int[] surlsUniqueIDs = new int[surls.size()];
-		String[] surlsArray = new String[surls.size()];
-		int index = 0;
-		for (TSURL tsurl : surls) {
-			surlsUniqueIDs[index] = tsurl.uniqueId();
-			surlsArray[index] = tsurl.rawSurl();
-			index++;
-		}
-		Collection<PtPChunkDataTO> chunkDataTOs = dao.find(surlsUniqueIDs,
-			surlsArray);
 		log.debug("PtP CHUNK CATALOG: retrieved data {}", chunkDataTOs);
 		return buildChunkDataList(chunkDataTOs);
 	}
@@ -626,26 +534,6 @@ public class PtPChunkCatalog {
 		}
 		log.debug("PtP CHUNK CATALOG: returning {}", list);
 		return list;
-	}
-
-	/**
-	 * Method that returns a Collection of ReducedPtPChunkData Objects
-	 * corresponding to each of the IDs else { log.debug(
-	 * "PtPChunkDAO! No chunk of PtP request was transited from SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED."
-	 * ); }contained inthe supplied List of Long objects. If any of the data
-	 * retrieved for a given chunk is not well formed and so does not allow a
-	 * ReducedPtPChunkData Object to be created, then that chunk is dropped and
-	 * gets logged, while processing continues with the next one. All valid chunks
-	 * get returned: the others get dropped. WARNING! If there are no chunks
-	 * associated to any of the given IDs, no messagge gets written in the logs!
-	 */
-	synchronized public Collection<ReducedPtPChunkData> lookupReducedPtPChunkData(
-		Long[] volids) {
-
-		Collection<ReducedPtPChunkDataTO> reducedChunkDataTOs = dao
-			.findReduced(Arrays.asList(volids));
-		log.debug("PtP CHUNK CATALOG: fetched data {}", reducedChunkDataTOs);
-		return buildReducedChunkDataList(reducedChunkDataTOs);
 	}
 
 	private ReducedPtPChunkData makeOneReduced(
@@ -715,60 +603,11 @@ public class PtPChunkCatalog {
 		return aux;
 	}
 
-	/**
-	 * Method used to establish if in Persistence there is a PtPChunkData working
-	 * on the supplied SURL, and whose state is SRM_SPACE_AVAILABLE, in which case
-	 * true is returned. In case none are found or there is any problem, false is
-	 * returned.
-	 */
-	synchronized public boolean isSRM_SPACE_AVAILABLE(TSURL surl) {
-
-		return (dao.numberInSRM_SPACE_AVAILABLE(surl.uniqueId()) > 0);
-	}
-
-	/**
-	 * Method used to get the Request.ID from all the PtP Requests whose 
-	 * pinLifetime has expired. The method returns a Map containing all SURLs
-	 * and their relative request-id.
-	 */
-	synchronized public List<Long> getExpiredSRM_SPACE_AVAILABLE() {
-
-		return dao.getExpiredSRM_SPACE_AVAILABLE();
-	}
-
-	
-	public int transitExpiredSRM_SPACE_AVAILABLEtoSRM_FILE_LIFETIME_EXPIRED(List<Long> ids) {
-
-	    return dao.transitExpiredSRM_SPACE_AVAILABLEtoSRM_FILE_LIFETIME_EXPIRED(ids);
-	}
-
 	public int updateStatus(TRequestToken requestToken, TSURL surl,
 		TStatusCode statusCode, String explanation) {
 
 		return dao.updateStatus(requestToken, new int[] { surl.uniqueId() },
 			new String[] { surl.rawSurl() }, statusCode, explanation);
-	}
-
-	public int updateStatus(TSURL surl, TStatusCode statusCode,
-      String explanation) {
-      
-	  List<TSURL> surlList = new ArrayList<TSURL>();
-	  surlList.add(surl);
-      return updateStatus(surlList, statusCode, explanation);
-    }
-	
-	public int updateStatus(List<TSURL> surlList, TStatusCode statusCode,
-		String explanation) {
-
-        int[] ids = new int[surlList.size()];
-        String[] surls = new String[surlList.size()];
-        int i = 0;
-        for (TSURL surl: surlList) {
-          ids[i] = surl.uniqueId();
-          surls[i] = surl.rawSurl();
-          i++;
-        }
-		return dao.updateStatus(ids, surls, statusCode, explanation);
 	}
 
 	public int updateFromPreviousStatus(TRequestToken requestToken,
@@ -793,15 +632,6 @@ public class PtPChunkCatalog {
 		}
 		return dao.updateStatusOnMatchingStatus(requestToken, surlsUniqueIDs, surls,
 			expectedStatusCode, newStatusCode);
-	}
-
-	public int updateFromPreviousStatus(TSURL surl,
-		TStatusCode expectedStatusCode, TStatusCode newStatusCode,
-		String explanation) {
-
-		return dao.updateStatusOnMatchingStatus(new int[] { surl.uniqueId() },
-			new String[] { surl.rawSurl() }, expectedStatusCode, newStatusCode,
-			explanation);
 	}
 
 }
