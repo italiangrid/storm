@@ -102,9 +102,9 @@ public class DelegatingSURLStatusManager implements SURLStatusManager {
   }
 
   @Override
-  public void markSURLsReadyForRead(TRequestToken token, List<TSURL> surls) {
+  public int markSURLsReadyForRead(TRequestToken token, List<TSURL> surls) {
 
-    delegate.markSURLsReadyForRead(token, surls);
+    return delegate.markSURLsReadyForRead(token, surls);
   }
 
   @Override

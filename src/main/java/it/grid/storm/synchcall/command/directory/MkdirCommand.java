@@ -137,7 +137,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 				returnStatus.extendExplaination("Unable to set ACL: " + e.getMessage());
 			}
 		} catch (MkdirException e) {
-			log.error("srmRmdir: {}", e.getMessage());
+			log.error("srmMkdir: {}", e.getMessage());
 			returnStatus = e.getReturnStatus();
 		}
 		log.debug("srmMkdir return status: {}", returnStatus);

@@ -656,5 +656,66 @@ public class ReservedSpaceCatalog {
 		}
 
 	}
+	
+	public boolean increaseUsedSpace(String spaceToken, Long usedSpaceToAdd) {
+	
+		log.debug("Increase {} the used space of storage spaceToken: {}",
+			usedSpaceToAdd, spaceToken);
 
+		try {
+			ssDAO = daoFactory.getStorageSpaceDAO();
+			log.debug("Storage Space DAO retrieved.");
+		} catch (DataAccessException daEx) {
+			log.error("Error while retrieving StorageSpaceDAO: {}",
+				daEx.getMessage(), daEx);
+			return false;
+		}
+		int n = 0;
+		try {
+			n = ssDAO.increaseUsedSpace(spaceToken, usedSpaceToAdd);
+		} catch (DataAccessException daEx) {
+			log.error(
+				"Error during the increase of used space for spaceToken {}: {}",
+				spaceToken, daEx.getMessage());
+			return false;
+		}
+		if (n == 0) {
+			log.warn(
+				"No errors caught but it seems no used space updates done on space token {}",
+				spaceToken);
+		}
+		log.debug("{} increaseUsedSpace += {}", spaceToken, usedSpaceToAdd);
+		return n > 0;
+	}
+
+	public boolean decreaseUsedSpace(String spaceToken, Long usedSpaceToRemove) {
+		
+		log.debug("Decrease {} the used space of storage spaceToken: {}",
+			usedSpaceToRemove, spaceToken);
+
+		try {
+			ssDAO = daoFactory.getStorageSpaceDAO();
+			log.debug("Storage Space DAO retrieved.");
+		} catch (DataAccessException daEx) {
+			log.error("Error while retrieving StorageSpaceDAO: {}",
+				daEx.getMessage(), daEx);
+			return false;
+		}
+		int n = 0;
+		try {
+			n = ssDAO.decreaseUsedSpace(spaceToken, usedSpaceToRemove);
+		} catch (DataAccessException daEx) {
+			log.error(
+				"Error during the decrease of used space for spaceToken {}: {}",
+				spaceToken, daEx.getMessage());
+			return false;
+		}
+		if (n == 0) {
+			log.warn(
+				"No errors caught but it seems no used space updates done on space token {}",
+				spaceToken);
+		}
+		log.debug("{} decreaseUsedSpace -= {}", spaceToken, usedSpaceToRemove);
+		return n > 0;
+	}
 }
