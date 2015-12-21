@@ -26,24 +26,26 @@ public class SimpleSpaceUpdaterHelper implements SpaceUpdaterHelperInterface {
 	public boolean increaseUsedSpace(VirtualFSInterface vfs, long size) {
 
 		log.debug("Increase {} used space: {} bytes ", vfs.getAliasName(), size);
-		
+
 		if (size < 0) {
 			log.error("Size to add is a negative value: {}", size);
-			return false;			
+			return false;
 		}
 		if (size == 0) {
-			log.debug("Size is zero, vfs {} used space won't be increased!", vfs.getAliasName());
+			log.debug("Size is zero, vfs {} used space won't be increased!",
+				vfs.getAliasName());
 			return true;
 		}
-		
+
 		log.debug("Get StorageSpaceData from vfs ...");
 		StorageSpaceData ssd = getStorageSpaceDataForVFS(vfs);
-		
+
 		if (ssd == null) {
-		  log.error("Unable to get StorageSpaceData from alias name {}", vfs.getAliasName());
-		  return false;
+			log.error("Unable to get StorageSpaceData from alias name {}",
+				vfs.getAliasName());
+			return false;
 		}
-		
+
 		return rsc.increaseUsedSpace(ssd.getSpaceToken().getValue(), size);
 	}
 
@@ -51,24 +53,26 @@ public class SimpleSpaceUpdaterHelper implements SpaceUpdaterHelperInterface {
 	public boolean decreaseUsedSpace(VirtualFSInterface vfs, long size) {
 
 		log.debug("Decrease {} used space: {} bytes ", vfs.getAliasName(), size);
-		
+
 		if (size < 0) {
 			log.error("Size to remove is a negative value: {}", size);
-			return false;			
+			return false;
 		}
 		if (size == 0) {
-			log.debug("Size is zero, vfs {} used space won't be decreased!", vfs.getAliasName());
+			log.debug("Size is zero, vfs {} used space won't be decreased!",
+				vfs.getAliasName());
 			return true;
 		}
-		
+
 		log.debug("Get StorageSpaceData from vfs ...");
 		StorageSpaceData ssd = getStorageSpaceDataForVFS(vfs);
-		
+
 		if (ssd == null) {
-          log.error("Unable to get StorageSpaceData from alias name {}", vfs.getAliasName());
-          return false;
-        }
-		
+			log.error("Unable to get StorageSpaceData from alias name {}",
+				vfs.getAliasName());
+			return false;
+		}
+
 		return rsc.decreaseUsedSpace(ssd.getSpaceToken().getValue(), size);
 	}
 
