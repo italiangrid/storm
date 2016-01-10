@@ -17,6 +17,7 @@
 
 package it.grid.storm.catalogs;
 
+import it.grid.storm.catalogs.timertasks.TransitExpiredPutRequestTimerTask;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.common.types.TimeUnit;

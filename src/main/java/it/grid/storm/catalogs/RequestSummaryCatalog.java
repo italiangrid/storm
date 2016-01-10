@@ -17,6 +17,8 @@
 
 package it.grid.storm.catalogs;
 
+import it.grid.storm.catalogs.timertasks.ExpiredRequestsPurger;
+import it.grid.storm.catalogs.timertasks.RecallTablePurger;
 import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.FQAN;
@@ -29,7 +31,6 @@ import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -41,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,43 +64,17 @@ public class RequestSummaryCatalog {
 	private static RequestSummaryCatalog cat = new RequestSummaryCatalog();
 	/** WARNING!!! TO BE MODIFIED WITH FACTORY!!! */
 	private final RequestSummaryDAO dao = RequestSummaryDAO.getInstance();
-	/** timer thread that will run a task to clean */
+	/** timer thread that will run a task to clean */	
 	private Timer clock = null;
-	/** timer task that will remove expired */
-	private TimerTask clockTask = null;
-
-	// requests and corresponding proxies!
+	/** configuration instance **/
+  private final Configuration config = Configuration.getInstance();
 
 	private RequestSummaryCatalog() {
 
-		if (Configuration.getInstance().getExpiredRequestPurging()) {
-			clock = new Timer();
-			clockTask = new TimerTask() {
-
-				@Override
-				public void run() {
-
-					ArrayList<String> expiredRequests = purgeExpiredRequests();
-					removeOrphanProxies(expiredRequests);
-				}
-			};
-			clock.scheduleAtFixedRate(clockTask, Configuration.getInstance()
-				.getRequestPurgerDelay() * 1000, Configuration.getInstance()
-				.getRequestPurgerPeriod() * 1000);
-		}
-
-		TimerTask tableRecallPurgeTask = new TimerTask() {
-
-			@Override
-			public void run() {
-
-				new TapeRecallCatalog().purgeCatalog(Configuration.getInstance()
-					.getPurgeBatchSize());
-			}
-		};
-		clock.scheduleAtFixedRate(tableRecallPurgeTask, Configuration.getInstance()
-			.getTransitInitialDelay() * 1000, Configuration.getInstance()
-			.getTransitTimeInterval() * 1000);
+		clock = new Timer();
+		
+		clock.schedule(new ExpiredRequestsPurger(clock), config.getRequestPurgerDelay() * 1000);
+		clock.schedule(new RecallTablePurger(clock), config.getTransitInitialDelay() * 1000);
 	}
 
 	/**
@@ -269,7 +243,7 @@ public class RequestSummaryCatalog {
 		String proxyString = null;
 		FQAN[] fqans_vector = null;
 		try {
-			File proxyFile = new File(Configuration.getInstance().getProxyHome()
+			File proxyFile = new File(config.getProxyHome()
 				+ File.separator + rtoken);
 			if (proxyFile.exists()) {
 				ByteArrayOutputStream out;
@@ -558,64 +532,6 @@ public class RequestSummaryCatalog {
 
 		if (rt != null) {
 			dao.abortInProgressRequest(rt.toString());
-		}
-	}
-
-	/**
-	 * Method used to purge the DB of expired requests, and remove the
-	 * corresponding proxies if available.
-	 */
-	synchronized private ArrayList<String> purgeExpiredRequests() {
-
-		ArrayList<String> expiredRequests = new ArrayList<String>();
-
-		PtGChunkCatalog.getInstance().transitExpiredSRM_FILE_PINNED();
-		BoLChunkCatalog.getInstance().transitExpiredSRM_SUCCESS();
-
-		int garbageChunkSize = Configuration.getInstance().getPurgeBatchSize();
-		int minChunkSize = garbageChunkSize / 2;
-
-		int nrExpiredTasks = dao.getNumberExpired();
-
-		if (nrExpiredTasks > minChunkSize) {
-			// calculate number of chunks with an approximation to the next whole
-			int nrChunks = (int) Math.ceil((double) nrExpiredTasks / garbageChunkSize);
-			log.debug("Purging the expired requests in {} steps (expired "
-				+ "requests: {})", nrChunks, nrExpiredTasks);
-			for (int i = 0; i < nrChunks; i++) {
-				expiredRequests.addAll(dao.purgeExpiredRequests());
-			}
-			log.info("REQUEST SUMMARY CATALOG; removed from DB < {} > expired "
-				+ "requests", expiredRequests.size());
-		} else {
-			// not enough events to remove. Skip the purging phase
-			log.debug("Skipping the purging phase of expired requests. (expired "
-				+ "requests: {})", nrExpiredTasks);
-		}
-		return expiredRequests;
-	}
-
-	private void removeOrphanProxies(ArrayList<String> expiredRequests) {
-
-		if (expiredRequests.isEmpty()) {
-			return;
-		}
-		
-		for (String rt : expiredRequests) {
-			String proxyFileName = Configuration.getInstance().getProxyHome()
-				+ File.separator + rt;
-			File proxyFile = new File(proxyFileName);
-			if (!proxyFile.exists()) {
-				continue;
-			}
-			boolean deleted = proxyFile.delete();
-			if (deleted) {
-				log.info("REQUEST SUMMARY CATALOG: removed proxy file {}", 
-					proxyFileName);
-			} else {
-				log.error("ERROR IN REQUEST SUMMARY CATALOG! Removal of proxy file {} "
-					+ "failed!", proxyFileName);
-			}
 		}
 	}
 

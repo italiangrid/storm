@@ -1,4 +1,4 @@
-package it.grid.storm.catalogs;
+package it.grid.storm.catalogs.timertasks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +9,7 @@ import java.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.grid.storm.catalogs.PtPChunkDAO;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.synchcall.command.datatransfer.PutDoneCommand;
