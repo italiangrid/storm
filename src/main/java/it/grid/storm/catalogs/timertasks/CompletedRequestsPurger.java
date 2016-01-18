@@ -12,10 +12,10 @@ import it.grid.storm.catalogs.RequestSummaryDAO;
 import it.grid.storm.config.Configuration;
 
 
-public class ExpiredRequestsPurger extends TimerTask {
+public class CompletedRequestsPurger extends TimerTask {
 
 	private static final Logger log = LoggerFactory
-		.getLogger(ExpiredRequestsPurger.class);
+		.getLogger(CompletedRequestsPurger.class);
 	private final Configuration config = Configuration.getInstance();
 	private final RequestSummaryDAO dao = RequestSummaryDAO.getInstance();
 	private final PtGChunkCatalog ptgCat = PtGChunkCatalog.getInstance();
@@ -23,7 +23,7 @@ public class ExpiredRequestsPurger extends TimerTask {
 
 	private Timer handler;
 	
-	public ExpiredRequestsPurger(Timer handlerTimer) {
+	public CompletedRequestsPurger(Timer handlerTimer) {
 		
 		handler = handlerTimer;
 	}
@@ -39,7 +39,7 @@ public class ExpiredRequestsPurger extends TimerTask {
 		log.info("REQUEST SUMMARY CATALOG; removed from DB < {} > expired requests",
 			n);
 		
-		handler.schedule(new ExpiredRequestsPurger(handler), config.getRequestPurgerPeriod() * 1000);
+		handler.schedule(new CompletedRequestsPurger(handler), config.getRequestPurgerPeriod() * 1000);
 	}
 	
 	/**

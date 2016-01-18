@@ -16,13 +16,13 @@ import it.grid.storm.synchcall.command.datatransfer.PutDoneCommand;
 import it.grid.storm.synchcall.command.datatransfer.PutDoneCommandException;
 
 
-public class TransitExpiredPutRequestTimerTask extends TimerTask {
+public class ExpiredPutRequestsAgent extends TimerTask {
 
 	private static final Logger log = LoggerFactory
-		.getLogger(TransitExpiredPutRequestTimerTask.class);
+		.getLogger(ExpiredPutRequestsAgent.class);
 	
 	private final PtPChunkDAO dao = PtPChunkDAO.getInstance();
-	private final String name = TransitExpiredPutRequestTimerTask.class.getName();
+	private final String name = ExpiredPutRequestsAgent.class.getName();
 
 	private Map<Long,String> getExpiredRequests() {
 		
