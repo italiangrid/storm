@@ -13,14 +13,15 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.10][StoRM-1.11.10].
 
 ### Description
 
-This release:
-
-- updates the version of [Milton library][Milton-site];
-- fixes the returned HTTP status code when MOVE or COPY requested URL identify the same resource of the Destination header.
+This release provides fixes for security vulnerabilities and a few bug fixes.
 
 ### Bug fixes
 
 {% include list-rfcs.liquid %}
+
+### Security vulnerabilities
+
+More information concerning the security vulnerabilities addressed by this release are going to be published when appropriate at [this URL](https://wiki.egi.eu/wiki/SVG:Advisory-SVG-2015-10134).
 
 ### Installation and configuration
 

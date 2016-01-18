@@ -13,16 +13,18 @@ Released on **{{ page.release_date }}** as an update of [StoRM v. 1.11.10][relea
 
 ### Description
 
-This release:
-
-- updates the version of [Milton library][Milton-site];
-- adds the support for [RFC-3230][RFC-3230]: HEAD and GET responses will include a header like:
+This release provides fixes for security vulnerabilities that were recently reported, and adds the support for [RFC-3230][RFC-3230].
+It explains how to get checksum type and value of the stored resources. From this release, each HEAD and GET response will include a header like:
 
 ```{html}
   Digest: adler32=8a23d4f8
 ```
 
-in compliance with [RFC-3230][RFC-3230] specific.
+to be compliant to the [RFC-3230][RFC-3230] specific.
+
+### Security vulnerabilities
+
+More information concerning the security vulnerabilities addressed by this release are going to be published when appropriate at [this URL](https://wiki.egi.eu/wiki/SVG:Advisory-SVG-2015-10134).
 
 ### New features
 
