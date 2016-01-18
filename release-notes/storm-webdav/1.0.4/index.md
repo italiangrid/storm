@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM WebDAV v. 1.0.4 release notes"
-release_date: "25.01.2016"
+release_date: "22.01.2016"
 features:
 - id: STOR-700
   title: Add support for RFC 3230 in StoRM WebDAV service

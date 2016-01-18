@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM BackEnd v. 1.11.10 release notes"
-release_date: "25.01.2016"
+release_date: "22.01.2016"
 rfcs:
 - id: STOR-234
   title: Storm BE does not manage correctly abort requests of expired tokens

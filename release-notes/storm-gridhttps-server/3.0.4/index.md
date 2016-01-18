@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM GridHTTPs v. 3.0.4 release notes"
-release_date: "18.12.2015"
+release_date: "22.01.2016"
 rfcs:
   - id: STOR-741
     title: WebDAV MOVE and COPY requests with source equal to destination fail with 412 instead of 403
