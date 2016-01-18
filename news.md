@@ -5,7 +5,7 @@ title: StoRM News
 
 # News
 
-{% assign p_year = site.posts[1].date || date: "%Y" %}
+{% assign p_year = site.posts[0].date || date: "%Y" %}
 <h4 class="marketing" style="border-bottom: 1px solid #efefef; padding-bottom: 14px; margin-bottom: 16px;">{{ p_year }}</h4>
 
 {% for post in site.posts limit:3 %}

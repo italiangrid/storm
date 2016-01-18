@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM dynamic info v.1.7.9 release notes"
-release_date: "20.11.2015"
+release_date: "25.01.2016"
 rfcs:
 - id: STOR-837
   title: Missing GlueSAPath from Storage Areas BDII info

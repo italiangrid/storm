@@ -3,8 +3,8 @@ layout: default
 title: "StoRM GridHTTPs v. 3.0.4 release notes"
 release_date: "18.12.2015"
 rfcs:
-- id: STOR-741
-  title: WebDAV MOVE and COPY requests with source equal to destination fail with 412 instead of 403
+  - id: STOR-741
+    title: WebDAV MOVE and COPY requests with source equal to destination fail with 412 instead of 403
 ---
 
 ## StoRM GridHTTPs v. 3.0.4
@@ -41,6 +41,5 @@ You can find more information about upgrade, clean installation and configuratio
 
 None at the moment
 
-[Milton-site]: http://milton.io
 [StoRM-1.11.10]: {{site.baseurl}}/release-notes/StoRM-v1.11.10.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/
