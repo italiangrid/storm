@@ -27,7 +27,6 @@ import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.config.Configuration;
-import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.Filesystem;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.ReservationException;
@@ -43,7 +42,6 @@ import it.grid.storm.namespace.model.TransportProtocol;
 import it.grid.storm.namespace.naming.NamespaceUtil;
 import it.grid.storm.namespace.naming.NamingConst;
 import it.grid.storm.namespace.naming.SURL;
-import it.grid.storm.namespace.util.userinfo.LocalGroups;
 import it.grid.storm.srm.types.TDirOption;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TSURL;
@@ -306,7 +304,7 @@ public class StoRIImpl implements StoRI {
 					  childPath);
 					try {
 					  
-					  StoRI childStorI = namespace.resolveStoRIbyAbsolutePath(childPath);
+					  StoRI childStorI = namespace.resolveStoRIbyAbsolutePath(childPath, vfs);
 					  childStorI.setMappingRule(getMappingRule());
 						
 					  stoRIList.add(childStorI);
