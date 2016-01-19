@@ -242,6 +242,10 @@ asynch.srmcopy.gridftp.timeout = 15000
 # ===========================
 # Garbage Collector parameter
 # ===========================
+#
+#Enable/Disable Garbage Collector
+#purging=true
+#
 #Time interval for between two requests in garbage collection. In seconds
 purge.interval=600
 #
@@ -250,6 +254,21 @@ purge.size=800
 #
 #Time after that the GC consider a _terminated_ request as garbage
 expired.request.time=86400
+
+
+# ==========================================================
+# Expired-Put-Requests-Agent parameters
+# ==========================================================
+#
+# Transit expired put requests to a final state. A put request is expired if pinLifetime is reached.
+# See pinLifetime.default.
+#
+#Time interval between two agent executions. In seconds
+transit.interval = 300
+#
+#Delay on starting agent. In seconds
+transit.delay = 10
+
 
 # Skip ACL setup for PtG requests
 ptg.skip-acl-setup = false
