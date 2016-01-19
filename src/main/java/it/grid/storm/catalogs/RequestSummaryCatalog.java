@@ -17,7 +17,7 @@
 
 package it.grid.storm.catalogs;
 
-import it.grid.storm.catalogs.timertasks.CompletedRequestsPurger;
+import it.grid.storm.catalogs.timertasks.GarbageCollector;
 import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.FQAN;
@@ -73,7 +73,7 @@ public class RequestSummaryCatalog {
 		clock = new Timer();
 		
 		clock.schedule(
-			new CompletedRequestsPurger(clock,
+			new GarbageCollector(clock,
 				config.getRequestPurgerPeriod() * 1000),
 			config.getRequestPurgerDelay() * 1000);
 	}

@@ -13,10 +13,10 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 
 
-public class CompletedRequestsPurger extends TimerTask {
+public class GarbageCollector extends TimerTask {
 
 	private static final Logger log = LoggerFactory
-		.getLogger(CompletedRequestsPurger.class);
+		.getLogger(GarbageCollector.class);
 
 	private final Configuration config = Configuration.getInstance();
 	private final RequestSummaryDAO dao = RequestSummaryDAO.getInstance();
@@ -28,7 +28,7 @@ public class CompletedRequestsPurger extends TimerTask {
 	private int nExpiredRequests;
 	private int nExpiredRecalls;
 	
-	public CompletedRequestsPurger(Timer handlerTimer, long delay) {
+	public GarbageCollector(Timer handlerTimer, long delay) {
 		
 		this.delay = delay;
 		handler = handlerTimer;
@@ -151,6 +151,6 @@ public class CompletedRequestsPurger extends TimerTask {
 	 */
 	private void reschedule() {
 		
-		handler.schedule(new CompletedRequestsPurger(handler, delay), delay);
+		handler.schedule(new GarbageCollector(handler, delay), delay);
 	}
 }
