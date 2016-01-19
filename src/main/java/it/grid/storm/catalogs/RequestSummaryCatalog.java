@@ -63,10 +63,10 @@ public class RequestSummaryCatalog {
 	private static RequestSummaryCatalog cat = new RequestSummaryCatalog();
 	/** WARNING!!! TO BE MODIFIED WITH FACTORY!!! */
 	private final RequestSummaryDAO dao = RequestSummaryDAO.getInstance();
-	/** timer thread that will run a task to clean */	
+	/** timer thread that will run a task to clean */
 	private Timer clock = null;
 	/** configuration instance **/
-  private final Configuration config = Configuration.getInstance();
+	private final Configuration config = Configuration.getInstance();
 
 	private RequestSummaryCatalog() {
 
