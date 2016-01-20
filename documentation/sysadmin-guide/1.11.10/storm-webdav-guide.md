@@ -1,9 +1,9 @@
 ---
-layout: default
+layout: toc
 title: StoRM WebDAV installation and configuration guide
 ---
 
-# StoRM WebDAV installation and configuration guide
+# StoRM WebDAV Installation and configuration guide
 
 ## Introduction
 
@@ -51,7 +51,7 @@ STORM_STORAGEAREA_LIST="testers.eu-emi.eu tape"
 ## Root for the storage area directories
 STORM_DEFAULT_ROOT="/storage"
 
-## Enables authenticated read access to the testers.eu-emi.eu 
+## Enables authenticated read access to the testers.eu-emi.eu
 ## storage area to all clients authenticated with a trusted certificate
 STORM_TESTERSEUEMIEU_AUTHENTICATED_HTTP_READ=true
 
@@ -79,43 +79,90 @@ To configure the service with yaim, run the following command:
 
 ## Service configuration
 
-### `/etc/sysconfig/storm-webdav`
-
-The storm-webdav service configuration lives in this file.
+The storm-webdav service configuration lives in `/etc/sysconfig/storm-webdav` file.
 Normally you shouldn't change anything.
 
-#### VO mapfiles
+### Storage area configuration
+
+StoRM WebDAV service configuration lives in the directory `/etc/storm/webdav`.
+
+Each storage area is configured in a properties file. StoRM WebDAV will look
+for configuration in all files ending with _.properties_ in this directory.
+**If no configuration files are found, the StoRM WebDAV service will not start.**
+
+For an example storage area configuration file see the `sa.properties.template` file:
+
+```bash
+# This is an example of StoRM WebDAV storage area configuration
+
+# Name of the storage area
+name=sa
+
+# Root path for the storage area. Files will be served from this path, which must exist and
+# must be accessible from the user that runs the storm webdav service
+rootPath=/tmp
+
+# Comma separated list of storage area access points.
+accessPoints=/sa
+
+# Comma separated list of VOMS VOs supported in this storage area
+vos=testers.eu-emi.eu
+
+# Enables read access to users authenticated with an X.509 certificate issued by
+# a trusted CA (users without VOMS credentials).
+# Defaults to false, which means that all users need to authenticate with a VOMS credential
+# authenticatedReadEnabled=false
+
+# Enables read access to anonymous users. Defaults to false.
+# anonymousReadEnabled=false
+
+# Enables VO map files for this storage area. Defaults to true.
+# voMapEnabled=true
+
+# VO map normally grants read-only access to storage area files. To grant
+# write access set this flag to true. Defaults to false.
+# voMapGrantsWriteAccess=false
+```
+
+### The VO map-files
 
 When VO map files are enabled, users can authenticate to the StoRM webdav
 service using the certificate in their browser and be granted VOMS attributes
-if their subject is listed in one of the supported VO mapfile.
-You can configure whether users listed in VO map files will be granted read-only 
-or write permissions in the storage area configuration in the `/etc/storm/webdav/sa.d` 
+if their subject is listed in one of the supported VO map-file.
+You can configure whether users listed in VO map files will be granted read-only
+or write permissions in the storage area configuration in the `/etc/storm/webdav/sa.d`
 directory.
 
 This mechanism is very similar to the traditional Gridmap file but is just used
 to know whether a given user is registered as a member in a VOMS managed VO and
 not to map his/her certificate subject to a local unix account.
 
-##### How to enable VO map files
+#### How to enable VO map-files
 
-VO map files support is disabled by default in StoRM WebDAV.
+VO map-files support is disabled by default in StoRM WebDAV.
 
-Set `STORM_WEBDAV_VO_MAP_FILES_ENABLE=true` in `/etc/sysconfig/storm-webdav` to enable VO map file support.
+Open `/etc/sysconfig/storm-webdav` and set:
 
-### VO map files format and location
+```bash
+STORM_WEBDAV_VO_MAP_FILES_ENABLE=true
+```
 
-A VO map file is a csv file listing a certificate subject, issuer and email for each line.
+to enable VO map-file support.
+
+#### Format and location
+
+A VO map-file is a _.csv_ file listing for each line:
+
+```
+[certificate subject],[issuer],[email]
+```
+
 It can be easily generated for a given VO using the `voms-admin` command line utility.
-VO map files by default live in the `/etc/storm/webdav/vo-mapfiles.d` directory.
 
-For each VO, a file named:
+VO map-files by default live in the `/etc/storm/webdav/vo-mapfiles.d` directory.
+For each VO, a file named `VONAME.vomap` is put in the `/etc/storm/webdav/vo-mapfiles.d` directory.
 
-`VONAME.vomap`
-
-is put in the `/etc/storm/webdav/vo-mapfiles.d` directory. 
-
-##### VO Map file examples
+#### File examples
 
 The file `/etc/storm/webdav/vo-mapfiles.d/test.vomap` with the following content:
 
@@ -126,16 +173,15 @@ The file `/etc/storm/webdav/vo-mapfiles.d/test.vomap` with the following content
 
 will grant the `test` VO membership to clients authenticated with the above subjects.
 
-To generate a VO mapfile for the `cms` VO, you could run the following command
+#### Generate a map-file for a specific VO
 
-```bash
+To generate a VO map-file for the `cms` VO, you could run the following command
+
+```shell
 voms-admin --host voms.cern.ch --vo cms list-users > /etc/storm/webdav/vo-mapfiles.d/cms.vomap
 ```
 
-### Storage area configuration
-
-StoRM WebDAV service configuration lives in the directory `/etc/storm/webdav`.
-See the README.md in that dir for more help.
+You need to know a valid VOMS server FQDN that supports the desired VO. In our case, it's _voms.cern.ch_.
 
 ## Service operation
 
@@ -150,26 +196,26 @@ service storm-webdav start
 Stop the service:
 
 ```
-  service storm-webdav stop
+service storm-webdav stop
 ```
 
 Check service status:
 
 ```
-  service storm-webdav status
+service storm-webdav status
 ```
 
 Check that the service responds:
 
 ```
-# curl http://localhost:8085/status/ping
+$ curl http://localhost:8085/status/ping
 pong
 ```
 
 Print JVM thread stacks:
 
 ```
-# curl http://localhost:8085/status/threads
+$ curl http://localhost:8085/status/threads
 Reference Handler id=2 state=WAITING
     - waiting on <0x519b1696> (a java.lang.ref.Reference$Lock)
     - locked <0x519b1696> (a java.lang.ref.Reference$Lock)
@@ -189,10 +235,12 @@ Signal Dispatcher id=4 state=RUNNABLE
 ...
 ```
 
+### Service metrics
+
 Get service metrics:
 
 ```
-# curl http://localhost:8085/status/metrics?pretty=true
+$ curl http://localhost:8085/status/metrics?pretty=true
 {
   "version" : "3.0.0",
   "gauges" : {
@@ -231,18 +279,29 @@ The service logs live in the `/var/log/storm/webdav` directory.
 
 ### Access points
 
-By default a storage area named `sa` is accessible at the URL
-`https://hostname:8443/sa` or, if anonymous access is granted, at
-`http://hostname:8085/sa`
+By default a storage area named `sa` is accessible at the URL:
 
-For backward compatibility with the StoRM Gridhttps also
-`https://hostname:8443/webdav/sa` and `http://hostname:8085/webdav/sa` will
-work, but it's not needed anymore to specify the `webdav` prefix when issuing
+```
+https://hostname:8443/sa
+```
+
+or, if anonymous access is granted, at:
+
+```
+http://hostname:8085/sa
+```
+
+For backward compatibility with the StoRM GridHTTPs also:
+
+```
+https://hostname:8443/webdav/sa
+```
+
+and
+
+```
+http://hostname:8085/webdav/sa
+```
+
+will work, but it's not needed anymore to specify the `webdav` prefix when issuing
 requests to the service.
-
-
-
-
-
-
-

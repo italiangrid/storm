@@ -15,7 +15,8 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.10]({{ site.baseurl 
 
 ### Description
 
-This release fixes a minor issue related to the retrieved error message in case of a srmAbort done specifying an expired token.
+This release fixes an improper management of SURL status that can lead to PutDone errors and locked SURLs.
+It fixes also a minor issue related to the retrieved error message in case an expired token is used with srmAbort.
 
 ### Bug fixes and improvements
 

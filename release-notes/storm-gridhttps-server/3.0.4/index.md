@@ -13,7 +13,7 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.10][StoRM-1.11.10].
 
 ### Description
 
-This release provides fixes for security vulnerabilities and a few bug fixes.
+This release provides a fix for a security vulnerability and another minor bug fix on the returned error code when copy and move operation are done on equal source and destination.
 
 ### Bug fixes
 

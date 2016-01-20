@@ -1,13 +1,13 @@
 ---
 layout: default
-title: "StoRM dynamic info v.1.7.6 release notes"
+title: "StoRM Info Provider v.1.7.6 release notes"
 release_date: "03.06.2013"
 rfcs:
     - id: STOR-172
       title: StoRM publishes wrong values for storage area sizes in the information system.
 ---
 
-## StoRM dynamic-info-provider v. 1.7.6
+## StoRM Info Provider v. 1.7.6
 
 Released on **{{ page.release_date }}** with [StoRM v. 1.11.1]({{ site.baseurl }}/release-notes/StoRM-v1.11.1.html).
 

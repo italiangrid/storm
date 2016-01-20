@@ -885,6 +885,13 @@ configuration file.
 |   ```purge.delay```           |   Initial delay before starting the requests garbage collection process, in seconds. Default: **10**
 |   ```expired.request.time```  |   Time in seconds to consider a request expired after its submission. Default: **604800**
 
+#####Expired put requests agent
+
+|   Property Name   |   Description     |
+|:------------------|:------------------|
+|   ```transit.interval```        |   Time interval in seconds between successive agent run. Default: **3000**.
+|   ```transit.delay```           |   Initial delay before starting the agent process, in seconds. Default: **60**
+
 #####Garbage collector
 
 |   Property Name   |   Description     |
@@ -958,9 +965,6 @@ configuration file.
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   ```gridhttps.enabled```     |   Flag to enable the support to HTTP and HTTPS protocols. Default: **false**
-|   ```gridhttps.server.host``` |   The complete hostname of the host running StoRM GridHTTPs. Default: **localhost**
-|   ```gridhttps.server.port``` |   The port on StoRM GridHTTPs host where GridHTTPs accepts HTTP connections. Default:**8088**
-|   ```gridhttps.plugin.classname```    |   The complete class-name of the HTTPSPluginInterface implementation to be used. Default: **it.grid.storm.https.HTTPSPluginInterfaceStub**
 
 #####Protocol balancing
 
@@ -975,20 +979,6 @@ configuration file.
 |   ```tape.support.enabled```  |   Flag to enable tape support. Default: **false**
 |   ```tape.buffer.group.read```    |   System group to be assigned to files migrated from tape storage. Default: **storm-SA-read**
 |   ```tape.buffer.group.write```   |   System group to be assigned to files migrated to tape storage. Default: **storm-SA-write**
-
-#####srmCopy parameters
-
-|   Property Name   |   Description     |
-|:------------------|:------------------|
-|   ```asynch.srmclient.retrytime```        |   Timeout for a single *srmPrepareToPut* request execution performed to fulfill *srmCopy* requests in seconds. Default: **60**
-|   ```asynch.srmclient.sleeptime```        |   Interval between successive *srmPrepareToPut* request status polling performed to fulfill *srmCopy* requests in seconds. Default: **5**
-|   ```asynch.srmclient.timeout```          |   Timeout for *srmPrepareToPut* request execution performed to fulfill *srmCopy* requests in seconds. Default: **180**
-|   ```asynch.srmclient.putdone.sleeptime```|   Interval between consecutive *srmPutDone* attempts performed to fulfill *srmCopy* requests in seconds. Default: **1**
-|   ```asynch.srmclient.putdone.timeout```  |   Timeout for *srmPutDone* request execution performed to fulfill *srmCopy* requests in seconds. Default: **60**
-|   ```asynch.srmclient```                  |   The complete class-name of the *SRMClient* implementation providing SRM client features to be used to perform srm operations to fulfill *srmCopy* requests. Default: **it.grid.storm.asynch.SRM22Client**
-|   ```asynch.srmcopy.gridftp.timeout```    |   Timeout for GridFTP connection establishment during file transfer execution performed to fulfill *srmCopy* requests in seconds. Default: **15000**
-|   ```asynch.gridftpclient```              |   The complete class-name of the GridFTPTransfer-Client implementation providing GridFTP client features to be used to perform file transfer to fulfill *srmCopy* requests. Default: **it.grid.storm.asynch.NaiveGridFTPTransferClient**
-
 
 ####Storage information: namespace.xml
 
@@ -1482,14 +1472,14 @@ See https://twiki.cern.ch/twiki//bin/view/EGEE/BDII for more details.
 
 ###StoRM Info Provider
 
-`StoRM Dynamic Info Provider` is the StoRM component that manages how and what information are published on the BDII.
+StoRM Info Provider is the StoRM component that manages how and what information are published on the BDII.
 By default, the BDII uses three directories to obtain information sources:
 
 * **ldif**: static LDIF files should be placed in this directory;
-* **provider**: here information providers are placed and run once at bdii startup;
+* **provider**: here information providers are placed and run once at BDII startup;
 * **plugin**: scripts periodically run to update information.
 
-These directories are located by default into /var/lib/bdii/gip.
+These directories are located by default into `/var/lib/bdii/gip`.
 
 ####Configuration
 
@@ -1509,7 +1499,9 @@ usage: storm-info-provider [-h] [-v LOG_LEVEL] [-o LOG_FILENAME]
                            {configure,get-static-ldif,get-update-ldif} ...
 ```
 
-* `-v`: `LOG_LEVEL` can be `10` (DEBUG), `20` (INFO - default), `30` (WARNING) and `40` (ERROR)
+Options:
+
+* `-v`: `LOG_LEVEL` can be 10 (DEBUG), 20 (INFO - default), 30 (WARNING) and 40 (ERROR)
 * `-o`: all the log messages are printed on stderr by default but they can be redirected to an external `LOG_FILENAME` by specifying this option
 
 #####Usage - `configure`
@@ -1524,8 +1516,10 @@ optional arguments:
   -g {glue13,glue2,all}
 ```
 
-* `-f`: the path of the file which contains all the StoRM related YAIM variables with their key-value pairs (default is `/etc/storm/info-provider/storm-yaim-variables.conf` which is the file created by yaim-storm))
-* `-g`: GLUE version selector (default: `all`)
+Options:
+
+* `-f`: the path of the file which contains all the StoRM related YAIM variables with their key-value pairs (default is `/etc/storm/info-provider/storm-yaim-variables.conf` which is the file created by yaim-storm)
+* `-g`: GLUE version selector (default: _all_)
 
 During configuration, yaim-storm creates `storm-yaim-variables.conf` and runs the StoRM Dynamic Info Provider script as follow:
 
@@ -1533,7 +1527,7 @@ During configuration, yaim-storm creates `storm-yaim-variables.conf` and runs th
 $ /usr/libexec/storm-info-provider -v LOG_LEVEL configure -g all -f /etc/storm/info-provider/storm-yaim-variables.conf
 ```
 
-Example of output with LOG_LEVEL = 20:
+Example of output with `LOG_LEVEL=20`:
 
 ```bash
 $ /usr/libexec/storm-info-provider configure
@@ -1561,8 +1555,10 @@ optional arguments:
   -g {glue13,glue2}
 ```
 
-* `-f`: the path of the file which contains all the StoRM related YAIM variables with their key-value pairs (default is `/etc/storm/info-provider/storm-yaim-variables.conf` which is the file created by yaim-storm))
-* `-g`: GLUE version selector (default: `glue2`)
+Options:
+
+* `-f`: the path of the file which contains all the StoRM related YAIM variables with their key-value pairs (default is `/etc/storm/info-provider/storm-yaim-variables.conf` which is the file created by yaim-storm)
+* `-g`: GLUE version selector (default: _glue2_)
 
 Example of a filtered output to obtain only the `dn` of the generated entries:
 
@@ -1592,7 +1588,7 @@ The action `get-static-ldif` is not used by the installed scripts. However its f
 
 #####Usage - `get-update-ldif`
 
-```bash
+```sh
 $ /usr/libexec/storm-info-provider get-update-ldif -h
 usage: storm-info-provider get-static-ldif [-h] [-f FILEPATH]
                                            [-g {glue13,glue2}]
@@ -1602,15 +1598,17 @@ optional arguments:
   -g {glue13,glue2}
 ```
 
-* `-f`: the path of the file which contains all the StoRM related YAIM variables with their key-value pairs (default is `/etc/storm/info-provider/storm-yaim-variables.conf` which is the file created by yaim-storm))
-* `-g`: GLUE version selector (default: `glue2`)
+Options:
+
+* `-f`: the path of the file which contains all the StoRM related YAIM variables with their key-value pairs (default is `/etc/storm/info-provider/storm-yaim-variables.conf` which is the file created by yaim-storm)
+* `-g`: GLUE version selector (default: _glue2_)
 
 The plugin files created during `configure` phase runs StoRM DIP `get-update-ldif`.
 If StoRM service is down, an error is logged and user obtains the LDIF output useful to update the serving-state value of the endpoints.
 
 Example of a filtered output to obtain only the `dn` of the generated entries:
 
-```bash
+```sh
 $ /usr/libexec/storm-info-provider get-update-ldif -g glue2 2>/dev/null | grep dn
 dn: GLUE2EndpointID=cloud-vm45.cloud.cnaf.infn.it/storage/endpoint/SRM,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
 dn: GLUE2EndpointID=cloud-vm45.cloud.cnaf.infn.it/storage/endpoint/HTTP,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
@@ -1634,7 +1632,7 @@ dn: GLUE2StorageShareCapacityID=cloud-vm45.cloud.cnaf.infn.it/storage/share/test
 
 Example of the output generated when StoRM service is down:
 
-```bash
+```sh
 $ service storm-backend-server stop
 Stopping storm-backend-server                              [  OK  ]
 $ /usr/libexec/storm-info-provider get-update-ldif -g glue2 2>/dev/null

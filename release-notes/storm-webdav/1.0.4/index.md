@@ -13,14 +13,14 @@ Released on **{{ page.release_date }}** as an update of [StoRM v. 1.11.10][relea
 
 ### Description
 
-This release provides fixes for security vulnerabilities that were recently reported, and adds the support for [RFC-3230][RFC-3230].
+This release provides a fix for a security vulnerability that was recently reported, and adds support for [RFC-3230][RFC-3230].
 It explains how to get checksum type and value of the stored resources. From this release, each HEAD and GET response will include a header like:
 
 ```{html}
   Digest: adler32=8a23d4f8
 ```
 
-to be compliant to the [RFC-3230][RFC-3230] specific.
+to be compliant with [RFC-3230][RFC-3230] specific.
 
 ### Security vulnerabilities
 
@@ -40,4 +40,4 @@ For the other StoRM services, check the the [System Administration Guide][storm-
 [RFC-3230]: https://tools.ietf.org/html/rfc3230
 [release-notes]: {{ site.baseurl }}/release-notes/StoRM-v1.11.10.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/
-[storm-webdav-guide]: {{ site.baseurl }}/documentation/sysadmin-guide/1.11.9/storm-webdav-guide.html
+[storm-webdav-guide]: {{ site.baseurl }}/documentation/sysadmin-guide/1.11.10/storm-webdav-guide.html
