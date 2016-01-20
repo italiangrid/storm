@@ -12,10 +12,10 @@ import it.grid.storm.catalogs.RequestSummaryDAO;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 
-public class GarbageCollector extends TimerTask {
+public class RequestsGarbageCollector extends TimerTask {
 
 	private static final Logger log = LoggerFactory
-		.getLogger(GarbageCollector.class);
+		.getLogger(RequestsGarbageCollector.class);
 
 	private final Configuration config = Configuration.getInstance();
 	private final RequestSummaryDAO dao = RequestSummaryDAO.getInstance();
@@ -36,7 +36,7 @@ public class GarbageCollector extends TimerTask {
 		}
 	}
 
-	public GarbageCollector(Timer handlerTimer, long delay) {
+	public RequestsGarbageCollector(Timer handlerTimer, long delay) {
 
 		this.delay = delay;
 		handler = handlerTimer;
@@ -201,6 +201,6 @@ public class GarbageCollector extends TimerTask {
 	 */
 	private void reschedule() {
 
-		handler.schedule(new GarbageCollector(handler, delay), delay);
+		handler.schedule(new RequestsGarbageCollector(handler, delay), delay);
 	}
 }
