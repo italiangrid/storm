@@ -15,6 +15,6 @@ repo_base_url: "https://github.com/italiangrid"
 
 howto_path: "/documentation/how-to"
 
-sysadmin_guide_version: 1.11.9
+sysadmin_guide_version: 1.11.10
 functional_description_version: 1.11.2
 webdav_guide_version: 1.0.2
