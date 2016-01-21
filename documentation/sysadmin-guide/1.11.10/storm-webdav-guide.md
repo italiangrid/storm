@@ -177,7 +177,7 @@ will grant the `test` VO membership to clients authenticated with the above subj
 
 To generate a VO map-file for the `cms` VO, you could run the following command
 
-```shell
+```
 voms-admin --host voms.cern.ch --vo cms list-users > /etc/storm/webdav/vo-mapfiles.d/cms.vomap
 ```
 
