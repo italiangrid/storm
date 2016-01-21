@@ -32,7 +32,6 @@ yum update storm-gridhttps-server
 service storm-gridhttps-server restart
 ```
 
-
 You can find more information about upgrade, clean installation and configuration of StoRM services in the [System Administration Guide][storm-sysadmin-guide].
 
 ### Known issues
