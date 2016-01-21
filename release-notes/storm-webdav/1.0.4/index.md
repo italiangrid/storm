@@ -32,6 +32,13 @@ More information concerning the security vulnerabilities addressed by this relea
 
 ### Installation and configuration
 
+- Update and restart package:
+
+```bash
+yum update storm-webdav
+service storm-webdav restart
+```
+
 Check the the [StoRM WebDAV installation and configuration guide][storm-webdav-guide] for detailed installation and configuration information.
 
 For the other StoRM services, check the the [System Administration Guide][storm-sysadmin-guide].

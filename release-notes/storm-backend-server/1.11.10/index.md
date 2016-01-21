@@ -24,7 +24,14 @@ It fixes also a minor issue related to the retrieved error message in case an ex
 
 ### Installation and configuration
 
-You can find information about upgrade, clean installation and configuration of
+- Update and restart package:
+
+```bash
+yum update storm-backend-server
+service storm-backend-server restart
+```
+
+You can find more information about upgrade, clean installation and configuration of
 StoRM services in the [System Administration Guide][storm-sysadmin-guide].
 
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/

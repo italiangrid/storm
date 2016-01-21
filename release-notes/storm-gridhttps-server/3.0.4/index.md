@@ -25,15 +25,13 @@ More information concerning the security vulnerabilities addressed by this relea
 
 ### Installation and configuration
 
-Update the package:
+- Update and restart package:
 
-    yum update storm-gridhttps-server
+```bash
+yum update storm-gridhttps-server
+service storm-gridhttps-server restart
+```
 
-and then, restart the service:
-
-    service storm-gridhttps-server restart
-
-There's no need to re-run YAIM.
 
 You can find more information about upgrade, clean installation and configuration of StoRM services in the [System Administration Guide][storm-sysadmin-guide].
 

@@ -21,23 +21,25 @@ This release fixes a missing Glue2 field, not published on the BDII.
 
 ### Installation and configuration
 
-Update `storm-dynamic-info-provider` package:
+- Update package:
 
-```shell
+```bash
 yum update storm-dynamic-info-provider
 ```
 
-If you previously used `yaim-storm` to configure your site, to re-configure the info provider launch:
+- Re-configure info provider:
 
-```shell
+```bash
 /usr/libexec/storm-info-provider configure
 ```
 
-Otherwise, re-configure as your needed. Then, restart _bdii_ service:
+- Restart BDII service:
 
-```shell
+```bash
 service bdii restart
 ```
+
+Alternatively, you can simply run YAIM after the update.
 
 You can find more information about upgrade, clean installation and configuration of
 StoRM services in the [System Administration Guide][storm-sysadmin-guide]. <br/> See the [Documentation][storm-documentation] section.
