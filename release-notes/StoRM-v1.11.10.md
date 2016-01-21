@@ -38,6 +38,8 @@ Released on **{{ page.release_date }}**
 This release provides fixes and improvements as can be seen from the
 individual components release notes.
 
+It's **HIGHLY RECOMMENDED** to upgrade your installation to the version of StoRM WebDAV included in this release, that provides fixes for a security vulnerability affecting the Milton webdav library.
+
 ### Released components
 
 {% include list-components.liquid %}
@@ -52,19 +54,29 @@ individual components release notes.
 
 ### Installation and configuration
 
-This release doesn't require a YAIM reconfiguration. The updated services must
-be restarted:
+Packages can be obtained from our repositories (see the instructions in the [download section][download-page]) and will soon be available on the EMI-3 repository.
+
+To re-configure the services, follow the commands below.
+
+- First of all, reconfigure storm-info-provider:
+
+```bash
+/usr/libexec/storm-info-provider configure
+```
+
+- Then, restart the involved services and the BDII:
 
 ```bash
 service storm-backend-server restart
 service storm-webdav restart
-/usr/libexec/storm-info-provider configure
+service bdii restart
 ```
 
-The restart of *storm-gridhttps-server* has not been reported cause it's highly recommended to update it to *storm-webdav* component.
+Alternatively, you can simply run YAIM.
 
 You can find more information about upgrade, clean installation and configuration of
 StoRM services in the [System Administration Guide][storm-sysadmin-guide].
 
 [storm-documentation]: {{site.baseurl}}/documentation.html
+[download-page]: {{site.baseurl}}/download.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/
