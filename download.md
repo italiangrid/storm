@@ -58,10 +58,11 @@ The StoRM source is available on [Github](https://github.com) in the following r
 
 - [StoRM Backend](https://github.com/italiangrid/storm)
 - [StoRM Frontend](https://github.com/italiangrid/storm-frontend)
+- [StoRM WebDAV](https://github.com/italiangrid/storm-webdav)
 - [StoRM GridHTTPs Server](https://github.com/italiangrid/storm-gridhttps-server)
 - [StoRM Native Libs](https://github.com/italiangrid/storm-native-libs)
 - [YAIM StoRM](https://github.com/italiangrid/yaim-storm)
-- [StoRM info provider](https://github.com/italiangrid/storm-info-provider)
+- [StoRM Info Provider](https://github.com/italiangrid/storm-info-provider)
 - [StoRM client](https://github.com/italiangrid/storm-client)
 - [StoRM XMLRPC api](https://github.com/italiangrid/storm-xmlrpc-api)
 - [StoRM GridHTTPs plugin](https://github.com/italiangrid/storm-gridhttps-plugin)
