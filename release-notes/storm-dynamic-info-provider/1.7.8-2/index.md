@@ -1,13 +1,13 @@
 ---
 layout: default
-title: "StoRM dynamic info v.1.7.8-2 release notes"
+title: "StoRM Info Provider v.1.7.8-2 release notes"
 release_date: 29.05.2015
 rfcs:
 - id: STOR-794
   title: Missing glite-info-provider-service dependency
 ---
 
-## StoRM dynamic-info-provider v. 1.7.8-2
+## StoRM Info Provider v. 1.7.8-2
 
 Released on **{{ page.release_date }}** with [StoRM v. 1.11.9]({{ site.baseurl }}/release-notes/StoRM-v1.11.9.html).
 
