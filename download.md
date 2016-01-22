@@ -5,17 +5,17 @@ title: StoRM releases
 
 # StoRM releases
 
-The current release is [StoRM v.1.11.9]({{ site.baseurl }}/release-notes/StoRM-v1.11.9.html).
+The current release is [StoRM v.1.11.10]({{ site.baseurl }}/release-notes/StoRM-v1.11.10.html).
 
 {% include releases.liquid %}
 
 Information about previous releases can be found [here](releases.html) or on the [EMI website](http://www.eu-emi.eu).
 
-### Repository configuration 
+### Repository configuration
 
 StoRM packages can be obtained from the EMI repository or from the StoRM product team package repository.
 
-#### EMI 3 
+#### EMI 3
 
 You can find [general EMI 3 installation instructions](https://twiki.cern.ch/twiki/bin/view/EMI/GenericInstallationConfigurationEMI3) on the EMI site, but it basically boils down to installing the EMI repository
 
@@ -58,10 +58,11 @@ The StoRM source is available on [Github](https://github.com) in the following r
 
 - [StoRM Backend](https://github.com/italiangrid/storm)
 - [StoRM Frontend](https://github.com/italiangrid/storm-frontend)
+- [StoRM WebDAV](https://github.com/italiangrid/storm-webdav)
 - [StoRM GridHTTPs Server](https://github.com/italiangrid/storm-gridhttps-server)
 - [StoRM Native Libs](https://github.com/italiangrid/storm-native-libs)
 - [YAIM StoRM](https://github.com/italiangrid/yaim-storm)
-- [StoRM info provider](https://github.com/italiangrid/storm-info-provider)
+- [StoRM Info Provider](https://github.com/italiangrid/storm-info-provider)
 - [StoRM client](https://github.com/italiangrid/storm-client)
 - [StoRM XMLRPC api](https://github.com/italiangrid/storm-xmlrpc-api)
 - [StoRM GridHTTPs plugin](https://github.com/italiangrid/storm-gridhttps-plugin)

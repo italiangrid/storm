@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "StoRM dynamic info v.1.7.8 release notes"
+title: "StoRM Info Provider v.1.7.8 release notes"
 release_date: 13.03.2015
 rfcs:
 - id: STOR-751
@@ -9,7 +9,7 @@ rfcs:
   title: StoRM Info Provider 'configure' fails with 'too many values to unpack'
 ---
 
-## StoRM dynamic-info-provider v. 1.7.8
+## StoRM Info Provider v. 1.7.8
 
 Released on **{{ page.release_date }}** with [StoRM v. 1.11.8]({{ site.baseurl }}/release-notes/StoRM-v1.11.8.html).
 

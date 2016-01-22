@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "StoRM dynamic info v.1.7.7 release notes"
+title: "StoRM Info Provider v.1.7.7 release notes"
 release_date: 07.01.2015
 rfcs:
 - id: STOR-320
@@ -14,7 +14,7 @@ features:
   title: Refactor StoRM dynamic info provider service
 ---
 
-## StoRM dynamic-info-provider v. 1.7.7
+## StoRM Info Provider v. 1.7.7
 
 Released on **{{ page.release_date }}** with [StoRM v. 1.11.5]({{ site.baseurl }}/release-notes/StoRM-v1.11.5.html).
 
