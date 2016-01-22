@@ -482,13 +482,13 @@ public class SURLStatusDAO {
     }
   }
 
-  public void markSURLsReadyForRead(TRequestToken token, List<TSURL> surls) {
+  public int markSURLsReadyForRead(TRequestToken token, List<TSURL> surls) {
 
     tokenSanityChecks(token);
     surlSanityChecks(surls);
 
     // I am not reimplementing the whole catalog functions
-    PtPChunkCatalog.getInstance().updateFromPreviousStatus(token, surls,
+    return PtPChunkCatalog.getInstance().updateFromPreviousStatus(token, surls,
       TStatusCode.SRM_SPACE_AVAILABLE, TStatusCode.SRM_SUCCESS);
 
   }

@@ -137,7 +137,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 			user = getUser(data);
 			recursion = isRecursive(data);
 			stori = resolveStoRI(surl, user);
-		  checkUserAuthorization(stori, user);
+			checkUserAuthorization(stori, user);
 			log.debug("srmRmdir: rmdir authorized for {}. Dir={}. Recursive={}",
 				userToString(user), stori.getPFN(), recursion);
 			removeFolder(stori.getLocalFile(), recursion, size);

@@ -195,8 +195,9 @@ public interface SURLStatusManager {
    *          the request token
    * @param surls
    *          the surl to be marked as ready for read operations
+   * @return the number of surls updated on db
    */
-  public void markSURLsReadyForRead(TRequestToken token, List<TSURL> surls);
+  public int markSURLsReadyForRead(TRequestToken token, List<TSURL> surls);
 
   /**
    * Releases a list of surls in all ongoing PtG requests registered in the

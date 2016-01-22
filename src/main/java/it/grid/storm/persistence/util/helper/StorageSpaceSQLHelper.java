@@ -20,7 +20,6 @@ package it.grid.storm.persistence.util.helper;
 import it.grid.storm.common.types.VO;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.persistence.model.StorageSpaceTO;
-import it.grid.storm.persistence.util.db.InsertBuilder;
 import it.grid.storm.persistence.util.db.SQLHelper;
 
 import java.sql.Connection;
@@ -64,8 +63,6 @@ public class StorageSpaceSQLHelper extends SQLHelper {
 		COLS.put("reserved_size", "RESERVED_SIZE");
 		COLS.put("update_time", "UPDATE_TIME");
 	}
-
-	private InsertBuilder builder;
 
 	/**
 	 * CONSTRUCTOR
@@ -765,30 +762,56 @@ public class StorageSpaceSQLHelper extends SQLHelper {
 		return preparedStatement;
 	}
 
-	/**
-	 * 
-	 * @param token
-	 *          String
-	 * @param freeSpace
-	 *          long
-	 * @return String
-	 */
-	/*
-	 * public String updateSpaceSizesByTokenQuery(String token, long freeSpace,
-	 * long availableSpace, long usedSpace, long busySpace, long unavailableSpace,
-	 * Date updateTimestamp)
-	 * 
-	 * {
-	 * 
-	 * String query = "UPDATE `storage_space` SET "; query += "`free_size`=" +
-	 * freeSpace; query += "`available_size`=" + availableSpace; query +=
-	 * "`used_size`=" + usedSpace; query += "`busy_size`=" + busySpace; query +=
-	 * "`unavailable_size`=" + unavailableSpace; query += "`UPDATE_TIME`=" +
-	 * format(updateTimestamp); query += " WHERE space_token='" + token + "'";
-	 * 
-	 * return query;
-	 * 
-	 * }
-	 */
+    public PreparedStatement increaseUsedSpaceByTokenQuery(Connection conn,
+        String token, long usedSpaceToAdd)
+        throws SQLException {
+
+        String str = null;
+        PreparedStatement preparedStatement = null;
+
+        str = "UPDATE storage_space "
+          + " SET USED_SIZE = USED_SIZE + ?, BUSY_SIZE = BUSY_SIZE + ?, "
+          + " FREE_SIZE = FREE_SIZE - ?, AVAILABLE_SIZE = AVAILABLE_SIZE - ?, "
+          + " UPDATE_TIME = NOW() "
+          + " WHERE space_token=? AND USED_SIZE + ? <= TOTAL_SIZE ";
+
+        preparedStatement = conn.prepareStatement(str);
+
+        preparedStatement.setLong(1, usedSpaceToAdd);
+        preparedStatement.setLong(2, usedSpaceToAdd);
+        preparedStatement.setLong(3, usedSpaceToAdd);
+        preparedStatement.setLong(4, usedSpaceToAdd);
+        preparedStatement.setString(5, token);
+        preparedStatement.setLong(6, usedSpaceToAdd);
+
+        return preparedStatement;
+
+    }
+    
+    public PreparedStatement decreaseUsedSpaceByTokenQuery(Connection conn,
+      String token, long usedSpaceToRemove)
+      throws SQLException {
+
+      String str = null;
+      PreparedStatement preparedStatement = null;
+
+      str = "UPDATE storage_space "
+        + " SET USED_SIZE = USED_SIZE - ?, BUSY_SIZE = BUSY_SIZE - ?, "
+        + " FREE_SIZE = FREE_SIZE + ?, AVAILABLE_SIZE = AVAILABLE_SIZE + ?, "
+        + " UPDATE_TIME = NOW() "
+        + " WHERE space_token=? AND USED_SIZE - ? >= 0 ";
+
+      preparedStatement = conn.prepareStatement(str);
+
+      preparedStatement.setLong(1, usedSpaceToRemove);
+      preparedStatement.setLong(2, usedSpaceToRemove);
+      preparedStatement.setLong(3, usedSpaceToRemove);
+      preparedStatement.setLong(4, usedSpaceToRemove);
+      preparedStatement.setString(5, token);
+      preparedStatement.setLong(6, usedSpaceToRemove);
+
+      return preparedStatement;
+
+    }
 
 }
