@@ -5,7 +5,7 @@ title: StoRM releases
 
 # StoRM releases
 
-The current release is [StoRM v.1.11.10]({{ site.baseurl }}/release-notes/StoRM-v1.11.10.html).
+The current release is [StoRM v.1.11.11]({{ site.baseurl }}/release-notes/StoRM-v1.11.11.html).
 
 {% include releases.liquid %}
 
