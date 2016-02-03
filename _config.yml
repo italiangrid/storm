@@ -1,5 +1,7 @@
 exclude: [README.md, _bin, run-jekyll.sh]
 
+emptyArray: []
+
 markdown: redcarpet
 redcarpet:
   extensions: [ "tables", "with_toc_data", "no_intra_emphasis", "fenced_code_blocks", "autolink", "highlight", "footnotes" ]
@@ -14,6 +16,9 @@ website_base_url: "http://italiangrid.github.io/storm"
 repo_base_url: "https://github.com/italiangrid"
 
 howto_path: "/documentation/how-to"
+releasenotes_path: "/release-notes"
+
+latest_release: 1.11.11
 
 sysadmin_guide_version: 1.11.10
 functional_description_version: 1.11.2

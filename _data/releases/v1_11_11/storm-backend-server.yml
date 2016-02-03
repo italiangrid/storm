@@ -1,0 +1,16 @@
+name: StoRM Backend
+package: storm-backend-server
+version: 1.11.11
+rfcs:
+  - id: STOR-867
+    title: Backend initialization fails when storage area has a default acl list
+features: []
+description: >
+  This release fixes a covariance issue on Java code, introduced with StoRM v1.11.10. <br/>This issue is verified when a default acl list is set for a storage area. In that case, StoRM Backend will fail on start.
+installation: >
+  To install, update and restart StoRM Backend:
+
+      yum update -y storm-backend-server
+      service storm-backend-server restart
+
+  Alternatively, you can update and run YAIM.
