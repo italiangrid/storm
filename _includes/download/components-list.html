@@ -9,17 +9,17 @@
     </tr>
   </thead>
   <tbody>
-{% for c in site.data.versions.components %}
+{% for component in site.data.versions.components %}
   <tr>
-  <td> {{c[1].name }} </td>
+  <td> {{component[1].name }} </td>
   <td>
       <ul class="unstyled" style="margin: 0 0;">
         <li>
-          <a href="{{ site.baseurl }}/release-notes/{{c[0]}}/{{c[1].current}}">{{ c[1].current}}</a>
+          <a href="{{site.baseurl}}{{site.releasenotes_path}}/{{component[0]}}/{{component[1].current}}">{{component[1].current}}</a>
         </li>
-    {% if c[1].previous != empty %}
-        {% for v in c[1].previous %}
-          <li class="collapse"><a href="{{ site.baseurl }}/release-notes/{{ c[0] }}/{{ v }}">{{ v }}</a></li>
+    {% if component[1].previous != empty %}
+        {% for version in component[1].previous %}
+          <li class="collapse"><a href="{{site.baseurl}}{{site.releasenotes_path}}/{{component[0]}}/{{version}}">{{version}}</a></li>
         {% endfor %}
     {% endif %}
      </ul>

@@ -1,0 +1,21 @@
+name: StoRM Backend
+package: storm-backend-server
+version: 1.11.10
+rfcs:
+  - id: STOR-234
+    title: Storm BE does not manage correctly abort requests of expired tokens
+  - id: STOR-835
+    title: Improper management of SURL status can lead to PutDone errors and locked SURLs
+features: []
+
+description: >
+  This release fixes an improper management of SURL status that can lead to PutDone errors and locked SURLs.
+  It fixes also a minor issue related to the retrieved error message in case an expired token is used with srmAbort.
+
+installation: >
+    Update and restart package:
+
+      ```bash
+      yum update storm-backend-server
+      service storm-backend-server restart
+      ```
