@@ -24,6 +24,14 @@ Released on **{{rdata.date}}** with [StoRM v. {{rdata.version}}]({{site.baseurl}
 
 {% endif %}
 
+{% if cdata.security-vulnerabilities %}
+
+### Security vulnerabilities
+
+{{ cdata.security-vulnerabilities }}
+
+{% endif %}
+
 {% if cdata.features.size > 0 %}
 
 ### Improvements
