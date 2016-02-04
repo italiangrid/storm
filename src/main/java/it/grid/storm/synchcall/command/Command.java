@@ -29,7 +29,7 @@ public interface Command {
 	 *          Contains information about input data for the request.
 	 * @return OutputData Contains output data
 	 */
-	public abstract OutputData execute(InputData inputData)
+	public OutputData execute(InputData inputData)
 		throws IllegalArgumentException, CommandException;
 
 }

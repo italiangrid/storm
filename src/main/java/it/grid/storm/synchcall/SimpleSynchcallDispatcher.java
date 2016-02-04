@@ -17,6 +17,8 @@
 
 package it.grid.storm.synchcall;
 
+import com.codahale.metrics.Timer;
+
 import it.grid.storm.common.OperationType;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.CommandFactory;
@@ -31,19 +33,22 @@ import it.grid.storm.synchcall.data.OutputData;
  * This dispatcher simply execute a new request when it's just arrived. A more
  * complex version can have thread pools and more complicated pattern.
  * 
- * @author lucamag
- * @date May 27, 2008
+ * @author lucamag @date May 27, 2008
  * 
  */
 
 public class SimpleSynchcallDispatcher implements SynchcallDispatcher {
 
+  public OutputData processRequest(OperationType type, InputData inputData)
+    throws IllegalArgumentException, CommandException {
 
-	public OutputData processRequest(OperationType type, InputData inputData)
-		throws IllegalArgumentException, CommandException {
-
-		Command cmd = CommandFactory.getCommand(type);
-		return cmd.execute(inputData);
-	}
+    Command cmd = CommandFactory.getCommand(type);
+    final Timer.Context context = type.getTimer().time();
+    try {
+      return cmd.execute(inputData);
+    } finally {
+      context.stop();
+    }
+  }
 
 }

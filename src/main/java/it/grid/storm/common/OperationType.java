@@ -17,17 +17,59 @@
 
 package it.grid.storm.common;
 
+import com.codahale.metrics.Timer;
+
+import it.grid.storm.metrics.StormMetricRegistry;
+
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008
  * Company: INFN-CNAF and ICTP/EGRID project
  * 
- * @author lucamag
- * @date May 28, 2008
+ * @author lucamag @date May 28, 2008
  * 
  */
 
 public enum OperationType {
-  UNDEF, PTG, SPTG, PTP, SPTP, COPY, 
-  BOL, AF, AR, EFL, GSM, GST, LS, MKD, MV, PNG, PD, 
-  RF, RESSP, RELSP, RM, RMD
+  UNDEF("undefined"),
+  PTG("ptg"),
+  SPTG("sPtg"),
+  PTP("ptp"),
+  SPTP("sPtp"),
+  COPY("copy"),
+  BOL("bol"),
+  AF("abortFiles"),
+  AR("abortRequest"),
+  EFL("extendFileLifetime"),
+  GSM("getSpaceMetadata"),
+  GST("getSpaceTokens"),
+  LS("ls"),
+  MKD("mkdir"),
+  MV("mv"),
+  PNG("ping"),
+  PD("putDone"),
+  RF("releaseFiles"),
+  RESSP("reserveSpace"),
+  RELSP("releaseSpace"),
+  RM("rm"),
+  RMD("rmDir");
+
+  private final String opName;
+
+  private final Timer timer;
+
+  private OperationType(String name) {
+    this.opName = name;
+    timer = StormMetricRegistry.INSTANCE.getRegistry().timer(opName);
+  }
+
+  public String getOpName() {
+
+    return opName;
+  }
+
+  public Timer getTimer() {
+
+    return timer;
+  }
+
 }
