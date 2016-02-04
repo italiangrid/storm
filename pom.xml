@@ -5,7 +5,7 @@
   <name>StoRM Backend server</name>
   <groupId>org.italiangrid.storm</groupId>
   <artifactId>storm-backend-server</artifactId>
-  <version>1.11.10</version>
+  <version>1.11.12.metrics</version>
 
   <properties>
 
@@ -39,6 +39,7 @@
     <jakartaOroVersion>2.0.8</jakartaOroVersion>
 
     <guavaVersion>18.0</guavaVersion>
+    <metrics.version>3.1.0</metrics.version>
 
     <nativeInterfaceVersion>1.0.4</nativeInterfaceVersion>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -255,6 +256,13 @@
 
   <dependencies>
 
+    <dependency>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-core</artifactId>
+      <version>${metrics.version}</version>
+    </dependency>
+    
+    
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>

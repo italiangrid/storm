@@ -86,7 +86,7 @@ public class LocalFile {
 	private static final Logger log = LoggerFactory.getLogger(LocalFile.class);
 
 	/** The Filesystem interface to operate on the wrapped pathname. */
-	private final Filesystem fs;
+	private final FilesystemIF fs;
 	
 	private final java.io.File localFile; 
 
@@ -108,7 +108,7 @@ public class LocalFile {
 	 * @see java.io.File#File(java.io.File,String)
 	 */
 	public LocalFile(final LocalFile parent, final String name,
-		final Filesystem fs) throws NullPointerException {
+		final FilesystemIF fs) throws NullPointerException {
 
 		localFile = new java.io.File(parent.localFile, name);
 
@@ -130,7 +130,7 @@ public class LocalFile {
 	 *          operations on this file.
 	 * @see it.grid.storm.filesystem.Filesystem
 	 */
-	public LocalFile(final String pathname, final Filesystem fs)
+	public LocalFile(final String pathname, final FilesystemIF fs)
 		throws NullPointerException {
 
 		localFile = new java.io.File(pathname);
@@ -157,7 +157,7 @@ public class LocalFile {
 	 * @see it.grid.storm.filesystem.Filesystem
 	 * @see java.io.File#File(String,String)
 	 */
-	public LocalFile(final String parent, final String name, final Filesystem fs)
+	public LocalFile(final String parent, final String name, final FilesystemIF fs)
 		throws NullPointerException {
 
 		localFile = new java.io.File(parent, name);

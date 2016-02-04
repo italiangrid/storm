@@ -19,7 +19,7 @@ package it.grid.storm.namespace;
 
 import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.balancer.Node;
-import it.grid.storm.filesystem.Filesystem;
+import it.grid.storm.filesystem.FilesystemIF;
 import it.grid.storm.filesystem.SpaceSystem;
 import it.grid.storm.filesystem.swig.genericfs;
 import it.grid.storm.griduser.GridUserInterface;
@@ -53,7 +53,7 @@ public interface VirtualFSInterface {
 
 	public genericfs getFSDriverInstance() throws NamespaceException;
 
-	public Filesystem getFilesystem() throws NamespaceException;
+	public FilesystemIF getFilesystem() throws NamespaceException;
 
 	public Class getSpaceSystemDriver() throws NamespaceException;
 

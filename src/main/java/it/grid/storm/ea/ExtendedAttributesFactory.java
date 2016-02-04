@@ -1,10 +1,15 @@
 package it.grid.storm.ea;
 
+import it.grid.storm.metrics.StormMetricRegistry;
+
 public class ExtendedAttributesFactory {
 
-	public static ExtendedAttributes getExtendedAttributes() {
+  public static ExtendedAttributes getExtendedAttributes() {
 
-		return new ExtendedAttributesSwigImpl();
-	}
+    ExtendedAttributes eaImpl = new ExtendedAttributesSwigImpl();
+    
+    return new MetricsEAAdapter(eaImpl,
+      StormMetricRegistry.INSTANCE.getRegistry());
+  }
 
 }

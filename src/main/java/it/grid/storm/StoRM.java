@@ -27,6 +27,7 @@ import it.grid.storm.check.SimpleCheckManager;
 import it.grid.storm.config.ConfigReader;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.health.HealthDirector;
+import it.grid.storm.metrics.StormMetricRegistry;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.rest.RestService;
 import it.grid.storm.startup.Bootstrap;
@@ -37,9 +38,13 @@ import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.Slf4jReporter;
+import com.codahale.metrics.Slf4jReporter.LoggingLevel;
 
 /**
  * This class represents a StoRM as a whole: it sets the configuration file
@@ -72,6 +77,8 @@ public class StoRM {
 	private boolean isRestServerRunning = false;
 	private boolean isSpaceGCRunning = false;
 	
+	private Slf4jReporter metricsReporter;
+	
 	private void loadConfiguration(String configurationPathname, int refresh){
 		
 		if ((configurationPathname == null) || (configurationPathname.equals(""))) {
@@ -86,14 +93,25 @@ public class StoRM {
 		
 	}
 	
-	
 	private void configureLogging(){
 		String configurationDir = Configuration.getInstance().configurationDir();
 		String logFile = configurationDir + "logging.xml";
 		Bootstrap.configureLogging(logFile);
 	}
 	
-	
+	private void configureMetricsReporting(){
+	  
+	  metricsReporter = Slf4jReporter
+	    .forRegistry(StormMetricRegistry.INSTANCE.getRegistry())
+	    .outputTo(LoggerFactory.getLogger("it.infn.storm.metrics"))
+	    .convertRatesTo(TimeUnit.SECONDS)
+	    .convertDurationsTo(TimeUnit.MILLISECONDS)
+	    .withLoggingLevel(LoggingLevel.INFO)
+	    .build();
+	  
+	  metricsReporter.start(1,TimeUnit.MINUTES);
+	  
+	}
 	private void loadNamespaceConfiguration(){
 			
 		boolean verboseMode = false; // true generates verbose logging
@@ -193,8 +211,10 @@ public class StoRM {
 	public StoRM(String configurationPathname, int refresh) {
 
 		loadConfiguration(configurationPathname, refresh);
-	  
+		
 		configureLogging();
+		
+		configureMetricsReporting();
 	  
 		configureStoRMDataSource();
 		
