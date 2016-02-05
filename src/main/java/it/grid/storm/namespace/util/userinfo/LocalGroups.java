@@ -20,6 +20,7 @@
  */
 package it.grid.storm.namespace.util.userinfo;
 
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,8 +36,8 @@ public final class LocalGroups {
 
 	private static final String UNKNOWN_GROUP = "unknown";
 
-	private ConcurrentHashMap<String, Integer> nameIdMap = new ConcurrentHashMap<String, Integer>();
-	private ConcurrentHashMap<Integer, String> idNameMap = new ConcurrentHashMap<Integer, String>();
+	private Map<String, Integer> nameIdMap = new ConcurrentHashMap<String, Integer>();
+	private Map<Integer, String> idNameMap = new ConcurrentHashMap<Integer, String>();
 	private static final LocalGroups instance = new LocalGroups();
 	private long parsingInstant = 0;
 	private static final long minimumLifetime = 1000 * 60 * 5; // 10 minutes;
