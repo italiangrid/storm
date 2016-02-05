@@ -7,6 +7,27 @@ import it.grid.storm.griduser.LocalUser;
 
 public class MetricsFilesystemAdapter implements FilesystemIF {
 
+  public static enum FilesystemMetric {
+    FILE_ATTRIBUTE_OP("fs.fileAttributeOp"),
+    FILE_ONDISK_OP("fs.fileOnDiskOp"),
+    FILE_ACL_OP("fs.aclOp"),
+    FILE_TRUNCATE_OP("fs.fileTruncateOp"),
+    FILE_CHOWN_OP("fs.fileChownOp"),
+    GET_FREE_SPACE_OP("fs.getFreeSpaceOp");
+
+    private String opName;
+
+    private FilesystemMetric(String name) {
+      opName = name;
+    }
+
+    public String getOpName() {
+
+      return opName;
+    }
+
+  }
+
   final FilesystemIF delegate;
   final MetricRegistry registry;
 
@@ -21,12 +42,18 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
     delegate = fs;
     registry = r;
 
-    fileAttributeAccessTimer = registry.timer("fileAttributeAccessOp");
-    fileOnDiskTimer = registry.timer("fileOnDiskOp");
-    aclOperationTimer = registry.timer("fileAclOp");
-    fileTruncateTimer = registry.timer("fileTruncateOp");
-    fileOwnershipTimer = registry.timer("fileChOwnOp");
-    getFreeSpaceTimer = registry.timer("getFreeSpaceOp");
+    fileAttributeAccessTimer = registry
+      .timer(FilesystemMetric.FILE_ATTRIBUTE_OP.getOpName());
+    fileOnDiskTimer = registry
+      .timer(FilesystemMetric.FILE_ONDISK_OP.getOpName());
+    aclOperationTimer = registry
+      .timer(FilesystemMetric.FILE_ACL_OP.getOpName());
+    fileTruncateTimer = registry
+      .timer(FilesystemMetric.FILE_TRUNCATE_OP.getOpName());
+    fileOwnershipTimer = registry
+      .timer(FilesystemMetric.FILE_CHOWN_OP.getOpName());
+    getFreeSpaceTimer = registry
+      .timer(FilesystemMetric.GET_FREE_SPACE_OP.getOpName());
   }
 
   public long getSize(String file) {

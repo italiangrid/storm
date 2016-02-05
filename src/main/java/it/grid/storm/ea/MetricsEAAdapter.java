@@ -13,7 +13,7 @@ public class MetricsEAAdapter implements ExtendedAttributes {
   public MetricsEAAdapter(ExtendedAttributes d, MetricRegistry r) {
     delegate = d;
     registry = r;
-    eaTimer = registry.timer("extendedAttrsOp");
+    eaTimer = registry.timer("ea");
   }
 
   public boolean hasXAttr(String fileName, String attributeName) {
