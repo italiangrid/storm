@@ -33,6 +33,7 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.rest.RestService;
 import it.grid.storm.startup.Bootstrap;
 import it.grid.storm.startup.BootstrapException;
+import it.grid.storm.synchcall.SimpleSynchcallDispatcher;
 import it.grid.storm.xmlrpc.StoRMXmlRpcException;
 import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 
@@ -98,6 +99,9 @@ public class StoRM {
   }
 
   private void configureMetricsReporting() {
+    
+    StormMetricRegistry.INSTANCE.getRegistry()
+    .timer(SimpleSynchcallDispatcher.SYNCH_CALL_TIMER_NAME);
 
     final StormMetricsReporter metricsReporter = StormMetricsReporter
       .forRegistry(StormMetricRegistry.INSTANCE.getRegistry()).build();
