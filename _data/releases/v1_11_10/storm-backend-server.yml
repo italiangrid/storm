@@ -9,13 +9,12 @@ rfcs:
 features: []
 
 description: >
-  This release fixes an improper management of SURL status that can lead to PutDone errors and locked SURLs.
-  It fixes also a minor issue related to the retrieved error message in case an expired token is used with srmAbort.
+  This release fixes an improper management of SURL status that can lead to
+  PutDone errors and locked SURLs. It fixes also a minor issue related to the
+  retrieved error message in case an expired token is used with srmAbort.
 
 installation: >
     Update and restart package:
 
-      ```bash
-      yum update storm-backend-server
-      service storm-backend-server restart
-      ```
+        yum update storm-backend-server
+        service storm-backend-server restart

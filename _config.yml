@@ -2,11 +2,12 @@ exclude: [README.md, _bin, run-jekyll.sh]
 
 emptyArray: []
 
-markdown: redcarpet
-redcarpet:
-  extensions: [ "tables", "with_toc_data", "no_intra_emphasis", "fenced_code_blocks", "autolink", "highlight", "footnotes" ]
-
+kramdown:
+  input: GFM
+  hard_wrap: false
 gems:
+#  - jekyll-coffeescript
+#  - jekyll-paginate
   - jekyll-redirect-from
 
 baseurl: /storm

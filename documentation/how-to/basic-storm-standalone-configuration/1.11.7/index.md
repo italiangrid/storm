@@ -74,7 +74,7 @@ STORM_STORAGEAREA_LIST=$VOS
 # For each storage area it's mandatory to set the relative maximum online size.
 STORM_DTEAM_ONLINE_SIZE=10
 
-# Enable Root Transfer Protocol 
+# Enable Root Transfer Protocol
 STORM_INFO_ROOT_SUPPORT=true
 
 # Enable HTTP Transfer Protocol
@@ -107,10 +107,5 @@ service storm-globus-gridftp status
 service storm-webdav status
 ```
 
-[INSTALL-PREREQ]: {{ site.baseurl }}/documentation/sysadmin-guide/1.11.7/index.html#installprereq
+[INSTALL-PREREQ]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.7/index.html#installprereq
 [REPOSETTINGS]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.7/index.html#reposettings
-
-
-[sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/
-
-[enable-example]: {{site.baseurl}}/documentation/examples/enable-gridhttps-standalone-deployment/1.11.2/enable-gridhttps-standalone-deployment.html

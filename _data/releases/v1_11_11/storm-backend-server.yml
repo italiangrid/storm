@@ -6,7 +6,9 @@ rfcs:
     title: Backend initialization fails when storage area has a default acl list
 features: []
 description: >
-  This release fixes a covariance issue on Java code, introduced with StoRM v1.11.10. <br/>This issue is verified when a default acl list is set for a storage area. In that case, StoRM Backend will fail on start.
+  This release fixes a covariance issue on Java code, introduced with StoRM v1.11.10.
+  <br/>This issue is verified when a default acl list is set for a storage area.
+  In that case, StoRM Backend will fail on start.
 installation: >
   To install, update and restart StoRM Backend:
 

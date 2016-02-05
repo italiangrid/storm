@@ -18,17 +18,12 @@ description: >
   It explains how to get checksum type and value of the stored resources.
   From this release, each HEAD and GET response will include a header like:
 
-
-    ```{html}
-    Digest: adler32=8a23d4f8
-    ```
+      Digest: adler32=8a23d4f8
 
   to be compliant with [RFC-3230](https://tools.ietf.org/html/rfc3230) specific.
 
 installation: >
   Update and restart package:
 
-    ```bash
-    yum update storm-webdav
-    service storm-webdav restart
-    ```
+      yum update storm-webdav
+      service storm-webdav restart

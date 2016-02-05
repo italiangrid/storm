@@ -12,20 +12,14 @@ description: >
 installation: >
   - Update package:
 
-    ```bash
-    yum update storm-dynamic-info-provider
-    ```
+        yum update storm-dynamic-info-provider
 
   - Re-configure info provider:
 
-    ```bash
-    /usr/libexec/storm-info-provider configure
-    ```
+        /usr/libexec/storm-info-provider configure
 
   - Restart BDII service:
 
-    ```bash
-    service bdii restart
-    ```
+        service bdii restart
 
   Alternatively, you can simply run YAIM after the update.

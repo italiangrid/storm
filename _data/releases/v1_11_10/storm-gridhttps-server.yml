@@ -19,7 +19,5 @@ description: >
 installation: >
   Update and restart package:
 
-    ```bash
-    yum update storm-gridhttps-server
-    service storm-gridhttps-server restart
-    ```
+      yum update storm-gridhttps-server
+      service storm-gridhttps-server restart

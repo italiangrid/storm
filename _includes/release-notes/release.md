@@ -15,16 +15,16 @@ Released on **{{rdata.date}}**.
 <table>
 	<thead>
 		<tr>
-			<th align=left>Component</th>
-			<th align=left>Version</th>
+			<th>Component</th>
+			<th>Version</th>
 		</tr>
 	</thead>
 	<tbody>
 	{% for cname in rdata.components %}
     {% assign component = site.data.releases[page.release][cname] %}
 		<tr>
-			<td align=left>{{component.name}}</td>
-			<td align=left>
+			<td>{{component.name}}</td>
+			<td>
 				<a href="{{site.baseurl}}{{site.releasenotes_path}}/{{component.package}}/{{component.version}}/">{{component.version}}</a>
 			</td>
 		</tr>

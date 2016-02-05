@@ -4,9 +4,9 @@ title: StoRM Storage Resource Manager - System Administration Guide
 version: 1.11.9
 ---
 
-#StoRM System Administration Guide
+# StoRM System Administration Guide
 
-version: {{ page.version }}
+version: {{page.version}}
 
 **Table of contents**
 
@@ -32,17 +32,17 @@ version: {{ page.version }}
 * [Services information](#services-information)
   * [StoRM Info Provider](#storm-info-provider)
 
-##Installation Prerequisites
+## Installation Prerequisites
 
 All the StoRM components are certified to work on Scientific Linux SL5/64 (x86_64) and Scientific Linux SL6/64 (x86_64) both with an EPEL repository for external dependencies. Therefore **install a proper version of Scientific Linux on your machine(s)**.
 All the information about the OS Scientific Linux can be found at [here][Scientific Linux]. SL5 and SL6 are also available in the [SL5.X][SL5] and [SL6.X][SL6] repositories respectively mirrored at CERN. There are no specific minimum hardware requirements but it is advisable to have at least 1GB of RAM on Backend host.
 
-###General EMI 3 instructions
+### General EMI 3 instructions
 
 Official releases are done in the contest of the EMI project so follow the [general EMI 3 installation instructions][EMI3 Instructions] as first installation prerequisite.
 In particular, check the followings:
 
-####NTP service must be installed
+#### NTP service must be installed
 
 Check if ntp is installed as follow:
 
@@ -61,7 +61,7 @@ $ chkconfig ntpd on
 $ service ntpd restart
 ```
 
-####Hostname must be set correctly
+#### Hostname must be set correctly
 
 Hostname must be a *Fully Qualified Domain Name* (FQDN).
 
@@ -90,7 +90,7 @@ Set your own MYHOSTNAME and MYDOMAIN and restart the network service:
 $ service network restart
 ```
 
-####Host needs a valid X.509 certificate
+#### Host needs a valid X.509 certificate
 
 Hosts participating to the StoRM-SE (FE, BE, GridHTTP and GridFTP hosts) service must be configured with X.509 certificates signed by a trusted Certification Authority (CA). Usually, the **hostcert.pem** and **hostkey.pem** certificates are located in the */etc/grid-security* directory, and they must have permission *0644* and *0400* respectively:
 
@@ -114,7 +114,7 @@ $ chmod 0400 /etc/grid-security/hostkey.pem
 $ chmod 0644 /etc/grid-security/hostcert.pem
 ```
 
-###System users and file limits
+### System users and file limits
 
 The StoRM Frontend, Backend and WebDAV services run by default as user **storm**.
 It's recommended to keep the default settings and use the same user for all
@@ -140,7 +140,7 @@ $ useradd -M storm -u MY_STORM_UID -g MY_STORM_GID
 > Keep UIDs and GIDs aligned for StoRM users and groups on distributed deployments (i.e. when the services are installed on different machines).<br/>
 > This can be done using NIS (see a tutorial [here][how-to-nis] or LDAP (see [How-to example][LDAPconfiguration]).
 
-####File limits
+#### File limits
 
 The following settings are recommended to safely run the StoRM services.  Put
 these settings in */etc/security/limits.conf* or in a file contained in the
@@ -152,7 +152,7 @@ storm hard nofile 65535
 storm soft nofile 65535
 ```
 
-###ACL support
+### ACL support
 
 StoRM uses the ACLs on files and directories to implement the security model.
 In so doing, StoRM uses the native access to the file system. Therefore in
@@ -205,7 +205,7 @@ $ mount -o remount /storage
 
 This is valid for different file system types (i.e., ext3, xfs, gpfs and others).
 
-###Extended Attribute support
+### Extended Attribute support
 
 StoRM uses the Extended Attributes (EA) on files to store some metadata related
 to the file (e.g. the checksum value); therefore in order to ensure a proper
@@ -245,7 +245,7 @@ Then you need to remount the affected partitions as follows:
 $ mount -o remount /storage
 ```
 
-###Storage Area's permissions
+### Storage Area's permissions
 
 All the Storage Areas managed by StoRM needs to be owned by the STORM_USER.
 This means that if STORM_USER is *storm*, for example, the storage-area *test*
@@ -273,14 +273,14 @@ directory for all the storage-areas):
 chmod o+x <sa-root-directory-parent>
 ```
 
-##Installation guide
+## Installation guide
 
-###Repository settings
+### Repository settings
 
 In order to install all the stuff requested by StoRM, some repositories have to
 be necessarily configured in the */etc/yum.repos.d* directory.
 
-####Install EPEL Repository
+#### Install EPEL Repository
 
 Install **EPEL Repository** from EPEL release rpm:
 
@@ -318,7 +318,7 @@ $ vi /etc/yum.repos.d/dag.repo
   ...
 ```
 
-####Install EMI repository
+#### Install EMI repository
 
 Download and install **EMI repository** from EMI release rpm:
 
@@ -336,7 +336,7 @@ $ wget http://emisoft.web.cern.ch/emisoft/dist/EMI/3/sl6/x86_64/base/emi-release
 $ yum localinstall --nogpgcheck emi-release-3.0.0-2.el6.noarch.rpm
 ```
 
-####StoRM repository
+#### StoRM repository
 
 StoRM can also be installed from StoRM PT own repositories.
 
@@ -350,7 +350,7 @@ To install the repository files, run the following commands (as root):
     (SL6) $ wget http://italiangrid.github.io/storm/repo/storm_sl6.repo -O /etc/yum.repos.d/storm_sl6.repo
 ```
 
-###Install StoRM nodes
+### Install StoRM nodes
 
 In order to install StoRM components refresh the yum cache:
 
@@ -379,7 +379,7 @@ but if you need it on your node you can install it using the command:
 $ yum install emi-storm-srm-client-mp
 ```
 
-##Configuration
+## Configuration
 
 StoRM is currently configured by using the YAIM tool, that is a set of
 configuration scripts that read a set of configuration files.
@@ -417,7 +417,7 @@ $ /opt/glite/yaim/bin/yaim -c -d 6 -s /etc/storm/siteinfo/storm.def \
 
 as better explained [here](#launching-yaim).
 
-###General YAIM variables
+### General YAIM variables
 
 Create a **site-info.def** file in your CONFDIR/ directory.
 Edit this file by providing a value to the general variables summarized in Tab.1.
@@ -439,7 +439,7 @@ Edit this file by providing a value to the general variables summarized in Tab.1
 {% assign label_description="General YAIM Variables." %}
 {% include documentation/label.html %}
 
-###StoRM Frontend variables
+### StoRM Frontend variables
 
 Frontend specific YAIM variables are in the following file:
 
@@ -482,7 +482,7 @@ Please copy and edit that file in your CONFDIR/services directory. You have to s
 {% assign label_description="Specific StoRM Frontend Variables." %}
 {% include documentation/label.html %}
 
-###StoRM Backend variables
+### StoRM Backend variables
 
 Backend specific YAIM variables are in the following file:
 
@@ -556,17 +556,17 @@ Then, for each Storage Area listed in the STORM_STORAGEAREA_LIST variable, which
   STORM_TESTERSEUEMIEU_VONAME=testers.eu-emi.eu
 ```
 
-For each storage area `SA` listed in STORM_STORAGEAREA_LIST you have to set at least these variables: STORM_`SA`\_ONLINE\_SIZE
+For each storage area `SA` listed in STORM_STORAGEAREA_LIST you have to set at least these variables: STORM_`SA`\_ONLINE_SIZE
 You can edit the optional variables summarized in [Table 5](#Table5).
 
 |   Var. Name                           |   Description |
 |:--------------------------------------|:--------------|
 |STORM_`SA`_VONAME   |Name of the VO that will use the Storage Area. Use the complete name, e.g., "lights.infn.it" to specify that there is no VO associated to the storage area (it's readable and writable from everyone - less than other filters). This variable becomes **mandatory if the value of SA is not the name of a VO**.
-|STORM_`SA`\_ANONYMOUS\_HTTP\_READ     |Storage Area anonymous read access via HTTP.<br/>Optional variable. Available values: true, false. Default value: **false**
+|STORM_`SA`_ANONYMOUS_HTTP_READ     |Storage Area anonymous read access via HTTP.<br/>Optional variable. Available values: true, false. Default value: **false**
 |STORM_`SA`_ACCESSPOINT               |List space-separated of paths exposed by the SRM into the SURL. Optional variable. Default value: `SA`
 |STORM_`SA`_ACLMODE                   |See STORM_ACLMODE definition. Optional variable. Default value: **STORM_ACLMODE**
 |STORM_`SA`_AUTH                      |See STORM_AUTH definition. Optional variable. Default value: **STORM_AUTH**
-|STORM_`SA`\_DEFAULT\_ACL\_LIST        |A list of ACL entries that specifies a set of local groups with corresponding permissions (R, W, RW) using the following syntax: groupname1:permission1 [groupname2:permission2] [...]
+|STORM_`SA`_DEFAULT_ACL_LIST        |A list of ACL entries that specifies a set of local groups with corresponding permissions (R, W, RW) using the following syntax: groupname1:permission1 [groupname2:permission2] [...]
 |STORM_`SA`_DN_C_REGEX              |Regular expression specifying the format of C (Country) field of DNs that will use the Storage Area. Optional variable.
 |STORM_`SA`_DN_O_REGEX              |Regular expression specifying the format of O (Organization name) field of DNs that will use the Storage Area. Optional variable.
 |STORM_`SA`_DN_OU_REGEX             |Regular expression specifying the format of OU (Organizational Unit) field of DNs that will use the Storage Area. Optional variable.
@@ -578,14 +578,14 @@ You can edit the optional variables summarized in [Table 5](#Table5).
 |STORM_`SA`_ROOT_SUPPORT             |Enable the corresponding protocol. Optional variable. Default value: **STORM_INFO_ROOT_SUPPORT**
 |STORM_`SA`_HTTP_SUPPORT             |Enable the corresponding protocol. Optional variable. Default value: **STORM_INFO_HTTP_SUPPORT**
 |STORM_`SA`_HTTPS_SUPPORT            |Enable the corresponding protocol. Optional variable. Default value: **STORM_INFO_HTTPS_SUPPORT**
-|STORM_`SA`\_FSTYPE                    |See STORM_`SA`\_FSTYPE definition. Optional variable. Available values: posixfs, gpfs. Default value: **STORM_FSTYPE**
-|STORM_`SA`\_GRIDFTP\_POOL\_LIST       |See STORM_GRIDFTP_POOL_LIST definition. Optional variable. Default value: **STORM_GRIDFTP_POOL_LIST**
-|STORM_`SA`\_GRIDFTP\_POOL\_STRATEGY   |See STORM_GRIDFTP_POOL_STRATEGY definition. Optional variable. Default value: **STORM_GRIDFTP_POOL_STRATEGY**
-|STORM_`SA`\_ONLINE\_SIZE              |Total size assigned to the Storage Area Expressed in GB. Must be an integer value. **Mandatory**.
-|STORM_`SA`\_USED\_ONLINE\_SIZE        |Storage space currently used in the Storage Area expressed in Bytes. Must be an integer value. Used by YAIM to populate used-space.ini file.
+|STORM_`SA`_FSTYPE                    |See STORM_`SA`_FSTYPE definition. Optional variable. Available values: posixfs, gpfs. Default value: **STORM_FSTYPE**
+|STORM_`SA`_GRIDFTP_POOL_LIST       |See STORM_GRIDFTP_POOL_LIST definition. Optional variable. Default value: **STORM_GRIDFTP_POOL_LIST**
+|STORM_`SA`_GRIDFTP_POOL_STRATEGY   |See STORM_GRIDFTP_POOL_STRATEGY definition. Optional variable. Default value: **STORM_GRIDFTP_POOL_STRATEGY**
+|STORM_`SA`_ONLINE_SIZE              |Total size assigned to the Storage Area Expressed in GB. Must be an integer value. **Mandatory**.
+|STORM_`SA`_USED_ONLINE_SIZE        |Storage space currently used in the Storage Area expressed in Bytes. Must be an integer value. Used by YAIM to populate used-space.ini file.
 |STORM_`SA`_QUOTA                     |Enables the quota management for the Storage Area and it works only on GPFS filesystem. Optional variable. Available values: true, false. Default value: **false**
 |STORM_`SA`_QUOTA_DEVICE             |GPFS device on which the quota is enabled. It is mandatory if STORM_`SA`_QUOTA variable is set. No default value.
-|STORM_`SA`\_QUOTA\_USER               |GPFS quota scope. Only one of the following three will be used (the first one with the highest priority in this order: USER, then GROUP, then FILESET). Optional variable. No default value.
+|STORM_`SA`_QUOTA_USER               |GPFS quota scope. Only one of the following three will be used (the first one with the highest priority in this order: USER, then GROUP, then FILESET). Optional variable. No default value.
 |STORM_`SA`_QUOTA_GROUP              |GPFS quota scope. Only one of the following three will be used (the first one with the highest priority in this order: USER, then GROUP, then FILESET). Optional variable. No default value.
 |STORM_`SA`_QUOTA_FILESET            |GPFS quota scope. Only one of the following three will be used (the first one with the highest priority in this order: USER, then GROUP, then FILESET). Optional variable. No default value.
 |STORM_`SA`_RFIO_HOST                 |See STORM_RFIO_HOST definition. Optional variable. Default value: **STORM_RFIO_HOST**
@@ -600,14 +600,14 @@ You can edit the optional variables summarized in [Table 5](#Table5).
 {% assign label_description="Storage Area Variables." %}
 {% include documentation/label.html %}
 
-###StoRM WebDAV variables
+### StoRM WebDAV variables
 
 The StoRM WebDAV service replaces the StoRM GridHTTPS service.
 To learn how to configure it refer to the [StoRM WebDAV service installation and configuration guide][webdav-guide].
 
 > Read [here][storm-gridhttps-guide] to learn how to configure the deprecated storm-gridhttps-server component.
 
-###Launching YAIM
+### Launching YAIM
 
 After having built the **site-info.def** file, you can configure the needed profile by using YAIM as follows:
 
@@ -634,7 +634,7 @@ $ service storm-globus-gridftp status
 $ service storm-webdav status
 ```
 
-##Advanced Configuration
+## Advanced Configuration
 
 Please note that most of the configuration parameters of StoRM can be
 automatically managed directly by YAIM. This means that for standard
@@ -645,7 +645,7 @@ administrators the opportunity to learn about StoRM details and internal
 behaviours, in order to allow advanced configuration and ad-hoc set up, to
 optimize performance and results.
 
-###StoRM Frontend service
+### StoRM Frontend service
 
 The Frontend component relies on a single configuration file that contains all the configurable parameters. This file is:
 
@@ -661,9 +661,9 @@ pairs that can be used to configure the Frontend server.
 {% include open_note.liquid %}
 > In case a parameter is modified, the Frontend service has to be restarted in order to read the new value.
 
-####storm-frontend-server.conf
+#### storm-frontend-server.conf
 
-#####Database settings
+##### Database settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -671,7 +671,7 @@ pairs that can be used to configure the Frontend server.
 | ```db.user``` | User for database connection. Default is **storm**        |
 | ```db.passwd``` | Password for database connection. Default is **password**   |
 
-#####Frontend service settings
+##### Frontend service settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -680,14 +680,14 @@ pairs that can be used to configure the Frontend server.
 |   ```fe.threadpool.maxpending```      |   Size of the internal queue used to maintain SRM tasks in case there are no free worker threads. Default is **200**
 |   ```fe.gsoap.maxpending```               |   Size of the GSOAP queue used to maintain pending SRM requests. Default is **2000**
 
-#####Log settings
+##### Log settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   ```log.filename```  |   Log file name, complete whit path.<br/>Default is **/var/log/storm/storm-frontend.log**
 |   ```log.debuglevel```    |   Loggin level. Possible value are: ERROR, WARN, INFO, DEBUG, DEBUG2. Default is **INFO**
 
-#####Monitoring settings
+##### Monitoring settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -695,7 +695,7 @@ pairs that can be used to configure the Frontend server.
 |   ```monitoring.timeInterval```   |   Time intervall in seconds between each Monitoring round. <br/>Default is **60**
 |   ```monitoring.detailed```       |   Flag to enable/disable detailed SRM requests Monitoring. <br/>Default is **false**
 
-#####XML-RPC communication settings
+##### XML-RPC communication settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -705,20 +705,20 @@ pairs that can be used to configure the Frontend server.
 |   ```be.xmlrpc.path```    |   XML-RPC server path. Default is **/RPC2**
 |   ```be.xmlrpc.check.ascii``` |   Flag to enable/disable ASCII checking on strings to be sent via XML-RPC. Default is **true**
 
-#####REST communication settings
+##### REST communication settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   ```be.recalltable.port```   |   REST server port running on the Backend machine. Default is **9998**
 
-#####Blacklisting settings
+##### Blacklisting settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   ```check.user.blacklisting```   |   Flag to enable/disable user blacklisting. Default is **false**
 |   ```argus-pepd-endpoint```   |   The complete service endpoint of Argus PEP server. Mandatory if check.user.blacklisting is true. <br/>Example: _https://host.domain:8154/authz_
 
-#####Proxy settings
+##### Proxy settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -727,14 +727,14 @@ pairs that can be used to configure the Frontend server.
 |   ```security.enable.vomscheck``` |   Flag to enable/disable checking proxy VOMS credentials. Default is **true**.
 |   ```security.enable.mapping```   |   Flag to enable/disable DN->userid mapping via gridmap-file. Default is **false**
 
-#####General settings
+##### General settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   ```wsdl.file``` |   WSDL file, complete with path, to be returned in case of GET request
 
 
-####Frontend Logging
+#### Frontend Logging
 
 The Frontend logs information on the service status and the SRM requests received and managed by the process. The Frontend's log supports different level of logging (ERROR, WARNING, INFO, DEBUG, DEBUG2) that can be set from the dedicated parameter in _storm-frontend-server.conf_ configuration file.
 The Frontend log file named _storm-frontend-server.log_ is placed in the _/var/log/storm directory_. At start-up time, the FE prints here the whole set of configuration parameters, this can be useful to check desired values. When a new SRM request is managed, the FE logs information about the user (DN and FQANs) and the requested parameters.
@@ -745,7 +745,7 @@ At each SRM request, the FE logs also this important information:
 
 about the status of the worker pool threads and the pending process queue. _Active tasks_ is the number of worker threads actually running. _Pending tasks_ is the number of SRM requests queued in the worker pool queue. These data gives important information about the Frontend load.
 
-#####monitoring.log
+##### monitoring.log
 
 Monitoring service, if enabled, provides information about the operations
 executed in a certain amount of time writing them on file
@@ -769,11 +769,13 @@ This row reports the **Monitoring Summary** and this is the default behavior of 
 
 **_Example_**:
 
-    03/20 14:19:11 : [# 22927 lifetime=95:33:18]
-                S [OK:47,F:15,E:0,m:0.085,M:3.623,Avg:0.201]
-                A [OK:16,F:0,E:0,m:0.082,M:0.415,Avg:0.136]
-                Last:(S [OK:12,F:5,E:0,m:0.091,M:0.255]
-                A [OK:6,F:0,E:0,m:0.121,M:0.415])
+```
+03/20 14:19:11 : [# 22927 lifetime=95:33:18]
+        S [OK:47,F:15,E:0,m:0.085,M:3.623,Avg:0.201]
+        A [OK:16,F:0,E:0,m:0.082,M:0.415,Avg:0.136]
+        Last:(S [OK:12,F:5,E:0,m:0.091,M:0.255]
+              A [OK:6,F:0,E:0,m:0.121,M:0.415])
+```
 
 Furthermore it can be requested a more detailed Frontend Monitoring activity by setting the configuration property _monitoring.detailed_ to _true_. Doing this, at each Monitoring Round for each kind of SRM operation performed in the Monitoring Round (srmls, srmPtp, srmRm, ...) the following information are printed in a section with header "Last round details:":
 
@@ -811,7 +813,7 @@ This is called the **Detailed Monitoring Round**. After this, the Monitoring Sum
 - Operations never performed are not printed in Aggregate Detailed Monitoring.
 - Operation performed in current Monitoring Round are aggregated in Aggregate Detailed Monitoring.
 
-#####gSOAP tracefile
+##### gSOAP tracefile
 
 If you have problem at gSOAP level, and you have already looked at the troubleshooting section of the StoRM site without finding a solution, and you are brave enough, you could try to find some useful information on the gSOAP log file.
 To enable gSOAP logging, set the following environment variables:
@@ -823,7 +825,7 @@ To enable gSOAP logging, set the following environment variables:
 
 and restart the Frontend daemon by calling directly the init script */etc/init.d/storm-frontend-server* and see if the error messages contained in */tmp/tracefile* could help. Please be very careful, it prints really a huge amount of information.
 
-###StoRM Backend service
+### StoRM Backend service
 
 The Backend is the core of StoRM. It executes all SRM requests, interacts with
 other Grid service, with database to retrieve SRM requests, with file-system to
@@ -833,7 +835,7 @@ internal components. The Backend needs to be configured for two main aspects:
 - _service information_: this section contains all the parameter regarding the StoRM service details. It relies on the **storm.properties** configuration file.
 - _storage information_: this section contains all the information regarding Storage Area and other storage details. It relies on the **namespace.xml** file.
 
-####Service information: storm.properties
+#### Service information: storm.properties
 
 The file:
 
@@ -852,7 +854,7 @@ Backend. To change/set a new value, or add a new parameter, just edit the
 starts, it writes into the log file the whole set of parameters read from the
 configuration file.
 
-#####Service information
+##### Service information
 
 |   Property Name                               |   Description     |
 |:----------------------------------------------|:------------------|
@@ -877,7 +879,7 @@ configuration file.
 |   ```default.overwrite```                     |   Default file overwrite mode to use upon *srmPrepareToPut* and *srmCopy* requests. Default: **A**. Possible values are: N, A, D. Please note that N stands for *Never*, A stands for *Always* and D stands for *When files differs*.
 |   ```default.storagetype```                   |   Default File Storage Type to be used for *srmPrepareToPut* and *srmCopy* requests in case is not provided in the request. Default: **V**. Possible values are: V, P, D. Please note that V stands for *Volatile*, P stands for *Permanent* and D stands for *Durable*.
 
-#####Requests garbage collector
+##### Requests garbage collector
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -887,14 +889,14 @@ configuration file.
 |   ```purge.delay```           |   Initial delay before starting the requests garbage collection process, in seconds. Default: **10**
 |   ```expired.request.time```  |   Time in seconds to consider a request expired after its submission. Default: **604800**
 
-#####Garbage collector
+##### Garbage collector
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   ```gc.pinnedfiles.cleaning.delay```     |   Initial delay before starting the reserved space, JIT ACLs and pinned files garbage collection process, in seconds. Default: **10**
 |   ```gc.pinnedfiles.cleaning.interval```  |   Time interval in seconds between successive purging run. Default: **300**
 
-#####Synchronous call
+##### Synchronous call
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -904,13 +906,13 @@ configuration file.
 |   ```synchcall.xmlrpc.token```                |   The token that the backend will require to be present for accepting XML-RPC requests. Mandatory if synchcall.xmlrpc.token.enabled is true
 
 
-#####REST interface parameters
+##### REST interface parameters
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   ```storm.rest.services.port```  |   REST services port. Default: **9998**
 
-#####Database connection parameters
+##### Database connection parameters
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -926,7 +928,7 @@ configuration file.
 |   ```persistence.internal-db.connection-pool.maxActive```     |   Database connection pool max active connections. Default: **10**
 |   ```persistence.internal-db.connection-pool.maxWait```   |   Database connection pool max wait time to provide a connection. Default: **50**
 
-#####SRM Requests Picker
+##### SRM Requests Picker
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -935,7 +937,7 @@ configuration file.
 |   ```asynch.PickingMaxBatchSize```    |   Maximum number of requests picked up at each polling time. Default: **100**
 |   ```scheduler.serial```          |   **DEPRECATED** Flag to enable the execution of all the request on a single thread. Default: **false**
 
-#####Worker threads
+##### Worker threads
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -955,7 +957,7 @@ configuration file.
 |   ```scheduler.chunksched.copy.workerMaxPoolSize```   |   *Copy* worker pool max size. Default: **50**
 |   ```scheduler.chunksched.copy.queueSize```           |   *Copy* request queue maximum size. Default: **500**
 
-#####HTTP(S) protocol
+##### HTTP(S) protocol
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -964,13 +966,13 @@ configuration file.
 |   ```gridhttps.server.port``` |   The port on StoRM GridHTTPs host where GridHTTPs accepts HTTP connections. Default:**8088**
 |   ```gridhttps.plugin.classname```    |   The complete class-name of the HTTPSPluginInterface implementation to be used. Default: **it.grid.storm.https.HTTPSPluginInterfaceStub**
 
-#####Protocol balancing
+##### Protocol balancing
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   ```gridftp-pool.status-check.timeout``` |   Time in milliseconds after which the status of a GridFTP has to be verified. Default: **20000** (20 secs)
 
-#####Tape recall
+##### Tape recall
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -978,7 +980,7 @@ configuration file.
 |   ```tape.buffer.group.read```    |   System group to be assigned to files migrated from tape storage. Default: **storm-SA-read**
 |   ```tape.buffer.group.write```   |   System group to be assigned to files migrated to tape storage. Default: **storm-SA-write**
 
-#####srmCopy parameters
+##### srmCopy parameters
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -992,7 +994,7 @@ configuration file.
 |   ```asynch.gridftpclient```              |   The complete class-name of the GridFTPTransfer-Client implementation providing GridFTP client features to be used to perform file transfer to fulfill *srmCopy* requests. Default: **it.grid.storm.asynch.NaiveGridFTPTransferClient**
 
 
-####Storage information: namespace.xml
+#### Storage information: namespace.xml
 
 Information about storage managed by StoRM is stored in a configuration file named namespace.xml located at */etc/storm/backend-server/* on StoRM Backend host. One of the information stored into namespace.xml file is what is needed to perform the ***mapping functionality***.
 The *mapping functionality* is the process of retrieving or building the transport URL (TURL) of a file addressed by a Site URL (SURL) together with grid user credential. The Fig 3 shows the different schema of SURL and TURL.
@@ -1121,11 +1123,11 @@ This is and example of the FS element:
 
 ***Attributes meaning***:
 
-- ```<filesystem name="dteam-FS" fs_type="ext3">``` : The name is the element identifier. It identifies this Storage Area in the namespace domains. The *fs\_type* is the type of the filesystem the Storage Area is built on. Possible values are: *ext3*, *gpfs*. Please note that *ext3* stands for all generic POSIX filesystem (*ext3*, *Lustre*, etc.)
-- ```<space-token-description>DTEAM_TOKEN</space-token-description>``` : Storage Area space token description.
-- ```<root>/storage/dteam</root>``` : Physical root directory of the Storage Area on the file system.
-- ```<filesystem-driver>it.grid.storm.filesystem.swig.posixfs</filesystem-driver>``` : Driver loaded by the Backend for filesystem interaction. This driver is used mainly to set up ACLs on space and files.
-- ```<spacesystem-driver>it.grid.storm.filesystem.MockSpaceSystem</spacesystem-driver>``` Driver loaded by the Backend for filesystem interaction. This is driver is used to manage space allocation. (E.g. on GPFS it uses the _gpfs_prealloc()_ call).
+- `<filesystem name="dteam-FS" fs_type="ext3">` : The name is the element identifier. It identifies this Storage Area in the namespace domains. The *fs\_type* is the type of the filesystem the Storage Area is built on. Possible values are: *ext3*, *gpfs*. Please note that *ext3* stands for all generic POSIX filesystem (*ext3*, *Lustre*, etc.)
+- `<space-token-description>DTEAM_TOKEN</space-token-description>` : Storage Area space token description.
+- `<root>/storage/dteam</root>` : Physical root directory of the Storage Area on the file system.
+- `<filesystem-driver>it.grid.storm.filesystem.swig.posixfs</filesystem-driver>` : Driver loaded by the Backend for filesystem interaction. This driver is used mainly to set up ACLs on space and files.
+- `<spacesystem-driver>it.grid.storm.filesystem.MockSpaceSystem</spacesystem-driver>` Driver loaded by the Backend for filesystem interaction. This is driver is used to manage space allocation. (E.g. on GPFS it uses the _gpfs_prealloc()_ call).
 
 > ***Storage Area properties***
 
@@ -1141,11 +1143,11 @@ This is and example of the FS element:
 
 in details:
 
-- ```<RetentionPolicy>replica</RetentionPolicy>``` : Retention Policy of the Storage Area. Possible values are: *replica*, *custodial*.
-- ```<AccessLatency>online</AccessLatency>``` : Access Latency of the Storage Area. Possible values: *online*, *nearline*.
-- ```<ExpirationMode>neverExpire</ExpirationMode>``` : Expiration Mode of the Storage Area. **Deprecated**.
-- ```<TotalOnlineSize unit="GB" limited-size="true">291</TotalOnlineSize>``` Total on-line size of the Storage Area in GigaBytes. In case the attribute *limited-size*="true", StoRM enforce this limit at SRM level. When the space used for the Storage Area is at least equal to the size specified, every further SRM request to write files will fail with SRM_NO_FREE_SPACE error code.
-- ```<TotalNearlineSize unit="GB">0</TotalNearlineSize>``` : Total near-line size of the Storage Area. This only means in case the Storage Area is in some way attached to a MSS storage system (such as TSM with GPFS).
+- `<RetentionPolicy>replica</RetentionPolicy>` : Retention Policy of the Storage Area. Possible values are: *replica*, *custodial*.
+- `<AccessLatency>online</AccessLatency>` : Access Latency of the Storage Area. Possible values: *online*, *nearline*.
+- `<ExpirationMode>neverExpire</ExpirationMode>` : Expiration Mode of the Storage Area. **Deprecated**.
+- `<TotalOnlineSize unit="GB" limited-size="true">291</TotalOnlineSize>` Total on-line size of the Storage Area in GigaBytes. In case the attribute *limited-size*="true", StoRM enforce this limit at SRM level. When the space used for the Storage Area is at least equal to the size specified, every further SRM request to write files will fail with SRM_NO_FREE_SPACE error code.
+- `<TotalNearlineSize unit="GB">0</TotalNearlineSize>` : Total near-line size of the Storage Area. This only means in case the Storage Area is in some way attached to a MSS storage system (such as TSM with GPFS).
 
 > ***Storage area capabilities***:
 
@@ -1168,7 +1170,7 @@ This is the Default ACL list. A list of ACL entry (that specify a local user (*u
 
 > **_Access and Transfer protocol supported_**
 
-The ```file``` protocol:
+The `file` protocol:
 
 ```xml
     <prot name="file">
@@ -1191,13 +1193,13 @@ This TURL can be used through GFAL or other SRM clients to perform a direct acce
     </prot>
 ```
 
-The ```gsiftp``` protocol:
+The `gsiftp` protocol:
 
 The **gsiftp** protocol means the GridFTP transfer system from Globus widely adopted in many Grid environments. This capability element contains all the information about the GridFTP server to use with this Storage Area. Site administrator can decide to have different server (or pools of server) for different Storage Areas. The *id* is the server identifier to be used when defining a pool. The *schema* have to be gsiftp. *host* is the hostname of the server (or the DNS alias used to aggregate more than one server). The *port* is the GridFTP server port, typically 2811. If user performs an SRM request (*srmPtG* or *srmPtP*) specifying the *gsiftp* protocol, and it is supported by the selected Storage Area, StoRM return a TURL structured as:
 
-    gsiftp://gridftp-dteam.cnaf.infn.it:2811/atlas/atlasmcdisk/filename.
+  gsiftp://gridftp-dteam.cnaf.infn.it:2811/atlas/atlasmcdisk/filename.
 
-The ```rfio``` protocol:
+The `rfio` protocol:
 
 ```xml
     <prot name="rfio">
@@ -1211,7 +1213,7 @@ This capability element contains all the information about the **rfio** server t
 
     rfio://rfio-dteam.cnaf.infn.it:5001/atlas/atlasmcdisk/filename.
 
-The ```root``` protocol:
+The `root` protocol:
 
 ```xml
     <prot name="root">
@@ -1321,7 +1323,7 @@ Here is an example of approachable rule for the *dteam-FS* element:
 
 - `<vo-name>dteam</vo-name>` means that only users belonging to the VO dteam will be allowed to access the Storage Area. This entry can be a list of comma separeted VO-name.
 
-#####used-space.ini
+##### used-space.ini
 
 StoRM maintains the information about the status of managed storage areas (such
 as free, used, busy, available, guaranteed and reserved space), and store them
@@ -1379,7 +1381,7 @@ StoRM Backend will load used-space.ini file at bootstrap and initialize the used
 
 > **NOTE**: running YAIM on StoRM Backend profile will produce a new used-space.ini file and backup any existent version with the extension .bkp_. Take this into account if you want to produce the used-space.ini file by hand.
 
-####Backend Logging
+#### Backend Logging
 
 The Backend log files provide information on the execution process of all SRM requests. All the Backend log files are placed in the */var/log/storm* directory. Backend logging operations are based on the *logback* framework. Logback provides a way to set the level of verbosity depending on the use case. The level supported are FATAL, ERROR, INFO, WARN, DEBUG. The **/etc/storm/backend-server/logging.xml** contains this information:
 
@@ -1421,7 +1423,7 @@ A heartbeat.log entry example:
 
 This log information can be really useful to gain a global view on the overall system status. A tail on this file is the first thing to do if you want to check the health of your StoRM installation. From here you can understand if the system is receiving SRM requests or if the system is overloaded by SRM request or if PtG and PtP are running without problem or if the interaction with the filesystem is exceptionally low (in case the M.Dur. is much more than usual).
 
-###StoRM GridFTP service
+### StoRM GridFTP service
 
 At each transfer request, the GridFTP uses LCMAPS to get user mapping and start
 a new processes on behalf of the user to proceed with data transfer. GridFTP
@@ -1429,7 +1431,7 @@ relies on a different db file to get the plugin to use. Obviously LCMAPS has to
 answer to GridFTP requests and StoRM requests in coeherent way. The GridFTP
 uses the LCMAPS configuration file located at */etc/lcmaps/lcmaps.db*.
 
-####GridFTP Logging
+#### GridFTP Logging
 
 GridFTP produce two separated log files:
 
@@ -1442,7 +1444,7 @@ The logging level can be specified by editing the configuration file:
 
 The supported logging levels are: ERROR, WARN, INFO, DUMP and ALL.
 
-####Redirect LCMAPS logging
+#### Redirect LCMAPS logging
 
 Administrators can redirect the LCMAPS logging to a different log file than the one used by syslog by setting the `LLGT_LOG_FILE` environment variable.
 As example, consider the following setup for the gridftp service:
@@ -1459,7 +1461,7 @@ insert:
 
 After restarting the service, all LCMAPS calls will be logged to the new file.
 
-####IPC Channel
+#### IPC Channel
 
 The IPC channel is used between a Globus GridFTP server head node and its
 disk servers, e.g. for striped transfers (read more into
@@ -1476,13 +1478,13 @@ However, it's important to know that **the IPC channel must be kept firewalled f
 {% include open_note.liquid %}
 >**The IPC channel must be kept firewalled for any hosts outside the SE system**.
 
-##Services information
+## Services information
 
 The WLCG Information System is used to discover services and get status information about WLCG resources.
 The **BDII** (Berkeley Database Information Index) is a Perl / BDB 'glue' used to manage LDAP updates.
 See https://twiki.cern.ch/twiki//bin/view/EGEE/BDII for more details.
 
-###StoRM Info Provider
+### StoRM Info Provider
 
 `StoRM Dynamic Info Provider` is the StoRM component that manages how and what information are published on the BDII.
 By default, the BDII uses three directories to obtain information sources:
@@ -1493,7 +1495,7 @@ By default, the BDII uses three directories to obtain information sources:
 
 These directories are located by default into /var/lib/bdii/gip.
 
-####Configuration
+#### Configuration
 
 StoRM DIP has not a configuration file, its behavior and outputs depend on the site configuration which is processed by yaim-storm and stored into */etc/storm/info-provider/storm-yaim-variables.conf*.
 
@@ -1503,7 +1505,7 @@ Similar to the meaning of `STORM_FRONTEND_PUBLIC_HOST`, it represents the FQDN o
 
 StoRM DIP will publish `STORM_GRIDHTTPS_PUBLIC_HOST` as a WebDAV endpoint only if `STORM_GRIDHTTPS_ENABLED` is true.
 
-####Usage
+#### Usage
 
 ```bash
 $ /usr/libexec/storm-info-provider -h
@@ -1514,7 +1516,7 @@ usage: storm-info-provider [-h] [-v LOG_LEVEL] [-o LOG_FILENAME]
 * `-v`: `LOG_LEVEL` can be `10` (DEBUG), `20` (INFO - default), `30` (WARNING) and `40` (ERROR)
 * `-o`: all the log messages are printed on stderr by default but they can be redirected to an external `LOG_FILENAME` by specifying this option
 
-#####Usage - `configure`
+##### Usage - `configure`
 
 ```bash
 $ /usr/libexec/storm-info-provider configure -h
@@ -1551,7 +1553,7 @@ $ /usr/libexec/storm-info-provider configure
 2014-09-04 10:40:34,365 root        : INFO Received configure - It took 0.04 sec
 ```
 
-#####Usage - `get-static-ldif`
+##### Usage - `get-static-ldif`
 
 ```bash
 $ /usr/libexec/storm-info-provider get-static-ldif -h
@@ -1592,7 +1594,7 @@ dn: GlueSEAccessProtocolLocalID=webdav,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn
 
 The action `get-static-ldif` is not used by the installed scripts. However its functionality is internally used by the `configure` action to generate the static ldif files.
 
-#####Usage - `get-update-ldif`
+##### Usage - `get-update-ldif`
 
 ```bash
 $ /usr/libexec/storm-info-provider get-update-ldif -h
