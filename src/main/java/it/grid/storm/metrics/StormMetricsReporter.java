@@ -22,7 +22,8 @@ import it.grid.storm.filesystem.MetricsFilesystemAdapter.FilesystemMetric;
 
 public class StormMetricsReporter extends ScheduledReporter {
 
-  public static final String METRICS_LOGGER_NAME = "storm-metrics-logger";
+  public static final String METRICS_LOGGER_NAME = 
+    StormMetricsReporter.class.getName();
 
   public static final String[] REPORTED_METRICS = { "synch",
     OperationType.AF.getOpName(), OperationType.AR.getOpName(),
@@ -132,10 +133,11 @@ public class StormMetricsReporter extends ScheduledReporter {
     lastSnapshotCountMap.put(name, timer.getCount());
 
     LOG.info(
-      "{} [(m1_count={}, count={}) (max={}, min={}, mean={}, p99={}) (m1_rate={}, mean_rate={})] duration_units={}, rate_units={}",
+      "{} [(m1_count={}, count={}) (max={}, min={}, mean={}, p95={}, p99={}) (m1_rate={}, m5_rate={}, m15_rate={})] duration_units={}, rate_units={}",
       name, thisSnapshotCount, timer.getCount(),
       convertDuration(snapshot.getMax()), convertDuration(snapshot.getMin()),
       convertDuration(snapshot.getMean()),
+      convertDuration(snapshot.get95thPercentile()),
       convertDuration(snapshot.get99thPercentile()),
       convertRate(timer.getOneMinuteRate()), convertRate(timer.getMeanRate()),
       getDurationUnit(), getRateUnit());

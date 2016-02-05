@@ -68,7 +68,8 @@
     <appender-ref ref="PROCESS" />
   </logger>
   
-  <logger name="it.infn.storm.metrics" additivity="false" level="INFO">
+  <logger name="it.grid.storm.metrics.StormMetricsReporter" 
+    additivity="false" level="INFO">
     <appender-ref ref="METRICS" />
   </logger>
 
