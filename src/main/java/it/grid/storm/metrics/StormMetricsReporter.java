@@ -1,7 +1,6 @@
 package it.grid.storm.metrics;
 
 import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -22,8 +21,8 @@ import it.grid.storm.filesystem.MetricsFilesystemAdapter.FilesystemMetric;
 
 public class StormMetricsReporter extends ScheduledReporter {
 
-  public static final String METRICS_LOGGER_NAME = 
-    StormMetricsReporter.class.getName();
+  public static final String METRICS_LOGGER_NAME = StormMetricsReporter.class
+    .getName();
 
   public static final String[] REPORTED_METRICS = { "synch",
     OperationType.AF.getOpName(), OperationType.AR.getOpName(),
@@ -37,8 +36,6 @@ public class StormMetricsReporter extends ScheduledReporter {
 
   private static final Logger LOG = LoggerFactory
     .getLogger(METRICS_LOGGER_NAME);
-
-  private SortedMap<String, Long> lastSnapshotCountMap = new TreeMap<String, Long>();
 
   private StormMetricsReporter(MetricRegistry registry, MetricFilter filter,
     TimeUnit rateUnit, TimeUnit durationUnit) {
@@ -62,7 +59,7 @@ public class StormMetricsReporter extends ScheduledReporter {
 
       this.registry = r;
       filter = MetricFilter.ALL;
-      rateUnit = TimeUnit.SECONDS;
+      rateUnit = TimeUnit.MINUTES;
       durationUnit = TimeUnit.MILLISECONDS;
     }
 
@@ -119,28 +116,19 @@ public class StormMetricsReporter extends ScheduledReporter {
 
     final Snapshot snapshot = timer.getSnapshot();
 
-    // This will contain the count for this snapshot
-    Long thisSnapshotCount = null;
-
-    // This contains the total count recorded at the previous
-    // snapshot, if null this is the first iteration
-    Long lastSnapshotCount = lastSnapshotCountMap.get(name);
-
-    if (lastSnapshotCount != null) {
-      thisSnapshotCount = timer.getCount() - lastSnapshotCount;
-    }
-
-    lastSnapshotCountMap.put(name, timer.getCount());
-
     LOG.info(
-      "{} [(m1_count={}, count={}) (max={}, min={}, mean={}, p95={}, p99={}) (m1_rate={}, m5_rate={}, m15_rate={})] duration_units={}, rate_units={}",
-      name, thisSnapshotCount, timer.getCount(),
+      "{} [(count={}, m1_rate={}, m5_rate={}, m15_rate={}) (max={}, min={}, mean={}, p95={}, p99={})] duration_units={}, rate_units={}",
+      name, 
+      timer.getCount(),
+      convertRate(timer.getOneMinuteRate()),
+      convertRate(timer.getFiveMinuteRate()),
+      convertRate(timer.getFifteenMinuteRate()),
       convertDuration(snapshot.getMax()), convertDuration(snapshot.getMin()),
       convertDuration(snapshot.getMean()),
       convertDuration(snapshot.get95thPercentile()),
       convertDuration(snapshot.get99thPercentile()),
-      convertRate(timer.getOneMinuteRate()), convertRate(timer.getMeanRate()),
-      getDurationUnit(), getRateUnit());
+      getDurationUnit(),
+      getRateUnit());
   }
 
   public String getRateUnit() {
