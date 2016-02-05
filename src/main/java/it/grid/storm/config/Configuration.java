@@ -157,10 +157,7 @@ public class Configuration {
   private static final String STATUS_KEY_KEY = "tape.recalltable.service.param.status";
   private static final String TASKOVER_KEY_KEY = "tape.recalltable.service.param.takeover";
   private static final String GRIDHTTPS_ENABLED_KEY = "gridhttps.enabled";
-  private static final String GRIDHTTPS_PLUGIN_CLASSNAME_KEY = "gridhttps.plugin.classname";
   private static final String STORM_PROPERTIES_VERSION_KEY = "storm.properties.version";
-  private static final String GROUP_TAPE_READ_BUFFER_KEY = "tape.buffer.group.read";
-  private static final String GROUP_TAPE_WRITE_BUFFER_KEY = "tape.buffer.group.write";
   private static final String TAPE_SUPPORT_ENABLED_KEY = "tape.support.enabled";
   private static final String SYNCHRONOUS_QUOTA_CHECK_ENABLED_KEY = "info.quota-check.enabled";
   private static final String GPFS_QUOTA_REFRESH_PERIOD_KEY = "info.quota.refresh.period";

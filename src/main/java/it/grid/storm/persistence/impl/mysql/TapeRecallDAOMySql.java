@@ -393,11 +393,12 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 	 * @see it.grid.storm.persistence.dao.TapeRecallDAO#purgeCompletedTasks(int)
 	 */
 	@Override
-	public void purgeCompletedTasks(int numMaxToPurge) throws DataAccessException {
+	public int purgeCompletedTasks(int numMaxToPurge) throws DataAccessException {
 
 		PreparedStatement prepStatement = null;
 		Connection dbConnection = getConnection();
 
+		int count = 0;
 		try {
 			if (numMaxToPurge == -1) {
 				prepStatement = sqlHelper.getQueryDeleteCompletedTasks(dbConnection);
@@ -406,18 +407,16 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 					numMaxToPurge);
 			}
 
-			int count = prepStatement.executeUpdate();
-			if (count == 0) {
-				log.trace("No entries have been purged from tape_recall table");
-			} else {
-				log.info(count + " entries have been purged from tape_recall table");
-			}
+			count = prepStatement.executeUpdate();
+
 		} catch (SQLException e) {
 			throw new DataAccessException("Error executing query: "
 				+ prepStatement.toString(), e);
 		} finally {
 			releaseConnection(null, prepStatement, dbConnection);
 		}
+		
+		return count;
 	}
 
 	@Override
