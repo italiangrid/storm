@@ -150,7 +150,7 @@ default.storagetype = P
 # BE-private RDBMS
 # ============================
 persistence.internal-db.connection-pool = true
-persistence.internal-db.connection-pool.maxActive = 10
+persistence.internal-db.connection-pool.maxActive = 50
 persistence.internal-db.connection-pool.maxWait = 50
 
 
@@ -236,7 +236,7 @@ asynch.srmclient=it.grid.storm.asynch.SRM22Client
 # This value is the one specified in the remote SrmPrepareToGet request.
 SRM22Client.PinLifeTime=259200
 # Time expressed in millisec.
-asynch.srmcopy.gridftp.timeout = 15000  
+asynch.srmcopy.gridftp.timeout = 15000
 
 
 # ===========================
