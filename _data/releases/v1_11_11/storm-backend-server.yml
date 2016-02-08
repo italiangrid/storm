@@ -4,7 +4,11 @@ version: 1.11.11
 rfcs:
   - id: STOR-867
     title: Backend initialization fails when storage area has a default acl list
-features: []
+features:
+  - id: STOR-695
+    title: Improve performance of StoRM BE Garbage Collector
+  - id: STOR-890
+    title: Finer grained metrics for the storm-backend
 description: >
   This release fixes a covariance issue on Java code, introduced with StoRM v1.11.10.
   <br/>This issue is verified when a default acl list is set for a storage area.

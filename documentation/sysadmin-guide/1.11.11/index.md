@@ -1,7 +1,9 @@
 ---
 layout: toc
 title: StoRM Storage Resource Manager - System Administration Guide
-version: 1.11.10
+version: 1.11.11
+redirect_from:
+  - /documentation/sysadmin-guide/
 ---
 
 # StoRM System Administration Guide
@@ -18,7 +20,7 @@ version: {{ page.version }}
   * [Storage Area's permissions](#storage-area-39-s-permissions)
 * [Installation guide](#installation-guide)
   * [Repository settings](#repository-settings)
-  * [Install StoRM nodes](#install-storm-nodes)
+  * [Install StoRM components](#install-storm-components)
 * [Configuration](#configuration)
   * [General YAIM variables](#general-yaim-variables)
   * [StoRM Frontend variables](#storm-frontend-variables)
@@ -29,7 +31,11 @@ version: {{ page.version }}
   * [StoRM Frontend service](#storm-frontend-service)
   * [StoRM Backend service](#storm-backend-service)
   * [StoRM GridFTP service](#storm-gridftp-service)
-* [Services information](#services-information)
+* [Logging](#logging)
+  * [StoRM Frontend logging](#storm-frontend-logging)
+  * [StoRM Backend logging](#storm-backend-logging)
+  * [GridFTP logging](#gridftp-logging)
+* [Information Service](#information-service)
   * [StoRM Info Provider](#storm-info-provider)
 
 ## Installation Prerequisites
@@ -350,7 +356,7 @@ To install the repository files, run the following commands (as root):
     (SL6) $ wget http://italiangrid.github.io/storm/repo/storm_sl6.repo -O /etc/yum.repos.d/storm_sl6.repo
 ```
 
-### Install StoRM nodes
+### Install StoRM components
 
 In order to install StoRM components refresh the yum cache:
 
@@ -636,14 +642,7 @@ $ service storm-webdav status
 
 ## Advanced Configuration
 
-Please note that most of the configuration parameters of StoRM can be
-automatically managed directly by YAIM. This means that for standard
-installation in WLCG site without special requirement is not needed a manual
-editing of StoRM configuration file, but only a proper tuning of StoRM YAIM
-variables. On the other hand, with this guide we would like to give to site
-administrators the opportunity to learn about StoRM details and internal
-behaviours, in order to allow advanced configuration and ad-hoc set up, to
-optimize performance and results.
+Please note that most of the configuration parameters of StoRM can be automatically managed directly by YAIM. This means that for standard installation in WLCG site without special requirement is not needed a manual editing of StoRM configuration file, but only a proper tuning of StoRM YAIM variables. On the other hand, with this guide we would like to give to site administrators the opportunity to learn about StoRM details and internal behaviours, in order to allow advanced configuration and ad-hoc set up, to optimize performance and results.
 
 ### StoRM Frontend service
 
@@ -661,170 +660,81 @@ pairs that can be used to configure the Frontend server.
 {% include open_note.liquid %}
 > In case a parameter is modified, the Frontend service has to be restarted in order to read the new value.
 
-#### storm-frontend-server.conf
+Currently, the Frontend's configuration parameters can be divided per section as follows.
 
-##### Database settings
-
-|   Property Name   |   Description     |
-|:------------------|:------------------|
-| ```db.host``` | Host for database connection. Default is **localhost**    |
-| ```db.user``` | User for database connection. Default is **storm**        |
-| ```db.passwd``` | Password for database connection. Default is **password**   |
-
-##### Frontend service settings
+#### Database settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
-|   ```fe.port```   |   Frontend port. Default is **8444**
-|   ```fe.threadpool.threads.number```  |   Size of the worker thread pool. Default is **50**
-|   ```fe.threadpool.maxpending```      |   Size of the internal queue used to maintain SRM tasks in case there are no free worker threads. Default is **200**
-|   ```fe.gsoap.maxpending```               |   Size of the GSOAP queue used to maintain pending SRM requests. Default is **2000**
+| `db.host`   | Host for database connection. Default is **localhost**
+| `db.user`   | User for database connection. Default is **storm**
+| `db.passwd` | Password for database connection. Default is **password**
 
-##### Log settings
-
-|   Property Name   |   Description     |
-|:------------------|:------------------|
-|   ```log.filename```  |   Log file name, complete whit path.<br/>Default is **/var/log/storm/storm-frontend.log**
-|   ```log.debuglevel```    |   Loggin level. Possible value are: ERROR, WARN, INFO, DEBUG, DEBUG2. Default is **INFO**
-
-##### Monitoring settings
+#### Service settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
-|   ```monitoring.enabled```        |   Flag to enable/disable SRM requests Monitoring. Default is **true**
-|   ```monitoring.timeInterval```   |   Time intervall in seconds between each Monitoring round. <br/>Default is **60**
-|   ```monitoring.detailed```       |   Flag to enable/disable detailed SRM requests Monitoring. <br/>Default is **false**
+| `fe.port`                      |  Frontend service port. Default is **8444**
+| `fe.threadpool.threads.number` |  Size of the worker thread pool. Default is **50**
+| `fe.threadpool.maxpending`     |  Size of the internal queue used to maintain SRM tasks in case there are no free worker threads. Default is **200**
+| `fe.gsoap.maxpending`          |  Size of the GSOAP queue used to maintain pending SRM requests. Default is **2000**
 
-##### XML-RPC communication settings
-
-|   Property Name   |   Description     |
-|:------------------|:------------------|
-|   ```be.xmlrpc.host```    |   Backend hostname. Default is **localhost**
-|   ```be.xmlrpc.port```    |   XML-RPC server port running on the Backend machine.<br/>Default is **8080**
-|   ```be.xmlrpc.token```   |   Token used for communicating with the backend service. Mandatory, has no default
-|   ```be.xmlrpc.path```    |   XML-RPC server path. Default is **/RPC2**
-|   ```be.xmlrpc.check.ascii``` |   Flag to enable/disable ASCII checking on strings to be sent via XML-RPC. Default is **true**
-
-##### REST communication settings
+#### Log settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
-|   ```be.recalltable.port```   |   REST server port running on the Backend machine. Default is **9998**
+| `log.filename`    | Full log file name path.<br/>Default is **/var/log/storm/storm-frontend.log**
+| `log.debuglevel`  | Logging level. Possible values are: ERROR, WARN, INFO, DEBUG, DEBUG2. Default is **INFO**
 
-##### Blacklisting settings
-
-|   Property Name   |   Description     |
-|:------------------|:------------------|
-|   ```check.user.blacklisting```   |   Flag to enable/disable user blacklisting. Default is **false**
-|   ```argus-pepd-endpoint```   |   The complete service endpoint of Argus PEP server. Mandatory if check.user.blacklisting is true. <br/>Example: _https://host.domain:8154/authz_
-
-##### Proxy settings
+#### Monitoring settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
-|   ```proxy.dir``` |   Directory used by the Frontend to save proxies files in case of requests with delegation. Default is **/var/tmp/storm/proxy**
-|   ```proxy.user```|   Local user owner of proxies files. This have to be the same local user running the backend service. **Mandatory**.
-|   ```security.enable.vomscheck``` |   Flag to enable/disable checking proxy VOMS credentials. Default is **true**.
-|   ```security.enable.mapping```   |   Flag to enable/disable DN->userid mapping via gridmap-file. Default is **false**
+| `monitoring.enabled`      | Enable/disable monitoring. Default is **true**.
+| `monitoring.timeInterval` | Time interval in seconds between each monitoring round. Default is **60**.
+| `monitoring.detailed`     | Enable/disable detailed monitoring. Default is **false**.
 
-##### General settings
+#### XML-RPC communication settings
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
-|   ```wsdl.file``` |   WSDL file, complete with path, to be returned in case of GET request
+| `be.xmlrpc.host`        | Backend hostname. Default is **localhost**.
+| `be.xmlrpc.port`        | Backend XML-RPC server port. Default is **8080**.
+| `be.xmlrpc.token`       | Token used for communicating with Backend service. **Mandatory**, has no default.
+| `be.xmlrpc.path`        | XML-RPC server path. Default is **/RPC2**.
+| `be.xmlrpc.check.ascii` | Enable/disable ASCII checking on strings to be sent via XML-RPC. Default is **true**.
 
+#### REST communication settings
 
-#### Frontend Logging
+|   Property Name   |   Description     |
+|:------------------|:------------------|
+| `be.recalltable.port` | REST server port running on the Backend machine. Default is **9998**.
 
-The Frontend logs information on the service status and the SRM requests received and managed by the process. The Frontend's log supports different level of logging (ERROR, WARNING, INFO, DEBUG, DEBUG2) that can be set from the dedicated parameter in _storm-frontend-server.conf_ configuration file.
-The Frontend log file named _storm-frontend-server.log_ is placed in the _/var/log/storm directory_. At start-up time, the FE prints here the whole set of configuration parameters, this can be useful to check desired values. When a new SRM request is managed, the FE logs information about the user (DN and FQANs) and the requested parameters.
-At each SRM request, the FE logs also this important information:
+#### Blacklisting settings
 
-    03/19 11:51:42 0x88d4ab8 main: AUDIT - Active tasks: 3
-    03/19 11:51:42 0x88d4ab8 main: AUDIT - Pending tasks: 0
+|   Property Name   |   Description     |
+|:------------------|:------------------|
+| `check.user.blacklisting` | Enable/disable user blacklisting. Default is **false**.
+| `argus-pepd-endpoint`     | The complete service endpoint of Argus PEP server. **Mandatory if** `check.user.blacklisting` is true. <br/>Example: _https://argus-pep-host:8154/authz_
 
-about the status of the worker pool threads and the pending process queue. _Active tasks_ is the number of worker threads actually running. _Pending tasks_ is the number of SRM requests queued in the worker pool queue. These data gives important information about the Frontend load.
+#### Proxy settings
 
-##### monitoring.log
+|   Property Name   |   Description     |
+|:------------------|:------------------|
+| `proxy.dir`                 | Directory used by the Frontend to save proxies files in case of requests with delegation. Default is **/var/tmp/storm/proxy**
+| `proxy.user`                | Local user owner of proxies files. This have to be the same local user running the Backend service. **Mandatory**.
+| `security.enable.vomscheck` | Flag to enable/disable checking proxy VOMS credentials. Default is **true**.
+| `security.enable.mapping`   | Flag to enable/disable DN-to-userid mapping via gridmap-file. Default is **false**.
 
-Monitoring service, if enabled, provides information about the operations
-executed in a certain amount of time writing them on file
-_/var/log/storm/monitoring.log_. This amount of time (called Monitoring Round)
-is configurable via the configuration property monitoring.timeInterval; its
-default value is 1 minute. At each Monitoring Round, a single row is printed on
-log. This row reports both information about requests that have been performed
-in the last Monitoring Round and information considering the whole FE execution
-time (Aggregate Monitoring). Informations reported are generated from both
-Synchronous and Asynchronous requests and tell the user:
+#### General settings
 
-- how many requests have been performed in the last Monitoring Round,
-- how many of them were successful,
-- how many failed,
-- how many produced an error,
-- the average execution time,
-- the minimum execution time,
-- the maximum execution time.
-
-This row reports the **Monitoring Summary** and this is the default behavior of the monitoring service.
-
-**_Example_**:
-
-    03/20 14:19:11 : [# 22927 lifetime=95:33:18]
-                S [OK:47,F:15,E:0,m:0.085,M:3.623,Avg:0.201]
-                A [OK:16,F:0,E:0,m:0.082,M:0.415,Avg:0.136]
-                Last:(S [OK:12,F:5,E:0,m:0.091,M:0.255]
-                A [OK:6,F:0,E:0,m:0.121,M:0.415])
-
-Furthermore it can be requested a more detailed Frontend Monitoring activity by setting the configuration property _monitoring.detailed_ to _true_. Doing this, at each Monitoring Round for each kind of SRM operation performed in the Monitoring Round (srmls, srmPtp, srmRm, ...) the following information are printed in a section with header "Last round details:":
-
-- how many request succeeded,
-- how many failed,
-- how many produced an error,
-- the average execution time,
-- the minimum execution time,
-- the maximum execution time,
-- the execution time standard deviation.
-
-This is called the **Detailed Monitoring Round**. After this, the Monitoring Summary is printed. Then, considering the whole Frontend execution time, in a section with header "Details:", a similar detailed summary is printed. This is called the **Aggregate Detailed Monitoring**.
-
-**_Example_**:
-
-    03/20 14:19:11 : Last round details:
-    03/20 14:19:11 : [PTP] [OK:3,F:0,E:0,Avg:0.203,Std Dev:0.026,m:0.183,M:0.240]
-    03/20 14:19:11 : [Put done] [OK:2,F:0,E:0,Avg:0.155,Std Dev:0.018,m:0.136,M:0.173]
-    03/20 14:19:11 : [# 22927 lifetime=95:33:18]
-                S [OK:47,F:15,E:0,m:0.085,M:3.623,Avg:0.201]
-                A [OK:16,F:0,E:0,m:0.082,M:0.415,Avg:0.136]
-                Last:(S [OK:12,F:5,E:0,m:0.091,M:0.255]
-                A [OK:6,F:0,E:0,m:0.121,M:0.415])
-    03/20 14:19:11 : Details:
-    03/20 14:19:11 : [PTP] [OK:7,F:0,E:0,Avg:0.141,Std Dev:0.057,m:0.085,M:0.240]
-    03/20 14:19:11 : [Put done] [OK:5,F:0,E:0,Avg:0.152,Std Dev:0.027,m:0.110,M:0.185]
-    03/20 14:19:11 : [Release files] [OK:4,F:0,E:0,Avg:0.154,Std Dev:0.044,m:0.111,M:0.216]
-    03/20 14:19:11 : [Rm] [OK:3,F:0,E:0,Avg:0.116,Std Dev:0.004,m:0.111,M:0.122]
-
-**Note**:
-
-- Operations not performed in current Monitoring Round are not printed in Detailed Monitoring Round.
-- Operations never performed are not printed in Aggregate Detailed Monitoring.
-- Operation performed in current Monitoring Round are aggregated in Aggregate Detailed Monitoring.
-
-##### gSOAP tracefile
-
-If you have problem at gSOAP level, and you have already looked at the troubleshooting section of the StoRM site without finding a solution, and you are brave enough, you could try to find some useful information on the gSOAP log file.
-To enable gSOAP logging, set the following environment variables:
-
-    $CGSI_TRACE=1
-    $CGSI_TRACEFILE=/tmp/tracefile
-
-and restart the Frontend daemon by calling directly the init script */etc/init.d/storm-frontend-server* and see if the error messages contained in */tmp/tracefile* could help. Please be very careful, it prints really a huge amount of information.
+|   Property Name   |   Description     |
+|:------------------|:------------------|
+| `wsdl.file`       | WSDL file, complete with path, to be returned in case of GET request.
 
 ### StoRM Backend service
 
-The Backend is the core of StoRM. It executes all SRM requests, interacts with
-other Grid service, with database to retrieve SRM requests, with file-system to
-set up space and file, etc. It has a modular architecture made by several
-internal components. The Backend needs to be configured for two main aspects:
+The Backend is the core of StoRM. It executes all SRM requests, interacts with other Grid service, with database to retrieve SRM requests, with file-system to set up space and file, etc. It has a modular architecture made by several internal components. The Backend needs to be configured for two main aspects:
 
 - _service information_: this section contains all the parameter regarding the StoRM service details. It relies on the **storm.properties** configuration file.
 - _storage information_: this section contains all the information regarding Storage Area and other storage details. It relies on the **namespace.xml** file.
@@ -868,20 +778,22 @@ configuration file.
 |   ```extraslashes.root```                     |   Add extra slashes after the "authority" part of a TURL for root protocol.
 |   ```extraslashes.file```                     |   Add extra slashes after the "authority" part of a TURL for file protocol.
 |   ```synchcall.directoryManager.maxLsEntry``` |   Maximum number of entries returned by an *srmLs* call. Since in case of recursive *srmLs* results can be in order of million, this prevent a server overload. Default: **500**
-|   ```directory.automatic-creation```          |   Flag to enable authomatic missing directory creation upon *srmPrepareToPut* requests.<br/>Default: **false**
-|   ```directory.writeperm```                   |   Flag to enable directory write permission setting upon *srmMkDir* requests on created dyrectories. Default: **false**
+|   ```directory.automatic-creation```          |   Flag to enable automatic missing directory creation upon *srmPrepareToPut* requests.<br/>Default: **false**
+|   ```directory.writeperm```                   |   Flag to enable directory write permission setting upon *srmMkDir* requests on created directories. Default: **false**
 |   ```default.overwrite```                     |   Default file overwrite mode to use upon *srmPrepareToPut* and *srmCopy* requests. Default: **A**. Possible values are: N, A, D. Please note that N stands for *Never*, A stands for *Always* and D stands for *When files differs*.
 |   ```default.storagetype```                   |   Default File Storage Type to be used for *srmPrepareToPut* and *srmCopy* requests in case is not provided in the request. Default: **V**. Possible values are: V, P, D. Please note that V stands for *Volatile*, P stands for *Permanent* and D stands for *Durable*.
 
 ##### Requests garbage collector
 
-|   Property Name   |   Description     |
-|:------------------|:------------------|
-|   ```purging```               |   Flag to enable the purging of expired requests. This garbage collector process cleans all database tables and proxies from the expired SRM requests. An appropriate tuning is needed in case of high throughput of SRM requests required for long time. Default: **true**. Possible values are: true, false.
-|   ```purge.interval```        |   Time interval in seconds between successive purging run. Default: **600**.
-|   ```purge.size```            |   Number of requests picked up for cleaning from the requests garbage collector at each run. This value is use also by Tape Recall Garbage Collector. Default: **800**
-|   ```purge.delay```           |   Initial delay before starting the requests garbage collection process, in seconds. Default: **10**
-|   ```expired.request.time```  |   Time in seconds to consider a request expired after its submission. Default: **604800**
+The request garbage collector process cleans database from the expired asynchronous SRM requests. The value of `expired.request.time` defines how many seconds are necessary to a request, after its submission, to be considered expired. An appropriate tuning is needed in case of high throughput of SRM requests required for long time.
+
+|   Property Name           |   Description     |
+|:--------------------------|:------------------|
+|   `purging`               |   Enable the request garbage collector. Default: **true**. Possible values are: true, false.
+|   `purge.interval`        |   Time interval in seconds between successive purging run. Default: **600**.
+|   `purge.size`            |   Number of requests picked up for cleaning from the requests garbage collector at each run. This value is use also by Tape Recall Garbage Collector. Default: **800**
+|   `purge.delay`           |   Initial delay before starting the requests garbage collection process, in seconds. Default: **10**
+|   `expired.request.time`  |   Time in seconds to consider a request expired after its submission. Default: **86400** seconds (24h)
 
 ##### Expired put requests agent
 
@@ -903,7 +815,7 @@ configuration file.
 |:------------------|:------------------|
 |   ```synchcall.xmlrpc.unsecureServerPort```   |   Port to listen on for incoming XML-RPC connections from Frontends(s). Default: **8080**
 |   ```synchcall.xmlrpc.maxthread```            |   Number of threads managing XML-RPC connection from Frontends(s). A well sized value for this parameter have to be at least equal to the sum of the number of working threads in all FrontEend(s). Default: **100**
-|   ```synchcall.xmlrpc.token.enabled```        |   Whether the backend will require a token to be present for accpeting XML-RPC requests. Default: true
+|   ```synchcall.xmlrpc.token.enabled```        |   Whether the backend will require a token to be present for accepting XML-RPC requests. Default: true
 |   ```synchcall.xmlrpc.token```                |   The token that the backend will require to be present for accepting XML-RPC requests. Mandatory if synchcall.xmlrpc.token.enabled is true
 
 
@@ -1307,105 +1219,10 @@ Here is an example of approachable rule for the *dteam-FS* element:
 
 - `<vo-name>dteam</vo-name>` means that only users belonging to the VO dteam will be allowed to access the Storage Area. This entry can be a list of comma separeted VO-name.
 
-##### used-space.ini
+#### Used space initialization
 
-StoRM maintains the information about the status of managed storage areas (such
-as free, used, busy, available, guaranteed and reserved space), and store them
-into the DB. Whenever it is consumed or released some storage space by creating
-or deleting files, the status is updated and stored in the DB. The storage
-space status stored into the DB is authorative. The information about the
-Storage Space stored into the DB are used also as information source for the
-Information Provider through the DIP (Dynamic Info Provider). There are cases
-in which the status of a storage area must be initialized, for example in the
-case of a fresh StoRM installation configured to manage a storage space already
-populated with files, where the space used is not zero. There are different
-methods for initialize the Storage Area status, some executed within StoRM
-(GPFS quota and/or background-DU). In this section it is described how an
-administrator can initialize the status of a Storage Area by editing a
-configuration file, the used-space.ini configuration file, that it will be
-parsed at bootstrap time and only one time. The structure of the content of
-**used-space.ini** is quite simple: a list of sections corresponding to the
-Storage Area in which are defined the used size, and eventually, the checktime.
-For each Storage Area to be initialized there is a section named with the
-same alias *space-token-description* defined in the *namespace.xml*, that are
-defined with YAIM variables STORM\_{SA}\_ACCESSPOINT. Within the section there
-are two properties: *usedsize* and *checktime*:
-
-- *usedsize*: The used space in the Storage Area expressed in Bytes. Must be an value without digits after the decimal mark. **MANDATORY**
-- *checktime*: The timestamp of the time to which the usedsize computation refers. Must be a date in RFC-2822 format. Optional.
-
-Here is a sample of *used-space.ini*:
-
-```bash
-    [sa-alias-1]
-    checktime = Fri, 23 Sep 2011 11:56:53 +0200
-    usedsize = 1848392893847
-    [sa-alias-2]
-    checktime = Fri, 16 Sep 2011 10:22:17 +0200
-    usedsize = 2839937589367
-    [sa-alias-3]
-    usedsize = 1099511627776
-```
-
-This file can be produced in two ways,
-
-1. by hand after StoRM Backend service configuration:
-
-  * write your own used-space.ini file adding a section for each Storage Area you want to initialize;
-  * as section name use the *space-token-description* value as in namespace.xml;
-  * set the value of usedsize property as in the example;
-  * set the value of checktime property as in the example. To obtain an RFC-2822 timestamp of the current time you can execute the command *date --rfc-2822*.
-
-2. by YAIM at StoRM Backend service configuration time:
-
-  * add a variable STORM\_{SA}\_USED\_ONLINE\_SIZE to your YAIM configuration file for each Storage Area you want to initialize where {SA} is the name or the Storage Area as in STORM\_STORAGEAREA\_LIST YAIM variable;
-  * run YAIM on StoRM profiles installed on this host.
-
-StoRM Backend will load used-space.ini file at bootstrap and initialize the used space of newly created Storge Areas to its values.
-
-> **NOTE**: running YAIM on StoRM Backend profile will produce a new used-space.ini file and backup any existent version with the extension .bkp_. Take this into account if you want to produce the used-space.ini file by hand.
-
-#### Backend Logging
-
-The Backend log files provide information on the execution process of all SRM requests. All the Backend log files are placed in the */var/log/storm* directory. Backend logging operations are based on the *logback* framework. Logback provides a way to set the level of verbosity depending on the use case. The level supported are FATAL, ERROR, INFO, WARN, DEBUG. The **/etc/storm/backend-server/logging.xml** contains this information:
-
-```xml
-    <logger name="it.grid.storm" additivity="false">
-        <level value="DEBUG" />
-        <appender-ref ref="PROCESS" />
-    </logger>
-```
-
-the *value* can be setted to the desired log level. Please be careful that logging operation can impact on system performance (even 30% slower with DEBUG in the worst case). The suggest logging level for production endpoint is INFO. In case the log level is modified, the Backend have to be restarted to read the new value.
-
-From [StoRM 1.11.2][storm-v1-11-2] the Backend log files have been unified in one and only file:
-
--  **storm-backend.log**. All the information about the SRM execution process, error or warning are logged here depending on the log level. At startup time, the BE logs here all the storm.properties value, this can be useful to check value effectively used by the system. After that, the BE logs the result of the namespace initialization, reporting errors or misconfiguration. At the INFO level, the BE logs for each SRM operation at least who have request the operation (DN and FQANs), on which files (SURLs) and the operation result. At DEBUG level, much more information are printed regarding the status of many StoRM internal component, depending on the SRM request type. DEBUG level has to be used carefully only for troubleshooting operation. If ERROR or FATAL level are used, the only event logged in the file are due to error condition.
-
-StoRM provides a bookkeeping framework that elaborates informations on SRM requests processed by the system to provide user-friendly aggregated data that can be used to get a quick view on system health.
-
-- **heartbeat.log**
-This useful file contains information on the SRM requests process by the system from its startup, adding new information at each beat. The beat time interval can be configured, by default is 60 seconds. At each beat, the hearthbeat component logs an entry.
-
-A heartbeat.log entry example:
-
-```bash
-    [#.....71 lifetime=1:10.01]
-        Heap Free:59123488 SYNCH [500] ASynch [PTG:2450 PTP:3422]
-        Last:( [#PTG=10 OK=10 M.Dur.=150] [#PTP=5 OK=5 M.Dur.=300] )
-```
-
-|   Log     |   Meaning     |
-|:----------|:--------------|
-|```#......71```            |Log entry number
-|```lifetime=1:10.01```     |Lifetime from last startup, hh:mm:ss
-|```Heap Free:59123488```   |BE Process free heap size in Bytes
-|```SYNCH [500]```          |Number of Synchronous SRM requests executed in the last beat
-|```ASynch [PTG:2450 PTP:3422]```   |Number of *srmPrepareToGet* and *srmPrepareToPut* requests executed from start-up.
-|```Last:( [#PTG=10 OK=10 M.Dur.=150]```    |Number of *srmPrepareToGet* executed in the last beat, with the number of request terminated with success (OK=10) and average time in millisecond (M.Dur.=150)
-|```[#PTP=5 OK=5 M.Dur.=300]```     |Number of srmPrepareToPut executed in the last beat, with number of request terminated with success and average time in milliseconds.
-
-This log information can be really useful to gain a global view on the overall system status. A tail on this file is the first thing to do if you want to check the health of your StoRM installation. From here you can understand if the system is receiving SRM requests or if the system is overloaded by SRM request or if PtG and PtP are running without problem or if the interaction with the filesystem is exceptionally low (in case the M.Dur. is much more than usual).
+An administrator can initialize the status of a Storage Area by editing a configuration file, the `used-space.ini` configuration file, that it's parsed once at Backend's bootstrap time.
+See [this configuration example][used-space-example] for more info.
 
 ### StoRM GridFTP service
 
@@ -1415,7 +1232,186 @@ relies on a different db file to get the plugin to use. Obviously LCMAPS has to
 answer to GridFTP requests and StoRM requests in coeherent way. The GridFTP
 uses the LCMAPS configuration file located at */etc/lcmaps/lcmaps.db*.
 
-#### GridFTP Logging
+#### Enable checksum
+
+Info about GRIDFTP_WITH_DSI use.
+
+TO-DO
+
+#### IPC Channel
+
+The IPC channel is used between a Globus GridFTP server head node and its
+disk servers, e.g. for striped transfers (read more into
+the [GridFTP System Administrator’s Guide][gridftp-admin-striped]).
+In the default behavior of StoRM deployment the IPC channel is not used.
+In fact, StoRM is mainly installed on a single host with one gridftp server
+which read/write directly on disk.
+In the cases it is a distributed deployment, there are usually n gridftp servers
+which read/write data directly on disk, behind a haproxy or a dns for example,
+so there are no separate frontends and one or more disk node servers.
+However, it's important to know that **the IPC channel must be kept firewalled for any hosts outside the SE system**.
+
+{% assign label_caption="Important" %}
+{% include open_note.liquid %}
+>**The IPC channel must be kept firewalled for any hosts outside the SE system**.
+
+## Logging
+
+This section is dedicated to all the log information provided by all the StoRM services. By default, all the log files are saved into `/var/log/storm` directory.
+
+### StoRM Frontend Logging
+
+The Frontend logs information on the service status and the SRM requests received and managed by the process. The Frontend's log supports different level of logging (ERROR, WARNING, INFO, DEBUG, DEBUG2) that can be set from the dedicated parameter in _storm-frontend-server.conf_ configuration file.
+The Frontend log file named _storm-frontend-server.log_ is placed in the _/var/log/storm directory_. At start-up time, the FE prints here the whole set of configuration parameters, this can be useful to check desired values. When a new SRM request is managed, the FE logs information about the user (DN and FQANs) and the requested parameters.
+At each SRM request, the FE logs also this important information:
+
+    03/19 11:51:42 0x88d4ab8 main: AUDIT - Active tasks: 3
+    03/19 11:51:42 0x88d4ab8 main: AUDIT - Pending tasks: 0
+
+about the status of the worker pool threads and the pending process queue. _Active tasks_ is the number of worker threads actually running. _Pending tasks_ is the number of SRM requests queued in the worker pool queue. These data gives important information about the Frontend load.
+
+#### monitoring.log
+
+Monitoring service, if enabled, provides information about the operations
+executed in a certain amount of time writing them on file
+_/var/log/storm/monitoring.log_. This amount of time (called Monitoring Round)
+is configurable via the configuration property monitoring.timeInterval; its
+default value is 1 minute. At each Monitoring Round, a single row is printed on
+log. This row reports both information about requests that have been performed
+in the last Monitoring Round and information considering the whole FE execution
+time (Aggregate Monitoring). Informations reported are generated from both
+Synchronous and Asynchronous requests and tell the user:
+
+- how many requests have been performed in the last Monitoring Round,
+- how many of them were successful,
+- how many failed,
+- how many produced an error,
+- the average execution time,
+- the minimum execution time,
+- the maximum execution time.
+
+This row reports the **Monitoring Summary** and this is the default behavior of the monitoring service.
+
+**_Example_**:
+
+    03/20 14:19:11 : [# 22927 lifetime=95:33:18] S [OK:47,F:15,E:0,m:0.085,M:3.623,Avg:0.201] A [OK:16,F:0,E:0,m:0.082,M:0.415,Avg:0.136]
+      Last:(S [OK:12,F:5,E:0,m:0.091,M:0.255] A [OK:6,F:0,E:0,m:0.121,M:0.415])
+
+Furthermore it can be requested a more detailed Frontend Monitoring activity by setting the configuration property _monitoring.detailed_ to _true_. Doing this, at each Monitoring Round for each kind of SRM operation performed in the Monitoring Round (srmls, srmPtp, srmRm, ...) the following information are printed in a section with header "Last round details:":
+
+- how many request succeeded,
+- how many failed,
+- how many produced an error,
+- the average execution time,
+- the minimum execution time,
+- the maximum execution time,
+- the execution time standard deviation.
+
+This is called the **Detailed Monitoring Round**. After this, the Monitoring Summary is printed. Then, considering the whole Frontend execution time, in a section with header "Details:", a similar detailed summary is printed. This is called the **Aggregate Detailed Monitoring**.
+
+**_Example_**:
+
+    03/20 14:19:11 : Last round details:
+    03/20 14:19:11 : [PTP] [OK:3,F:0,E:0,Avg:0.203,Std Dev:0.026,m:0.183,M:0.240]
+    03/20 14:19:11 : [Put done] [OK:2,F:0,E:0,Avg:0.155,Std Dev:0.018,m:0.136,M:0.173]
+    03/20 14:19:11 : [# 22927 lifetime=95:33:18] S [OK:47,F:15,E:0,m:0.085,M:3.623,Avg:0.201] A [OK:16,F:0,E:0,m:0.082,M:0.415,Avg:0.136]
+      Last:(S [OK:12,F:5,E:0,m:0.091,M:0.255] A [OK:6,F:0,E:0,m:0.121,M:0.415])
+    03/20 14:19:11 : Details:
+    03/20 14:19:11 : [PTP] [OK:7,F:0,E:0,Avg:0.141,Std Dev:0.057,m:0.085,M:0.240]
+    03/20 14:19:11 : [Put done] [OK:5,F:0,E:0,Avg:0.152,Std Dev:0.027,m:0.110,M:0.185]
+    03/20 14:19:11 : [Release files] [OK:4,F:0,E:0,Avg:0.154,Std Dev:0.044,m:0.111,M:0.216]
+    03/20 14:19:11 : [Rm] [OK:3,F:0,E:0,Avg:0.116,Std Dev:0.004,m:0.111,M:0.122]
+
+**Note**:
+
+- Operations not performed in current Monitoring Round are not printed in Detailed Monitoring Round.
+- Operations never performed are not printed in Aggregate Detailed Monitoring.
+- Operation performed in current Monitoring Round are aggregated in Aggregate Detailed Monitoring.
+
+#### gSOAP tracefile
+
+If you have problem at gSOAP level, and you have already looked at the troubleshooting section of the StoRM site without finding a solution, and you are brave enough, you could try to find some useful information on the gSOAP log file.
+To enable gSOAP logging, set the following environment variables:
+
+    $CGSI_TRACE=1
+    $CGSI_TRACEFILE=/tmp/tracefile
+
+and restart the Frontend daemon by calling directly the init script */etc/init.d/storm-frontend-server* and see if the error messages contained in */tmp/tracefile* could help. Please be very careful, it prints really a huge amount of information.
+
+### StoRM Backend Logging
+
+The Backend log files provide information on the execution process of all SRM requests. All the Backend log files are placed in the `/var/log/storm` directory. Backend logging is based on *logback* framework. Logback provides a way to set the level of verbosity depending on the use case. The level supported are FATAL, ERROR, INFO, WARN, DEBUG.
+
+The file
+
+    /etc/storm/backend-server/logging.xml
+
+contains the following information:
+
+```xml
+    <logger name="it.grid.storm" additivity="false">
+        <level value="DEBUG" />
+        <appender-ref ref="PROCESS" />
+    </logger>
+```
+
+the *value* can be set to the desired log level. Please be careful, because logging operations can impact on system performance (even 30% slower with DEBUG in the worst case). The suggest logging level for production endpoint is INFO. In case the log level is modified, the Backend has not to be restarted to read the new value.
+
+StoRM Backend log files are the followings:
+
+* `storm-backend.log`, the main log file with each single request and errors are logged;
+* `heartbeat.log`, an aggregated log that shows the number of synch and asynch requests occoured from startup and on last minute;
+* `storm-backend-metrics.log`, a finer grained monitoring of incoming synchronous requests, contains metrics for individual types of synchronous requests.   
+
+#### storm-backend.log
+
+The main Backend service log file is:
+
+- `storm-backend.log`. All the information about the SRM execution process, error or warning are logged here depending on the log level. At startup time, the BE logs here all the storm.properties value, this can be useful to check value effectively used by the system. After that, the BE logs the result of the namespace initialization, reporting errors or misconfiguration. At the INFO level, the BE logs for each SRM operation at least who have request the operation (DN and FQANs), on which files (SURLs) and the operation result. At DEBUG level, much more information are printed regarding the status of many StoRM internal component, depending on the SRM request type. DEBUG level has to be used carefully only for troubleshooting operation. If ERROR or FATAL level are used, the only event logged in the file are due to error condition.
+
+#### heartbeat.log
+
+StoRM provides a bookkeeping framework that elaborates informations on SRM requests processed by the system to provide user-friendly aggregated data that can be used to get a quick view on system health.
+
+- `heartbeat.log`. This useful file contains information on the SRM requests process by the system from its startup, adding new information at each beat. The beat time interval can be configured, by default is 60 seconds. At each beat, the heartbeat component logs an entry.
+
+A `heartbeat.log` entry example:
+
+```bash
+    [#.....71 lifetime=1:10.01]
+        Heap Free:59123488 SYNCH [500] ASynch [PTG:2450 PTP:3422]
+        Last:( [#PTG=10 OK=10 M.Dur.=150] [#PTP=5 OK=5 M.Dur.=300] )
+```
+
+|   Log     |   Meaning     |
+|:----------|:--------------|
+| `#......71`            | Log entry number
+| `lifetime=1:10.01`     | Lifetime from last startup, hh:mm:ss
+| `Heap Free:59123488`   | BE Process free heap size in Bytes
+| `SYNCH [500]`          | Number of Synchronous SRM requests executed in the last beat
+| `ASynch [PTG:2450 PTP:3422]` | Number of _srmPrepareToGet_ and _srmPrepareToPut_ requests executed from start-up.
+| `Last:( [#PTG=10 OK=10 M.Dur.=150]` | Number of _srmPrepareToGet_ executed in the last beat, with the number of request terminated with success (OK=10) and average time in millisecond (M.Dur.=150)
+| `[#PTP=5 OK=5 M.Dur.=300]` | Number of srmPrepareToPut executed in the last beat, with number of request terminated with success and average time in milliseconds.
+
+This log information can be really useful to gain a global view on the overall system status. A tail on this file is the first thing to do if you want to check the health of your StoRM installation. From here you can understand if the system is receiving SRM requests or if the system is overloaded by SRM request or if PtG and PtP are running without problem or if the interaction with the filesystem is exceptionally low (in case the M.Dur. is much more than usual).
+
+#### storm-backend-metrics.log
+
+A finer grained monitoring of incoming synchronous requests is provided by this log file. It contains metrics for individual types of synchronous requests.
+
+A `storm-backend-metrics.log` entry example:
+
+```bash
+
+TO-DO
+
+```
+
+|   Log     |   Meaning     |
+|:----------|:--------------|
+| TO-DO | TO-DO
+
+### GridFTP Logging
 
 GridFTP produce two separated log files:
 
@@ -1445,28 +1441,12 @@ insert:
 
 After restarting the service, all LCMAPS calls will be logged to the new file.
 
-#### IPC Channel
 
-The IPC channel is used between a Globus GridFTP server head node and its
-disk servers, e.g. for striped transfers (read more into
-the [GridFTP System Administrator’s Guide][gridftp-admin-striped]).
-In the default behavior of StoRM deployment the IPC channel is not used.
-In fact, StoRM is mainly installed on a single host with one gridftp server
-which read/write directly on disk.
-In the cases it is a distributed deployment, there are usually n gridftp servers
-which read/write data directly on disk, behind a haproxy or a dns for example,
-so there are no separate frontends and one or more disk node servers.
-However, it's important to know that **the IPC channel must be kept firewalled for any hosts outside the SE system**.
-
-{% assign label_caption="Important" %}
-{% include open_note.liquid %}
->**The IPC channel must be kept firewalled for any hosts outside the SE system**.
-
-## Services information
+## Information service
 
 The WLCG Information System is used to discover services and get status information about WLCG resources.
-The **BDII** (Berkeley Database Information Index) is a Perl / BDB 'glue' used to manage LDAP updates.
-See https://twiki.cern.ch/twiki//bin/view/EGEE/BDII for more details.
+The **BDII** (Berkeley Database Information Index) is a Perl/BDB 'glue' used to manage LDAP updates.
+See [Grid Information System](http://gridinfo.web.cern.ch/) page for more details.
 
 ### StoRM Info Provider
 
@@ -1657,5 +1637,5 @@ GLUE2EndpointServingState: closed
 [LDAPconfiguration]: {{site.baseurl}}/documentation/how-to/how-to-share-users-openldap/1.11.4/
 [webdav-guide]: storm-webdav-guide.html
 [storm-gridhttps-guide]: storm-gridhttps-guide.html
-[storm-v1-11-2]: {{site.baseurl}}/release-notes/storm-backend-server/1.11.2/
+[used-space-example]: {{site.baseurl}}/documentation/how-to/how-to-initialize-storage-area-used-space/
 [info-provider-177]: {{site.baseurl}}/release-notes/storm-dynamic-info-provider/1.7.7/
