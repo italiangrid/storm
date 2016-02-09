@@ -787,7 +787,7 @@ The request garbage collector process cleans database from the expired asynchron
 |   `purge.interval`        |   Time interval in seconds between successive purging run. Default: **600**.
 |   `purge.size`            |   Number of requests picked up for cleaning from the requests garbage collector at each run. This value is use also by Tape Recall Garbage Collector. Default: **800**
 |   `purge.delay`           |   Initial delay before starting the requests garbage collection process, in seconds. Default: **10**
-|   `expired.request.time`  |   Time in seconds to consider a request expired after its submission. Default: **86400** seconds (24h)
+|   `expired.request.time`  |   Time in seconds to consider a request expired after its submission. Default: **21600** seconds (6h)
 
 #### Expired put requests agent
 
