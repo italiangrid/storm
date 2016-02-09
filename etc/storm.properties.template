@@ -253,7 +253,8 @@ purge.interval=600
 purge.size=800
 #
 #Time after that the GC consider a _terminated_ request as garbage
-expired.request.time=86400
+#Default: 21600s (6h)
+expired.request.time=21600
 
 
 # ==========================================================
