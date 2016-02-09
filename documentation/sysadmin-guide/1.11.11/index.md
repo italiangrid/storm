@@ -771,7 +771,6 @@ configuration file.
 |   ```proxy.home```                            |   Directory used to contains delegated proxies used in case of *srmCopy* request. Please note that in case of clustered installation this directory have to be shared between the Backend and the Frontend(s) machines. Default: **/etc/storm/tmp**
 |   ```pinLifetime.default```                   |   Default *PinLifetime* in seconds used for pinning files in case of *srmPrepareToPut* or *srmPrepareToGet* operation without any pinLifetime specified. Default: **259200**
 |   ```pinLifetime.maximum```                   |   Maximum *PinLifetime* allowed in seconds.<br/>Default: **1814400**
-|   ```SRM22Client.PinLifeTime```               |   Default *PinLifeTime* in seconds used by StoRM in case of *SrmCopy* operation. This value is the one specified in the remote *SrmPrepareToGet* request. Default: **259200**
 |   ```fileLifetime.default```                  |   Default *FileLifetime* in seconds used for VOLATILE file in case of SRM request without *FileLifetime* parameter specified. Default: **3600**
 |   ```extraslashes.gsiftp```                   |   Add extra slashes after the "authority" part of a TURL for gsiftp protocol.
 |   ```extraslashes.rfio```                     |   Add extra slashes after the "authority" part of a TURL for rfio protocol.
@@ -797,10 +796,12 @@ The request garbage collector process cleans database from the expired asynchron
 
 ##### Expired put requests agent
 
-|   Property Name   |   Description     |
-|:------------------|:------------------|
-|   ```transit.interval```        |   Time interval in seconds between successive agent run. Default: **3000**.
-|   ```transit.delay```           |   Initial delay before starting the agent process, in seconds. Default: **60**
+This agent transits ongoing srmPtP to SRM_FILE_LIFETIME_EXPIRED if the request pin-lifetime is expired (see `pinLifetime.default` variable into Service Information section). The agent runs each `transit.interval` seconds and updates all the expired requests.
+
+|   Property Name    |   Description     |
+|:-------------------|:------------------|
+| `transit.interval` |   Time interval in seconds between successive agent run. Default: **3000**.
+| `transit.delay`    |   Initial delay before starting the agent process, in seconds. Default: **60**
 
 ##### Garbage collector
 
@@ -1234,9 +1235,19 @@ uses the LCMAPS configuration file located at */etc/lcmaps/lcmaps.db*.
 
 #### Enable checksum
 
-Info about GRIDFTP_WITH_DSI use.
+To enable checksum calculation on the fly, the following parameter needs to be enabled into the GridFTP host's site-info.def:
 
-TO-DO
+```bash
+GRIDFTP_WITH_DSI="yes"
+```
+
+If all works, during transfers you should see `-dsi StoRM -allowed-modules StoRM` as option for each globus-gridftp-server execution:
+
+``` bash
+$ ps -ax | grep globus-gridftp-server
+/usr/sbin/globus-gridftp-server -p 2811 -d error,warn,info -l /var/log/storm/storm-gridftp-session.log -Z /var/log/storm/storm-globus-gridftp.log -dsi StoRM -allowed-modules StoRM -no-detach -config-base-path / -inetd -config-base-path /
+```
+
 
 #### IPC Channel
 
@@ -1402,14 +1413,49 @@ A finer grained monitoring of incoming synchronous requests is provided by this 
 A `storm-backend-metrics.log` entry example:
 
 ```bash
-
-TO-DO
-
+16:57:03.109 - synch.ls [(m1_count=286, count=21136) (max=123.98375399999999, min=4.299131, mean=9.130859862802883, p95=20.736006, p99=48.147704999999995) (m1_rate=4.469984951030006, mean_rate=0.07548032009470132)] duration_units=milliseconds, rate_units=events/second
 ```
 
-|   Log     |   Meaning     |
-|:----------|:--------------|
-| TO-DO | TO-DO
+* `synch.ls`: Type of operation.
+* `m1_count=286`: Number of operation of the last minute.
+* `count=21136`: Number of operations from last startup.
+* `max=123.98375399999999`: Maximum duration of last bunch.
+* `min=4.299131`: Minimum duration of last bunch.
+* `mean=9.130859862802883`: Duration average of last bunch
+* `p95=20.736006`: The 95% of last bunch operations lasted less then 20.73ms
+* `p99=48.147704999999995`: The 99% of last bunch operations lasted less then 48.14ms
+
+Here is the list of current logged operations:
+
+* `synch`: Synch operations summary
+* `synch.af`: Synch srmAbortFiles operations
+* `synch.ar`: Synch srmAbortRequest operations
+* `synch.bol`: Synch srmBringOnLine operations
+* `synch.efl`: Synch srmExtendFileLifetime operations
+* `synch.gsm`: Synch srmGetSpaceMetadata operations
+* `synch.gst`: Synch srmGetSpaceToken operations
+* `synch.ls`: Synch srmLs operations
+* `synch.mkdir`: Synch srmMkDir operations
+* `synch.mv`: Synch srmMv operations
+* `synch.pd`: Synch srmPd operations
+* `synch.ping`: Synch srmPing operations
+* `synch.ptg`: Synch srmPtG operations
+* `synch.ptp`: ynch srmPtP operations
+* `synch.rf`: Synch srmRf operations
+* `synch.rm`: Synch srmRm operations
+* `synch.rmDir`: Synch srmRmDir operations
+* `synch.releaseSpace`: Synch srmReleaseSpace operations
+* `synch.reserveSpace`: Synch srmReserveSpace operations
+* `synch.sPtg`: Synch srmStatusPrepareToGet operations
+* `synch.sPtp`: Synch srmStatusPrepareToPut operations
+* `fs.aclOp`: Acl set/unset on filesystem operations
+* `fs.fileAttributeOp`: File attribute set/unset on filesystem operations
+* `fs.fileChownOp`: File ownership operations
+* `fs.fileOnDiskOp`: Is file on disk operations
+* `fs.fileTruncateOp`: File truncate operations
+* `fs.getFreeSpaceOp`: Get free space operations
+* `ea`: Extended attributes operations
+
 
 ### GridFTP Logging
 
