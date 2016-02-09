@@ -10,7 +10,7 @@ Released on **{{rdata.date}}** with [StoRM v. {{rdata.version}}]({{site.baseurl}
 
 ### Description
 
-{{ cdata.description }}
+{{ cdata.description | replace: '!SITE_URL!', site.baseurl }}
 
 {% if cdata.rfcs.size > 0 %}
 

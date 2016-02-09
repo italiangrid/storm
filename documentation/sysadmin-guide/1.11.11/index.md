@@ -34,6 +34,7 @@ version: {{ page.version }}
 * [Logging](#logging)
   * [StoRM Frontend logging](#storm-frontend-logging)
   * [StoRM Backend logging](#storm-backend-logging)
+  * [StoRM WebDAV logging](#storm-webdav-logging)
   * [GridFTP logging](#gridftp-logging)
 * [Information Service](#information-service)
   * [StoRM Info Provider](#storm-info-provider)
@@ -739,26 +740,20 @@ The Backend is the core of StoRM. It executes all SRM requests, interacts with o
 - _service information_: this section contains all the parameter regarding the StoRM service details. It relies on the **storm.properties** configuration file.
 - _storage information_: this section contains all the information regarding Storage Area and other storage details. It relies on the **namespace.xml** file.
 
-#### Service information: storm.properties
+Both `storm.properties` and `namespace.xml` configuration file default location is:
 
-The file:
+    /etc/storm/backend-server
 
-    /etc/storm/backend-server/storm.properties
-
-contains a list of:
+The `storm.properties` configuration file contains a list of:
 
     key = value
 
-pairs that represent all the information needed to configure the StoRM Backend
-service. The most important (and mandatory) parameters are configured by
-default trough YAIM with a standard installation of StoRM. All the other
-parameters are optionals and can be used to make advanced tuning of the
-Backend. To change/set a new value, or add a new parameter, just edit the
-*storm.properties* file and restart the Backend daemon. When the BackEnd
-starts, it writes into the log file the whole set of parameters read from the
+pairs that represent all the information needed to configure the StoRM Backend service. The most important (and mandatory) parameters are configured by default trough YAIM with a standard installation of StoRM. All the other parameters are optionals and can be used to make advanced tuning of the Backend. To change/set a new value, or add a new parameter, just edit the *storm.properties* file and restart the Backend daemon. When the BackEnd starts, it writes into the log file the whole set of parameters read from the
 configuration file.
 
-##### Service information
+The `namespace.xml` configuration file contains the storage area info like what is needed to perform the **mapping functionality**, the **storage area capabilities**, which are the **access and transfer protocols** supported, etc..
+
+#### Service information
 
 |   Property Name                               |   Description     |
 |:----------------------------------------------|:------------------|
@@ -782,7 +777,7 @@ configuration file.
 |   ```default.overwrite```                     |   Default file overwrite mode to use upon *srmPrepareToPut* and *srmCopy* requests. Default: **A**. Possible values are: N, A, D. Please note that N stands for *Never*, A stands for *Always* and D stands for *When files differs*.
 |   ```default.storagetype```                   |   Default File Storage Type to be used for *srmPrepareToPut* and *srmCopy* requests in case is not provided in the request. Default: **V**. Possible values are: V, P, D. Please note that V stands for *Volatile*, P stands for *Permanent* and D stands for *Durable*.
 
-##### Requests garbage collector
+#### Requests garbage collector
 
 The request garbage collector process cleans database from the expired asynchronous SRM requests. The value of `expired.request.time` defines how many seconds are necessary to a request, after its submission, to be considered expired. An appropriate tuning is needed in case of high throughput of SRM requests required for long time.
 
@@ -794,7 +789,7 @@ The request garbage collector process cleans database from the expired asynchron
 |   `purge.delay`           |   Initial delay before starting the requests garbage collection process, in seconds. Default: **10**
 |   `expired.request.time`  |   Time in seconds to consider a request expired after its submission. Default: **86400** seconds (24h)
 
-##### Expired put requests agent
+#### Expired put requests agent
 
 This agent transits ongoing srmPtP to SRM_FILE_LIFETIME_EXPIRED if the request pin-lifetime is expired (see `pinLifetime.default` variable into Service Information section). The agent runs each `transit.interval` seconds and updates all the expired requests.
 
@@ -803,14 +798,14 @@ This agent transits ongoing srmPtP to SRM_FILE_LIFETIME_EXPIRED if the request p
 | `transit.interval` |   Time interval in seconds between successive agent run. Default: **3000**.
 | `transit.delay`    |   Initial delay before starting the agent process, in seconds. Default: **60**
 
-##### Garbage collector
+#### Garbage collector
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   ```gc.pinnedfiles.cleaning.delay```     |   Initial delay before starting the reserved space, JIT ACLs and pinned files garbage collection process, in seconds. Default: **10**
 |   ```gc.pinnedfiles.cleaning.interval```  |   Time interval in seconds between successive purging run. Default: **300**
 
-##### Synchronous call
+#### Synchronous call
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -819,14 +814,13 @@ This agent transits ongoing srmPtP to SRM_FILE_LIFETIME_EXPIRED if the request p
 |   ```synchcall.xmlrpc.token.enabled```        |   Whether the backend will require a token to be present for accepting XML-RPC requests. Default: true
 |   ```synchcall.xmlrpc.token```                |   The token that the backend will require to be present for accepting XML-RPC requests. Mandatory if synchcall.xmlrpc.token.enabled is true
 
-
-##### REST interface parameters
+#### REST interface parameters
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   ```storm.rest.services.port```  |   REST services port. Default: **9998**
 
-##### Database connection parameters
+#### Database connection parameters
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -842,7 +836,7 @@ This agent transits ongoing srmPtP to SRM_FILE_LIFETIME_EXPIRED if the request p
 |   ```persistence.internal-db.connection-pool.maxActive```     |   Database connection pool max active connections. Default: **10**
 |   ```persistence.internal-db.connection-pool.maxWait```   |   Database connection pool max wait time to provide a connection. Default: **50**
 
-##### SRM Requests Picker
+#### SRM Requests Picker
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -851,7 +845,7 @@ This agent transits ongoing srmPtP to SRM_FILE_LIFETIME_EXPIRED if the request p
 |   ```asynch.PickingMaxBatchSize```    |   Maximum number of requests picked up at each polling time. Default: **100**
 |   ```scheduler.serial```          |   **DEPRECATED** Flag to enable the execution of all the request on a single thread. Default: **false**
 
-##### Worker threads
+#### Worker threads
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -871,19 +865,19 @@ This agent transits ongoing srmPtP to SRM_FILE_LIFETIME_EXPIRED if the request p
 |   ```scheduler.chunksched.copy.workerMaxPoolSize```   |   *Copy* worker pool max size. Default: **50**
 |   ```scheduler.chunksched.copy.queueSize```           |   *Copy* request queue maximum size. Default: **500**
 
-##### HTTP(S) protocol
+#### HTTP(S) protocol
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   ```gridhttps.enabled```     |   Flag to enable the support to HTTP and HTTPS protocols. Default: **false**
 
-##### Protocol balancing
+#### Protocol balancing
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   ```gridftp-pool.status-check.timeout``` |   Time in milliseconds after which the status of a GridFTP has to be verified. Default: **20000** (20 secs)
 
-##### Tape recall
+#### Tape recall
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -1416,46 +1410,58 @@ A `storm-backend-metrics.log` entry example:
 16:57:03.109 - synch.ls [(m1_count=286, count=21136) (max=123.98375399999999, min=4.299131, mean=9.130859862802883, p95=20.736006, p99=48.147704999999995) (m1_rate=4.469984951030006, mean_rate=0.07548032009470132)] duration_units=milliseconds, rate_units=events/second
 ```
 
-* `synch.ls`: Type of operation.
-* `m1_count=286`: Number of operation of the last minute.
-* `count=21136`: Number of operations from last startup.
-* `max=123.98375399999999`: Maximum duration of last bunch.
-* `min=4.299131`: Minimum duration of last bunch.
-* `mean=9.130859862802883`: Duration average of last bunch
-* `p95=20.736006`: The 95% of last bunch operations lasted less then 20.73ms
-* `p99=48.147704999999995`: The 99% of last bunch operations lasted less then 48.14ms
+|   Log                    |   Meaning           |
+|:-------------------------|:--------------------|
+| `synch.ls`               | Type of operation.
+| `m1_count=286`           | Number of operation of the last minute.
+| `count=21136`            | Number of operations from last startup.
+| `max=123.98375399999999` | Maximum duration of last bunch.
+| `min=4.299131`           | Minimum duration of last bunch.
+| `mean=9.130859862802883` | Duration average of last bunch
+| `p95=20.736006`          | The 95% of last bunch operations lasted less then 20.73ms
+| `p99=48.147704999999995` | The 99% of last bunch operations lasted less then 48.14ms
 
 Here is the list of current logged operations:
 
-* `synch`: Synch operations summary
-* `synch.af`: Synch srmAbortFiles operations
-* `synch.ar`: Synch srmAbortRequest operations
-* `synch.bol`: Synch srmBringOnLine operations
-* `synch.efl`: Synch srmExtendFileLifetime operations
-* `synch.gsm`: Synch srmGetSpaceMetadata operations
-* `synch.gst`: Synch srmGetSpaceToken operations
-* `synch.ls`: Synch srmLs operations
-* `synch.mkdir`: Synch srmMkDir operations
-* `synch.mv`: Synch srmMv operations
-* `synch.pd`: Synch srmPd operations
-* `synch.ping`: Synch srmPing operations
-* `synch.ptg`: Synch srmPtG operations
-* `synch.ptp`: ynch srmPtP operations
-* `synch.rf`: Synch srmRf operations
-* `synch.rm`: Synch srmRm operations
-* `synch.rmDir`: Synch srmRmDir operations
-* `synch.releaseSpace`: Synch srmReleaseSpace operations
-* `synch.reserveSpace`: Synch srmReserveSpace operations
-* `synch.sPtg`: Synch srmStatusPrepareToGet operations
-* `synch.sPtp`: Synch srmStatusPrepareToPut operations
-* `fs.aclOp`: Acl set/unset on filesystem operations
-* `fs.fileAttributeOp`: File attribute set/unset on filesystem operations
-* `fs.fileChownOp`: File ownership operations
-* `fs.fileOnDiskOp`: Is file on disk operations
-* `fs.fileTruncateOp`: File truncate operations
-* `fs.getFreeSpaceOp`: Get free space operations
-* `ea`: Extended attributes operations
+|   Operation          |   Description       |
+|:---------------------|:--------------------|
+| `synch`              | Synch operations summary
+| `synch.af`           | Synch srmAbortFiles operations
+| `synch.ar`           | Synch srmAbortRequest operations
+| `synch.bol`          | Synch srmBringOnLine operations
+| `synch.efl`          | Synch srmExtendFileLifetime operations
+| `synch.gsm`          | Synch srmGetSpaceMetadata operations
+| `synch.gst`          | Synch srmGetSpaceToken operations
+| `synch.ls`           | Synch srmLs operations
+| `synch.mkdir`        | Synch srmMkDir operations
+| `synch.mv`           | Synch srmMv operations
+| `synch.pd`           | Synch srmPd operations
+| `synch.ping`         | Synch srmPing operations
+| `synch.ptg`          | Synch srmPtG operations
+| `synch.ptp`          | Synch srmPtP operations
+| `synch.rf`           | Synch srmRf operations
+| `synch.rm`           | Synch srmRm operations
+| `synch.rmDir`        | Synch srmRmDir operations
+| `synch.releaseSpace` | Synch srmReleaseSpace operations
+| `synch.reserveSpace` | Synch srmReserveSpace operations
+| `synch.sPtg`         | Synch srmStatusPrepareToGet operations
+| `synch.sPtp`         | Synch srmStatusPrepareToPut operations
+| `fs.aclOp`           | Acl set/unset on filesystem operations
+| `fs.fileAttributeOp` | File attribute set/unset on filesystem operations
+| `fs.fileChownOp`     | File ownership operations
+| `fs.fileOnDiskOp`    | Is file on disk operations
+| `fs.fileTruncateOp`  | File truncate operations
+| `fs.getFreeSpaceOp`  | Get free space operations
+| `ea`                 | Extended attributes operations
 
+
+### StoRM WebDAV Logging
+
+The service logs live in the `/var/log/storm/webdav` directory.
+
+- `storm-webdav-server.log` provides the main service log
+- `storm-webdav-server-access.log` provides an http access log
+- `storm-webdav-server-metrics.log` provides a metrics log, similar to the StoRM backend metrics.
 
 ### GridFTP Logging
 
