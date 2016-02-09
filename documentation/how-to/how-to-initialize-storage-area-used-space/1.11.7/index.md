@@ -1,6 +1,8 @@
 ---
 layout: howto
 title: StoRM How-To - Initialize Storage Area used space
+redirect_from:
+  - /documentation/how-to/how-to-initialize-storage-area-used-space/
 ---
 
 # StoRM Backend Storage Usage Initialization

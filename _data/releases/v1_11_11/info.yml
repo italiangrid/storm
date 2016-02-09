@@ -4,7 +4,6 @@ components: [storm-backend-server]
 description: >
   This release provides an important bug fix on StoRM Backend due to a covariance
   issue on Java code introduced with StoRM v1.11.10.
-  <br/>Then, it's **HIGHLY RECOMMENDED** to upgrade your installation.
 installation: >
   To install, update and restart StoRM Backend component:
 
