@@ -74,7 +74,6 @@ public class ExpiredPutRequestsAgent extends TimerTask {
 			int numExpired = ids.size();
 			
 			if (numExpired == 0) {
-				log.info("{}: Nothing to do.", name);
 				return;
 			}
 			log.info("{}: {} expired requests retrieved from db", name, numExpired);
