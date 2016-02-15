@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="60 seconds">
 
+  <appender name="METRICS"
+    class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <File>${storm.log.dir}/storm-backend-metrics.log</File>
+   
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <FileNamePattern>${storm.log.dir}/storm-backend-metrics-%d{yyyy-MM-dd}.log.gz
+      </FileNamePattern>
+      <MaxHistory>90</MaxHistory>
+    </rollingPolicy>
+
+    <encoder>
+      <pattern>%date{HH:mm:ss.SSS} - %msg%n</pattern>
+    </encoder>
+    
+  </appender>
   <appender name="PROCESS"
     class="ch.qos.logback.core.rolling.RollingFileAppender">
     <File>${storm.log.dir}/storm-backend.log</File>
@@ -51,6 +66,11 @@
 
   <logger name="it.grid.storm" additivity="false" level="INFO">
     <appender-ref ref="PROCESS" />
+  </logger>
+  
+  <logger name="it.grid.storm.metrics.StormMetricsReporter" 
+    additivity="false" level="INFO">
+    <appender-ref ref="METRICS" />
   </logger>
 
   <!-- Uncomment this section to debug GPFS SA quota updates 

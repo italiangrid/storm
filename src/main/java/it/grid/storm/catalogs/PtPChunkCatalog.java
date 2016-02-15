@@ -17,6 +17,7 @@
 
 package it.grid.storm.catalogs;
 
+import it.grid.storm.catalogs.timertasks.ExpiredPutRequestsAgent;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.common.types.TimeUnit;
@@ -90,7 +91,7 @@ public class PtPChunkCatalog {
 	 */
 	private PtPChunkCatalog() {
 
-		transiter.scheduleAtFixedRate(new TransitExpiredPutRequestTimerTask(), delay, period);
+		transiter.scheduleAtFixedRate(new ExpiredPutRequestsAgent(), delay, period);
 	}
 
 	/**

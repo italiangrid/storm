@@ -1,13 +1,13 @@
 /*
- * 
+ *
  * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,7 +16,7 @@
  */
 
 /**
- * 
+ *
  */
 package it.grid.storm.tape.recalltable;
 
@@ -58,7 +58,7 @@ public class TapeRecallCatalog {
 
   /**
    * Default constructor
-   * 
+   *
    * @throws DataAccessException
    */
   public TapeRecallCatalog() {
@@ -68,7 +68,7 @@ public class TapeRecallCatalog {
 
   /**
    * Change the retry field of the rows identified by the provided groupTaskId
-   * 
+   *
    * @param groupTaskId @param newValue
    */
   public void changeGroupTaskRetryValue(UUID groupTaskId, int newValue) {
@@ -82,7 +82,7 @@ public class TapeRecallCatalog {
 
   /**
    * Determines how many task rows have an in-progress state
-   * 
+   *
    * @return @throws DataAccessException
    */
   public int getNumberTaskInProgress() throws DataAccessException {
@@ -101,7 +101,7 @@ public class TapeRecallCatalog {
 
   /**
    * Determines how many task rows have an in-progress state given a certain VO
-   * 
+   *
    * @param voName @return @throws DataAccessException
    */
   public int getNumberTaskInProgress(String voName) throws DataAccessException {
@@ -120,7 +120,7 @@ public class TapeRecallCatalog {
 
   /**
    * Determines how many task rows have a queued state
-   * 
+   *
    * @return @throws DataAccessException
    */
   public int getNumberTaskQueued() throws DataAccessException {
@@ -139,7 +139,7 @@ public class TapeRecallCatalog {
 
   /**
    * Determines how many task rows have a queued state given a certain VO
-   * 
+   *
    * @return @throws DataAccessException
    */
   public int getNumberTaskQueued(String voName) throws DataAccessException {
@@ -157,10 +157,10 @@ public class TapeRecallCatalog {
   }
 
   /**
-   * 
+   *
    * Determines how many task rows have a queued state and their deferred start
    * time is elapsed
-   * 
+   *
    * @return @throws DataAccessException
    */
   public int getReadyForTakeOver() throws DataAccessException {
@@ -180,7 +180,7 @@ public class TapeRecallCatalog {
   /**
    * Determines how many task rows given a certain VO have a queued state and
    * their deferred start time is elapsed
-   * 
+   *
    * @return @throws DataAccessException
    */
   public int getReadyForTakeOver(String voName) throws DataAccessException {
@@ -209,7 +209,7 @@ public class TapeRecallCatalog {
   /**
    * Verifies that a recall task with the given taskId and request token exists
    * on the database
-   * 
+   *
    * @param taskId @param requestToken @return true if the recall task
    * exists @throws DataAccessException
    */
@@ -238,22 +238,25 @@ public class TapeRecallCatalog {
   }
 
   /**
-   * @param n
+   * @param maxSize The max number of purged requests @return the number of
+   * purged requests
    */
-  public void purgeCatalog(int n) {
+  public int purgeCatalog(int maxSize) {
 
+    int n = 0;
     try {
-      log.debug("purging.. '{}' tasks.", n);
-      tapeRecallDAO.purgeCompletedTasks(n);
+      log.debug("purging.. '{}' tasks.", maxSize);
+      n = tapeRecallDAO.purgeCompletedTasks(maxSize);
     } catch (DataAccessException e) {
       log.error("Unable to takeover a task {}", e);
     }
+    return n;
   }
 
   /**
    * Performs the take-over of max numberOfTaks tasks possibly returning more
    * than one file recall task for some files
-   * 
+   *
    * @param n @return
    */
   public ArrayList<TapeRecallTO> takeoverNTasksWithDoubles(int numberOfTaks) {
@@ -333,7 +336,7 @@ public class TapeRecallCatalog {
 
   /**
    * Method used by PtGChunk and BoLChunk to request the recall of a file
-   * 
+   *
    * @param chunk @param voName @param absoluteFileName @return the id of the
    * recall task in charge of recall the file @throws DataAccessException
    */
@@ -370,7 +373,7 @@ public class TapeRecallCatalog {
 
   /**
    * Insert a recall task not necessary related to a chunk
-   * 
+   *
    * @param task @return @throws DataAccessException
    */
   public UUID insertNewTask(TapeRecallTO task) throws DataAccessException {
@@ -396,7 +399,7 @@ public class TapeRecallCatalog {
   }
 
   /**
-   * 
+   *
    * @param chunkData @return @throws DataAccessException
    */
   private TapeRecallTO getTaskFromChunk(RequestData chunkData)

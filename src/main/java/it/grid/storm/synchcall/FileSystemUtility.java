@@ -18,8 +18,11 @@
 package it.grid.storm.synchcall;
 
 import it.grid.storm.filesystem.Filesystem;
+import it.grid.storm.filesystem.FilesystemIF;
 import it.grid.storm.filesystem.LocalFile;
+import it.grid.storm.filesystem.MetricsFilesystemAdapter;
 import it.grid.storm.filesystem.swig.genericfs;
+import it.grid.storm.metrics.StormMetricRegistry;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
@@ -56,7 +59,7 @@ public class FileSystemUtility {
 		LocalFile file = null;
 		VirtualFSInterface vfs = null;
 		genericfs fsDriver = null;
-		Filesystem fs = null;
+		FilesystemIF fs = null;
 		try {
 			vfs = NamespaceDirector.getNamespace().resolveVFSbyAbsolutePath(
 				absolutePath);
@@ -70,7 +73,11 @@ public class FileSystemUtility {
 
 		try {
 			fsDriver = (genericfs) (vfs.getFSDriver()).newInstance();
-			fs = new Filesystem(fsDriver);
+			
+			FilesystemIF wrappedFs = new Filesystem(fsDriver); 
+			fs = new MetricsFilesystemAdapter(wrappedFs, 
+			  StormMetricRegistry.INSTANCE.getRegistry());
+			
 			file = new LocalFile(absolutePath, fs);
 		} catch (NamespaceException ex1) {
 			log.error("Error while retrieving FS driver", ex1);
