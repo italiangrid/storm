@@ -289,7 +289,7 @@ be necessarily configured in the */etc/yum.repos.d* directory.
 
 #### Install EPEL Repository
 
-Install **EPEL Repository** from EPEL release rpm:
+Install *EPEL Repository* from EPEL release rpm:
 
 SL5:
 
@@ -307,9 +307,9 @@ $ yum localinstall --nogpgcheck epel-release-6-8.noarch.rpm
 
 #### Install EGI Trust Anchors Repository
 
-Install **EGI Trust Anchors Repository** by following [EGI instructions][egi-instructions].
+Install *EGI Trust Anchors repository* by following [EGI instructions][egi-instructions].
 
-You must disable the **DAG repository** if enabled. To check if it is enabled:
+You must disable the *DAG repository* if enabled. To check if it is enabled:
 
 ```bash
 $ grep enabled /etc/yum.repos.d/dag.repo
@@ -327,7 +327,7 @@ $ vi /etc/yum.repos.d/dag.repo
 
 #### Install EMI repository
 
-Download and install **EMI repository** from EMI release rpm:
+Download and install *EMI repository* from EMI release rpm:
 
 SL5:
 
@@ -353,8 +353,8 @@ You still need to install EMI3 repositories (as detailed above) for installation
 To install the repository files, run the following commands (as root):
 
 ```bash
-    (SL5) $ wget http://italiangrid.github.io/storm/repo/storm_sl5.repo -O /etc/yum.repos.d/storm_sl5.repo
-    (SL6) $ wget http://italiangrid.github.io/storm/repo/storm_sl6.repo -O /etc/yum.repos.d/storm_sl6.repo
+(SL5) $ wget http://italiangrid.github.io/storm/repo/storm_sl5.repo -O /etc/yum.repos.d/storm_sl5.repo
+(SL6) $ wget http://italiangrid.github.io/storm/repo/storm_sl6.repo -O /etc/yum.repos.d/storm_sl6.repo
 ```
 
 ### Install StoRM components
@@ -371,6 +371,12 @@ To install the StoRM metapackages necessary to the SRM interface, install:
 $ yum install emi-storm-backend-mp
 $ yum install emi-storm-frontend-mp
 $ yum install emi-storm-globus-gridftp-mp
+```
+
+If your StoRM Backend runs on top of GPFS, be sure to install the `storm-native-libs-gpfs` package:
+
+```bash
+$ yum install storm-native-libs-gpfs
 ```
 
 If you want to add a WebDAV endpoint install also:
@@ -403,13 +409,13 @@ $ yum install storm-pre-assembled-configuration
 and then edit */etc/storm/siteinfo/storm.def* with:
 
 ```bash
-    STORM_BACKEND_HOST="<your full hostname>"
+STORM_BACKEND_HOST="<your full hostname>"
 ```
 
 Set also the JAVA_LOCATION to:
 
 ```bash
-    JAVA_LOCATION="/usr/lib/jvm/java"
+JAVA_LOCATION="/usr/lib/jvm/java"
 ```
 
 Then you can configure StoRM by launching YAIM with:
@@ -1338,8 +1344,10 @@ This is called the **Detailed Monitoring Round**. After this, the Monitoring Sum
 If you have problem at gSOAP level, and you have already looked at the troubleshooting section of the StoRM site without finding a solution, and you are brave enough, you could try to find some useful information on the gSOAP log file.
 To enable gSOAP logging, set the following environment variables:
 
-    $CGSI_TRACE=1
-    $CGSI_TRACEFILE=/tmp/tracefile
+```bash
+$ export CGSI_TRACE=1
+$ export CGSI_TRACEFILE=/tmp/tracefile
+```
 
 and restart the Frontend daemon by calling directly the init script */etc/init.d/storm-frontend-server* and see if the error messages contained in */tmp/tracefile* could help. Please be very careful, it prints really a huge amount of information.
 
@@ -1354,10 +1362,10 @@ The file
 contains the following information:
 
 ```xml
-    <logger name="it.grid.storm" additivity="false">
-        <level value="DEBUG" />
-        <appender-ref ref="PROCESS" />
-    </logger>
+<logger name="it.grid.storm" additivity="false">
+    <level value="DEBUG" />
+    <appender-ref ref="PROCESS" />
+</logger>
 ```
 
 the *value* can be set to the desired log level. Please be careful, because logging operations can impact on system performance (even 30% slower with DEBUG in the worst case). The suggest logging level for production endpoint is INFO. In case the log level is modified, the Backend has not to be restarted to read the new value.
@@ -1482,13 +1490,13 @@ Administrators can redirect the LCMAPS logging to a different log file than the 
 As example, consider the following setup for the gridftp service:
 
 ```bash
-    vim /etc/sysconfig/globus-gridftp
+vim /etc/sysconfig/globus-gridftp
 ```
 
 insert:
 
 ```bash
-    export LLGT_LOG_FILE="/var/log/storm/storm-gridftp-lcmaps.log"
+export LLGT_LOG_FILE="/var/log/storm/storm-gridftp-lcmaps.log"
 ```
 
 After restarting the service, all LCMAPS calls will be logged to the new file.

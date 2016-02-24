@@ -2,8 +2,14 @@ date: 10.02.2016
 version: 1.11.11
 components: [storm-backend-server]
 description: >
-  This release provides an important bug fix on StoRM Backend due to a covariance
-  issue on Java code introduced with StoRM v1.11.10.
+  This release:
+
+    * fixes StoRM Backend crash on startup
+
+  and introduces:
+
+    * new metrics about synchronous operations load and performance (see [sys-admin guide logging section](!SITE_URL!/documentation/sysadmin-guide/1.11.11/#storm-backend-metricslog));
+    * little adjustments to the Requests Garbage Collector's default values (see [sys-admin guide requests-garbage-collector section](!SITE_URL!/documentation/sysadmin-guide/1.11.11/#requests-garbage-collector)).
 installation: >
   To install, update and restart StoRM Backend component:
 

@@ -8,7 +8,7 @@ Released on **{{rdata.date}}**.
 
 ### Description
 
-{{ rdata.description }}
+{{ rdata.description | replace: '!SITE_URL!', site.baseurl }}
 
 ### Released components
 
