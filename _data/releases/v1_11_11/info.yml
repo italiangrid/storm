@@ -1,19 +1,33 @@
-date: 10.02.2016
+date: 24.02.2016
 version: 1.11.11
 components: [storm-backend-server]
 description: >
   This release:
 
-    * fixes StoRM Backend crash on startup
+    * fixes a StoRM backend issue that prevented correct startup on Java 6 and 7
 
   and introduces:
 
-    * new metrics about synchronous operations load and performance (see [sys-admin guide logging section](!SITE_URL!/documentation/sysadmin-guide/1.11.11/#storm-backend-metricslog));
-    * little adjustments to the Requests Garbage Collector's default values (see [sys-admin guide requests-garbage-collector section](!SITE_URL!/documentation/sysadmin-guide/1.11.11/#requests-garbage-collector)).
+    * a mechanism to gather metrics about synchronous operations load and
+    performance (see [sys-admin guide logging section](!SITE_URL!/documentation/sysadmin-guide/1.11.11/#storm-backend-metricslog));
+    * changes to the Request Garbage Collector's default configuration, which now
+    implements an adaptive mechanism to keep the request database dimension under
+    control in high-load scenarios (see
+    [sys-admin guide requests-garbage-collector section](!SITE_URL!/documentation/sysadmin-guide/1.11.11/#requests-garbage-collector)).
+
 installation: >
-  To install, update and restart StoRM Backend component:
+  To upgrade to StoRM v.1.11.11, first of all update the involved packages:
 
       yum update -y storm-backend-server
-      service storm-backend-server restart
 
-  Alternatively, you can update and run YAIM.
+  Check your `/etc/storm/backend-server` directory, you should find a new file:
+  `logging.xml.rpmnew`. Backup your current logging configuration and replace it
+  with the newest:
+
+      cd /etc/storm/backend-server
+      cp logging.xml logging.xml.backup
+      cp logging.xml.rpmnew logging.xml
+
+  Restart StoRM Backend service:
+
+      service storm-backend-server restart

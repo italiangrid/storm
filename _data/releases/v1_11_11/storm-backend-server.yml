@@ -10,18 +10,32 @@ features:
   - id: STOR-890
     title: Finer grained metrics for the storm-backend
 description: >
-  This release fixes a covariance issue on Java code, introduced with StoRM v1.11.10. This issue is verified when a default acl list is set for a storage area. In that case, StoRM Backend will fail on start.
+  This release:
 
+    * fixes a StoRM backend issue that prevented correct startup on Java 6 and 7
 
-  This release introduces also:
+  and introduces:
 
-    * a new log file with finer grained metrics about synchronous operations (see [sys-admin guide logging section](!SITE_URL!/documentation/sysadmin-guide/1.11.11/#storm-backend-metricslog));
-    * new default values for Requests Garbage Collector (see [sys-admin guide requests-garbage-collector section](!SITE_URL!/documentation/sysadmin-guide/1.11.11/#requests-garbage-collector)).
+    * a mechanism to gather metrics about synchronous operations load and
+    performance (see [sys-admin guide logging section](!SITE_URL!/documentation/sysadmin-guide/1.11.11/#storm-backend-metricslog));
+    * changes to the Request Garbage Collector's default configuration, which now
+    implements an adaptive mechanism to keep the request database dimension under
+    control in high-load scenarios (see
+    [sys-admin guide requests-garbage-collector section](!SITE_URL!/documentation/sysadmin-guide/1.11.11/#requests-garbage-collector)).
 
 installation: >
-  To install, update and restart StoRM Backend:
+  To upgrade to v.1.11.11, first of all update the package:
 
       yum update -y storm-backend-server
-      service storm-backend-server restart
 
-  Alternatively, you can update and run YAIM.
+  Check your `/etc/storm/backend-server` directory, you should find a new file:
+  `logging.xml.rpmnew`. Backup your current logging configuration and replace it
+  with the newest:
+
+      cd /etc/storm/backend-server
+      cp logging.xml logging.xml.backup
+      cp logging.xml.rpmnew logging.xml
+
+  Restart StoRM Backend service:
+
+      service storm-backend-server restart
