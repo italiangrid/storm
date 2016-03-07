@@ -11,6 +11,7 @@ gems:
   - jekyll-redirect-from
 
 baseurl: /storm
+future: true
 
 issue_base_url: "https://issues.infn.it/browse/"
 website_base_url: "http://italiangrid.github.io/storm"
