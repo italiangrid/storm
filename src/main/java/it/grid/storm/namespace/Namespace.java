@@ -316,7 +316,7 @@ public class Namespace implements NamespaceInterface {
 	private boolean isStoRIEnclosed(StoRI stori, VirtualFSInterface vfs)
 		throws NamespaceException {
 
-		return getStoRICanonicalPath(stori).startsWith(vfs.getRootPath());
+		return resolveVFSbyLocalFile(stori.getLocalFile()).getRootPath().equals(vfs.getRootPath()); 
 	}
 
 	private StoRI buildStoRI(VirtualFSInterface vfs, MappingRule mappingRule,
@@ -372,6 +372,12 @@ public class Namespace implements NamespaceInterface {
 		VirtualFSInterface vfs = resolveVFSbyAbsolutePath(absolutePath);
 		log.debug("VFS retrivied is {}", vfs.getAliasName());
 		log.debug("VFS instance is {}", vfs.hashCode());
+		return resolveStoRIbyAbsolutePath(absolutePath, vfs);
+	}
+	
+	public StoRI resolveStoRIbyAbsolutePath(String absolutePath,
+		VirtualFSInterface vfs) throws NamespaceException {
+
 		String relativePath = NamespaceUtil.extractRelativePath(vfs.getRootPath(),
 			absolutePath);
 		StoRI stori = vfs.createFile(relativePath);

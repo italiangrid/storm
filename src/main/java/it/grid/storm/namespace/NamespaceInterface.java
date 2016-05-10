@@ -154,6 +154,18 @@ public interface NamespaceInterface {
 	 */
 	public StoRI resolveStoRIbyAbsolutePath(String absolutePath,
 		GridUserInterface user) throws NamespaceException;
+	
+	/**
+	 * 
+	 * @param absolutePath
+	 *          String
+	 * @param vfs
+	 *          VirtualFSInterface
+	 * @return StoRI
+	 * @throws NamespaceException
+	 */
+	public StoRI resolveStoRIbyAbsolutePath(String absolutePath,
+		VirtualFSInterface vfs) throws NamespaceException;
 
 	/**
 	 * 
