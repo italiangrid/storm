@@ -316,7 +316,7 @@ public class Namespace implements NamespaceInterface {
 	private boolean isStoRIEnclosed(StoRI stori, VirtualFSInterface vfs)
 		throws NamespaceException {
 
-    return resolveVFSbyLocalFile(stori.getLocalFile()).getRootPath().equals(vfs.getRootPath()); 
+		return resolveVFSbyLocalFile(stori.getLocalFile()).getRootPath().equals(vfs.getRootPath()); 
 	}
 
 	private StoRI buildStoRI(VirtualFSInterface vfs, MappingRule mappingRule,
