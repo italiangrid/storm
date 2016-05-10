@@ -1,6 +1,6 @@
 [StoRM-Develop-SL5]
 name=StoRM-Develop-SL5
-baseurl=http://radiohead.cnaf.infn.it:9999/job/repo_storm_develop_SL5/lastSuccessfulBuild/artifact/yum/
+baseurl=http://radiohead.cnaf.infn.it:9999/view/pkg/job/trigger-pkg.storm_develop/BUILD_PLATFORM=centos5/lastSuccessfulBuild/artifact/repo
 protect=1
 enabled=1
 priority=1
