@@ -1,6 +1,6 @@
 [StoRM-Develop-SL6]
 name=StoRM-Develop-SL6
-baseurl=http://radiohead.cnaf.infn.it:9999/view/pkg/job/trigger-pkg.storm_develop/BUILD_PLATFORM=centos6/lastSuccessfulBuild/artifact/repo
+baseurl=http://radiohead.cnaf.infn.it:9999/view/STORM/job/trigger-pkg.storm_develop/BUILD_PLATFORM=centos6/lastSuccessfulBuild/artifact/storm.repo
 protect=1
 enabled=1
 priority=1
