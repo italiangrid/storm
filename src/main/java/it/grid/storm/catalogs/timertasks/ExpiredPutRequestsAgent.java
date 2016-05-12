@@ -1,4 +1,4 @@
-package it.grid.storm.catalogs;
+package it.grid.storm.catalogs.timertasks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,19 +9,20 @@ import java.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.grid.storm.catalogs.PtPChunkDAO;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.synchcall.command.datatransfer.PutDoneCommand;
 import it.grid.storm.synchcall.command.datatransfer.PutDoneCommandException;
 
 
-public class TransitExpiredPutRequestTimerTask extends TimerTask {
+public class ExpiredPutRequestsAgent extends TimerTask {
 
 	private static final Logger log = LoggerFactory
-		.getLogger(TransitExpiredPutRequestTimerTask.class);
+		.getLogger(ExpiredPutRequestsAgent.class);
 	
 	private final PtPChunkDAO dao = PtPChunkDAO.getInstance();
-	private final String name = TransitExpiredPutRequestTimerTask.class.getName();
+	private final String name = ExpiredPutRequestsAgent.class.getName();
 
 	private Map<Long,String> getExpiredRequests() {
 		
@@ -73,7 +74,6 @@ public class TransitExpiredPutRequestTimerTask extends TimerTask {
 			int numExpired = ids.size();
 			
 			if (numExpired == 0) {
-				log.info("{}: Nothing to do.", name);
 				return;
 			}
 			log.info("{}: {} expired requests retrieved from db", name, numExpired);

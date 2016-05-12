@@ -1111,33 +1111,28 @@ public class RequestSummaryDAO {
 	 * Notice that in case of errors only error messages get logged. An empty List
 	 * is also returned.
 	 */
-	public List<String> purgeExpiredRequests() {
+	public List<String> purgeExpiredRequests(long expiredRequestTime, int purgeSize) {
 
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		List<String> requestTokens = new ArrayList<String>();
 		List<Long> ids = new ArrayList<Long>();
+		
 		if (!checkConnection()) {
 			log.error("REQUEST SUMMARY DAO - purgeExpiredRequests: unable to get a "
 				+ "valid connection!");
 			return requestTokens;
 		}
+		
 		try {
 			// start transaction
 			con.setAutoCommit(false);
-
-			String stmt = "SELECT ID, r_token FROM request_queue WHERE"
-				+ " UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(timeStamp) > "
-				+ Configuration.getInstance().getExpiredRequestTime()
-				+ " AND status <> "
-				+ StatusCodeConverter.getInstance()
-					.toDB(TStatusCode.SRM_REQUEST_QUEUED)
-				+ " AND status <> "
-				+ StatusCodeConverter.getInstance().toDB(
-					TStatusCode.SRM_REQUEST_INPROGRESS) + " LIMIT "
-				+ Configuration.getInstance().getPurgeBatchSize();
-
+			String stmt = "SELECT ID, r_token FROM request_queue WHERE UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(timeStamp) > ? AND status <> ?  AND status <> ? LIMIT ?";
 			ps = con.prepareStatement(stmt);
+			ps.setLong(1, expiredRequestTime);
+			ps.setInt(2, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED));
+			ps.setInt(3, StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_INPROGRESS));
+			ps.setInt(4, purgeSize);
 			logWarnings(con.getWarnings());
 			log.trace("REQUEST SUMMARY DAO - purgeExpiredRequests - {}", ps);
 
@@ -1234,17 +1229,14 @@ public class RequestSummaryDAO {
 			// start transaction
 			con.setAutoCommit(false);
 
-			String stmt = "SELECT count(*) FROM request_queue WHERE"
-				+ " UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(timeStamp) > "
-				+ Configuration.getInstance().getExpiredRequestTime()
-				+ " AND status <> "
-				+ StatusCodeConverter.getInstance()
-					.toDB(TStatusCode.SRM_REQUEST_QUEUED)
-				+ " AND status <> "
-				+ StatusCodeConverter.getInstance().toDB(
-					TStatusCode.SRM_REQUEST_INPROGRESS);
-
+			String stmt = "SELECT count(*) FROM request_queue WHERE UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(timeStamp) > ? AND status <> ? AND status <> ? ";
 			ps = con.prepareStatement(stmt);
+			ps.setLong(1, Configuration.getInstance().getExpiredRequestTime());
+			ps.setInt(2,
+				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED));
+			ps.setInt(3, StatusCodeConverter.getInstance()
+				.toDB(TStatusCode.SRM_REQUEST_INPROGRESS));
+
 			logWarnings(con.getWarnings());
 			log.trace("REQUEST SUMMARY DAO - Number of expired requests: {}", ps);
 			rs = ps.executeQuery();
