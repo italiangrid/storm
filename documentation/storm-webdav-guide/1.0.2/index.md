@@ -7,24 +7,24 @@ redirect_from:
 
 # StoRM WebDAV User Guide
 
-* [The WebDAV protocol](#theprotocol)
-* [StoRM WebDAV](#stormwebdav)
-  * [Installation and configuration](#installandconf)
-  * [Endpoints](#davendpoints)
-  * [Authentication and authorization](#authandauth)
+* [The WebDAV protocol](#the-webdav-protocol)
+* [StoRM WebDAV](#storm-webdav)
+  * [Installation and configuration](#installation-and-configuration)
+  * [Endpoints](#endpoints)
+  * [Authentication and authorization](#authentication-and-authorization)
   * [Notes](#notes)
 * [Examples](#examples)
-  * [Download file](#ex1)
-  * [Download multiple file ranges](#ex2)
-  * [Upload file](#ex3)
-  * [Check if resource exists](#ex4)
-  * [Create directory](#ex5)
-  * [Delete file](#ex6)
-  * [Copy/duplicate file](#ex7)
-  * [Move/rename file](#ex8)
-  * [List directory](#ex9)
+  * [Download file](#download-file)
+  * [Download multiple file ranges](#download-multiple-file-ranges)
+  * [Upload file](#upload-file)
+  * [Check if resource exists](#check-if-resource-exists)
+  * [Create directory](#create-directory)
+  * [Delete file](#delete-file)
+  * [Copy or duplicate file](#copy-or-duplicate-file)
+  * [Move or rename file](#move-or-rename-file)
+  * [List directory](#list-directory)
 
-## The WebDAV protocol <a name="theprotocol">&nbsp;</a>
+## The WebDAV protocol
 
 <img src="{{ site.baseurl }}/assets/images/webdav-logo.jpg" alt="webdav-logo" width="100" style="float: left; margin-right: 30px; margin-left: 0px; margin-top: 10px;"/>
 
@@ -43,7 +43,7 @@ In a few words, the WebDAV protocol mainly abstracts concepts such as resource p
 While the status codes provided by HTTP/1.1 are sufficient to describe most error conditions encountered by WebDAV methods, there are some errors that do not fall neatly into the existing categories, so the WebDAV specification defines some extra status codes. Since some WebDAV methods may operate over many resources, the Multi-Status response has been introduced to return status information for multiple resources.
 WebDAV uses XML for property names and some values, and also uses XML to marshal complicated requests and responses.
 
-## StoRM WebDAV <a name="stormwebdav">&nbsp;</a>
+## StoRM WebDAV
 
 From [StoRM v.1.11.7][storm-1-11-7] release, the StoRM service that provides valid WebDAV endpoints for each managed storage area is *StoRM WebDAV*.
 
@@ -51,31 +51,31 @@ From [StoRM v.1.11.7][storm-1-11-7] release, the StoRM service that provides val
 
 **Important**: The StoRM WebDAV service is released and supported only on SL/CENTOS 6.
 
-### Installation and configuration <a name="installandconf">&nbsp;</a>
+### Installation and configuration
 
-See the [System Administration Guide][webdavconf] to learn how to install and configure the service. 
+See the [System Administration Guide][webdavconf] to learn how to install and configure the service.
 
-### Endpoints <a name="davendpoints">&nbsp;</a>
+### Endpoints
 
-For each Storage Area, both/either a plain HTTP and/or a HTTP over SSL endpoint can be enabled. The default ports are **8085** (HTTP) and **8443** (HTTPS). 
+For each Storage Area, both/either a plain HTTP and/or a HTTP over SSL endpoint can be enabled. The default ports are **8085** (HTTP) and **8443** (HTTPS).
 All the following URLs are valid endpoints for a storage area:
 
     http://example.infn.it:8085/storage_area_accesspoint
     https://example.infn.it:8443/storage_area_accesspoint
-    
+
 To fully support the old *StoRM GridHTTPs* webdav endpoints, used until StoRM v1.11.6, all the URLs with *webdav* context path are accepted by *StoRM WebDAV*:
-    
+
     http://example.infn.it:8085/webdav/storage_area_accesspoint
     https://example.infn.it:8443/webdav/storage_area_accesspoint
 
-### Authentication and authorization <a name="authandauth">&nbsp;</a>
+### Authentication and authorization
 
 Users authentication within *StoRM WebDAV* is made through a valid VOMS proxy. All the users that provide a valid x509 VOMS proxy are authorized to access all the content of the storage area in read/write mode.
 
 The most common way to authenticate and be authorized to read/write data into a Storage Area is by providing the right VOMS credentials through a valid VOMS Proxy. Otherwise, through the definition of a VOMS map file, a Storage Area can be configure to accept the list of VO members as obtained by running the `voms-admin list-users` command.
 When VOMS mapfiles are enabled, users can authenticate to the StoRM webdav
 service using the certificate in their browser and be granted VOMS attributes
-if their subject is listed in one of the supported VOMS mapfile. For each supported VO, a file having the same name as the VO is put in the voms-mapfiles directory (`/etc/storm/storm-webdav/vo-mapfiles.d`). 
+if their subject is listed in one of the supported VOMS mapfile. For each supported VO, a file having the same name as the VO is put in the voms-mapfiles directory (`/etc/storm/storm-webdav/vo-mapfiles.d`).
 
 Example: to generate a VOMS mapfile for the cms VO, run the following command
 
@@ -85,13 +85,13 @@ Example: to generate a VOMS mapfile for the cms VO, run the following command
 
 See more details [here][vomapfiles]. Read permissions of the content of a storage area can also be extendend to anonymous user (it's disabled by default).
 
-### Notes <a name="notes">&nbsp;</a>
+### Notes
 
 Both the old ```storm-gridhttps-server``` and the new ```storm-webdav``` components implements WebDAV protocol by using [*Milton*](http://milton.io/) open source java library.
 
 ![milton]({{ site.baseurl }}/assets/images/milton.png)
 
-## Examples <a name="examples">&nbsp;</a>
+## Examples
 
 The most common WebDAV clients are:
 
@@ -128,9 +128,7 @@ $ cd $HOME
 $ voms-proxy-init --voms test.vo --cert test0.p12
 ```
 
-
-<br/>
-### Download file <a name="ex1">&nbsp;</a>
+### Download file
 
 Having the remote file:
 
@@ -145,8 +143,7 @@ use:
 {% assign example=site.data.davexamples.downloadfile %}
 {% include tab-template.liquid %}
 
-<br/>
-### Download multiple file ranges <a name="ex2">&nbsp;</a>
+### Download multiple file ranges
 
 Having the remote file:
 
@@ -161,49 +158,41 @@ use:
 {% assign example=site.data.davexamples.downloadfileranges %}
 {% include tab-template.liquid %}
 
-<br/>
-### Upload file <a name="ex3">&nbsp;</a>
+### Upload file
 
 {% assign example=site.data.davexamples.uploadfile %}
 {% include tab-template.liquid %}
 
-<br/>
-### Check if resource exists <a name="ex4">&nbsp;</a>
+### Check if resource exists
 
 To check if a resource exists without download any data in case of a file, the HTTP HEAD method is used. HEAD acts like HTTP/1.1, so HEAD is a GET without a response message body.
 
 {% assign example=site.data.davexamples.existsfile %}
 {% include tab-template.liquid %}
 
-<br/>
-### Create directory <a name="ex5">&nbsp;</a>
+### Create directory
 
 {% assign example=site.data.davexamples.createdir %}
 {% include tab-template.liquid %}
 
-<br/>
-### Delete file <a name="ex6">&nbsp;</a>
+### Delete file
 
 {% assign example=site.data.davexamples.deletefile %}
 {% include tab-template.liquid %}
 
-<br/>
-### Copy/duplicate file <a name="ex7">&nbsp;</a>
+### Copy or duplicate file
 
 {% assign example=site.data.davexamples.copyfile %}
 {% include tab-template.liquid %}
 
-<br/> 
-### Move/rename file <a name="ex8">&nbsp;</a>
+### Move or rename file
 
 {% assign example=site.data.davexamples.movefile %}
 {% include tab-template.liquid %}
 
-<br/>
+### List directory
 
-### List directory <a name="ex9">&nbsp;</a>
-
-There are two ways to get the list of the resources into a remote directory: 
+There are two ways to get the list of the resources into a remote directory:
 
 - the first is through an HTTP GET which returns a human readable version of all the content of the directory;
 - the second is through a WebDAV PROPFIND which returns a structured XML body.
@@ -215,12 +204,12 @@ Clients may submit through the body of the request a 'propfind' XML element. It'
 * a particular property value (by using the 'prop' element)
 
 ```xml
-<?xml version="1.0" encoding="utf-8" ?> 
-  <D:propfind xmlns:D="DAV:"> 
-    <D:prop xmlns:R="http://ns.example.com/boxschema/"> 
-      <R:author/> 
-      <R:title/> 
-    </D:prop> 
+<?xml version="1.0" encoding="utf-8" ?>
+  <D:propfind xmlns:D="DAV:">
+    <D:prop xmlns:R="http://ns.example.com/boxschema/">
+      <R:author/>
+      <R:title/>
+    </D:prop>
   </D:propfind>
 ```
 
@@ -240,10 +229,10 @@ In this example, the request should return the name and value of all the propert
 * the list of names of all the properties defined on the resource (by using the 'propname' element).
 
 ```xml
-<?xml version="1.0" encoding="utf-8" ?> 
-  <propfind xmlns="DAV:"> 
-    <propname/> 
-  </propfind> 
+<?xml version="1.0" encoding="utf-8" ?>
+  <propfind xmlns="DAV:">
+    <propname/>
+  </propfind>
 ```
 
 To list all the content of a remote directory we can use the 'allprop' XML body, with depth equal to 1:
@@ -256,6 +245,6 @@ To list all the properties of a remote file we can use the same 'allprop' XML bo
 {% assign example=site.data.davexamples.propfindfile %}
 {% include tab-template.liquid %}
 
-[storm-1-11-7]: {{ site.baseurl }}/release-notes/StoRM-v1.11.7.html
-[webdavconf]: {{ site.baseurl }}/documentation/sysadmin-guide/1.11.8/#webdavconf
+[storm-1-11-7]: {{site.baseurl}}/release-notes/StoRM-v1.11.7.html
+[webdavconf]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.8/#webdavconf
 [vomapfiles]: https://github.com/italiangrid/storm-webdav/blob/master/etc/storm-webdav/vo-mapfiles.d/README.md

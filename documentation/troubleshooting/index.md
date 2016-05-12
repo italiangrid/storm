@@ -1,54 +1,53 @@
 ---
-layout: default
+layout: toc
 title: Troubleshooting - StoRM common issues - analysis and solution
 ---
 
-## Troubleshooting - StoRM common issues: analysis and solution
+# Troubleshooting
+
+StoRM common issues: analysis and solution
 
 <img src="{{ site.baseurl }}/assets/images/troubleshooting.jpeg" width="250" style="float:right;"/>
-### Table of contents
 
-* [System behavior in case of daemons problem](#sys-behavior-in-case-of-daemons-problem)
-  * [Frontend down](#fe-down)
-  * [Backend down](#be-down)
-* [Problem starting the StoRM daemons](#problem-starting-daemons)
-  * [Frontend problem](#fe-starting-problem)
-  * [Backend problem](#be-starting-problem)
-* [Authorization problem](#auth-problem)
-  * [Frontend Auth problem](#fe-auth-problem)
-  * [Backend Auth problem](#be-auth-problem)
-  * [GridFTP Server](#gftp-server)
+**Table of contents**
 
-<a name="sys-behavior-in-case-of-daemons-problem">&nbsp;</a>
-### System behavior in case of daemons problem
+* [Common daemons problems](#common-daemons-problem)
+  * [Frontend is down](#frontend-is-down)
+  * [Backend is down](#backend-is-down)
+  * [Frontend fails on start](#frontend-fails-on-start)
+  * [Backend fails on start](#backend-fails-on-start)
+* [Authorization problem](#authorization-problem)
+  * [Frontend Auth problem](#frontend-auth-problem)
+  * [Backend Auth problem](#backend-auth-problem)
+  * [GridFTP Server](#gridftp-server)
 
-These are the typical errors in case one or more StoRM daemons are not running properly on your system. These tests are done with the simple SRMv2.2 Command Line Client available with StoRM (see the [StoRM clientSRM user guide](clientSRM-guide.html)).
+## Common daemons problems
 
-<a name="fe-down">&nbsp;</a>
-#### Frontend down
+These are the typical errors in case one or more StoRM daemons are not running properly on your system. The tests are done with the simple SRMv2.2 Command Line Client available with StoRM (see the [StoRM clientSRM user guide][clientSRM-guide]).
+
+### Frontend is down
 
 In case the StoRM Frontend is down, a simple *srmPing* request will fail with the error:
 
 	$clientSRM ping  -e httpg://your_storm_host:8444
-	
+
 	============================================================
 	Sending Ping request to: vgrid05.cnaf.infn.it:8444
 	============================================================
 	Request status:
 	gSoap code: 12
-	
+
 	soap_print_fault:
 	SOAP FAULT: SOAP-ENV:Client
 	"CGSI-gSOAP: Could not open connection !"
 	Detail: TCP connect failed in tcp_connect()
-	
-	
+
+
 	soap_print_fault_location:
 	============================================================
 	Please note you will get the same error if the endpoint is wrong, as for wrong hostname or port.
 
-<a name="be-down">&nbsp;</a>
-#### Backend down
+### Backend is down
 
 In case the Backend daemon is down, you could get different kinds of errors depending on the SRM request you are trying:
 
@@ -85,7 +84,7 @@ In case the Backend daemon is down, you could get different kinds of errors depe
 	SRM Response:
 	============================================================  
 
-**srmPrepareToPut/srmPrepareToGet/srmCopy **
+**srmPrepareToPut/srmPrepareToGet/srmCopy**
 
 	$./clientSRM ptp -e httpg://vgrid05.cnaf.infn.it:8444 -s httpg://vgrid05.cnaf.infn.it:8444  /dteam/f1  -p
 
@@ -96,11 +95,7 @@ In case the Backend daemon is down, you could get different kinds of errors depe
 	Current status: SRM_REQUEST_QUEUED (Ctrl+c to stop polling).....................
 	============================================================
 
-<a name="problem-starting-daemons">&nbsp;</a>
-### Problem starting the StoRM daemons
-
-<a name="fe-starting-problem">&nbsp;</a>
-#### Frontend problem
+### Frontend fails on start
 
 Frontend fails to start up if:
 
@@ -108,8 +103,7 @@ Frontend fails to start up if:
 * There is a MySQL authorization problem during the database connection. Please check STORM\_DB\_USER with STORM\_DB\_PASSWORD and STORM\_DB\_HOST can connect to DB.
 * There is a permission problem on the Frontend installation directory. Please check that everything belongs to STORM\_USER.
 
-<a name="be-starting-problem">&nbsp;</a>
-#### Backend problem
+### Backend fails on start
 
 Backend fails to start up if:
 
@@ -118,13 +112,11 @@ Backend fails to start up if:
 * The configuration file is not semantically correct.
 * Permission problem on the Backend installation directory. Please check that everything belongs to STORM\_USER
 
-<a name="auth-problem">&nbsp;</a>
-### Authorization problem
+## Authorization problem
 
 One of the most common issues for Grid services is to have some kinds of misconfigurations in the host machine that produce an authorization problem.
 
-<a name="fe-auth-problem">&nbsp;</a>
-#### Frontend Auth problem
+### Frontend Auth problem
 
 In case the Frontend host machine is not properly configured for what concern authorization, as for:
 
@@ -145,7 +137,7 @@ You will get the following error messages:
 	soap_print_fault:
 	SOAP FAULT: SOAP-ENV:Client
 	"CGSI-gSOAP: Error reading token data header: Connection closed"
-  
+
 	soap_print_fault_location:
 	============================================================
 
@@ -153,14 +145,13 @@ You will get the following error messages:
 
 Set the following environment variables :
 
-	$CGSI_TRACE=1 
+	$CGSI_TRACE=1
 	$CGSI_TRACEFILE=/tmp/tracefile
 
 and restart the Frontend daemon.
 Within the file /tmp/tracefile there are also the error messages.
 
-<a name="be-auth-problem">&nbsp;</a>
-#### Backend Auth problem
+### Backend Auth problem
 
 In case the Backend host machine is not properly configured for what concern authorization, you will have different behaviour depending on the case.
 In case of:
@@ -181,7 +172,7 @@ In case of operation that requires ACL set up, as for srmPrepareToPut, srmPrepar
 	============================================================
 	Sending PtP request to: vgrid01.cnaf.infn.it:8444
 	============================================================
-	Polling request status: 
+	Polling request status:
 	Current status: SRM_REQUEST_QUEUED (Ctrl+c to stop polling)..
 	============================================================
 	Request status:
@@ -198,8 +189,7 @@ In case of operation that requires ACL set up, as for srmPrepareToPut, srmPrepar
 	      [0] estimatedWaitTime=-1
 	============================================================
 
-<a name="gftp-server">&nbsp;</a>
-#### GridFTP Server
+### GridFTP Server
 
 It is really important that also the GridFTP server host machine be properly configured in term of authorization.
 
@@ -220,7 +210,7 @@ trying a simple file transfer in /tmp will produce:
 	530-Attempt 1
 	530-
 	530-globus_credential: Error reading host credential
-	530-globus_sysconfig: Could not find a valid certificate file: The host cert could not be found   in: 
+	530-globus_sysconfig: Could not find a valid certificate file: The host cert could not be found   in:
 	530-1) env. var. X509_USER_CERT
 	530-2) /etc/grid-security/hostcert.pem
 	530-3) $GLOBUS_LOCATION/etc/hostcert.pem
@@ -272,3 +262,5 @@ But the two most significative error messages a site admin needs to know are:
 	500-globus_xio: System error in open: Permission denied
 	500-globus_xio: A system call failed: Permission denied
 	500 End.
+
+[clientSRM-guide]: {{site.baseurl}}/documentation/clientsrm-guide

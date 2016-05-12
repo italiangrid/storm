@@ -1,10 +1,12 @@
 administrator-guides:
 
   - title: "System Administration Guide"
-    relative-link: "/documentation/sysadmin-guide/1.11.10"
+    relative-link: "/documentation/sysadmin-guide"
     description: "Guide to install and configure StoRM."
-    last-update: "22/01/2016"
+    last-update: "10/02/2016"
     older-versions:
+      - name: "1.11.10"
+        relative-link: "/documentation/sysadmin-guide/1.11.10"
       - name: "1.11.9"
         relative-link: "/documentation/sysadmin-guide/1.11.9"
       - name: "1.11.8"
@@ -33,7 +35,7 @@ administrator-guides:
 user-guides:
 
   - title: "StoRM Overview"
-    relative-link: "/documentation/functional-description/1.11.2"
+    relative-link: "/documentation/functional-description"
     description: "StoRM architecture, components, security management and deployment schemas."
     last-update: "05/03/2015"
     older-versions: []
@@ -45,16 +47,12 @@ user-guides:
     older-versions: []
 
   - title: "StoRM WebDAV"
-    relative-link: "/documentation/storm-webdav-guide/1.0.2"
+    relative-link: "/documentation/storm-webdav-guide"
     description: "StoRM WebDAV service overview with use cases examples."
     last-update: "31/03/2015"
     older-versions:
       - name: "3.0.1 (StoRM GridHTTPs)"
         relative-link: "/documentation/webdav-guide/3.0.1/"
-      - name: "3.0.0"
-        relative-link: "/documentation/webdav-guide/3.0.0/"
-      - name: "2.0.2"
-        relative-link: "/documentation/webdav-guide/2.0.2/"
 
   - title: "Frequently Asked Question"
     relative-link: "/documentation/faq/"

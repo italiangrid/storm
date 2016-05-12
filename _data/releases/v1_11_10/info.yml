@@ -1,0 +1,24 @@
+date: 22.01.2016
+version: 1.11.10
+components: [storm-backend-server, storm-webdav, storm-gridhttps-server, storm-dynamic-info-provider]
+description: >
+  This release provides fixes and improvements as can be seen from the individual
+  components release notes.
+  <br/>It's **HIGHLY RECOMMENDED** to upgrade your installation to the version of
+  StoRM WebDAV included in this release, that provides fixes for a security
+  vulnerability affecting the Milton webdav library.
+
+installation: >
+  To re-configure the services, follow the commands below.
+
+  - First of all, reconfigure storm-info-provider:
+
+        /usr/libexec/storm-info-provider configure
+
+  - Then, restart the involved services and the BDII:
+
+        service storm-backend-server restart
+        service storm-webdav restart
+        service bdii restart
+
+  Alternatively, you can simply run YAIM.

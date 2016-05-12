@@ -5,9 +5,9 @@ title: StoRM releases
 
 # StoRM releases
 
-The current release is [StoRM v.1.11.10]({{ site.baseurl }}/release-notes/StoRM-v1.11.10.html).
+The current release is [StoRM v.{{site.latest_release}}][latest_release_notes].
 
-{% include releases.liquid %}
+{% include download/components-list.html %}
 
 Information about previous releases can be found [here](releases.html) or on the [EMI website](http://www.eu-emi.eu).
 
@@ -68,6 +68,8 @@ The StoRM source is available on [Github](https://github.com) in the following r
 - [StoRM GridHTTPs plugin](https://github.com/italiangrid/storm-gridhttps-plugin)
 - [StoRM GridFTP](https://github.com/italiangrid/storm-gridftp-dsi)
 
+
+[latest_release_notes]: {{site.baseurl}}{{site.releasenotes_path}}/StoRM-v{{site.latest_release}}.html
 [devel_repo_sl5]: {{site.baseurl}}/repo/storm_develop_sl5.repo
 [devel_repo_sl6]: {{site.baseurl}}/repo/storm_develop_sl6.repo
 [prod_repo_sl5]: {{site.baseurl}}/repo/storm_sl5.repo

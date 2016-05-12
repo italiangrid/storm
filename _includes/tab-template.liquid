@@ -1,31 +1,26 @@
+{% capture fileCURL %}examples/{{example.name}}/curl.md{% endcapture %}
+{% capture fileDavix %}examples/{{example.name}}/davix.md{% endcapture %}
+{% capture fileOutput %}examples/{{example.name}}/output.md{% endcapture %}
+
 <div role="tabpanel">
   <ul class="nav nav-tabs" role="tablist">
-    <li class="active"><a href="#curl_{{ example.name }}" role="tab" data-toggle="tab">CURL</a></li>
-    <li><a href="#davix_{{ example.name }}" role="tab" data-toggle="tab">Davix</a></li>
-    <li><a href="#output_{{ example.name }}" role="tab" data-toggle="tab">Output</a></li>
+    <li class="active"><a href="#curl_{{example.name}}" role="tab" data-toggle="tab">CURL</a></li>
+    <li><a href="#davix_{{example.name}}" role="tab" data-toggle="tab">Davix</a></li>
+    <li><a href="#output_{{example.name}}" role="tab" data-toggle="tab">Output</a></li>
   </ul>
 
   <div class="tab-content">
-    <div class="tab-pane active" id="curl_{{ example.name }}" markdown="1">
-    {% if example.curl_description %}
-    <p>{{ example.curl_description }}</p>
-    {% endif %}
-    {% capture file %}examples/{{ example.name }}/curl.md{% endcapture %}
-      <pre><code class="language-bash" data-lang="bash">{% include_relative {{ file }} %}</code></pre>
+    <div class="tab-pane active" id="curl_{{example.name}}">
+    {% if example.curl_description %}<p>{{example.curl_description}}</p>{% endif %}
+    <pre><code class="language-bash" data-lang="bash">{% include_relative {{fileCURL}} %}</code></pre>
     </div>
-    <div class="tab-pane" id="davix_{{ example.name }}">
-    {% if example.davix_description %}
-    <p>{{ example.davix_description }}</p>
-    {% endif %}
-    {% capture file %}examples/{{ example.name }}/davix.md{% endcapture %}
-      <pre><code class="language-bash" data-lang="bash">{% include_relative {{ file }} %}</code></pre>
+    <div class="tab-pane" id="davix_{{example.name}}">
+    {% if example.davix_description %}<p>{{ example.davix_description }}</p>{% endif %}
+    <pre><code class="language-bash" data-lang="bash">{% include_relative {{fileDavix}} %}</code></pre>
     </div>
-    <div class="tab-pane" id="output_{{ example.name }}" markdown="1">
-    {% if example.output_description %}
-    <p>{{ example.output_description }}</p>
-    {% endif %}
-    {% capture file %}examples/{{ example.name }}/output.md{% endcapture %}
-      <pre><code class="language-bash" data-lang="bash">{% include_relative {{ file }} %}</code></pre>
+    <div class="tab-pane" id="output_{{example.name}}">
+    {% if example.output_description %}<p>{{ example.output_description }}</p>{% endif %}
+    <pre><code class="language-bash" data-lang="bash">{% include_relative {{fileOutput}} %}</code></pre>
     </div>
   </div>
 </div>

@@ -1,0 +1,29 @@
+name: StoRM WebDAV
+package: storm-webdav
+version: 1.0.4
+rfcs: []
+features:
+  - id: STOR-700
+    title: Add support for RFC 3230 in StoRM WebDAV service
+
+security-vulnerabilities: >
+  More information concerning the security vulnerabilities addressed by this
+  release are going to be published when appropriate at
+  [this URL](https://wiki.egi.eu/wiki/SVG:Advisory-SVG-2015-10134).
+
+
+description: >
+  This release provides a fix for a security vulnerability that was recently
+  reported, and adds support for [RFC-3230](https://tools.ietf.org/html/rfc3230).
+  It explains how to get checksum type and value of the stored resources.
+  From this release, each HEAD and GET response will include a header like:
+
+      Digest: adler32=8a23d4f8
+
+  to be compliant with [RFC-3230](https://tools.ietf.org/html/rfc3230) specific.
+
+installation: >
+  Update and restart package:
+
+      yum update storm-webdav
+      service storm-webdav restart
