@@ -11,7 +11,7 @@
 
     <!-- versions of the project dependencies -->
     <commonsConfigurationVersion>1.4</commonsConfigurationVersion>
-    <jerseyVersion>1.17.1</jerseyVersion>
+    <jerseyVersion>2.25.1</jerseyVersion>
     <jettyVersion>8.1.9.v20130131</jettyVersion>
     <slf4jVersion>1.7.2</slf4jVersion>
     <logbackVersion>1.0.9</logbackVersion>
@@ -282,16 +282,27 @@
     </dependency>
 
     <dependency>
-      <groupId>com.sun.jersey</groupId>
-      <artifactId>jersey-servlet</artifactId>
-      <version>${jerseyVersion}</version>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>javax.ws.rs-api</artifactId>
+      <version>2.0.1</version>
     </dependency>
 
     <dependency>
-      <groupId>com.sun.jersey</groupId>
-      <artifactId>jersey-json</artifactId>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-server</artifactId>
       <version>${jerseyVersion}</version>
     </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.containers</groupId>
+      <artifactId>jersey-container-servlet</artifactId>
+      <version>${jerseyVersion}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.glassfish.jersey.media</groupId>
+        <artifactId>jersey-media-json-jackson</artifactId>
+        <version>${jerseyVersion}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
