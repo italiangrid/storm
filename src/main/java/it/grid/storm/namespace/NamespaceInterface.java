@@ -21,6 +21,7 @@ import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.filesystem.Space;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
@@ -34,12 +35,21 @@ public interface NamespaceInterface {
 	/**
 	 * getAllDefinedVFS
 	 * 
-	 * @return List<VirtualFSInterface> : Return a List of VirtualFS cointaing all
+	 * @return List<VirtualFSInterface> : Return a List of VirtualFS containing all
 	 *         the instances defined within Namespace
 	 * @throws NamespaceException
 	 */
 	public Collection<VirtualFSInterface> getAllDefinedVFS()
 		throws NamespaceException;
+
+	/**
+	 * getAllDefinedMappingRules
+	 *
+	 * @return List<MappingRule> : Return a List of mapping rules containing all the instances defined
+	 *         within Namespace
+	 * @throws NamespaceException
+	 */
+	public Collection<MappingRule> getAllDefinedMappingRules() throws NamespaceException;
 
 	/**
 	 * 

@@ -17,16 +17,23 @@
 
 package it.grid.storm.namespace.naming;
 
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.VirtualFSInterface;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.StringTokenizer;
+import java.util.Vector;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
+
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.MappingRule;
+import it.grid.storm.srm.types.TSURL;
 
 public class NamespaceUtil {
 
@@ -204,6 +211,56 @@ public class NamespaceUtil {
 		Path wrapperPath = new Path(wrapperCandidate);
 		result = rootPath.isEnclosed(wrapperPath);
 		return result;
+	}
+
+	/**
+	 *
+	 * @param stfnPath
+	 * @param vfsApproachable
+	 * @return the mapped rule or null if not found
+	 */
+	public static MappingRule getWinnerRule(String stfnPath, Collection<MappingRule> mappingRules,
+			Collection<VirtualFSInterface> vfsApproachable) {
+
+		Preconditions.checkNotNull(stfnPath, "Unable to get winning rule: invalid null stfnPath");
+		Preconditions.checkNotNull(mappingRules,
+				"Unable to get winning rule: invalid null mapping rules");
+		Preconditions.checkNotNull(vfsApproachable,
+				"Unable to get winning rule: invalid null VFS list");
+
+		if (mappingRules.isEmpty()) {
+			log.warn("Unable to get winning rule: empty mapping rules");
+			return null;
+		}
+
+		if (vfsApproachable.isEmpty()) {
+			log.debug("Unable to get winning rule: empty VFS list");
+			return null;
+		}
+
+		log.debug("Searching winner rule for {}", stfnPath);
+		MappingRule winnerRule = null;
+
+		Vector<MappingRule> rules = new Vector<MappingRule>(mappingRules);
+
+		int minDistance = Integer.MAX_VALUE;
+		for (MappingRule rule : rules) {
+			if (isEnclosed(rule.getStFNRoot(), stfnPath)
+					&& vfsApproachable.contains(rule.getMappedFS())) {
+				int distance = computeDistanceFromPath(rule.getStFNRoot(), stfnPath);
+				if (distance < minDistance) {
+					minDistance = distance;
+					winnerRule = rule;
+				}
+			}
+		}
+		return winnerRule;
+	}
+
+	public static MappingRule getWinnerRule(TSURL surl, Collection<MappingRule> mappingRules,
+			Collection<VirtualFSInterface> vfsApproachable) {
+
+		return getWinnerRule(surl.sfn().stfn().toString(), mappingRules, vfsApproachable);
 	}
 
 	/**

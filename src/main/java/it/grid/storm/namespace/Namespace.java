@@ -17,6 +17,24 @@
 
 package it.grid.storm.namespace;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static it.grid.storm.namespace.naming.NamespaceUtil.getWinnerRule;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+
 import it.grid.storm.common.GUID;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.StFN;
@@ -37,22 +55,6 @@ import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TTURL;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.Vector;
-
-import org.slf4j.Logger;
-
 public class Namespace implements NamespaceInterface {
 
 	private static final String SPACE_FILE_NAME_SUFFIX = ".space";
@@ -70,9 +72,16 @@ public class Namespace implements NamespaceInterface {
 		return parser.getNamespaceVersion();
 	}
 
+	@Override
 	public Collection<VirtualFSInterface> getAllDefinedVFS() {
 
 		return parser.getVFSs().values();
+	}
+
+	@Override
+	public Collection<MappingRule> getAllDefinedMappingRules() {
+
+		return parser.getMappingRules().values();
 	}
 
 	public List<VirtualFSInterface> getApproachableVFS(GridUserInterface user) {
@@ -189,34 +198,22 @@ public class Namespace implements NamespaceInterface {
 	 */
 	public StoRI resolveStoRIbySURL(TSURL surl) throws IllegalArgumentException,
 		UnapprochableSurlException, NamespaceException, InvalidSURLException {
-		
-		/* check surl */
-		if (surl == null) {
-			String msg = "resolveStoRIbySURL: invalid null surl";
-			log.error(msg);
-			throw new IllegalArgumentException(msg);
-		}
-		
+
 		return resolveStoRI(surl, null);
 	}
 	
 	public StoRI resolveStoRIbySURL(TSURL surl, GridUserInterface user)
 		throws IllegalArgumentException, UnapprochableSurlException,
 		NamespaceException, InvalidSURLException {
-		
-		/* check surl */
-		if (surl == null) {
-			String msg = "resolveStoRIbySURL: invalid null surl";
-			log.error(msg);
-			throw new IllegalArgumentException(msg);
-		}
-		
+
 		return resolveStoRI(surl, user);
 	}
 
 	private StoRI resolveStoRI(TSURL surl, GridUserInterface user)
 		throws IllegalArgumentException, UnapprochableSurlException,
 		NamespaceException, InvalidSURLException {
+
+		checkNotNull(surl, "resolveStoRI: invalid null surl");
 
 		StoRI stori = null;
 		List<VirtualFSInterface> vfsApproachable = null;
@@ -235,7 +232,7 @@ public class Namespace implements NamespaceInterface {
 		}
 
 		/* get the winner rule for SURL */
-		MappingRule winnerRule = getWinnerRule(surl, vfsApproachable);
+		MappingRule winnerRule = getWinnerRule(surl, getAllDefinedMappingRules(), vfsApproachable);
 		
 		if (winnerRule == null) {
 			/* check if surl can be resolved by this instance of StoRM */
@@ -294,10 +291,10 @@ public class Namespace implements NamespaceInterface {
 		
 	}
 
-	private boolean isSolvable(TSURL surl) throws IllegalArgumentException,
-		InvalidSURLException, UnapprochableSurlException, NamespaceException {
+	private boolean isSolvable(TSURL surl) {
 
-		return getWinnerRule(surl) != null;
+		MappingRule rule = getWinnerRule(surl, getAllDefinedMappingRules(), getAllDefinedVFS());
+		return rule != null;
 	}
 
 	private String getStoRICanonicalPath(StoRI stori)
@@ -353,7 +350,7 @@ public class Namespace implements NamespaceInterface {
 			throw new UnapprochableSurlException(errorMsg);
 		}
 		
-		MappingRule winnerRule = getWinnerRule(surl, vfsApproachable);
+		MappingRule winnerRule = getWinnerRule(surl, getAllDefinedMappingRules(), vfsApproachable);
 		log.debug("For surl {} the winner rule is {}", surl, 
 		  winnerRule.getRuleName());
 		
@@ -551,67 +548,6 @@ public class Namespace implements NamespaceInterface {
 	/***********************************************
 	 * UTILITY METHODS
 	 **********************************************/
-	
-	/**
-	 * 
-	 * @param surl
-	 * @param vfsApproachable
-	 * @return the mapped rule or null if not found
-	 * @throws IllegalArgumentException
-	 * @throws InvalidSURLException
-	 * @throws UnapprochableSurlException
-	 * @throws NamespaceException
-	 */
-	private MappingRule getWinnerRule(TSURL surl,
-		List<VirtualFSInterface> vfsApproachable) throws IllegalArgumentException,
-		InvalidSURLException, UnapprochableSurlException, NamespaceException {
-
-		if (surl == null || vfsApproachable == null) {
-			String errorMsg = String.format("Unable to perform getWinnerRule, "
-				+ "invalid argument(s): surl=%s, vfs=%s", surl, vfsApproachable);
-			log.error(errorMsg);
-			throw new IllegalArgumentException(errorMsg);
-		}
-		
-		if (vfsApproachable.isEmpty()) {
-			log.debug("Empty VFS list!");
-			return null;
-		}
-		
-		Vector<MappingRule> rules = new Vector<MappingRule>(parser
-			.getMappingRules().values());
-		
-		if (rules.isEmpty()) {
-			String errorMsg = "No mapping rules defined on this StoRM instance!";
-			log.error(errorMsg);
-			throw new NamespaceException(errorMsg);
-		}
-		
-		String stfnPath = surl.sfn().stfn().toString();
-		log.debug("Searching winner rule for {}", stfnPath);
-		MappingRule winnerRule = null;
-		int minDistance = Integer.MAX_VALUE;
-		for (MappingRule rule : rules) {
-			if (NamespaceUtil.isEnclosed(rule.getStFNRoot(), stfnPath)
-				&& vfsApproachable.contains(rule.getMappedFS())) {
-				int distance = NamespaceUtil.computeDistanceFromPath(
-					rule.getStFNRoot(), stfnPath);
-				if (distance < minDistance) {
-					minDistance = distance;
-					winnerRule = rule;
-				}
-			}
-		}
-		return winnerRule;
-	}
-	
-	private MappingRule getWinnerRule(TSURL surl)
-		throws IllegalArgumentException, InvalidSURLException,
-		UnapprochableSurlException, NamespaceException {
-
-		return getWinnerRule(surl, new ArrayList<VirtualFSInterface>(
-			getAllDefinedVFS()));
-	}
 
 	@SuppressWarnings("unchecked")
 	public VirtualFSInterface getWinnerVFS(String absolutePath)
