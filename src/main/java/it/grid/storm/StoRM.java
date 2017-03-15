@@ -45,9 +45,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.Slf4jReporter;
-import com.codahale.metrics.Slf4jReporter.LoggingLevel;
-
 /**
  * This class represents a StoRM as a whole: it sets the configuration file
  * which contains properties necessary for other classes of StoRM, it sets up
