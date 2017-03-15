@@ -1,5 +1,19 @@
 package it.grid.storm.ea.remote.resource;
 
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -18,20 +32,6 @@ package it.grid.storm.ea.remote.resource;
 import it.grid.storm.ea.ExtendedAttributesException;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.ea.remote.Constants;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.sun.jersey.core.spi.factory.ResponseBuilderImpl;
 
 /**
  * @author Michele Dibenedetto
@@ -60,11 +60,9 @@ public class StormEAResource {
 				Constants.ADLER_32);
 		} catch (ExtendedAttributesException e) {
 		  log.error(e.getMessage(), e);
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
-			responseBuilder
-				.entity("Unable to get the checksum, Extended attributes management failure");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)
+				.entity("Unable to get the checksum, Extended attributes management failure")
+				.build());
 		}
 		log.info("Checksum for file {} is {}", filePath, checksum);
 		return checksum;
@@ -90,11 +88,9 @@ public class StormEAResource {
 				parameters.getChecksumDecoded(), Constants.ADLER_32);
 		} catch (ExtendedAttributesException e) {
 		  log.error(e.getMessage(), e);
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
-			responseBuilder
-				.entity("Unable to set the checksum, Extended attributes management failure");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)
+				.entity("Unable to set the checksum, Extended attributes management failure")
+				.build());
 		}
 	}
 }

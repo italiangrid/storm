@@ -1,15 +1,19 @@
 package it.grid.storm.authz.remote.resource;
 
-import it.grid.storm.authz.remote.Constants;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
+
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.sun.jersey.core.spi.factory.ResponseBuilderImpl;
+
+import it.grid.storm.authz.remote.Constants;
 
 class RequestParameters {
 
@@ -60,23 +64,19 @@ class RequestParameters {
 		} catch (UnsupportedEncodingException e) {
 			log.error("Unable to decode filePath parameter. "
 				+ "UnsupportedEncodingException: {}", e.getMessage(), e);
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.BAD_REQUEST);
-			responseBuilder
+			throw new WebApplicationException(Response.status(BAD_REQUEST)
 				.entity("Unable to decode filePath paramether, unsupported encoding \'"
-					+ Constants.ENCODING_SCHEME + "\'");
-			throw new WebApplicationException(responseBuilder.build());
+						+ Constants.ENCODING_SCHEME + "\'")
+				.build());
 		}
 		log.debug("Decoded filePath = {}", filePathDecoded);
 
 		if (filePathDecoded == null || filePathDecoded.trim().equals("")) {
 			log.error("Unable to evaluate permissions. Some parameters are missing: "
 				+ "filePath {}", filePathDecoded);
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.BAD_REQUEST);
-			responseBuilder
-				.entity("Unable to evaluate permissions. Some parameters are missing");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(BAD_REQUEST)
+				.entity("Unable to evaluate permissions. Some parameters are missing")
+				.build());
 		}
 		URI filePathURI;
 		try {
@@ -84,11 +84,9 @@ class RequestParameters {
 		} catch (URISyntaxException e) {
 			log.error("Unable to evaluate permissions on path {}. "
 				+ "URISyntaxException: {}", filePathDecoded, e.getMessage(), e);
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.BAD_REQUEST);
-			responseBuilder
-				.entity("Unable to evaluate permissions. Invalid file path");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(BAD_REQUEST)
+				.entity("Unable to evaluate permissions. Invalid file path")
+				.build());
 		}
 		return filePathURI.normalize().toString();
 	}
@@ -102,22 +100,18 @@ class RequestParameters {
 		} catch (UnsupportedEncodingException e) {
 			log.error("Unable to decode DN parameter. "
 				+ "UnsupportedEncodingException: {}", e.getMessage(), e);
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.BAD_REQUEST);
-			responseBuilder
+			throw new WebApplicationException(Response.status(BAD_REQUEST)
 				.entity("Unable to decode DN paramether, unsupported encoding \'"
-					+ Constants.ENCODING_SCHEME + "\'");
-			throw new WebApplicationException(responseBuilder.build());
+						+ Constants.ENCODING_SCHEME + "\'")
+				.build());
 		}
 		log.debug("Decoded DN = {}", DNDecoded);
 
 		if (DNDecoded == null || DNDecoded.trim().equals("")) {
 			log.error("Unable to evaluate permissions. Some parameters are missing : DN {}",  DNDecoded);
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.BAD_REQUEST);
-			responseBuilder
-				.entity("Unable to evaluate permissions. Some parameters are missing");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(BAD_REQUEST)
+				.entity("Unable to evaluate permissions. Some parameters are missing")
+				.build());
 		}
 		return DNDecoded;
 	}
@@ -131,23 +125,19 @@ class RequestParameters {
 		} catch (UnsupportedEncodingException e) {
 			log.error("Unable to decode FQANS parameter. "
 				+ "UnsupportedEncodingException: {}", e.getMessage(), e);
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.BAD_REQUEST);
-			responseBuilder
+			throw new WebApplicationException(Response.status(BAD_REQUEST)
 				.entity("Unable to decode FQANS paramether, unsupported encoding \'"
-					+ Constants.ENCODING_SCHEME + "\'");
-			throw new WebApplicationException(responseBuilder.build());
+						+ Constants.ENCODING_SCHEME + "\'")
+				.build());
 		}
 		log.debug("Decoded FQANS = {}", FQANSDecoded);
 
 		if (FQANSDecoded == null || FQANSDecoded.trim().equals("")) {
 			log.error("Unable to evaluate permissions. Some parameters are "
 				+ "missing : FQANS {}", FQANS);
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.BAD_REQUEST);
-			responseBuilder
-				.entity("Unable to evaluate permissions. Some parameters are missing");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(BAD_REQUEST)
+				.entity("Unable to evaluate permissions. Some parameters are missing")
+				.build());
 		}
 		return FQANSDecoded;
 	}

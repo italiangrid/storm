@@ -11,15 +11,8 @@
 
 package it.grid.storm.info.remote.resources;
 
-import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.common.types.SizeUnit;
-import it.grid.storm.info.SpaceInfoManager;
-import it.grid.storm.info.model.SpaceStatusSummary;
-import it.grid.storm.info.remote.Constants;
-import it.grid.storm.space.StorageSpaceData;
-import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
-import it.grid.storm.srm.types.InvalidTSizeAttributesException;
-import it.grid.storm.srm.types.TSizeInBytes;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -37,7 +30,15 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.jersey.core.spi.factory.ResponseBuilderImpl;
+import it.grid.storm.catalogs.ReservedSpaceCatalog;
+import it.grid.storm.common.types.SizeUnit;
+import it.grid.storm.info.SpaceInfoManager;
+import it.grid.storm.info.model.SpaceStatusSummary;
+import it.grid.storm.info.remote.Constants;
+import it.grid.storm.space.StorageSpaceData;
+import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
+import it.grid.storm.srm.types.InvalidTSizeAttributesException;
+import it.grid.storm.srm.types.TSizeInBytes;
 
 @Path("/" + Constants.RESOURCE)
 public class SpaceStatusResource {
@@ -69,11 +70,9 @@ public class SpaceStatusResource {
 			log
 				.info("Unable to load requested space status summary from database. IllegalArgumentException: "
 					+ e.getMessage());
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.NOT_FOUND);
-			responseBuilder
-				.entity("Unable to load requested space status info from database");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(NOT_FOUND)
+				.entity("Unable to load requested space status info from database")
+				.build());
 		}
 		result = saSum.getJsonFormat();
 		return result;
@@ -97,12 +96,10 @@ public class SpaceStatusResource {
 		} catch (UnsupportedEncodingException e) {
 			log.error("Unable to decode parameters. UnsupportedEncodingException : "
 				+ e.getMessage());
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.BAD_REQUEST);
-			responseBuilder
-				.entity("Unable to decode paramethesr, unsupported encoding \'"
-					+ Constants.ENCODING_SCHEME + "\'");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(BAD_REQUEST)
+				.entity("Unable to decode paramethesr, unsupported encoding \'" + Constants.ENCODING_SCHEME
+						+ "\'")
+				.build());
 		}
 		log.debug("Decoded saAlias = " + saAliasDecoded);
 		/*
@@ -121,11 +118,9 @@ public class SpaceStatusResource {
 					+ " reservedSpace "
 					+ reservedSpace
 					+ " unavailableSpace " + unavailableSpace);
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.BAD_REQUEST);
-			responseBuilder
-				.entity("Unable to evaluate permissions. Some parameters are missing");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(BAD_REQUEST)
+				.entity("Unable to evaluate permissions. Some parameters are missing")
+				.build());
 		}
 		/*
 		 * If not null size parameters must be >= 0
@@ -141,11 +136,9 @@ public class SpaceStatusResource {
 					+ usedSpace
 					+ " reservedSpace "
 					+ reservedSpace + " unavailableSpace " + unavailableSpace);
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.BAD_REQUEST);
-			responseBuilder
-				.entity("Unable to evaluate permissions. Some size parameters are lower than zero");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(BAD_REQUEST)
+				.entity("Unable to evaluate permissions. Some size parameters are lower than zero")
+				.build());
 		}
 		// returns null if no rows found
 		StorageSpaceData storageSpaceData = catalog
@@ -153,11 +146,9 @@ public class SpaceStatusResource {
 		if (storageSpaceData == null) {
 			log.error("The storage space with alias \'" + saAliasDecoded
 				+ "\' is not on StoRM Database");
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.NOT_FOUND);
-			responseBuilder
-				.entity("Unable to update space alias status. Some parameters are not well formed");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(NOT_FOUND)
+				.entity("Unable to update space alias status. Some parameters are not well formed")
+				.build());
 		}
 		SpaceStatusSummary spaceStatusSummary;
 		if (totalSpace != null) {
@@ -181,11 +172,9 @@ public class SpaceStatusResource {
 			log.error("Unable to update storage space \'" + saAliasDecoded
 				+ "\' with the provided space values. IllegalArgumentException: "
 				+ e.getMessage());
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.BAD_REQUEST);
-			responseBuilder
-				.entity("Unable to update space alias status. Some parameters are not valid");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(BAD_REQUEST)
+				.entity("Unable to update space alias status. Some parameters are not valid")
+				.build());
 		}
 	}
 
