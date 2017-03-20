@@ -85,6 +85,8 @@ public class LocalFile {
 
 	private static final Logger log = LoggerFactory.getLogger(LocalFile.class);
 
+	private static final StormEA ea = StormEA.getDefaultStormExtendedAttributes();
+
 	/** The Filesystem interface to operate on the wrapped pathname. */
 	private final FilesystemIF fs;
 	
@@ -541,7 +543,7 @@ public class LocalFile {
 	 */
 	public boolean isOnTape() {
 
-		return StormEA.getMigrated(localFile.getAbsolutePath());
+		return ea.getMigrated(localFile.getAbsolutePath());
 	}
 
 	/**
