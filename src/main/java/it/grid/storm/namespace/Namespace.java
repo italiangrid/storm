@@ -317,7 +317,7 @@ public class Namespace implements NamespaceInterface {
 	}
 
 	private StoRI buildStoRI(VirtualFSInterface vfs, MappingRule mappingRule,
-		TSURL surl) {
+		TSURL surl) throws NamespaceException {
 
 		String stfnPath = surl.sfn().stfn().toString();
 		String relativePath = NamespaceUtil.extractRelativePath(

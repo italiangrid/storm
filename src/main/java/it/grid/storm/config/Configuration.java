@@ -17,8 +17,6 @@
 
 package it.grid.storm.config;
 
-import it.grid.storm.https.impl.DefaultHTTPPlugin;
-
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -30,6 +28,8 @@ import java.util.List;
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.grid.storm.https.impl.DefaultHTTPPlugin;
 
 /**
  * Singleton holding all configuration values that any other object in the StoRM
@@ -48,9 +48,8 @@ public class Configuration {
     .getLogger(Configuration.class);
 
   private ConfigReader cr = new ConfigReader(); // set an empty ConfigReader
-  // as default
-  static Configuration instance = new Configuration(); // only
-  // instance of this configuration class
+
+  static Configuration instance = new Configuration();
 
   private static final String MANAGED_SURLS_KEY = "storm.service.SURL.endpoint";
   private static final String MANAGED_SURL_DEFAULT_PORTS_KEY = "storm.service.SURL.default-ports";
@@ -168,6 +167,8 @@ public class Configuration {
   private static final String XMLRPC_SECURITY_TOKEN_KEY = "synchcall.xmlrpc.security.token";
   private static final String PTG_SKIP_ACL_SETUP = "ptg.skip-acl-setup";
   private static final String HTTP_TURL_PREFIX = "http.turl_prefix";
+  private static final String REST_TOKEN_ENABLED = "rest.token.enabled";
+  private static final String REST_TOKEN_VALUE = "rest.token.value";
 
   private Configuration() {
 
@@ -2318,9 +2319,17 @@ public class Configuration {
       return configurationStringBuilder.toString();
     }
   }
-  
+
   public String getHTTPTURLPrefix(){
     return cr.getConfiguration().getString(HTTP_TURL_PREFIX,"/fileTransfer");
+  }
+
+  public boolean getRestTokenEnabled() {
+    return cr.getConfiguration().getBoolean(REST_TOKEN_ENABLED, true);
+  }
+
+  public String getRestTokenValue() {
+    return cr.getConfiguration().getString(REST_TOKEN_VALUE, "");
   }
 
 }

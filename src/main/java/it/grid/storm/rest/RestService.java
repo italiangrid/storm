@@ -33,13 +33,13 @@ import it.grid.storm.authz.remote.resource.AuthorizationResource;
 import it.grid.storm.authz.remote.resource.AuthorizationResourceCompat_1_0;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.remote.resource.StormEAResource;
-import it.grid.storm.info.remote.resources.Metadata;
 import it.grid.storm.info.remote.resources.Ping;
 import it.grid.storm.info.remote.resources.SpaceStatusResource;
 import it.grid.storm.namespace.remote.resource.VirtualFSResource;
 import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_0;
 import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_1;
 import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_2;
+import it.grid.storm.rest.metadata.Metadata;
 import it.grid.storm.tape.recalltable.providers.TapeRecallTOListMessageBodyWriter;
 import it.grid.storm.tape.recalltable.providers.TapeRecallTOMessageBodyReader;
 import it.grid.storm.tape.recalltable.resources.TaskResource;
@@ -114,6 +114,8 @@ public class RestService {
 	 */
 	public static void startServer() throws Exception {
 
+		checkTokenConfiguration();
+
 		configureServer();
 
 		log.info("Starting RESTFul services ... ");
@@ -122,6 +124,17 @@ public class RestService {
 		thread.start();
 
 		log.info(" ... started");
+	}
+
+	private static void checkTokenConfiguration() throws Exception {
+
+		if (config.getRestTokenEnabled()) {
+			String token = config.getRestTokenValue();
+			if(token == null || token.isEmpty()) {
+				log.error("REST requests token enabled, but token not found");
+				throw new Exception("REST requests token enabled, but token not found");
+			}
+		}
 	}
 
 	/**
