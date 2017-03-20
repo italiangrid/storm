@@ -1,5 +1,6 @@
 package it.grid.storm.info.remote.resources;
 
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -56,6 +57,12 @@ public class MetadataTests {
 	private Metadata getMetadataServiceSuccess(FileMetadata output, TokenVerifier t) {
 		FileMetadataService service = Mockito.mock(FileMetadataService.class);
 		Mockito.when(service.getMetadata(Mockito.anyString())).thenReturn(output);
+		return getMetadataServlet(service, t);
+	}
+
+	private Metadata getMetadataServiceNotFound(TokenVerifier t) {
+		FileMetadataService service = Mockito.mock(FileMetadataService.class);
+		Mockito.when(service.getMetadata(Mockito.anyString())).thenThrow(new WebApplicationException(NOT_FOUND));
 		return getMetadataServlet(service, t);
 	}
 
@@ -116,6 +123,12 @@ public class MetadataTests {
 
 	@Test
 	public void testMetadataNotFound() throws NamespaceException {
-
+		Metadata servlet = getMetadataServiceNotFound(ENABLED_TOKEN_AUTH);
+		try {
+			servlet.getFileMetadata(STFN_PATH, TOKEN);
+			fail();
+		} catch (WebApplicationException e) {
+			assertThat(e.getResponse().getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+		}
 	}
 }
