@@ -23,7 +23,7 @@ public class FileMetadata {
 	private final boolean online;
 	@NotNull
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
-	private final Date creationDate;
+	private final Date lastModified;
 
 	private final FileAttributes attributes;
 
@@ -32,13 +32,13 @@ public class FileMetadata {
 			@JsonProperty("isDirectory") boolean isDirectory, @JsonProperty("online") boolean online,
 			@JsonProperty("filesystem") VirtualFSMetadata filesystem,
 			@JsonProperty("attributes") FileAttributes attributes,
-			@JsonProperty("creationDate") Date creationDate) {
+			@JsonProperty("lastModified") Date lastModified) {
 		this.path = path;
 		this.isDirectory = isDirectory;
 		this.online = online;
 		this.filesystem = filesystem;
 		this.attributes = attributes;
-		this.creationDate = creationDate;
+		this.lastModified = lastModified;
 	}
 
 	public FileMetadata(Builder builder) {
@@ -47,7 +47,7 @@ public class FileMetadata {
 		this.online = builder.online;
 		this.filesystem = builder.filesystem;
 		this.attributes = builder.attributes;
-		this.creationDate = builder.creationDate;
+		this.lastModified = builder.lastModified;
 	}
 
 	public String getPath() {
@@ -70,8 +70,8 @@ public class FileMetadata {
 		return attributes;
 	}
 
-	public Date getCreationDate() {
-		return creationDate;
+	public Date getLastModified() {
+		return lastModified;
 	}
 
 	public static Builder builder() {
@@ -80,7 +80,7 @@ public class FileMetadata {
 
 	public static class Builder {
 
-		private Date creationDate;
+		private Date lastModified;
 		private String path;
 		private boolean isDirectory;
 		private boolean online;
@@ -112,8 +112,8 @@ public class FileMetadata {
 			return this;
 		}
 
-		public Builder creationDate(Date creationDate) {
-			this.creationDate = creationDate;
+		public Builder lastModified(Date lastModified) {
+			this.lastModified = lastModified;
 			return this;
 		}
 

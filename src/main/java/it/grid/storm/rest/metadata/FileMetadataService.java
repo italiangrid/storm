@@ -74,7 +74,7 @@ public class FileMetadataService extends StoRIResourceService
 		try {
 			fileMeta = FileMetadata.builder()
 				.path(stori.getAbsolutePath())
-				.creationDate(new Date((new File(canonicalPath)).lastModified()))
+				.lastModified(new Date((new File(canonicalPath)).lastModified()))
 				.isDirectory(stori.getLocalFile().isDirectory())
 				.online(vfs.getFSDriverInstance().is_file_on_disk(stori.getAbsolutePath()))
 				.filesystem(vfsMeta)
