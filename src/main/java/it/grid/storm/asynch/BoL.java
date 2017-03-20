@@ -116,6 +116,8 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 
 	private static Logger log = LoggerFactory.getLogger(BoL.class);
 
+	private static final StormEA ea = StormEA.getDefaultStormExtendedAttributes();
+
 	/** GridUser that made the request */
 	protected GridUserInterface gu = null;
 	/** BoLChunkData that holds the specific info for this chunk */
@@ -335,7 +337,7 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 			// Add the deferred start time to the expiration date
 			long expDate = (System.currentTimeMillis() / 1000 + (requestData
 				.getLifeTime().value() + requestData.getDeferredStartTime()));
-			StormEA.setPinned(localFile.getAbsolutePath(), expDate);
+			ea.setPinned(localFile.getAbsolutePath(), expDate);
 			
 			
 			requestData.setFileSize(TSizeInBytes.make(localFile.length(),

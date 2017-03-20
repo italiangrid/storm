@@ -11,6 +11,13 @@
 
 package it.grid.storm.asynch;
 
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.acl.AclManagerFSAndHTTPS;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
@@ -58,18 +65,13 @@ import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class PtG implements Delegable, Chooser, Request, Suspendedable {
 
   protected static final String SRM_COMMAND = "srmPrepareToGet";
 
   private static Logger log = LoggerFactory.getLogger(PtG.class);
+
+  private static final StormEA ea = StormEA.getDefaultStormExtendedAttributes();
 
   /**
    * PtGChunkData that holds the specific info for this chunk
@@ -351,7 +353,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
               /* Compute the Expiration Time in seconds */
               long expDate = (System.currentTimeMillis() / 1000 + requestData
                   .getPinLifeTime().value());
-              StormEA.setPinned(fileStoRI.getLocalFile().getAbsolutePath(),
+              ea.setPinned(fileStoRI.getLocalFile().getAbsolutePath(),
                   expDate);
 
               

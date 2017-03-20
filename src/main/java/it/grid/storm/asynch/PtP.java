@@ -11,6 +11,14 @@
 
 package it.grid.storm.asynch;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.acl.AclManagerFSAndHTTPS;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
@@ -60,14 +68,6 @@ import it.grid.storm.synchcall.command.CommandHelper;
 import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.synchcall.data.IdentityInputData;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Class that represents a chunk of an srmPrepareToPut request: it handles a
  * single file of a multifile request. StoRM then sends the chunk to a
@@ -114,6 +114,8 @@ public class PtP implements Delegable, Chooser, Request {
   protected static final String SRM_COMMAND = "srmPrepareToPut";
 
   private static Logger log = LoggerFactory.getLogger(PtP.class);
+
+  private static final StormEA ea = StormEA.getDefaultStormExtendedAttributes();
 
   /**
    * PtPChunkData that holds the specific info for this chunk
@@ -969,7 +971,7 @@ public class PtP implements Delegable, Chooser, Request {
         .pinLifetime().value());
 
       // set extended attribute that indicates the file pinned
-      StormEA.setPinned(fileStoRI.getLocalFile().getAbsolutePath(), expDate);
+      ea.setPinned(fileStoRI.getLocalFile().getAbsolutePath(), expDate);
       
     }
   }

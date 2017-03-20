@@ -32,6 +32,8 @@ public class ChecksumManager {
 	private static final Logger log = LoggerFactory
 		.getLogger(ChecksumManager.class);
 
+	private static final StormEA ea = StormEA.getDefaultStormExtendedAttributes();
+
 	private static volatile ChecksumManager instance = null;
 	private String defaultAlgorithm;
 
@@ -81,7 +83,7 @@ public class ChecksumManager {
 
 		String checksum = null;
 		try {
-			checksum = StormEA.getChecksum(fileName, defaultAlgorithm);
+			checksum = ea.getChecksum(fileName, defaultAlgorithm);
 		} catch (ExtendedAttributesException e) {
 		  log.warn(e.getMessage(),e);
 		}
@@ -106,7 +108,7 @@ public class ChecksumManager {
 		String value = null;
 
 		try {
-			value = StormEA.getChecksum(fileName, defaultAlgorithm);
+			value = ea.getChecksum(fileName, defaultAlgorithm);
 		} catch (ExtendedAttributesException e) {
 			log.warn("Error manipulating EA for default algorithm "
 				+ defaultAlgorithm + " on file: " + fileName
@@ -119,7 +121,7 @@ public class ChecksumManager {
 	public Map<String, String> getChecksums(String fileName)
 		throws FileNotFoundException {
 
-		return StormEA.getChecksums(fileName);
+		return ea.getChecksums(fileName);
 	}
 
 }

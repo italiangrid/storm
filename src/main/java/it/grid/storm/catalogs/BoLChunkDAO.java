@@ -66,6 +66,8 @@ public class BoLChunkDAO {
 
 	private static final Logger log = LoggerFactory.getLogger(BoLChunkDAO.class);
 
+	private static final StormEA ea = StormEA.getDefaultStormExtendedAttributes();
+
 	/** String with the name of the class for the DB driver */
 	private final String driver = Configuration.getInstance().getDBDriver();
 	/** String referring to the URL of the DB */
@@ -1117,7 +1119,7 @@ public class BoLChunkDAO {
 				}
 
 				if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
-					StormEA.removePinned(stori.getAbsolutePath());
+					ea.removePinned(stori.getAbsolutePath());
 				}
 			}
 		}
