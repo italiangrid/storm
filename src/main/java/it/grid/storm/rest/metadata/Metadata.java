@@ -63,34 +63,4 @@ public class Metadata {
 		}
 		return File.separator + stfnPath;
 	}
-
-//	private JSONObject buildResponse(File f, VirtualFSInterface vfs) {
-//
-//		JSONObject detail = null;
-//		try {
-//
-//			String canonicalPath = f.getCanonicalPath();
-//			detail = new JSONObject();
-//			detail.put("path", canonicalPath);
-//			detail.put("filesystem", asJSON(vfs));
-//			detail.put("isFile", f.isFile());
-//			detail.put("isDirectory", f.isDirectory());
-//			if (f.isFile()) {
-//				detail.put("isPinned", StormEA.isPinned(canonicalPath));
-//				detail.put("isMigrated", StormEA.getMigrated(canonicalPath));
-//				detail.put("checksums", StormEA.getChecksums(canonicalPath));
-//				detail.put("recallInProgress", false);
-//			}
-//
-//			log.debug("JSON response: {}", detail.toString());
-//
-//		} catch (Throwable e) {
-//
-//			e.printStackTrace();
-//			throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)
-//				.entity(asJSON(e.getClass().getName(), e.getMessage()).toString())
-//				.build());
-//		}
-//		return detail;
-//	}
 }
