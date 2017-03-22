@@ -306,6 +306,11 @@
       <artifactId>jersey-media-json-jackson</artifactId>
       <version>${jerseyVersion}</version>
     </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.ext</groupId>
+      <artifactId>jersey-bean-validation</artifactId>
+      <version>${jerseyVersion}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.eclipse.jetty</groupId>

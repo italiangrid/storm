@@ -19,11 +19,11 @@ package it.grid.storm.namespace;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static it.grid.storm.namespace.naming.NamespaceUtil.getWinnerRule;
+import static it.grid.storm.namespace.naming.NamespaceUtil.getWinnerVFS;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -76,6 +76,13 @@ public class Namespace implements NamespaceInterface {
 	public Collection<VirtualFSInterface> getAllDefinedVFS() {
 
 		return parser.getVFSs().values();
+	}
+
+
+	@Override
+	public Map<String, VirtualFSInterface> getAllDefinedVFSAsDictionary() throws NamespaceException {
+
+		return parser.getMapVFS_Root();
 	}
 
 	@Override
@@ -270,7 +277,7 @@ public class Namespace implements NamespaceInterface {
 		
 		/* get the VFS where the resource is phisically located, if exists */
 		String realPath = getStoRICanonicalPath(stori);
-		VirtualFSInterface targetVFS = getWinnerVFS(realPath);
+		VirtualFSInterface targetVFS = getWinnerVFS(realPath, parser.getMapVFS_Root());
 		if (targetVFS == null) {
 			log.debug("Unable to find a valid VFS from path '{}'", realPath);
 			throw new InvalidSURLException(surl,
@@ -387,7 +394,7 @@ public class Namespace implements NamespaceInterface {
 		/**
 		 * @todo Check the approachable rules
 		 */
-		return getWinnerVFS(absolutePath);
+		return getWinnerVFS(absolutePath, parser.getMapVFS_Root());
 	}
 
 	/**
@@ -401,13 +408,13 @@ public class Namespace implements NamespaceInterface {
 	public VirtualFSInterface resolveVFSbyRoot(String absolutePath)
 		throws NamespaceException {
 
-		return getWinnerVFS(absolutePath);
+		return getWinnerVFS(absolutePath, parser.getMapVFS_Root());
 	}
 
 	public VirtualFSInterface resolveVFSbyAbsolutePath(String absolutePath)
 		throws NamespaceException {
 
-		return getWinnerVFS(absolutePath);
+		return getWinnerVFS(absolutePath, parser.getMapVFS_Root());
 	}
 
 	public StoRI resolveStoRIbyLocalFile(LocalFile file, GridUserInterface user)
@@ -506,7 +513,7 @@ public class Namespace implements NamespaceInterface {
 	 */
 	public VirtualFSInterface resolveVFSbyPFN(PFN pfn) throws NamespaceException {
 
-		return getWinnerVFS(pfn.getValue());
+		return getWinnerVFS(pfn.getValue(), parser.getMapVFS_Root());
 	}
 
 	public StoRI resolveStoRIbyTURL(TTURL turl, GridUserInterface user)
@@ -548,51 +555,6 @@ public class Namespace implements NamespaceInterface {
 	/***********************************************
 	 * UTILITY METHODS
 	 **********************************************/
-
-	@SuppressWarnings("unchecked")
-	public VirtualFSInterface getWinnerVFS(String absolutePath)
-		throws NamespaceException {
-
-		VirtualFSInterface vfsWinner = null;
-		String path = absolutePath;
-		Hashtable<String, VirtualFSInterface> table = (Hashtable<String, VirtualFSInterface>) parser
-			.getMapVFS_Root();
-		int distance = Integer.MAX_VALUE;
-		Enumeration<String> scan = table.keys();
-		String vfs_root = null;
-		String vfs_root_winner = null;
-		boolean found = false;
-		String vfsNameWinner = null;
-		while (scan.hasMoreElements()) {
-			vfs_root = (String) scan.nextElement();
-			int d = NamespaceUtil.computeDistanceFromPath(vfs_root, path);
-			log.debug("Pondering VFS Root '{}' against '{}'. Distance = {}",
-			  vfs_root, path, d);
-
-			if (d < distance) {
-				boolean enclosed = NamespaceUtil.isEnclosed(vfs_root, absolutePath);
-				if (enclosed) { // Found a compatible Mapping rule
-					distance = d;
-					vfsWinner = table.get(vfs_root);
-					vfsNameWinner = vfsWinner.getAliasName();
-					vfs_root_winner = vfs_root;
-					log.debug("Partial winner is {} (VFS: {})", 
-					  vfs_root_winner, vfsNameWinner);
-					found = true;
-				}
-			}
-		}
-		if (found) {
-		  log.debug("Partial winner is {} (VFS: {})", 
-		    vfs_root_winner, vfsNameWinner);
-		} else {
-			log.error("Unable to found a VFS compatible with path: '{}'",
-			  absolutePath);
-			throw new NamespaceException(
-				"Unable to found a VFS compatible with path :'" + absolutePath + "'");
-		}
-		return vfsWinner;
-	}
 
 	public String makeSpaceFileURI(GridUserInterface user)
 		throws NamespaceException {

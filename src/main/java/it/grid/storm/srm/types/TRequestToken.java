@@ -17,12 +17,15 @@
 
 package it.grid.storm.srm.types;
 
-import it.grid.storm.config.Configuration;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.grid.storm.config.Configuration;
 
 /**
  * This class represents a Request Token
@@ -37,7 +40,7 @@ public class TRequestToken implements Serializable {
 
 	public static final String PNAME_REQUESTOKEN = "requestToken";
 
-	private final String token;
+	private final String value;
 
 	private final Calendar expiration;
 
@@ -50,13 +53,17 @@ public class TRequestToken implements Serializable {
 		if (requestToken == null || requestToken.trim().isEmpty()) {
 			throw new InvalidTRequestTokenAttributesException(requestToken);
 		}
-		this.token = requestToken;
+		this.value = requestToken;
 		Calendar expiration = null;
 		if (timestamp != null) {
 			expiration = Calendar.getInstance();
 			expiration.setTimeInMillis(timestamp.getTime() + REQUEST_LIFETIME);
 		}
 		this.expiration = expiration;
+	}
+
+	public TRequestToken() throws InvalidTRequestTokenAttributesException {
+		this(UUID.randomUUID().toString(), Calendar.getInstance().getTime());
 	}
 
 	public static TRequestToken getRandom() {
@@ -72,11 +79,13 @@ public class TRequestToken implements Serializable {
 		}
 	}
 
+	@JsonIgnore
 	public boolean hasExpirationDate() {
 
 		return expiration != null;
 	}
 
+	@JsonIgnore
 	public boolean isExpired() throws IllegalStateException {
 
 		if (!hasExpirationDate()) {
@@ -101,12 +110,12 @@ public class TRequestToken implements Serializable {
 
 	public String getValue() {
 
-		return token;
+		return value;
 	}
 
 	public String toString() {
 
-		return token;
+		return value;
 	}
 
 	public static TRequestToken decode(Map<String, Object> inputParam,
@@ -125,7 +134,7 @@ public class TRequestToken implements Serializable {
 
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((token == null) ? 0 : token.hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
 
@@ -147,11 +156,11 @@ public class TRequestToken implements Serializable {
 			return false;
 		}
 		TRequestToken other = (TRequestToken) obj;
-		if (token == null) {
-			if (other.token != null) {
+		if (value == null) {
+			if (other.value != null) {
 				return false;
 			}
-		} else if (!token.equals(other.token)) {
+		} else if (!value.equals(other.value)) {
 			return false;
 		}
 		return true;

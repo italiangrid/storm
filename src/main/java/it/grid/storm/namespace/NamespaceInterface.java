@@ -29,6 +29,7 @@ import it.grid.storm.srm.types.TTURL;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public interface NamespaceInterface {
 
@@ -40,6 +41,16 @@ public interface NamespaceInterface {
 	 * @throws NamespaceException
 	 */
 	public Collection<VirtualFSInterface> getAllDefinedVFS()
+		throws NamespaceException;
+
+	/**
+	 * getAllDefinedVFSAsDictionary
+	 *
+	 * @return Map<String, VirtualFSInterface> : Return a Map of all VirtualFS defined within Namespace,
+	 *         indexed by their root-paths
+	 * @throws NamespaceException
+	 */
+	public Map<String, VirtualFSInterface> getAllDefinedVFSAsDictionary()
 		throws NamespaceException;
 
 	/**

@@ -2,16 +2,14 @@
  * 
  * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 
@@ -21,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -29,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
+import it.grid.storm.griduser.VONameMatchingRule;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
@@ -37,8 +37,7 @@ import it.grid.storm.srm.types.TSURL;
 
 public class NamespaceUtil {
 
-	private static final Logger log = LoggerFactory
-		.getLogger(NamespaceUtil.class);
+	private static final Logger log = LoggerFactory.getLogger(NamespaceUtil.class);
 
 	/**
 	 * PRIVATE Constructor
@@ -48,13 +47,10 @@ public class NamespaceUtil {
 	}
 
 	/**
-	 * Compute the distance between two path. Return -1 when the two path are
-	 * different completely.
+	 * Compute the distance between two path. Return -1 when the two path are different completely.
 	 * 
-	 * @param path1
-	 *          String
-	 * @param path2
-	 *          String
+	 * @param path1 String
+	 * @param path2 String
 	 * @return int
 	 */
 	public static int computeDistanceFromPath(String path1, String path2) {
@@ -65,8 +61,7 @@ public class NamespaceUtil {
 	/**
 	 * Retrieve all path elements within path
 	 * 
-	 * @param path
-	 *          String
+	 * @param path String
 	 * @return Collection
 	 */
 	public static Collection<String> getPathElement(String path) {
@@ -77,8 +72,7 @@ public class NamespaceUtil {
 	/**
 	 * getFileName
 	 * 
-	 * @param stfn
-	 *          String
+	 * @param stfn String
 	 * @return String
 	 */
 	public static String getFileName(String stfn) {
@@ -107,27 +101,26 @@ public class NamespaceUtil {
 	 * @param mountPointPath
 	 * @return the set
 	 */
-	public static Collection<VirtualFSInterface> getResidentVFS(
-		String mountPointPath) {
+	public static Collection<VirtualFSInterface> getResidentVFS(String mountPointPath) {
 
 		Collection<VirtualFSInterface> vfsSet = Collections.emptySet();
 		try {
 			vfsSet = NamespaceDirector.getNamespace().getAllDefinedVFS();
 		} catch (NamespaceException e) {
-			log
-				.error("Unable to add NamespaceFSAssociationCheck, a NamespaceException occurred during vfsSet retriving : "
-					+ e.getMessage());
+			log.error(
+					"Unable to add NamespaceFSAssociationCheck, a NamespaceException occurred during vfsSet retriving : "
+							+ e.getMessage());
 			return vfsSet;
 		}
 		for (VirtualFSInterface vfs : vfsSet) {
 			String vfsRootPath;
 			boolean enclosed;
-			
-				vfsRootPath = vfs.getRootPath();
-				enclosed = NamespaceUtil.isEnclosed(mountPointPath, vfsRootPath);
-				if (!enclosed) {
-					vfsSet.remove(vfs);
-				}
+
+			vfsRootPath = vfs.getRootPath();
+			enclosed = NamespaceUtil.isEnclosed(mountPointPath, vfsRootPath);
+			if (!enclosed) {
+				vfsSet.remove(vfs);
+			}
 		}
 		return vfsSet;
 	}
@@ -154,8 +147,7 @@ public class NamespaceUtil {
 	/**
 	 * get
 	 * 
-	 * @param stfn
-	 *          String
+	 * @param stfn String
 	 * @return String
 	 */
 	public static String getStFNPath(String stfn) {
@@ -261,6 +253,41 @@ public class NamespaceUtil {
 			Collection<VirtualFSInterface> vfsApproachable) {
 
 		return getWinnerRule(surl.sfn().stfn().toString(), mappingRules, vfsApproachable);
+	}
+
+	public static VirtualFSInterface getWinnerVFS(String absolutePath,
+			Map<String, VirtualFSInterface> vfsListByRootPath) throws NamespaceException {
+
+		VirtualFSInterface vfsWinner = null;
+		int distance = Integer.MAX_VALUE;
+		for (String vfsRoot : vfsListByRootPath.keySet()) {
+			int d = computeDistanceFromPath(vfsRoot, absolutePath);
+			log.debug("Pondering VFS Root '{}' against '{}'. Distance = {}", vfsRoot, absolutePath, d);
+			if (d < distance) {
+				boolean enclosed = isEnclosed(vfsRoot, absolutePath);
+				if (enclosed) {
+					distance = d;
+					vfsWinner = vfsListByRootPath.get(vfsRoot);
+					log.debug("Partial winner is {} (VFS: {})", vfsRoot, vfsWinner.getAliasName());
+				}
+			}
+		}
+		if (vfsWinner == null) {
+			log.error("Unable to found a VFS compatible with path: '{}'", absolutePath);
+			throw new NamespaceException(
+					"Unable to found a VFS compatible with path :'" + absolutePath + "'");
+		}
+		return vfsWinner;
+	}
+
+	public static String resolveVOName(String filename,
+			Map<String, VirtualFSInterface> vfsListByRootPath) throws NamespaceException {
+
+		VirtualFSInterface vfs = getWinnerVFS(filename, vfsListByRootPath);
+		/* NamespaceException raised if vfs is not found => vfs is not null */
+		VONameMatchingRule rule =
+				vfs.getApproachableRules().get(0).getSubjectRules().getVONameMatchingRule();
+		return rule.getVOName();
 	}
 
 	/**
@@ -447,8 +474,7 @@ public class NamespaceUtil {
 
 		/**
 		 * 
-		 * @param position
-		 *          int
+		 * @param position int
 		 * @return PathElement
 		 */
 		public PathElement getElementAt(int position) {
@@ -462,8 +488,7 @@ public class NamespaceUtil {
 
 		/**
 		 * 
-		 * @param obj
-		 *          Object
+		 * @param obj Object
 		 * @return boolean
 		 */
 		@Override
@@ -491,8 +516,7 @@ public class NamespaceUtil {
 
 		/**
 		 * 
-		 * @param pathChunk
-		 *          PathElement
+		 * @param pathChunk PathElement
 		 */
 		public void addPathElement(PathElement pathChunk) {
 
@@ -501,8 +525,7 @@ public class NamespaceUtil {
 
 		/**
 		 * 
-		 * @param elements
-		 *          int
+		 * @param elements int
 		 * @return Path
 		 */
 		public Path getSubPath(int elements) {
@@ -516,8 +539,7 @@ public class NamespaceUtil {
 
 		/**
 		 * 
-		 * @param wrapperCandidate
-		 *          Path
+		 * @param wrapperCandidate Path
 		 * @return boolean
 		 */
 		public boolean isEnclosed(Path wrapperCandidate) {
@@ -534,8 +556,7 @@ public class NamespaceUtil {
 
 		/**
 		 * 
-		 * @param other
-		 *          Path
+		 * @param other Path
 		 * @return int
 		 */
 		public int distance(Path other) {
