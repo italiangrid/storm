@@ -20,7 +20,12 @@
  */
 package it.grid.storm.rest;
 
+import java.util.EnumSet;
+
+import javax.servlet.DispatcherType;
+
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -39,6 +44,7 @@ import it.grid.storm.namespace.remote.resource.VirtualFSResource;
 import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_0;
 import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_1;
 import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_2;
+import it.grid.storm.rest.auth.RestTokenFilter;
 import it.grid.storm.rest.metadata.Metadata;
 import it.grid.storm.tape.recalltable.providers.TapeRecallTOListMessageBodyWriter;
 import it.grid.storm.tape.recalltable.providers.TapeRecallTOMessageBodyReader;
@@ -90,20 +96,47 @@ public class RestService {
 	private static void configureServer() {
 
 		ResourceConfig resourceConfig = new ResourceConfig();
-		resourceConfig.registerClasses(TaskResource.class, TasksResource.class, TasksCardinality.class,
-				TapeRecallTOListMessageBodyWriter.class, TapeRecallTOMessageBodyReader.class,
-				AuthorizationResource.class, AuthorizationResourceCompat_1_0.class, VirtualFSResource.class,
-				VirtualFSResourceCompat_1_0.class, VirtualFSResourceCompat_1_1.class,
-				VirtualFSResourceCompat_1_2.class, StormEAResource.class, Metadata.class, Ping.class,
-				SpaceStatusResource.class, JacksonFeature.class);
-		ServletHolder holder = new ServletHolder(new ServletContainer(resourceConfig));
+		/* Register resources: */
+		resourceConfig.register(TaskResource.class);
+		resourceConfig.register(TasksResource.class);
+		resourceConfig.register(TasksCardinality.class);
+		resourceConfig.register(TapeRecallTOListMessageBodyWriter.class);
+		resourceConfig.register(TapeRecallTOMessageBodyReader.class);
+		resourceConfig.register(AuthorizationResource.class);
+		resourceConfig.register(AuthorizationResourceCompat_1_0.class);
+		resourceConfig.register(VirtualFSResource.class);
+		resourceConfig.register(VirtualFSResourceCompat_1_0.class);
+		resourceConfig.register(VirtualFSResourceCompat_1_1.class);
+		resourceConfig.register(VirtualFSResourceCompat_1_2.class);
+		resourceConfig.register(StormEAResource.class);
+		resourceConfig.register(Metadata.class);
+		resourceConfig.register(Ping.class);
+		resourceConfig.register(SpaceStatusResource.class);
+		/* JSON POJO support: */
+		resourceConfig.register(JacksonFeature.class);
 
-		server = new Server(RestService.getPort());
+		ServletHolder holder = new ServletHolder(new ServletContainer(resourceConfig));
 
 		ServletContextHandler servletContextHandler =
 				new ServletContextHandler(ServletContextHandler.SESSIONS);
 		servletContextHandler.setContextPath("/");
 		servletContextHandler.addServlet(holder, "/*");
+
+		if (config.getXmlRpcTokenEnabled()) {
+
+			log.info("Enabling security filter for rest server requests");
+			String token = config.getXmlRpcToken();
+			if (token == null || token.isEmpty()) {
+				log.error("Rest server security token enabled, but token not found");
+				throw new RuntimeException("Rest server security token enabled, but token not found");
+			}
+			FilterHolder filterHolder = new FilterHolder(new RestTokenFilter());
+			filterHolder.setInitParameter("token", token);
+			servletContextHandler.addFilter(filterHolder, "/metadata/*", EnumSet.of(DispatcherType.REQUEST));
+			servletContextHandler.addFilter(filterHolder, "/recalltable/*", EnumSet.of(DispatcherType.REQUEST));
+		}
+
+		server = new Server(RestService.getPort());
 		server.setHandler(servletContextHandler);
 	}
 

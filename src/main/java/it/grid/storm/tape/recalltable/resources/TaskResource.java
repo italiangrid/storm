@@ -20,7 +20,6 @@ package it.grid.storm.tape.recalltable.resources;
 
 import static it.grid.storm.namespace.naming.NamespaceUtil.resolveVOName;
 import static it.grid.storm.persistence.model.TapeRecallTO.BOL_REQUEST;
-import static it.grid.storm.rest.auth.TokenVerifier.getTokenVerifier;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -41,7 +40,6 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -63,7 +61,6 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TapeRecallTO;
-import it.grid.storm.rest.auth.TokenVerifier;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.TapeRecallException;
 import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusLogic;
@@ -82,26 +79,20 @@ public class TaskResource {
 	private static Configuration config = Configuration.getInstance();
 
 	private NamespaceInterface namespace;
-	private TokenVerifier tokenVerifier;
 	private TapeRecallCatalog recallCatalog;
 
-	private Validator validator = Validation.buildDefaultValidatorFactory().getValidator(); 
+	private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 	private ObjectMapper mapper = new ObjectMapper();
 
 	public TaskResource() {
 
 		namespace = NamespaceDirector.getNamespace();
-		Configuration configuration = Configuration.getInstance();
-		tokenVerifier =
-				getTokenVerifier(configuration.getRestTokenValue(), configuration.getRestTokenEnabled());
 		recallCatalog = new TapeRecallCatalog();
 	}
 
-	public TaskResource(NamespaceInterface namespace, TokenVerifier tokenVerifier,
-			TapeRecallCatalog recallCatalog) {
+	public TaskResource(NamespaceInterface namespace, TapeRecallCatalog recallCatalog) {
 
 		this.namespace = namespace;
-		this.tokenVerifier = tokenVerifier;
 		this.recallCatalog = recallCatalog;
 	}
 
@@ -293,12 +284,11 @@ public class TaskResource {
 	 */
 	@POST
 	@Consumes(APPLICATION_JSON)
-	public Response postNewTask(TaskInsertRequest request, @HeaderParam("token") String token) {
+	public Response postNewTask(TaskInsertRequest request) {
 
 		log.info("POST /recalltable/task {}", request);
 
 		validateRequest(request);
-		tokenVerifier.verify(token);
 
 		String voName = null;
 		try {
@@ -342,11 +332,9 @@ public class TaskResource {
 	@Path("/{groupTaskId}")
 	@Produces(APPLICATION_JSON)
 	public Response getGroupTaskInfo(@PathParam("groupTaskId") String groupTaskId,
-			@HeaderParam("token") String token, @QueryParam("requestToken") String requestToken) {
+			@QueryParam("requestToken") String requestToken) {
 
 		log.info("GET info for groupTaskId={} and requestToken={})", groupTaskId, requestToken);
-
-		tokenVerifier.verify(token);
 
 		List<TapeRecallTO> tasks = null;
 		try {
@@ -361,14 +349,15 @@ public class TaskResource {
 
 		log.debug("Found {} task(s): {}", tasks.size(), tasks);
 		TapeRecallTO task = null;
-		for (TapeRecallTO current: tasks) {
+		for (TapeRecallTO current : tasks) {
 			if (current.getRequestToken().getValue().equals(requestToken)) {
 				task = current;
 				break;
 			}
 		}
 		if (task == null) {
-			throw new WebApplicationException("No task found for requestToken " + requestToken, NOT_FOUND);
+			throw new WebApplicationException("No task found for requestToken " + requestToken,
+					NOT_FOUND);
 		}
 
 		String jsonString = null;
@@ -388,12 +377,10 @@ public class TaskResource {
 	 */
 
 	/*
-	 * Custom validation method.
-	 * Jersey validation works but don't show the validation message.
-	 * The exception mapper cannot be implemented cause of a Jersey bug:
-	 * https://java.net/jira/browse/JERSEY-3153
-	 * This method manually called the validation on the request object
-	 * and returns the error message as response entity.
+	 * Custom validation method. Jersey validation works but don't show the validation message. The
+	 * exception mapper cannot be implemented cause of a Jersey bug:
+	 * https://java.net/jira/browse/JERSEY-3153 This method manually called the validation on the
+	 * request object and returns the error message as response entity.
 	 */
 	private void validateRequest(TaskInsertRequest request) throws WebApplicationException {
 
@@ -403,10 +390,12 @@ public class TaskResource {
 			log.debug("Request {} is valid", request);
 			return;
 		}
-		log.debug("Request is invalid, {} violation(s) found: {}", constraintViolations.size(), constraintViolations);
+		log.debug("Request is invalid, {} violation(s) found: {}", constraintViolations.size(),
+				constraintViolations);
 		String message = constraintViolations.iterator().next().getMessage();
 		log.info("BAD REQUEST: {}", message);
-		throw new WebApplicationException(message, Response.status(BAD_REQUEST).entity(message).build());
+		throw new WebApplicationException(message,
+				Response.status(BAD_REQUEST).entity(message).build());
 	}
 
 	private String buildInputString(InputStream input) {

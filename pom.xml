@@ -109,7 +109,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.7</version>
+        <version>2.8</version>
         <executions>
           <execution>
             <id>copy-dependencies</id>
@@ -266,7 +266,6 @@
       <version>${metrics.version}</version>
     </dependency>
 
-
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
@@ -283,6 +282,12 @@
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
       <version>${commonsConfigurationVersion}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>javax.servlet</groupId>
+                <artifactId>servlet-api</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
 
     <dependency>
@@ -298,7 +303,7 @@
     </dependency>
     <dependency>
       <groupId>org.glassfish.jersey.containers</groupId>
-      <artifactId>jersey-container-servlet</artifactId>
+      <artifactId>jersey-container-servlet-core</artifactId>
       <version>${jerseyVersion}</version>
     </dependency>
     <dependency>
@@ -312,6 +317,11 @@
       <version>${jerseyVersion}</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <version>${jettyVersion}</version>
+    </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
@@ -380,10 +390,16 @@
       <groupId>org.apache.xmlrpc</groupId>
       <artifactId>xmlrpc-server</artifactId>
       <version>${xmlrpcVersion}</version>
+      <exclusions>
+          <exclusion>
+              <groupId>javax.servlet</groupId>
+              <artifactId>servlet-api</artifactId>
+          </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>javax.xml</groupId>
-      <artifactId>jaxrpc</artifactId>
+      <artifactId>jaxrpc-api</artifactId>
       <version>${jaxrpcVersion}</version>
     </dependency>
 
