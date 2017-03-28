@@ -12,8 +12,10 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -51,12 +53,12 @@ public class TaskResourceTest {
 
 	private VirtualFSInterface VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
 	private UUID groupTaskID = UUID.randomUUID();
-	private TapeRecallCatalog RECALL_CATALOG = getTapeRecallCatalog(groupTaskID);
-	private TapeRecallCatalog BROKEN_RECALL_CATALOG = getTapeRecallCatalog();
+	private TapeRecallCatalog RECALL_CATALOG = getTapeRecallCatalogInsertSuccess(groupTaskID);
+	private TapeRecallCatalog BROKEN_RECALL_CATALOG = getTapeRecallCatalogInsertError();
 	private NamespaceInterface NAMESPACE = getNamespace(VFS);
 	private NamespaceInterface NOTMAPPED_NAMESPACE = getNotMappedNamespace();
 
-	private TapeRecallCatalog getTapeRecallCatalog(UUID groupTaskId) {
+	private TapeRecallCatalog getTapeRecallCatalogInsertSuccess(UUID groupTaskId) {
 
 		TapeRecallCatalog catalog = Mockito.mock(TapeRecallCatalog.class);
 		try {
@@ -69,7 +71,7 @@ public class TaskResourceTest {
 		return catalog;
 	}
 
-	private TapeRecallCatalog getTapeRecallCatalog() {
+	private TapeRecallCatalog getTapeRecallCatalogInsertError() {
 
 		TapeRecallCatalog catalog = Mockito.mock(TapeRecallCatalog.class);
 		try {
@@ -301,6 +303,23 @@ public class TaskResourceTest {
 			assertThat(e.getResponse().getEntity().toString(),
 					equalTo("Retry attempts must be less or equal than " + MAX_RETRY_ATTEMPTS + "."));
 		}
+	}
+
+	private TapeRecallCatalog getTapeRecallCatalogInProgressNotEmpty() {
+
+		List<TapeRecallTO> emptyList = new ArrayList<TapeRecallTO>();
+		TapeRecallCatalog catalog = Mockito.mock(TapeRecallCatalog.class);
+		Mockito.when(catalog.getAllInProgressTasks(Mockito.anyInt())).thenReturn(emptyList);
+		return catalog;
+	}
+
+	@Test
+	public void testGETTasksInProgressEmpty() throws DataAccessException, NamespaceException, JsonParseException,
+			JsonMappingException, IOException, InvalidTRequestTokenAttributesException {
+
+		TaskResource recallEndpoint = getTaskResource(NAMESPACE, getTapeRecallCatalogInProgressNotEmpty());
+		Response res = recallEndpoint.getTasks(10);
+		assertThat(res.getStatus(), equalTo(OK.getStatusCode()));
 	}
 
 
