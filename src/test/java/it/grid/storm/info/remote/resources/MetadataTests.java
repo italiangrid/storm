@@ -16,10 +16,10 @@ import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.StoRIType;
-import it.grid.storm.rest.metadata.FileMetadata;
-import it.grid.storm.rest.metadata.FileMetadataService;
 import it.grid.storm.rest.metadata.Metadata;
-import it.grid.storm.rest.metadata.VirtualFSMetadata;
+import it.grid.storm.rest.metadata.model.FileMetadata;
+import it.grid.storm.rest.metadata.model.VirtualFSMetadata;
+import it.grid.storm.rest.metadata.service.FileMetadataService;
 
 public class MetadataTests {
 

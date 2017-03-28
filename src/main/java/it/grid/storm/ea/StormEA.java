@@ -30,32 +30,25 @@ public class StormEA {
 
 	private static final Logger log = LoggerFactory.getLogger(StormEA.class);
 
-	private static final String EA_PINNED = "user.storm.pinned";
-	private static final String EA_PREMIGRATE = "user.storm.premigrate";
-	private static final String EA_CHECKSUM = "user.storm.checksum.";
-	private static final String EA_MIGRATED = "user.storm.migrated";
-	private static final String EA_TSMRECD = "user.TSMRecD";
-	private static final String EA_TSMRECR = "user.TSMRecR";
-	private static final String EA_TSMRECT = "user.TSMRecT";
+	public static final String EA_PINNED = "user.storm.pinned";
+	public static final String EA_PREMIGRATE = "user.storm.premigrate";
+	public static final String EA_CHECKSUM = "user.storm.checksum.";
+	public static final String EA_MIGRATED = "user.storm.migrated";
+	public static final String EA_TSMRECD = "user.TSMRecD";
+	public static final String EA_TSMRECR = "user.TSMRecR";
+	public static final String EA_TSMRECT = "user.TSMRecT";
 
-	private static final StormEA defaultEA =
-			getStormExtendedAttributes(ExtendedAttributesFactory.getExtendedAttributes());
+	private static ExtendedAttributes ea;
 
-	public static StormEA getDefaultStormExtendedAttributes() {
-		return defaultEA;
+	public static void init(ExtendedAttributes extendedAttributes) {
+		ea = extendedAttributes;
 	}
 
-	private final ExtendedAttributes ea;
-
-	private StormEA(ExtendedAttributes ea) {
-		this.ea = ea;
+	static {
+		init(ExtendedAttributesFactory.getExtendedAttributes());
 	}
 
-	public static StormEA getStormExtendedAttributes(ExtendedAttributes ea) {
-		return new StormEA(ea);
-	}
-
-	public Map<String, String> getChecksums(String filename) {
+	public static Map<String, String> getChecksums(String filename) {
 
 		HashMap<String, String> result = new HashMap<String, String>();
 
@@ -78,7 +71,7 @@ public class StormEA {
 		return result;
 	}
 
-	public String getChecksum(String fileName, String algorithm) {
+	public static String getChecksum(String fileName, String algorithm) {
 
 		if (ea.hasXAttr(fileName, EA_CHECKSUM + algorithm.toLowerCase())) {
 			return ea.getXAttr(fileName, EA_CHECKSUM + algorithm.toLowerCase());
@@ -88,17 +81,17 @@ public class StormEA {
 
 	}
 
-	public boolean getMigrated(String fileName) {
+	public static boolean getMigrated(String fileName) {
 
 		return ea.hasXAttr(fileName, EA_MIGRATED);
 	}
 
-	public boolean getPremigrated(String fileName) {
+	public static boolean getPremigrated(String fileName) {
 
 		return ea.hasXAttr(fileName, EA_PREMIGRATE);
 	}
 
-	public long getPinned(String fileName) {
+	public static long getPinned(String fileName) {
 
 		if (!ea.hasXAttr(fileName, EA_PINNED)) {
 			return -1;
@@ -109,7 +102,7 @@ public class StormEA {
 
 	}
 
-	public String getTSMRecT(String fileName) {
+	public static String getTSMRecT(String fileName) {
 
 		if (!ea.hasXAttr(fileName, EA_TSMRECT)) {
 			return null;
@@ -118,7 +111,7 @@ public class StormEA {
 		return ea.getXAttr(fileName, EA_TSMRECT);
 	}
 
-	public Integer getTSMRecR(String fileName) {
+	public static Integer getTSMRecR(String fileName) {
 
 		if (!ea.hasXAttr(fileName, EA_TSMRECR)) {
 			return null;
@@ -128,7 +121,7 @@ public class StormEA {
 		return Integer.valueOf(retryStr);
 	}
 
-	public Long getTSMRecD(String fileName) {
+	public static Long getTSMRecD(String fileName) {
 
 		if (!ea.hasXAttr(fileName, EA_TSMRECD)) {
 			return null;
@@ -138,7 +131,7 @@ public class StormEA {
 		return Long.valueOf(dateStr);
 	}
 
-	public void removeChecksum(String fileName) {
+	public static void removeChecksum(String fileName) {
 
 		if (!ea.hasXAttr(fileName, EA_CHECKSUM)) {
 			log.info("Cannot remove '{}' EA. Attribute not found for file: {}", EA_CHECKSUM, fileName);
@@ -148,13 +141,13 @@ public class StormEA {
 		ea.rmXAttr(fileName, EA_CHECKSUM);
 	}
 
-	public void removePinned(String fileName) {
+	public static void removePinned(String fileName) {
 
 		ea.rmXAttr(fileName, EA_PINNED);
 
 	}
 
-	public void setChecksum(String fileName, String checksum, String algorithm) {
+	public static void setChecksum(String fileName, String checksum, String algorithm) {
 
 		ea.setXAttr(fileName, EA_CHECKSUM + algorithm.toLowerCase(), checksum);
 	}
@@ -165,7 +158,7 @@ public class StormEA {
 	 * @param fileName
 	 * @param expirationDateInSEC expiration time of the pin expressed as "seconds since the epoch".
 	 */
-	public void setPinned(String fileName, long expirationDateInSEC) {
+	public static void setPinned(String fileName, long expirationDateInSEC) {
 
 		long existingPinValueInSEC = getPinned(fileName);
 
@@ -198,7 +191,7 @@ public class StormEA {
 		}
 	}
 
-	public void setPremigrate(String fileName) {
+	public static void setPremigrate(String fileName) {
 
 		try {
 			ea.setXAttr(fileName, EA_PREMIGRATE, null);
@@ -212,7 +205,7 @@ public class StormEA {
 	 * @param absoluteFileName
 	 * @return boolean: true if the file is pinned, false else.
 	 */
-	public boolean isPinned(String absoluteFileName) {
+	public static boolean isPinned(String absoluteFileName) {
 
 		return ea.hasXAttr(absoluteFileName, EA_PINNED);
 	}

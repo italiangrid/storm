@@ -1,4 +1,4 @@
-package it.grid.storm.rest.metadata;
+package it.grid.storm.rest.metadata.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;

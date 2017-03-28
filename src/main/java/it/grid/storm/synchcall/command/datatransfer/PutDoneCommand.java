@@ -69,8 +69,6 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
   private static final String SRM_COMMAND = "srmPutDone";
 
-	private static final StormEA ea = StormEA.getDefaultStormExtendedAttributes();
-
   public PutDoneCommand() {
 
   };
@@ -461,8 +459,8 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 		// 4- Tape stuff management.
 		if (vfs.getStorageClassType().isTapeEnabled()) {
 			String fileAbosolutePath = localFile.getAbsolutePath();
-			ea.removePinned(fileAbosolutePath);
-			ea.setPremigrate(fileAbosolutePath);
+			StormEA.removePinned(fileAbosolutePath);
+			StormEA.setPremigrate(fileAbosolutePath);
 		}
 
 		// 5- Update UsedSpace into DB

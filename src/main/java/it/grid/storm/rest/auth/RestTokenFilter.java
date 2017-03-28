@@ -1,7 +1,6 @@
 package it.grid.storm.rest.auth;
 
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 
 import java.io.IOException;
 

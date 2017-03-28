@@ -71,8 +71,6 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
   private static final Logger log = LoggerFactory
     .getLogger(ReleaseFilesCommand.class);
 
-	private static final StormEA ea = StormEA.getDefaultStormExtendedAttributes();
-
   private static final String SRM_COMMAND = "srmReleaseFiles";
 
   private static final EnumSet<TStatusCode> PINNED_OR_SUCCESS = EnumSet.of(
@@ -397,7 +395,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
       if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
 
-        ea.removePinned(stori.getAbsolutePath());
+        StormEA.removePinned(stori.getAbsolutePath());
       }
     }
   }

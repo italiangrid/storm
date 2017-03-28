@@ -18,6 +18,7 @@ import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.StoRIType;
+import it.grid.storm.rest.metadata.service.StoRIResourceService;
 import jersey.repackaged.com.google.common.collect.Lists;
 
 public class StoRIResourceServiceTest {

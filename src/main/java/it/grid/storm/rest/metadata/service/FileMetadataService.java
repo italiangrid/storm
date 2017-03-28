@@ -1,4 +1,4 @@
-package it.grid.storm.rest.metadata;
+package it.grid.storm.rest.metadata.service;
 
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
@@ -18,22 +18,20 @@ import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
+import it.grid.storm.rest.metadata.model.FileAttributes;
+import it.grid.storm.rest.metadata.model.FileMetadata;
+import it.grid.storm.rest.metadata.model.VirtualFSMetadata;
 
-public class FileMetadataService extends StoRIResourceService
-		implements MetadataService<FileMetadata> {
+public class FileMetadataService extends StoRIResourceService {
 
 	private static final Logger log = LoggerFactory.getLogger(FileMetadataService.class);
 
-	private final StormEA ea;
-
 	public FileMetadataService(Collection<VirtualFSInterface> vfsList,
-			Collection<MappingRule> rulesList, StormEA ea) {
+			Collection<MappingRule> rulesList) {
 
 		super(vfsList, rulesList);
-		this.ea = ea;
 	}
 
-	@Override
 	public FileMetadata getMetadata(String stfnPath) throws WebApplicationException {
 
 		StoRI stori = getResource(stfnPath);
@@ -61,13 +59,13 @@ public class FileMetadataService extends StoRIResourceService
 		FileAttributes attributes = null;
 		if (!stori.getLocalFile().isDirectory()) {
 			attributes = FileAttributes.builder()
-				.isPinned(ea.isPinned(canonicalPath))
-				.migrated(ea.getMigrated(canonicalPath))
-				.premigrated(ea.getPremigrated(canonicalPath))
-				.checksum(ea.getChecksum(canonicalPath, "adler32"))
-				.TSMRecD(ea.getTSMRecD(canonicalPath))
-				.TSMRecR(ea.getTSMRecR(canonicalPath))
-				.TSMRecT(ea.getTSMRecT(canonicalPath))
+				.isPinned(StormEA.isPinned(canonicalPath))
+				.migrated(StormEA.getMigrated(canonicalPath))
+				.premigrated(StormEA.getPremigrated(canonicalPath))
+				.checksum(StormEA.getChecksum(canonicalPath, "adler32"))
+				.TSMRecD(StormEA.getTSMRecD(canonicalPath))
+				.TSMRecR(StormEA.getTSMRecR(canonicalPath))
+				.TSMRecT(StormEA.getTSMRecT(canonicalPath))
 				.build();
 		}
 		FileMetadata fileMeta = null;

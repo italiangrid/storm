@@ -42,8 +42,6 @@ public class StormEAResource {
 	private static final Logger log = LoggerFactory
 		.getLogger(StormEAResource.class);
 
-	private static final StormEA ea = StormEA.getDefaultStormExtendedAttributes();
-
 	@GET
 	@Path("/" + Constants.ADLER_32)
 	@Produces("text/plain")
@@ -58,7 +56,7 @@ public class StormEAResource {
 
 		String checksum;
 		try {
-			checksum = ea.getChecksum(parameters.getFilePathDecoded(), Constants.ADLER_32);
+			checksum = StormEA.getChecksum(parameters.getFilePathDecoded(), Constants.ADLER_32);
 		} catch (ExtendedAttributesException e) {
 		  log.error(e.getMessage(), e);
 			throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)
@@ -85,7 +83,7 @@ public class StormEAResource {
 		  parameters.getChecksumDecoded());
 
 		try {
-			ea.setChecksum(parameters.getFilePathDecoded(), parameters.getChecksumDecoded(),
+			StormEA.setChecksum(parameters.getFilePathDecoded(), parameters.getChecksumDecoded(),
 					Constants.ADLER_32);
 		} catch (ExtendedAttributesException e) {
 		  log.error(e.getMessage(), e);

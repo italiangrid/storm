@@ -16,6 +16,8 @@ import it.grid.storm.ea.StormEA;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
+import it.grid.storm.rest.metadata.model.FileMetadata;
+import it.grid.storm.rest.metadata.service.FileMetadataService;
 
 @Path("/metadata")
 public class Metadata {
@@ -26,9 +28,8 @@ public class Metadata {
 
 	public Metadata() throws NamespaceException {
 
-		StormEA ea = StormEA.getDefaultStormExtendedAttributes();
 		NamespaceInterface namespace = NamespaceDirector.getNamespace();
-		metadataService = new FileMetadataService(namespace.getAllDefinedVFS(), namespace.getAllDefinedMappingRules(), ea);
+		metadataService = new FileMetadataService(namespace.getAllDefinedVFS(), namespace.getAllDefinedMappingRules());
 	}
 
 	public Metadata(FileMetadataService metadataService) {

@@ -71,8 +71,6 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 
   private static Logger log = LoggerFactory.getLogger(PtG.class);
 
-  private static final StormEA ea = StormEA.getDefaultStormExtendedAttributes();
-
   /**
    * PtGChunkData that holds the specific info for this chunk
    */
@@ -353,7 +351,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
               /* Compute the Expiration Time in seconds */
               long expDate = (System.currentTimeMillis() / 1000 + requestData
                   .getPinLifeTime().value());
-              ea.setPinned(fileStoRI.getLocalFile().getAbsolutePath(),
+              StormEA.setPinned(fileStoRI.getLocalFile().getAbsolutePath(),
                   expDate);
 
               

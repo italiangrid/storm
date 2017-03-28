@@ -1,5 +1,12 @@
 package it.grid.storm.rest.metadata;
 
+import static it.grid.storm.ea.StormEA.EA_CHECKSUM;
+import static it.grid.storm.ea.StormEA.EA_MIGRATED;
+import static it.grid.storm.ea.StormEA.EA_PINNED;
+import static it.grid.storm.ea.StormEA.EA_PREMIGRATE;
+import static it.grid.storm.ea.StormEA.EA_TSMRECD;
+import static it.grid.storm.ea.StormEA.EA_TSMRECR;
+import static it.grid.storm.ea.StormEA.EA_TSMRECT;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -11,6 +18,7 @@ import javax.ws.rs.WebApplicationException;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import it.grid.storm.ea.ExtendedAttributes;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.swig.genericfs;
@@ -19,6 +27,8 @@ import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.StoRIType;
+import it.grid.storm.rest.metadata.model.FileMetadata;
+import it.grid.storm.rest.metadata.service.FileMetadataService;
 import jersey.repackaged.com.google.common.collect.Lists;
 
 public class FileMetadataServiceTest {
@@ -43,7 +53,6 @@ public class FileMetadataServiceTest {
 
 	private VirtualFSInterface vfs;
 	private MappingRule rule;
-	private StormEA ea;
 	private FileMetadataService service;
 
 	private VirtualFSInterface getVirtualFS(String name, String rootPath, boolean fileExists,
@@ -79,21 +88,22 @@ public class FileMetadataServiceTest {
 
 		vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH, fileExists, fileIsDirectory, fileIsOnline);
 		rule = getMappingRule(RULE_NAME, RULE_STFNROOT, vfs);
-		ea = getStormEA();
-		service = new FileMetadataService(Lists.newArrayList(vfs), Lists.newArrayList(rule), ea);
+		initStormEA();
+		service = new FileMetadataService(Lists.newArrayList(vfs), Lists.newArrayList(rule));
 	}
 
-	private StormEA getStormEA() {
+	private void initStormEA() {
 
-		StormEA ea = Mockito.mock(StormEA.class);
-		Mockito.when(ea.isPinned(FILE_PATH)).thenReturn(false);
-		Mockito.when(ea.getChecksum(FILE_PATH, "adler32")).thenReturn(CHECKSUM);
-		Mockito.when(ea.getMigrated(FILE_PATH)).thenReturn(false);
-		Mockito.when(ea.getPremigrated(FILE_PATH)).thenReturn(false);
-		Mockito.when(ea.getTSMRecD(FILE_PATH)).thenReturn(null);
-		Mockito.when(ea.getTSMRecR(FILE_PATH)).thenReturn(null);
-		Mockito.when(ea.getTSMRecT(FILE_PATH)).thenReturn(null);
-		return ea;
+		ExtendedAttributes ea = Mockito.mock(ExtendedAttributes.class);
+		Mockito.when(ea.hasXAttr(FILE_PATH, EA_PINNED)).thenReturn(false);
+		Mockito.when(ea.hasXAttr(FILE_PATH, EA_CHECKSUM + "adler32")).thenReturn(true);
+		Mockito.when(ea.getXAttr(FILE_PATH, EA_CHECKSUM + "adler32")).thenReturn(CHECKSUM);
+		Mockito.when(ea.hasXAttr(FILE_PATH, EA_MIGRATED)).thenReturn(false);
+		Mockito.when(ea.hasXAttr(FILE_PATH, EA_PREMIGRATE)).thenReturn(false);
+		Mockito.when(ea.hasXAttr(FILE_PATH, EA_TSMRECD)).thenReturn(false);
+		Mockito.when(ea.hasXAttr(FILE_PATH, EA_TSMRECR)).thenReturn(false);
+		Mockito.when(ea.hasXAttr(FILE_PATH, EA_TSMRECT)).thenReturn(false);
+		StormEA.init(ea);
 	}
 
 	@Test

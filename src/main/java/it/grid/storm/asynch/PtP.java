@@ -115,8 +115,6 @@ public class PtP implements Delegable, Chooser, Request {
 
   private static Logger log = LoggerFactory.getLogger(PtP.class);
 
-  private static final StormEA ea = StormEA.getDefaultStormExtendedAttributes();
-
   /**
    * PtPChunkData that holds the specific info for this chunk
    */
@@ -971,7 +969,7 @@ public class PtP implements Delegable, Chooser, Request {
         .pinLifetime().value());
 
       // set extended attribute that indicates the file pinned
-      ea.setPinned(fileStoRI.getLocalFile().getAbsolutePath(), expDate);
+      StormEA.setPinned(fileStoRI.getLocalFile().getAbsolutePath(), expDate);
       
     }
   }

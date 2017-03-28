@@ -1,4 +1,4 @@
-package it.grid.storm.rest.metadata;
+package it.grid.storm.rest.metadata.model;
 
 import javax.validation.constraints.NotNull;
 

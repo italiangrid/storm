@@ -67,8 +67,6 @@ public class PtGChunkDAO {
 
 	private static final Logger log = LoggerFactory.getLogger(PtGChunkDAO.class);
 
-	private static final StormEA ea = StormEA.getDefaultStormExtendedAttributes();
-
 	/** String with the name of the class for the DB driver */
 	private final String driver = Configuration.getInstance().getDBDriver();
 	/** String referring to the URL of the DB */
@@ -1175,7 +1173,7 @@ public class PtGChunkDAO {
 				}
 
 				if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
-					ea.removePinned(stori.getAbsolutePath());
+					StormEA.removePinned(stori.getAbsolutePath());
 				}
 			}
 		}
