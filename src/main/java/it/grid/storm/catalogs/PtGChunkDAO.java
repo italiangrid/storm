@@ -17,6 +17,18 @@
 
 package it.grid.storm.catalogs;
 
+import it.grid.storm.config.Configuration;
+import it.grid.storm.ea.StormEA;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.naming.SURL;
+import it.grid.storm.srm.types.InvalidTSURLAttributesException;
+import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.srm.types.TRequestType;
+import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TStatusCode;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -38,18 +50,6 @@ import java.util.TimerTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import it.grid.storm.config.Configuration;
-import it.grid.storm.ea.StormEA;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.naming.SURL;
-import it.grid.storm.srm.types.InvalidTSURLAttributesException;
-import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.srm.types.TRequestType;
-import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.srm.types.TStatusCode;
 
 /**
  * DAO class for PtGChunkCatalog. This DAO is specifically designed to connect
