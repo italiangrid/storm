@@ -91,9 +91,10 @@ public class RestService {
 	/**
 	 * Configure the {@link Server}. Install the Jersey {@link ServletContainer}
 	 * and configure it to with resources locations.
+	 * @throws Exception 
 	 * 
 	 */
-	private static void configureServer() {
+	private static void configureServer() throws Exception {
 
 		ResourceConfig resourceConfig = new ResourceConfig();
 		/* Register resources: */
@@ -128,7 +129,7 @@ public class RestService {
 			String token = config.getXmlRpcToken();
 			if (token == null || token.isEmpty()) {
 				log.error("Rest server security token enabled, but token not found");
-				throw new RuntimeException("Rest server security token enabled, but token not found");
+				throw new Exception("Rest server security token enabled, but token not found");
 			}
 			FilterHolder filterHolder = new FilterHolder(new RestTokenFilter());
 			filterHolder.setInitParameter("token", token);
@@ -147,8 +148,6 @@ public class RestService {
 	 */
 	public static void startServer() throws Exception {
 
-		checkTokenConfiguration();
-
 		configureServer();
 
 		log.info("Starting RESTFul services ... ");
@@ -157,17 +156,6 @@ public class RestService {
 		thread.start();
 
 		log.info(" ... started");
-	}
-
-	private static void checkTokenConfiguration() throws Exception {
-
-		if (config.getRestTokenEnabled()) {
-			String token = config.getRestTokenValue();
-			if(token == null || token.isEmpty()) {
-				log.error("REST requests token enabled, but token not found");
-				throw new Exception("REST requests token enabled, but token not found");
-			}
-		}
 	}
 
 	/**

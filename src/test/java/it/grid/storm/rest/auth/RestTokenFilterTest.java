@@ -90,7 +90,6 @@ public class RestTokenFilterTest {
 		filter.doFilter(request, response, chain);
 		verify(chain, times(0)).doFilter(request, response);
 		verify(response).setStatus(UNAUTHORIZED.getStatusCode());
-		verify(response).setContentType(TEXT_PLAIN);
 		response.getWriter().flush();
     assertThat(readFileToString(new File(TMP_FILENAME), "UTF-8"), equalTo("Invalid token provided"));
     filter.destroy();
@@ -106,7 +105,6 @@ public class RestTokenFilterTest {
 		filter.doFilter(request, response, chain);
 		verify(chain, times(0)).doFilter(request, response);
 		verify(response).setStatus(UNAUTHORIZED.getStatusCode());
-		verify(response).setContentType(TEXT_PLAIN);
 		response.getWriter().flush();
     assertThat(readFileToString(new File(TMP_FILENAME), "UTF-8"), equalTo("Invalid token provided"));
     filter.destroy();

@@ -17,6 +17,16 @@
 
 package it.grid.storm;
 
+import static it.grid.storm.rest.RestService.startServer;
+import static it.grid.storm.rest.RestService.stop;
+
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.asynch.AdvancedPicker;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.catalogs.StoRMDataSource;
@@ -30,20 +40,11 @@ import it.grid.storm.health.HealthDirector;
 import it.grid.storm.metrics.StormMetricRegistry;
 import it.grid.storm.metrics.StormMetricsReporter;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.rest.RestService;
 import it.grid.storm.startup.Bootstrap;
 import it.grid.storm.startup.BootstrapException;
 import it.grid.storm.synchcall.SimpleSynchcallDispatcher;
 import it.grid.storm.xmlrpc.StoRMXmlRpcException;
 import it.grid.storm.xmlrpc.XMLRPCHttpServer;
-
-import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class represents a StoRM as a whole: it sets the configuration file
@@ -247,7 +248,7 @@ public class StoRM {
   synchronized public void startPicker() {
 
     picker.startIt();
-    this.isPickerRunning = true;
+    isPickerRunning = true;
   }
 
   /**
@@ -256,7 +257,7 @@ public class StoRM {
   synchronized public void stopPicker() {
 
     picker.stopIt();
-    this.isPickerRunning = false;
+    isPickerRunning = false;
   }
 
   /**
@@ -264,7 +265,7 @@ public class StoRM {
    */
   public synchronized boolean pickerIsRunning() {
 
-    return this.isPickerRunning;
+    return isPickerRunning;
   }
 
   /**
@@ -275,7 +276,7 @@ public class StoRM {
   synchronized public void startXmlRpcServer() throws Exception {
 
     xmlrpcServer.start();
-    this.isXmlrpcServerRunning = true;
+    isXmlrpcServerRunning = true;
   }
 
   /**
@@ -284,7 +285,7 @@ public class StoRM {
   synchronized public void stopXmlRpcServer() {
 
     xmlrpcServer.stop();
-    this.isXmlrpcServerRunning = false;
+    isXmlrpcServerRunning = false;
   }
 
   /**
@@ -292,7 +293,7 @@ public class StoRM {
    */
   public synchronized boolean xmlRpcServerIsRunning() {
 
-    return this.isXmlrpcServerRunning;
+    return isXmlrpcServerRunning;
   }
 
   /**
@@ -300,16 +301,8 @@ public class StoRM {
    */
   synchronized public void startRestServer() throws Exception {
 
-    try {
-      RestService.startServer();
-    } catch (IOException e) {
-
-      String emsg = String.format("Unable to start internal HTTP Server "
-        + "listening for RESTFul services. IOException : %s", e.getMessage());
-      log.error(emsg, e);
-      throw new Exception(emsg);
-    }
-    this.isRestServerRunning = true;
+    startServer();
+    isRestServerRunning = true;
   }
 
   /**
@@ -319,7 +312,7 @@ public class StoRM {
 
     try {
 
-      RestService.stop();
+      stop();
 
     } catch (Exception e) {
 
@@ -327,7 +320,7 @@ public class StoRM {
         + "services: {}", e.getMessage(), e);
     }
 
-    this.isRestServerRunning = false;
+    isRestServerRunning = false;
   }
 
   /**
@@ -335,7 +328,7 @@ public class StoRM {
    */
   public synchronized boolean restServerIsRunning() {
 
-    return this.isRestServerRunning;
+    return isRestServerRunning;
   }
 
   /**
@@ -360,8 +353,8 @@ public class StoRM {
         spaceCatalog.purge();
       }
     };
-    GC.scheduleAtFixedRate(this.cleaningTask, delay, period);
-    this.isSpaceGCRunning = true;
+    GC.scheduleAtFixedRate(cleaningTask, delay, period);
+    isSpaceGCRunning = true;
     log.debug("Space GC started.");
   }
 
@@ -376,7 +369,7 @@ public class StoRM {
       GC.purge();
     }
     log.debug("Space GC stopped.");
-    this.isSpaceGCRunning = false;
+    isSpaceGCRunning = false;
   }
 
   /**
@@ -384,6 +377,6 @@ public class StoRM {
    */
   public synchronized boolean spaceGCIsRunning() {
 
-    return this.isSpaceGCRunning;
+    return isSpaceGCRunning;
   }
 }

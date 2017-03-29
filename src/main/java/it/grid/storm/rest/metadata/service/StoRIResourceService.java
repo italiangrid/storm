@@ -1,4 +1,4 @@
-package it.grid.storm.rest.metadata;
+package it.grid.storm.rest.metadata.service;
 
 import static it.grid.storm.namespace.naming.NamespaceUtil.getWinnerRule;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -18,7 +18,7 @@ import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.StoRIType;
 
-public class StoRIResourceService implements ResourceService<StoRI> {
+public class StoRIResourceService {
 
 	private static final Logger log = LoggerFactory.getLogger(StoRIResourceService.class);
 
@@ -32,7 +32,6 @@ public class StoRIResourceService implements ResourceService<StoRI> {
 		this.rulesList = rulesList;
 	}
 
-	@Override
 	public StoRI getResource(String stfnPath) throws WebApplicationException {
 
 		MappingRule rule = getMappingRule(stfnPath);

@@ -167,8 +167,6 @@ public class Configuration {
   private static final String XMLRPC_SECURITY_TOKEN_KEY = "synchcall.xmlrpc.security.token";
   private static final String PTG_SKIP_ACL_SETUP = "ptg.skip-acl-setup";
   private static final String HTTP_TURL_PREFIX = "http.turl_prefix";
-  private static final String REST_TOKEN_ENABLED = "rest.token.enabled";
-  private static final String REST_TOKEN_VALUE = "rest.token.value";
 
   private Configuration() {
 
@@ -2322,14 +2320,6 @@ public class Configuration {
 
   public String getHTTPTURLPrefix(){
     return cr.getConfiguration().getString(HTTP_TURL_PREFIX,"/fileTransfer");
-  }
-
-  public boolean getRestTokenEnabled() {
-    return cr.getConfiguration().getBoolean(REST_TOKEN_ENABLED, true);
-  }
-
-  public String getRestTokenValue() {
-    return cr.getConfiguration().getString(REST_TOKEN_VALUE, "");
   }
 
 }
