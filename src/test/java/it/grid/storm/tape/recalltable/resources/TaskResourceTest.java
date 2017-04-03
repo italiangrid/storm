@@ -4,9 +4,11 @@ import static it.grid.storm.tape.recalltable.resources.TaskInsertRequest.MAX_RET
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertNotNull;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -14,9 +16,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.ws.rs.WebApplicationException;
@@ -32,12 +32,14 @@ import com.google.common.collect.Lists;
 
 import it.grid.storm.griduser.VONameMatchingRule;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
+import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ApproachableRule;
 import it.grid.storm.namespace.model.SubjectRules;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TapeRecallTO;
+import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
+import it.grid.storm.rest.metadata.service.ResourceService;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
@@ -48,15 +50,19 @@ public class TaskResourceTest {
 	private static final String VFS_VONAME = "test.vo";
 	private static final String VFS_ROOTPATH = "/storage/test.vo";
 
+	private static final String REQUEST_WRONG_VONAME = "tester.vo";
+
 	private static final String FILE_PATH = "/storage/test.vo/path/to/filename.dat";
-	private static final String ANOTHERVFS_FILE_PATH = "/storage/dteam/path/to/filename.dat";
+	private static final String STFN_PATH = "/test.vo/path/to/filename.dat";
 
 	private VirtualFSInterface VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+
+	private StoRI STORI = getStoRI(VFS);
+
 	private UUID groupTaskID = UUID.randomUUID();
+
 	private TapeRecallCatalog RECALL_CATALOG = getTapeRecallCatalogInsertSuccess(groupTaskID);
 	private TapeRecallCatalog BROKEN_RECALL_CATALOG = getTapeRecallCatalogInsertError();
-	private NamespaceInterface NAMESPACE = getNamespace(VFS);
-	private NamespaceInterface NOTMAPPED_NAMESPACE = getNotMappedNamespace();
 
 	private TapeRecallCatalog getTapeRecallCatalogInsertSuccess(UUID groupTaskId) {
 
@@ -69,6 +75,36 @@ public class TaskResourceTest {
 			e.printStackTrace();
 		}
 		return catalog;
+	}
+
+	private StoRI getStoRI(VirtualFSInterface virtualFS) {
+		StoRI sto = Mockito.mock(StoRI.class);
+		Mockito.when(sto.getAbsolutePath()).thenReturn(FILE_PATH);
+		Mockito.when(sto.getVirtualFileSystem()).thenReturn(virtualFS);
+		return sto;
+	}
+
+	private ResourceService getResourceService(StoRI storiToReturn)
+			throws ResourceNotFoundException, NamespaceException {
+		ResourceService service = Mockito.mock(ResourceService.class);
+		Mockito.when(service.getResource(Mockito.anyString())).thenReturn(storiToReturn);
+		return service;
+	}
+
+	private ResourceService getResourceNotFoundService()
+			throws ResourceNotFoundException, NamespaceException {
+		ResourceService service = Mockito.mock(ResourceService.class);
+		Mockito.when(service.getResource(Mockito.anyString()))
+			.thenThrow(new ResourceNotFoundException("Unable to map " + STFN_PATH + " to a rule"));
+		return service;
+	}
+
+	private ResourceService getResourceNamespaceErrorService()
+			throws ResourceNotFoundException, NamespaceException {
+		ResourceService service = Mockito.mock(ResourceService.class);
+		Mockito.when(service.getResource(Mockito.anyString()))
+			.thenThrow(new NamespaceException("Mocked namespace exception"));
+		return service;
 	}
 
 	private TapeRecallCatalog getTapeRecallCatalogInsertError() {
@@ -105,36 +141,16 @@ public class TaskResourceTest {
 		return vfs;
 	}
 
-	private NamespaceInterface getNotMappedNamespace() {
-		NamespaceInterface namespace = Mockito.mock(NamespaceInterface.class);
-		try {
-			Mockito.when(namespace.getAllDefinedVFSAsDictionary()).thenReturn(null);
-		} catch (NamespaceException e) {
-			e.printStackTrace();
-		}
-		return namespace;
+	private TaskResource getTaskResource(ResourceService service, TapeRecallCatalog catalog)
+			throws NamespaceException {
+		return new TaskResource(service, catalog);
 	}
 
-	private NamespaceInterface getNamespace(VirtualFSInterface vfs) {
-		NamespaceInterface namespace = Mockito.mock(NamespaceInterface.class);
-		Map<String, VirtualFSInterface> vfsMap = new HashMap<String, VirtualFSInterface>();
-		vfsMap.put(vfs.getRootPath(), vfs);
-		try {
-			Mockito.when(namespace.getAllDefinedVFSAsDictionary()).thenReturn(vfsMap);
-		} catch (NamespaceException e) {
-			e.printStackTrace();
-		}
-		return namespace;
-	}
+	private void testGETTaskInfo(Response res)
+			throws InvalidTRequestTokenAttributesException, DataAccessException, JsonParseException,
+			JsonMappingException, IOException, NamespaceException, ResourceNotFoundException {
 
-	private TaskResource getTaskResource(NamespaceInterface namespace, TapeRecallCatalog catalog) {
-		return new TaskResource(namespace, catalog);
-	}
-
-	private void testGETTaskInfo(Response res) throws InvalidTRequestTokenAttributesException,
-			DataAccessException, JsonParseException, JsonMappingException, IOException {
-
-		TaskResource recallEndpoint = getTaskResource(NAMESPACE, RECALL_CATALOG);
+		TaskResource recallEndpoint = getTaskResource(getResourceService(STORI), RECALL_CATALOG);
 
 		// extract response data
 		URI location = URI.create(res.getHeaderString("Location"));
@@ -159,12 +175,13 @@ public class TaskResourceTest {
 	}
 
 	@Test
-	public void testPOSTSuccess() throws DataAccessException, NamespaceException, JsonParseException,
-			JsonMappingException, IOException, InvalidTRequestTokenAttributesException {
+	public void testPOSTSuccess()
+			throws DataAccessException, NamespaceException, JsonParseException, JsonMappingException,
+			IOException, InvalidTRequestTokenAttributesException, ResourceNotFoundException {
 
-		TaskResource recallEndpoint = getTaskResource(NAMESPACE, RECALL_CATALOG);
+		TaskResource recallEndpoint = getTaskResource(getResourceService(STORI), RECALL_CATALOG);
 		TaskInsertRequest request = TaskInsertRequest.builder()
-			.filename(FILE_PATH)
+			.stfn(STFN_PATH)
 			.retryAttempts(0)
 			.voName(VFS_VONAME)
 			.pinLifetime(1223123)
@@ -178,12 +195,33 @@ public class TaskResourceTest {
 	}
 
 	@Test
-	public void testPOSTVFSNotFound() throws DataAccessException, NamespaceException {
+	public void testPOSTSuccessWithNullVoName()
+			throws DataAccessException, NamespaceException, JsonParseException, JsonMappingException,
+			IOException, InvalidTRequestTokenAttributesException, ResourceNotFoundException {
+
+		TaskResource recallEndpoint = getTaskResource(getResourceService(STORI), RECALL_CATALOG);
+		TaskInsertRequest request = TaskInsertRequest.builder()
+			.stfn(STFN_PATH)
+			.retryAttempts(0)
+			.voName(null)
+			.pinLifetime(1223123)
+			.userId("test")
+			.build();
+		Response res = recallEndpoint.postNewTask(request);
+		assertNotNull(res.getHeaderString("Location"));
+		assertThat(res.getStatus(), equalTo(CREATED.getStatusCode()));
+
+		testGETTaskInfo(res);
+	}
+
+	@Test
+	public void testPOSTNamespaceErrorOnResolvingStfnPath()
+			throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
 		TaskResource recallEndpoint =
-				new TaskResource(NOTMAPPED_NAMESPACE, RECALL_CATALOG);
+				new TaskResource(getResourceNamespaceErrorService(), RECALL_CATALOG);
 		TaskInsertRequest request = TaskInsertRequest.builder()
-			.filename(FILE_PATH)
+			.stfn(STFN_PATH)
 			.retryAttempts(0)
 			.voName(VFS_VONAME)
 			.pinLifetime(1223123)
@@ -193,16 +231,39 @@ public class TaskResourceTest {
 			recallEndpoint.postNewTask(request);
 			fail();
 		} catch (WebApplicationException e) {
+			assertThat(e.getCause(), instanceOf(NamespaceException.class));
 			assertThat(e.getResponse().getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
 		}
 	}
 
 	@Test
-	public void testPOSTWrongVFS() throws DataAccessException, NamespaceException {
+	public void testPOSTBadVoNameRequested()
+			throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
-		TaskResource recallEndpoint = new TaskResource(NAMESPACE, RECALL_CATALOG);
+		TaskResource recallEndpoint =
+				new TaskResource(getResourceService(STORI), RECALL_CATALOG);
 		TaskInsertRequest request = TaskInsertRequest.builder()
-			.filename(ANOTHERVFS_FILE_PATH)
+			.stfn(STFN_PATH)
+			.retryAttempts(0)
+			.voName(REQUEST_WRONG_VONAME)
+			.pinLifetime(1223123)
+			.userId("test")
+			.build();
+		try {
+			recallEndpoint.postNewTask(request);
+			fail();
+		} catch (WebApplicationException e) {
+			assertThat(e.getResponse().getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+		}
+	}
+
+	@Test
+	public void testPOSTUnableToMapStfnPath()
+			throws DataAccessException, NamespaceException, ResourceNotFoundException {
+
+		TaskResource recallEndpoint = new TaskResource(getResourceNotFoundService(), RECALL_CATALOG);
+		TaskInsertRequest request = TaskInsertRequest.builder()
+			.stfn(STFN_PATH)
 			.retryAttempts(0)
 			.userId("test")
 			.build();
@@ -210,17 +271,19 @@ public class TaskResourceTest {
 			recallEndpoint.postNewTask(request);
 			fail();
 		} catch (WebApplicationException e) {
-			assertThat(e.getResponse().getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
+			assertThat(e.getCause(), instanceOf(ResourceNotFoundException.class));
+			assertThat(e.getResponse().getStatus(), equalTo(NOT_FOUND.getStatusCode()));
 		}
 	}
 
 	@Test
-	public void testPOSTDbException() throws DataAccessException, NamespaceException {
+	public void testPOSTDbException()
+			throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
 		TaskResource recallEndpoint =
-				new TaskResource(NAMESPACE, BROKEN_RECALL_CATALOG);
+				new TaskResource(getResourceService(STORI), BROKEN_RECALL_CATALOG);
 		TaskInsertRequest request = TaskInsertRequest.builder()
-			.filename(FILE_PATH)
+			.stfn(STFN_PATH)
 			.retryAttempts(0)
 			.voName(VFS_VONAME)
 			.pinLifetime(1223123)
@@ -236,10 +299,10 @@ public class TaskResourceTest {
 
 	@Test
 	public void testPOSTValidationRequestNullFilePath()
-			throws DataAccessException, NamespaceException {
+			throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
 		TaskResource recallEndpoint =
-				new TaskResource(NAMESPACE, BROKEN_RECALL_CATALOG);
+				new TaskResource(getResourceService(STORI), BROKEN_RECALL_CATALOG);
 		TaskInsertRequest request = TaskInsertRequest.builder().userId("test").build();
 		try {
 			recallEndpoint.postNewTask(request);
@@ -247,16 +310,17 @@ public class TaskResourceTest {
 		} catch (WebApplicationException e) {
 			assertThat(e.getResponse().getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
 			assertThat(e.getResponse().getEntity().toString(),
-					equalTo("Request must contain a filename"));
+					equalTo("Request must contain a STFN"));
 		}
 	}
 
 	@Test
-	public void testPOSTValidationRequestNullUserId() throws DataAccessException, NamespaceException {
+	public void testPOSTValidationRequestNullUserId()
+			throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
 		TaskResource recallEndpoint =
-				new TaskResource(NAMESPACE, BROKEN_RECALL_CATALOG);
-		TaskInsertRequest request = TaskInsertRequest.builder().filename(FILE_PATH).build();
+				new TaskResource(getResourceService(STORI), BROKEN_RECALL_CATALOG);
+		TaskInsertRequest request = TaskInsertRequest.builder().stfn(STFN_PATH).build();
 		try {
 			recallEndpoint.postNewTask(request);
 			fail();
@@ -268,12 +332,12 @@ public class TaskResourceTest {
 
 	@Test
 	public void testPOSTValidationRequestInvalidNegativeRetryAttempts()
-			throws DataAccessException, NamespaceException {
+			throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
 		TaskResource recallEndpoint =
-				new TaskResource(NAMESPACE, BROKEN_RECALL_CATALOG);
+				new TaskResource(getResourceService(STORI), BROKEN_RECALL_CATALOG);
 		TaskInsertRequest request =
-				TaskInsertRequest.builder().filename(FILE_PATH).userId("test").retryAttempts(-1).build();
+				TaskInsertRequest.builder().stfn(STFN_PATH).userId("test").retryAttempts(-1).build();
 		try {
 			recallEndpoint.postNewTask(request);
 			fail();
@@ -286,12 +350,12 @@ public class TaskResourceTest {
 
 	@Test
 	public void testPOSTValidationRequestInvalidTooManyRetryAttempts()
-			throws DataAccessException, NamespaceException {
+			throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
 		TaskResource recallEndpoint =
-				new TaskResource(NAMESPACE, BROKEN_RECALL_CATALOG);
+				new TaskResource(getResourceService(STORI), BROKEN_RECALL_CATALOG);
 		TaskInsertRequest request = TaskInsertRequest.builder()
-			.filename(FILE_PATH)
+			.stfn(STFN_PATH)
 			.userId("test")
 			.retryAttempts(Integer.valueOf(MAX_RETRY_ATTEMPTS) + 1)
 			.build();
@@ -314,10 +378,12 @@ public class TaskResourceTest {
 	}
 
 	@Test
-	public void testGETTasksInProgressEmpty() throws DataAccessException, NamespaceException, JsonParseException,
-			JsonMappingException, IOException, InvalidTRequestTokenAttributesException {
+	public void testGETTasksInProgressEmpty()
+			throws DataAccessException, NamespaceException, JsonParseException, JsonMappingException,
+			IOException, InvalidTRequestTokenAttributesException, ResourceNotFoundException {
 
-		TaskResource recallEndpoint = getTaskResource(NAMESPACE, getTapeRecallCatalogInProgressNotEmpty());
+		TaskResource recallEndpoint =
+				getTaskResource(getResourceService(STORI), getTapeRecallCatalogInProgressNotEmpty());
 		Response res = recallEndpoint.getTasks(10);
 		assertThat(res.getStatus(), equalTo(OK.getStatusCode()));
 	}

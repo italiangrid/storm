@@ -50,12 +50,12 @@ and the corresponding response would be
 
 Create a new recall task.
 
-This method takes filename and userId in the body of the POST request, encoded as a JSON string.
+This method takes stfn and userId in the body of the POST request, encoded as a JSON string.
 
 
 ```json
 {
-  "filename": "/storage/test.vo/test.txt", # REQUIRED
+  "stfn": "/test.vo/test.txt", # REQUIRED
   "userId": "something-not-null", # REQUIRED
   "retryAttempts": 0,
   "voName": "test.vo",
@@ -73,7 +73,7 @@ Content-Type: application/json
 Content-Length: 63
 
 {
-  "filename": "/storage/test.vo/test.txt",
+  "stfn": "/test.vo/test.txt",
   "userId": "ed9f3a00-0f1d-11e7-9447-080027b38971",
   "retryAttempts": 0,
   "voName": "test.vo",

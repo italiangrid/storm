@@ -7,13 +7,11 @@ import static it.grid.storm.ea.StormEA.EA_PREMIGRATE;
 import static it.grid.storm.ea.StormEA.EA_TSMRECD;
 import static it.grid.storm.ea.StormEA.EA_TSMRECR;
 import static it.grid.storm.ea.StormEA.EA_TSMRECT;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
-
-import javax.ws.rs.WebApplicationException;
 
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -29,6 +27,7 @@ import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.StoRIType;
 import it.grid.storm.rest.metadata.model.FileMetadata;
 import it.grid.storm.rest.metadata.service.FileMetadataService;
+import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
 import jersey.repackaged.com.google.common.collect.Lists;
 
 public class FileMetadataServiceTest {
@@ -107,7 +106,7 @@ public class FileMetadataServiceTest {
 	}
 
 	@Test
-	public void testSuccess() throws NamespaceException, IOException {
+	public void testSuccess() throws NamespaceException, IOException, ResourceNotFoundException {
 
 		init(EXISTS, IS_FILE, ONLINE);
 		FileMetadata metadata = service.getMetadata(STFN_PATH);
@@ -130,13 +129,13 @@ public class FileMetadataServiceTest {
 		init(NOT_EXISTS, IS_FILE, ONLINE);
 		try {
 			service.getMetadata(STFN_PATH);
-		} catch (WebApplicationException e) {
-			assertThat(e.getResponse().getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+		} catch (ResourceNotFoundException e) {
+			assertThat(e.getMessage(), containsString("not exists"));
 		}
 	}
 
 	@Test
-	public void testFileIsDirectory() throws NamespaceException, IOException {
+	public void testFileIsDirectory() throws NamespaceException, IOException, ResourceNotFoundException {
 
 		init(EXISTS, IS_DIRECTORY, ONLINE);
 		FileMetadata metadata = service.getMetadata(STFN_PATH);
@@ -148,7 +147,7 @@ public class FileMetadataServiceTest {
 	}
 
 	@Test
-	public void testSuccessFileExistsButMigrated() throws NamespaceException, IOException {
+	public void testSuccessFileExistsButMigrated() throws NamespaceException, IOException, ResourceNotFoundException {
 
 		init(EXISTS, IS_FILE, MIGRATED);
 		FileMetadata metadata = service.getMetadata(STFN_PATH);

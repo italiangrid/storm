@@ -1,9 +1,12 @@
 package it.grid.storm.info.remote.resources;
 
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+
+import java.io.IOException;
 
 import javax.ws.rs.WebApplicationException;
 
@@ -20,6 +23,7 @@ import it.grid.storm.rest.metadata.Metadata;
 import it.grid.storm.rest.metadata.model.FileMetadata;
 import it.grid.storm.rest.metadata.model.VirtualFSMetadata;
 import it.grid.storm.rest.metadata.service.FileMetadataService;
+import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
 
 public class MetadataTests {
 
@@ -46,15 +50,21 @@ public class MetadataTests {
 		return vfs;
 	}
 
-	private Metadata getMetadataServiceSuccess(FileMetadata output) {
+	private Metadata getMetadataServiceSuccess(FileMetadata output) throws ResourceNotFoundException, NamespaceException, IOException {
 		FileMetadataService service = Mockito.mock(FileMetadataService.class);
 		Mockito.when(service.getMetadata(Mockito.anyString())).thenReturn(output);
 		return getMetadataServlet(service);
 	}
 
-	private Metadata getMetadataServiceNotFound() {
+	private Metadata getMetadataServiceNotFound() throws ResourceNotFoundException, NamespaceException, IOException {
 		FileMetadataService service = Mockito.mock(FileMetadataService.class);
-		Mockito.when(service.getMetadata(Mockito.anyString())).thenThrow(new WebApplicationException(NOT_FOUND));
+		Mockito.when(service.getMetadata(Mockito.anyString())).thenThrow(new ResourceNotFoundException(FILE_PATH + " not exists"));
+		return getMetadataServlet(service);
+	}
+
+	private Metadata getMetadataServiceNamespaceException() throws ResourceNotFoundException, NamespaceException, IOException {
+		FileMetadataService service = Mockito.mock(FileMetadataService.class);
+		Mockito.when(service.getMetadata(Mockito.anyString())).thenThrow(new NamespaceException("Mocked namespace excpetion"));
 		return getMetadataServlet(service);
 	}
 
@@ -73,7 +83,7 @@ public class MetadataTests {
 	}
 
 	@Test
-	public void testSuccess() throws NamespaceException {
+	public void testSuccess() throws NamespaceException, ResourceNotFoundException, IOException {
 
 		Metadata servlet = getMetadataServiceSuccess(expected);
 		FileMetadata response = servlet.getFileMetadata(STFN_PATH);
@@ -83,7 +93,7 @@ public class MetadataTests {
 	}
 
 	@Test
-	public void testSuccessWithWrongToken() throws NamespaceException {
+	public void testSuccessWithWrongToken() throws NamespaceException, ResourceNotFoundException, IOException {
 
 		Metadata servlet = getMetadataServiceSuccess(expected);
 		FileMetadata response = servlet.getFileMetadata(STFN_PATH);
@@ -93,7 +103,7 @@ public class MetadataTests {
 	}
 
 	@Test
-	public void testSuccessStfnNoSlash() throws NamespaceException {
+	public void testSuccessStfnNoSlash() throws NamespaceException, ResourceNotFoundException, IOException {
 
 		Metadata servlet = getMetadataServiceSuccess(expected);
 		FileMetadata response = servlet.getFileMetadata(STFN_NOSLASH_PATH);
@@ -103,13 +113,24 @@ public class MetadataTests {
 	}
 
 	@Test
-	public void testMetadataNotFound() throws NamespaceException {
+	public void testMetadataNotFound() throws NamespaceException, ResourceNotFoundException, IOException {
 		Metadata servlet = getMetadataServiceNotFound();
 		try {
 			servlet.getFileMetadata(STFN_PATH);
 			fail();
 		} catch (WebApplicationException e) {
 			assertThat(e.getResponse().getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+		}
+	}
+
+	@Test
+	public void testMetadataNamespaceException() throws NamespaceException, ResourceNotFoundException, IOException {
+		Metadata servlet = getMetadataServiceNamespaceException();
+		try {
+			servlet.getFileMetadata(STFN_PATH);
+			fail();
+		} catch (WebApplicationException e) {
+			assertThat(e.getResponse().getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
 		}
 	}
 }

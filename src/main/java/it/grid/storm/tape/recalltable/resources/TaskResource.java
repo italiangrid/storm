@@ -18,7 +18,6 @@
  */
 package it.grid.storm.tape.recalltable.resources;
 
-import static it.grid.storm.namespace.naming.NamespaceUtil.resolveVOName;
 import static it.grid.storm.persistence.model.TapeRecallTO.BOL_REQUEST;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -58,9 +57,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.grid.storm.config.Configuration;
 import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
+import it.grid.storm.namespace.StoRI;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TapeRecallTO;
+import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
+import it.grid.storm.rest.metadata.service.ResourceService;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.TapeRecallException;
 import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusLogic;
@@ -78,21 +81,24 @@ public class TaskResource {
 
 	private static Configuration config = Configuration.getInstance();
 
-	private NamespaceInterface namespace;
+	private ResourceService service;
 	private TapeRecallCatalog recallCatalog;
 
 	private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 	private ObjectMapper mapper = new ObjectMapper();
 
-	public TaskResource() {
+	public TaskResource() throws NamespaceException {
 
-		namespace = NamespaceDirector.getNamespace();
+		NamespaceInterface namespace = NamespaceDirector.getNamespace();
 		recallCatalog = new TapeRecallCatalog();
+		service =
+				new ResourceService(namespace.getAllDefinedVFS(), namespace.getAllDefinedMappingRules());
 	}
 
-	public TaskResource(NamespaceInterface namespace, TapeRecallCatalog recallCatalog) {
+	public TaskResource(ResourceService service, TapeRecallCatalog recallCatalog)
+			throws NamespaceException {
 
-		this.namespace = namespace;
+		this.service = service;
 		this.recallCatalog = recallCatalog;
 	}
 
@@ -290,22 +296,47 @@ public class TaskResource {
 
 		validateRequest(request);
 
-		String voName = null;
+		StoRI resource = null;
 		try {
-			voName = resolveVOName(request.getFilename(), namespace.getAllDefinedVFSAsDictionary());
-		} catch (Throwable e) {
-			log.debug(e.getMessage());
-			throw new WebApplicationException(e, INTERNAL_SERVER_ERROR);
+			resource = service.getResource(request.getStfn());
+		} catch (ResourceNotFoundException e) {
+			log.info(e.getMessage());
+			throw new WebApplicationException(e.getMessage(), e, NOT_FOUND);
+		} catch (NamespaceException e) {
+			log.error(e.getMessage());
+			throw new WebApplicationException(e.getMessage(), e, INTERNAL_SERVER_ERROR);
+		}
+
+		String voName;
+		try {
+			voName = resource.getVirtualFileSystem()
+				.getApproachableRules()
+				.get(0)
+				.getSubjectRules()
+				.getVONameMatchingRule()
+				.getVOName();
+		} catch (NamespaceException e) {
+			log.error(e.getMessage());
+			throw new WebApplicationException(e.getMessage(), INTERNAL_SERVER_ERROR);
+		}
+
+		if (request.getVoName() != null) {
+			if (!request.getVoName().equals(voName)) {
+				String message = String.format("The voName %s doesn't match the resolved %s",
+						request.getVoName(), voName);
+				log.error(message);
+				throw new WebApplicationException(message, BAD_REQUEST);
+			}
 		}
 
 		Date currentDate = new Date();
 		TapeRecallTO task = new TapeRecallTO();
-		task.setFileName(request.getFilename());
+		task.setFileName(resource.getAbsolutePath());
 		task.setFakeRequestToken();
 		task.setRequestType(BOL_REQUEST);
 		task.setRetryAttempt(request.getRetryAttempts());
 		task.setUserID(request.getUserId());
-		task.setVoName(request.getVoName() != null ? request.getVoName() : voName);
+		task.setVoName(voName);
 		task.setInsertionInstant(currentDate);
 		task.setDeferredRecallInstant(currentDate);
 		task.setPinLifetime(request.getPinLifetime() != null ? request.getPinLifetime() : -1);

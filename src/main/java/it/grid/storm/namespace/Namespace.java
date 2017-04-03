@@ -78,7 +78,6 @@ public class Namespace implements NamespaceInterface {
 		return parser.getVFSs().values();
 	}
 
-
 	@Override
 	public Map<String, VirtualFSInterface> getAllDefinedVFSAsDictionary() throws NamespaceException {
 

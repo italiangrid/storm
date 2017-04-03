@@ -14,8 +14,8 @@ public class TaskInsertRequest {
 
 	public static final String MAX_RETRY_ATTEMPTS = "4";
 
-	@NotNull(message = "Request must contain a filename")
-	private String filename;
+	@NotNull(message = "Request must contain a STFN")
+	private String stfn;
 	@NotNull(message = "Request must contain a userId")
 	private String userId;
 
@@ -28,11 +28,11 @@ public class TaskInsertRequest {
 	private Integer pinLifetime;
 
 	@JsonCreator
-	public TaskInsertRequest(@JsonProperty("filename") String filename,
+	public TaskInsertRequest(@JsonProperty("stfn") String stfn,
 			@JsonProperty("userId") String userId, @JsonProperty("retryAttempts") int retryAttempts,
 			@JsonProperty("voName") String voName, @JsonProperty("pinLifetime") Integer pinLifetime) {
 
-		this.filename = filename;
+		this.stfn = stfn;
 		this.retryAttempts = retryAttempts;
 		this.voName = voName;
 		this.pinLifetime = pinLifetime;
@@ -40,15 +40,15 @@ public class TaskInsertRequest {
 	}
 
 	public TaskInsertRequest(Builder builder) {
-		this.filename = builder.filename;
+		this.stfn = builder.stfn;
 		this.retryAttempts = builder.retryAttempts;
 		this.voName = builder.voName;
 		this.pinLifetime = builder.pinLifetime;
 		this.userId = builder.userId;
 	}
 
-	public String getFilename() {
-		return filename;
+	public String getStfn() {
+		return stfn;
 	}
 
 	public String getUserId() {
@@ -73,13 +73,13 @@ public class TaskInsertRequest {
 
 	@Override
 	public String toString() {
-		return "TaskInsertRequest [filename=" + filename + ", userId=" + userId + ", retryAttempts="
+		return "TaskInsertRequest [stfn=" + stfn + ", userId=" + userId + ", retryAttempts="
 				+ retryAttempts + ", voName=" + voName + ", pinLifetime=" + pinLifetime + "]";
 	}
 
 	public static class Builder {
 
-		private String filename;
+		private String stfn;
 		private String userId;
 		private int retryAttempts;
 
@@ -90,8 +90,8 @@ public class TaskInsertRequest {
 			this.retryAttempts = 0;
 		}
 
-		public Builder filename(String filename) {
-			this.filename = filename;
+		public Builder stfn(String stfn) {
+			this.stfn = stfn;
 			return this;
 		}
 
