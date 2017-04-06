@@ -23,7 +23,6 @@ import it.grid.storm.catalogs.InvalidSurlRequestDataAttributesException;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.namespace.InvalidDescendantsAuthRequestException;
 import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
 import it.grid.storm.namespace.InvalidDescendantsFileRequestException;
 import it.grid.storm.namespace.InvalidDescendantsPathRequestException;
@@ -384,17 +383,6 @@ public final class BoLFeeder implements Delegable {
 				+ "a file.");
 			gsm.failedChunk(chunkData);
 		
-		} catch (InvalidDescendantsAuthRequestException e) {
-			
-			/* No rights to directory! */
-			chunkData.changeStatusSRM_AUTHORIZATION_FAILURE("srmBringOnLine with "
-				+ "dirOption set: user has no right to access directory!");
-
-			BoLChunkCatalog.getInstance().update(chunkData);
-
-			log.debug("ATTENTION in BoLFeeder! BoLFeeder received request to"
-				+ " expand a directory for which the user has no rights.");
-			gsm.failedChunk(chunkData);
 		}
 	}
 

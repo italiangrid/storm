@@ -37,7 +37,6 @@
     <xalanVersion>2.7.1</xalanVersion>
     <mailVersion>1.4.6</mailVersion>
     <jakartaOroVersion>2.0.8</jakartaOroVersion>
-    <jacksonAnnotationsVersion>2.8.7</jacksonAnnotationsVersion>
 
     <guavaVersion>18.0</guavaVersion>
     <metrics.version>3.1.0</metrics.version>
@@ -409,12 +408,6 @@
       <version>${jsonVersion}</version>
     </dependency>
 
-    <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-annotations</artifactId>
-        <version>${jacksonAnnotationsVersion}</version>
-    </dependency>
-
     <!-- not on Maven Central, we have it on our own repository, you can install
       it from official releases http://dev.globus.org/wiki/CoG_JGlobus_1.4. The artifacts
       not prefix with cog are dependencies. As all of them are very old, and not supported,
@@ -545,15 +538,12 @@
       <scope>runtime</scope>
     </dependency>
 
-    <!-- https://mvnrepository.com/artifact/org.mockito/mockito-all -->
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
       <version>${mockitoVersion}</version>
       <scope>test</scope>
     </dependency>
-
-    <!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest-all -->
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-all</artifactId>

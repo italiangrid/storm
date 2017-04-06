@@ -1,6 +1,7 @@
 package it.grid.storm.rest.metadata;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
@@ -18,34 +19,37 @@ import org.slf4j.LoggerFactory;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
-import it.grid.storm.rest.metadata.model.FileMetadata;
-import it.grid.storm.rest.metadata.service.FileMetadataService;
+import it.grid.storm.rest.metadata.model.StoRIMetadata;
 import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
+import it.grid.storm.rest.metadata.service.StoRIMetadataService;
 
 @Path("/metadata")
 public class Metadata {
 
 	private static final Logger log = LoggerFactory.getLogger(Metadata.class);
 
-	private FileMetadataService metadataService;
+	private StoRIMetadataService metadataService;
 
 	public Metadata() throws NamespaceException {
 
 		NamespaceInterface namespace = NamespaceDirector.getNamespace();
-		metadataService = new FileMetadataService(namespace.getAllDefinedVFS(), namespace.getAllDefinedMappingRules());
+		metadataService = new StoRIMetadataService(namespace.getAllDefinedVFS(), namespace.getAllDefinedMappingRules());
 	}
 
-	public Metadata(FileMetadataService metadataService) {
+	public Metadata(StoRIMetadataService metadataService) {
 		this.metadataService = metadataService;
 	}
 
 	@GET
 	@Produces(APPLICATION_JSON)
 	@Path("/{stfnPath:.*}")
-	public FileMetadata getFileMetadata(@PathParam("stfnPath") String stfnPath) {
+	public StoRIMetadata getFileMetadata(@PathParam("stfnPath") String stfnPath) {
 
 		log.debug("GET metadata request for: {}", stfnPath);
-		FileMetadata fileMetadata;
+		if (isRootPath(stfnPath)) {
+			throw new WebApplicationException("invalid stfnPath provided", BAD_REQUEST);
+		}
+		StoRIMetadata fileMetadata;
 		try {
 			fileMetadata = metadataService.getMetadata(beginWithSlash(stfnPath));
 		} catch (ResourceNotFoundException e) {
@@ -57,6 +61,10 @@ public class Metadata {
 		}
 		log.debug("metadata retrieved for {}: {}", stfnPath, fileMetadata);
 		return fileMetadata;
+	}
+
+	private boolean isRootPath(String stfnPath) {
+		return stfnPath.isEmpty() || stfnPath.equals("/");
 	}
 
 	private String beginWithSlash(String stfnPath) {

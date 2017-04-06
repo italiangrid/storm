@@ -27,7 +27,9 @@ package it.grid.storm.srm.types;
  * @version 1.0
  */
 
-public class InvalidTDirOptionAttributesException extends Exception {
+public class InvalidTDirOptionAttributesException extends RuntimeException {
+
+	private static final long serialVersionUID = 1L;
 
 	private boolean allLevel = true;
 	private int numLevel = -1;

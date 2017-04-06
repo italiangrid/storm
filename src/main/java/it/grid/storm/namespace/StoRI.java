@@ -84,7 +84,6 @@ public interface StoRI {
 
 	public ArrayList<StoRI> getChildren(TDirOption dirOption)
 		throws InvalidDescendantsEmptyRequestException,
-		InvalidDescendantsAuthRequestException,
 		InvalidDescendantsPathRequestException,
 		InvalidDescendantsFileRequestException;
 

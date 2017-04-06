@@ -5,10 +5,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@JsonInclude(Include.NON_NULL)
+@JsonInclude(Include.NON_EMPTY)
 public class FileAttributes {
 
-	private final Boolean isPinned;
+	private final Boolean pinned;
 	private final Boolean migrated;
 	private final Boolean premigrated;
 	private final String checksum;
@@ -17,12 +17,12 @@ public class FileAttributes {
 	private final String TSMRecT;
 
 	@JsonCreator
-	public FileAttributes(@JsonProperty("isPinned") Boolean isPinned,
+	public FileAttributes(@JsonProperty("pinned") Boolean pinned,
 			@JsonProperty("migrated") Boolean migrated, @JsonProperty("premigrated") Boolean premigrated,
 			@JsonProperty("checksum") String checksum, @JsonProperty("TSMRecD") Long TSMRecD,
 			@JsonProperty("TSMRecR") Integer TSMRecR, @JsonProperty("TSMRecT") String TSMRecT) {
 
-		this.isPinned = isPinned;
+		this.pinned = pinned;
 		this.migrated = migrated;
 		this.premigrated = premigrated;
 		this.checksum = checksum;
@@ -31,15 +31,15 @@ public class FileAttributes {
 		this.TSMRecT = TSMRecT;
 	}
 
-	public Boolean isPinned() {
-		return isPinned;
+	public Boolean getPinned() {
+		return pinned;
 	}
 
-	public Boolean isMigrated() {
+	public Boolean getMigrated() {
 		return migrated;
 	}
 
-	public Boolean isPremigrated() {
+	public Boolean getPremigrated() {
 		return premigrated;
 	}
 
@@ -61,7 +61,7 @@ public class FileAttributes {
 
 	public FileAttributes(Builder builder) {
 
-		this.isPinned = builder.isPinned;
+		this.pinned = builder.pinned;
 		this.migrated = builder.migrated;
 		this.premigrated = builder.premigrated;
 		this.checksum = builder.checksum;
@@ -76,7 +76,7 @@ public class FileAttributes {
 
 	public static class Builder {
 
-		private Boolean isPinned;
+		private Boolean pinned;
 		private Boolean migrated;
 		private Boolean premigrated;
 		private String checksum;
@@ -84,8 +84,8 @@ public class FileAttributes {
 		private Integer TSMRecR;
 		private String TSMRecT;
 
-		public Builder isPinned(Boolean isPinned) {
-			this.isPinned = isPinned;
+		public Builder pinned(Boolean pinned) {
+			this.pinned = pinned;
 			return this;
 		}
 

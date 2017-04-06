@@ -1,6 +1,8 @@
 package it.grid.storm.rest.metadata.service;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static it.grid.storm.namespace.model.StoRIType.FILE;
+import static it.grid.storm.namespace.model.StoRIType.FOLDER;
 import static it.grid.storm.namespace.naming.NamespaceUtil.getWinnerRule;
 
 import java.io.File;
@@ -19,8 +21,8 @@ public class ResourceService {
 
 	private static final Logger log = LoggerFactory.getLogger(ResourceService.class);
 
-	private Collection<VirtualFSInterface> vfsList;
-	private Collection<MappingRule> rulesList;
+	protected Collection<VirtualFSInterface> vfsList;
+	protected Collection<MappingRule> rulesList;
 
 	public ResourceService(Collection<VirtualFSInterface> vfsList,
 			Collection<MappingRule> rulesList) {
@@ -33,6 +35,25 @@ public class ResourceService {
 
 	public StoRI getResource(String stfnPath) throws ResourceNotFoundException, NamespaceException {
 
+		log.debug("Get StoRI resource from {} ...", stfnPath);
+
+		MappingRule rule = getRule(stfnPath);
+		log.debug("Mapping rule is {}", rule);
+
+		String relativePath = getRelativePath(rule.getStFNRoot(), stfnPath);
+		log.debug("Relative path is {}", relativePath);
+
+		String absolutePath = getAbsolutePath(rule.getMappedFS().getRootPath(), relativePath);
+		log.debug("Absolute path is {}", absolutePath);
+
+		StoRIType type = isDirectory(absolutePath) ? FOLDER : FILE;
+		log.debug("StoRI type is {}", type);
+
+		return rule.getMappedFS().createFile(relativePath, type , rule);
+	}
+
+	private MappingRule getRule(String stfnPath) throws ResourceNotFoundException {
+
 		MappingRule rule = getWinnerRule(stfnPath, rulesList, vfsList);
 
 		if (rule == null) {
@@ -40,11 +61,28 @@ public class ResourceService {
 			log.debug(errorMessage);
 			throw new ResourceNotFoundException(errorMessage);
 		}
-
-		String fileRelativePath = stfnPath.replaceFirst(rule.getStFNRoot() + File.separator, "");
-		log.debug("File relative path is {}", fileRelativePath);
-
-		return rule.getMappedFS().createFile(fileRelativePath, StoRIType.FILE, rule);
+		return rule;
 	}
 
+	private boolean isDirectory(String absolutePath) {
+
+		return new File(absolutePath).isDirectory();
+	}
+
+	private String getRelativePath(String stfnRoot, String stfnPath) {
+
+		String path = stfnPath.replaceFirst(stfnRoot, "");
+		if (path.startsWith(File.separator)) {
+			path = path.substring(1);
+		}
+		return path;		
+	}
+
+	private String getAbsolutePath(String rootPath, String relativePath) {
+
+		if (rootPath.endsWith(File.separator)) {
+			return rootPath + relativePath;
+		}
+		return rootPath + File.separator + relativePath;
+	}
 }
