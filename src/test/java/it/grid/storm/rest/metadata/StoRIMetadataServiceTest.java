@@ -20,8 +20,9 @@ import org.mockito.Mockito;
 
 import it.grid.storm.ea.ExtendedAttributes;
 import it.grid.storm.ea.StormEA;
+import it.grid.storm.filesystem.FSException;
+import it.grid.storm.filesystem.FilesystemError;
 import it.grid.storm.filesystem.LocalFile;
-import it.grid.storm.filesystem.swig.genericfs;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.VirtualFSInterface;
@@ -62,15 +63,11 @@ public class StoRIMetadataServiceTest {
 	private StoRIMetadataService service;
 
 	private VirtualFSInterface getVirtualFS(String name, String rootPath, boolean exists,
-			boolean isDirectory, boolean isOnline) throws NamespaceException, IOException {
+			boolean isDirectory, boolean isOnline) throws NamespaceException, IOException, FSException {
 
-		genericfs fsDriver = Mockito.mock(genericfs.class);
-		Mockito.when(fsDriver.is_file_on_disk(FILE_PATH)).thenReturn(isOnline);
-		Mockito.when(fsDriver.is_file_on_disk(DIR_PATH)).thenReturn(isOnline);
 		VirtualFSInterface vfs = Mockito.mock(VirtualFSInterface.class);
 		Mockito.when(vfs.getAliasName()).thenReturn(name);
 		Mockito.when(vfs.getRootPath()).thenReturn(rootPath);
-		Mockito.when(vfs.getFSDriverInstance()).thenReturn(fsDriver);
 		StoRI fileStori = Mockito.mock(StoRI.class);
 		Mockito
 			.when(vfs.createFile(Mockito.anyString(), Mockito.eq(FILE), Mockito.any(MappingRule.class)))
@@ -89,6 +86,7 @@ public class StoRIMetadataServiceTest {
 		Mockito.when(localFile.exists()).thenReturn(exists);
 		Mockito.when(localFile.getCanonicalPath()).thenReturn(FILE_PATH);
 		Mockito.when(localFile.isDirectory()).thenReturn(isDirectory);
+		Mockito.when(localFile.isOnDisk()).thenReturn(isOnline);
 		Mockito.when(fileStori.getLocalFile()).thenReturn(localFile);
 		LocalFile localDir = Mockito.mock(LocalFile.class);
 		Mockito.when(localDir.exists()).thenReturn(exists);
@@ -104,7 +102,7 @@ public class StoRIMetadataServiceTest {
 	}
 
 	private void init(boolean fileExists, boolean fileIsDirectory, boolean fileIsOnline)
-			throws NamespaceException, IOException {
+			throws NamespaceException, IOException, FSException {
 
 		vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH, fileExists, fileIsDirectory, fileIsOnline);
 		rule = getMappingRule(RULE_NAME, RULE_STFNROOT, vfs);
@@ -127,7 +125,7 @@ public class StoRIMetadataServiceTest {
 	}
 
 	@Test
-	public void testSuccess() throws NamespaceException, IOException, ResourceNotFoundException {
+	public void testSuccess() throws NamespaceException, IOException, ResourceNotFoundException, SecurityException, FilesystemError, FSException {
 
 		init(EXISTS, IS_FILE, ONLINE);
 		StoRIMetadata metadata = service.getMetadata(FILE_STFN_PATH);
@@ -146,7 +144,7 @@ public class StoRIMetadataServiceTest {
 
 	@Test
 	public void testSuccessDirectory()
-			throws NamespaceException, IOException, ResourceNotFoundException {
+			throws NamespaceException, IOException, ResourceNotFoundException, SecurityException, FilesystemError, FSException {
 
 		init(EXISTS, IS_DIRECTORY, ONLINE);
 		StoRIMetadata metadata = service.getMetadata(DIR_STFN_PATH);
@@ -159,7 +157,7 @@ public class StoRIMetadataServiceTest {
 	}
 
 	@Test
-	public void testFileNotFound() throws NamespaceException, IOException {
+	public void testFileNotFound() throws NamespaceException, IOException, SecurityException, FilesystemError, FSException {
 
 		init(NOT_EXISTS, IS_FILE, ONLINE);
 		try {
@@ -171,7 +169,7 @@ public class StoRIMetadataServiceTest {
 
 	@Test
 	public void testFileIsDirectory()
-			throws NamespaceException, IOException, ResourceNotFoundException {
+			throws NamespaceException, IOException, ResourceNotFoundException, SecurityException, FilesystemError, FSException {
 
 		init(EXISTS, IS_DIRECTORY, ONLINE);
 		StoRIMetadata metadata = service.getMetadata(FILE_STFN_PATH);
@@ -184,7 +182,7 @@ public class StoRIMetadataServiceTest {
 
 	@Test
 	public void testSuccessFileExistsButMigrated()
-			throws NamespaceException, IOException, ResourceNotFoundException {
+			throws NamespaceException, IOException, ResourceNotFoundException, SecurityException, FilesystemError, FSException {
 
 		init(EXISTS, IS_FILE, MIGRATED);
 		StoRIMetadata metadata = service.getMetadata(FILE_STFN_PATH);

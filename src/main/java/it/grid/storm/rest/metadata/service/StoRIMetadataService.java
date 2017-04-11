@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 
 import it.grid.storm.ea.StormEA;
+import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.FilesystemError;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.namespace.NamespaceException;
@@ -39,7 +40,7 @@ public class StoRIMetadataService extends ResourceService {
 	}
 
 	public StoRIMetadata getMetadata(String stfnPath)
-			throws ResourceNotFoundException, NamespaceException, IOException {
+			throws ResourceNotFoundException, NamespaceException, IOException, SecurityException, FilesystemError, FSException {
 
 		StoRI stori = getResource(stfnPath);
 		LocalFile localFile = stori.getLocalFile();
@@ -52,7 +53,7 @@ public class StoRIMetadataService extends ResourceService {
 	}
 
 	private StoRIMetadata buildFileMetadata(StoRI stori)
-			throws IOException, SecurityException, FilesystemError, NamespaceException {
+			throws IOException, SecurityException, FilesystemError, NamespaceException, FSException {
 
 		VirtualFSInterface vfs = stori.getVirtualFileSystem();
 		String canonicalPath = stori.getLocalFile().getCanonicalPath();
@@ -82,8 +83,7 @@ public class StoRIMetadataService extends ResourceService {
 			.absolutePath(stori.getAbsolutePath())
 			.lastModified(new Date((new File(canonicalPath)).lastModified()))
 			.type(stori.getLocalFile().isDirectory() ? FOLDER : FILE)
-			.status(
-					vfs.getFSDriverInstance().is_file_on_disk(stori.getAbsolutePath()) ? ONLINE : NEARLINE)
+			.status(stori.getLocalFile().isOnDisk() ? ONLINE : NEARLINE)
 			.filesystem(vfsMeta)
 			.attributes(attributes)
 			.children(children)
