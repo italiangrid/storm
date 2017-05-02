@@ -38,6 +38,8 @@ public class StormEA {
 	public static final String EA_TSMRECR = "user.TSMRecR";
 	public static final String EA_TSMRECT = "user.TSMRecT";
 
+	public static final String EA_TEST_ONLINE = "user.storm.online";
+
 	private static ExtendedAttributes ea;
 
 	public static void init(ExtendedAttributes extendedAttributes) {
@@ -208,5 +210,24 @@ public class StormEA {
 	public static boolean isPinned(String absoluteFileName) {
 
 		return ea.hasXAttr(absoluteFileName, EA_PINNED);
+	}
+
+	public static boolean getOnline(String fileName) {
+
+		if (ea.hasXAttr(fileName, EA_TEST_ONLINE)) {
+			return Boolean.valueOf(ea.getXAttr(fileName, EA_TEST_ONLINE));
+		}
+		ea.setXAttr(fileName, EA_TEST_ONLINE, "true");
+		return true;
+	}
+
+	public static void setOnline(String fileName, boolean status) {
+
+		try {
+			ea.setXAttr(fileName, EA_TEST_ONLINE, String.valueOf(status));
+
+		} catch (ExtendedAttributesException e) {
+			log.warn("Cannot set test-online EA to file: " + fileName);
+		}
 	}
 }
