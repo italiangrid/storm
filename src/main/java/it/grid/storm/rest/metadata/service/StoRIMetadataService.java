@@ -20,6 +20,7 @@ import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.FilesystemError;
 import it.grid.storm.filesystem.LocalFile;
+import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.VirtualFSInterface;
@@ -65,8 +66,12 @@ public class StoRIMetadataService extends ResourceService {
 		List<String> children = null;
 		if (stori.getLocalFile().isDirectory()) {
 			children = Lists.newArrayList();
-			for (StoRI child : stori.getChildren(TDirOption.makeFirstLevel())) {
-				children.add(child.getFilename());
+			try {
+				for (StoRI child : stori.getChildren(TDirOption.makeFirstLevel())) {
+					children.add(child.getFilename());
+				}
+			} catch (InvalidDescendantsEmptyRequestException e) {
+				log.debug("{} is an empty directory", stori.getLocalFile());
 			}
 		} else {
 			attributes = FileAttributes.builder()
