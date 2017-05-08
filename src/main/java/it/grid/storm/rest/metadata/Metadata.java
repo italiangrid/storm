@@ -45,7 +45,7 @@ public class Metadata {
 	@Path("/{stfnPath:.*}")
 	public StoriMetadata getFileMetadata(@PathParam("stfnPath") String stfnPath) {
 
-		log.info("GET metadata request for: {}", stfnPath);
+		log.info("GET metadata {}", stfnPath);
 		if (isRootPath(stfnPath)) {
 			throw new WebApplicationException("invalid stfnPath provided", BAD_REQUEST);
 		}
@@ -59,7 +59,7 @@ public class Metadata {
 			log.error(e.getMessage());
 			throw new WebApplicationException(e.getMessage(), INTERNAL_SERVER_ERROR);
 		}
-		log.info("metadata retrieved for {}: {}", stfnPath, fileMetadata);
+		log.info("200 OK - Metadata: {}", fileMetadata);
 		return fileMetadata;
 	}
 

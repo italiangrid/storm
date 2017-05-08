@@ -101,6 +101,13 @@ public class StoriMetadata {
     return children;
   }
 
+  @Override
+  public String toString() {
+    return "StoriMetadata [absolutePath=" + absolutePath + ", filesystem=" + filesystem + ", type="
+        + type + ", status=" + status + ", lastModified=" + lastModified + ", children=" + children
+        + ", attributes=" + attributes + "]";
+  }
+
   public static Builder builder() {
     return new Builder();
   }
