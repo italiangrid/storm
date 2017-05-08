@@ -1,9 +1,9 @@
 package it.grid.storm.rest.metadata.service;
 
-import static it.grid.storm.rest.metadata.model.StoRIMetadata.ResourceStatus.NEARLINE;
-import static it.grid.storm.rest.metadata.model.StoRIMetadata.ResourceStatus.ONLINE;
-import static it.grid.storm.rest.metadata.model.StoRIMetadata.ResourceType.FILE;
-import static it.grid.storm.rest.metadata.model.StoRIMetadata.ResourceType.FOLDER;
+import static it.grid.storm.rest.metadata.model.StoriMetadata.ResourceStatus.NEARLINE;
+import static it.grid.storm.rest.metadata.model.StoriMetadata.ResourceStatus.ONLINE;
+import static it.grid.storm.rest.metadata.model.StoriMetadata.ResourceType.FILE;
+import static it.grid.storm.rest.metadata.model.StoriMetadata.ResourceType.FOLDER;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,21 +26,21 @@ import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.rest.metadata.model.FileAttributes;
-import it.grid.storm.rest.metadata.model.StoRIMetadata;
-import it.grid.storm.rest.metadata.model.VirtualFSMetadata;
+import it.grid.storm.rest.metadata.model.StoriMetadata;
+import it.grid.storm.rest.metadata.model.VirtualFsMetadata;
 import it.grid.storm.srm.types.TDirOption;
 
-public class StoRIMetadataService extends ResourceService {
+public class StoriMetadataService extends ResourceService {
 
-	private static final Logger log = LoggerFactory.getLogger(StoRIMetadataService.class);
+	private static final Logger log = LoggerFactory.getLogger(StoriMetadataService.class);
 
-	public StoRIMetadataService(Collection<VirtualFSInterface> vfsList,
+	public StoriMetadataService(Collection<VirtualFSInterface> vfsList,
 			Collection<MappingRule> rulesList) {
 
 		super(vfsList, rulesList);
 	}
 
-	public StoRIMetadata getMetadata(String stfnPath)
+	public StoriMetadata getMetadata(String stfnPath)
 			throws ResourceNotFoundException, NamespaceException, IOException, SecurityException, FilesystemError, FSException {
 
 		StoRI stori = getResource(stfnPath);
@@ -53,14 +53,14 @@ public class StoRIMetadataService extends ResourceService {
 		throw new ResourceNotFoundException(errorMessage);
 	}
 
-	private StoRIMetadata buildFileMetadata(StoRI stori)
+	private StoriMetadata buildFileMetadata(StoRI stori)
 			throws IOException, SecurityException, FilesystemError, NamespaceException, FSException {
 
 		VirtualFSInterface vfs = stori.getVirtualFileSystem();
 		String canonicalPath = stori.getLocalFile().getCanonicalPath();
 		log.debug("VirtualFS is {}", vfs.getAliasName());
-		VirtualFSMetadata vfsMeta =
-				VirtualFSMetadata.builder().name(vfs.getAliasName()).root(vfs.getRootPath()).build();
+		VirtualFsMetadata vfsMeta =
+				VirtualFsMetadata.builder().name(vfs.getAliasName()).root(vfs.getRootPath()).build();
 
 		FileAttributes attributes = null;
 		List<String> children = null;
@@ -84,7 +84,7 @@ public class StoRIMetadataService extends ResourceService {
 				.tsmRecT(StormEA.getTSMRecT(canonicalPath))
 				.build();
 		}
-		return StoRIMetadata.builder()
+		return StoriMetadata.builder()
 			.absolutePath(stori.getAbsolutePath())
 			.lastModified(new Date((new File(canonicalPath)).lastModified()))
 			.type(stori.getLocalFile().isDirectory() ? FOLDER : FILE)

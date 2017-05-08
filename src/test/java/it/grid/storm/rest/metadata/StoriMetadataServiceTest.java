@@ -27,15 +27,15 @@ import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
-import it.grid.storm.rest.metadata.model.StoRIMetadata;
-import it.grid.storm.rest.metadata.model.StoRIMetadata.ResourceStatus;
-import it.grid.storm.rest.metadata.model.StoRIMetadata.ResourceType;
+import it.grid.storm.rest.metadata.model.StoriMetadata;
+import it.grid.storm.rest.metadata.model.StoriMetadata.ResourceStatus;
+import it.grid.storm.rest.metadata.model.StoriMetadata.ResourceType;
 import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
-import it.grid.storm.rest.metadata.service.StoRIMetadataService;
+import it.grid.storm.rest.metadata.service.StoriMetadataService;
 import it.grid.storm.srm.types.TDirOption;
 import jersey.repackaged.com.google.common.collect.Lists;
 
-public class StoRIMetadataServiceTest {
+public class StoriMetadataServiceTest {
 
 	private static final String VFS_NAME = "test.vo";
 	private static final String VFS_ROOTPATH = "/tmp/test.vo";
@@ -60,7 +60,7 @@ public class StoRIMetadataServiceTest {
 
 	private VirtualFSInterface vfs;
 	private MappingRule rule;
-	private StoRIMetadataService service;
+	private StoriMetadataService service;
 
 	private VirtualFSInterface getVirtualFS(String name, String rootPath, boolean exists,
 			boolean isDirectory, boolean isOnline) throws NamespaceException, IOException, FSException {
@@ -107,7 +107,7 @@ public class StoRIMetadataServiceTest {
 		vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH, fileExists, fileIsDirectory, fileIsOnline);
 		rule = getMappingRule(RULE_NAME, RULE_STFNROOT, vfs);
 		initStormEA();
-		service = new StoRIMetadataService(Lists.newArrayList(vfs), Lists.newArrayList(rule));
+		service = new StoriMetadataService(Lists.newArrayList(vfs), Lists.newArrayList(rule));
 	}
 
 	private void initStormEA() {
@@ -128,16 +128,16 @@ public class StoRIMetadataServiceTest {
 	public void testSuccess() throws NamespaceException, IOException, ResourceNotFoundException, SecurityException, FilesystemError, FSException {
 
 		init(EXISTS, IS_FILE, ONLINE);
-		StoRIMetadata metadata = service.getMetadata(FILE_STFN_PATH);
+		StoriMetadata metadata = service.getMetadata(FILE_STFN_PATH);
 		assertThat(metadata.getAbsolutePath(), equalTo(FILE_PATH));
 		assertThat(metadata.getType(), equalTo(ResourceType.FILE));
 		assertThat(metadata.getStatus(), equalTo(ResourceStatus.ONLINE));
 		assertThat(metadata.getAttributes().getPinned(), equalTo(false));
 		assertThat(metadata.getAttributes().getMigrated(), equalTo(false));
 		assertThat(metadata.getAttributes().getPremigrated(), equalTo(false));
-		assertThat(metadata.getAttributes().getTSMRecD(), equalTo(null));
-		assertThat(metadata.getAttributes().getTSMRecR(), equalTo(null));
-		assertThat(metadata.getAttributes().getTSMRecT(), equalTo(null));
+		assertThat(metadata.getAttributes().getTsmRecD(), equalTo(null));
+		assertThat(metadata.getAttributes().getTsmRecR(), equalTo(null));
+		assertThat(metadata.getAttributes().getTsmRecT(), equalTo(null));
 		assertThat(metadata.getAttributes().getChecksum(), equalTo(CHECKSUM));
 		assertThat(metadata.getFilesystem().getName(), equalTo(vfs.getAliasName()));
 	}
@@ -147,7 +147,7 @@ public class StoRIMetadataServiceTest {
 			throws NamespaceException, IOException, ResourceNotFoundException, SecurityException, FilesystemError, FSException {
 
 		init(EXISTS, IS_DIRECTORY, ONLINE);
-		StoRIMetadata metadata = service.getMetadata(DIR_STFN_PATH);
+		StoriMetadata metadata = service.getMetadata(DIR_STFN_PATH);
 		assertThat(metadata.getAbsolutePath(), equalTo(DIR_PATH));
 		assertThat(metadata.getType(), equalTo(ResourceType.FOLDER));
 		assertThat(metadata.getStatus(), equalTo(ResourceStatus.ONLINE));
@@ -172,7 +172,7 @@ public class StoRIMetadataServiceTest {
 			throws NamespaceException, IOException, ResourceNotFoundException, SecurityException, FilesystemError, FSException {
 
 		init(EXISTS, IS_DIRECTORY, ONLINE);
-		StoRIMetadata metadata = service.getMetadata(FILE_STFN_PATH);
+		StoriMetadata metadata = service.getMetadata(FILE_STFN_PATH);
 		assertThat(metadata.getAbsolutePath(), equalTo(FILE_PATH));
 		assertThat(metadata.getType(), equalTo(ResourceType.FOLDER));
 		assertThat(metadata.getStatus(), equalTo(ResourceStatus.ONLINE));
@@ -185,7 +185,7 @@ public class StoRIMetadataServiceTest {
 			throws NamespaceException, IOException, ResourceNotFoundException, SecurityException, FilesystemError, FSException {
 
 		init(EXISTS, IS_FILE, MIGRATED);
-		StoRIMetadata metadata = service.getMetadata(FILE_STFN_PATH);
+		StoriMetadata metadata = service.getMetadata(FILE_STFN_PATH);
 		assertThat(metadata.getAbsolutePath(), equalTo(FILE_PATH));
 		assertThat(metadata.getType(), equalTo(ResourceType.FILE));
 		assertThat(metadata.getStatus(), equalTo(ResourceStatus.NEARLINE));

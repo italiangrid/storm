@@ -19,37 +19,37 @@ import org.slf4j.LoggerFactory;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
-import it.grid.storm.rest.metadata.model.StoRIMetadata;
+import it.grid.storm.rest.metadata.model.StoriMetadata;
 import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
-import it.grid.storm.rest.metadata.service.StoRIMetadataService;
+import it.grid.storm.rest.metadata.service.StoriMetadataService;
 
 @Path("/metadata")
 public class Metadata {
 
 	private static final Logger log = LoggerFactory.getLogger(Metadata.class);
 
-	private StoRIMetadataService metadataService;
+	private StoriMetadataService metadataService;
 
 	public Metadata() throws NamespaceException {
 
 		NamespaceInterface namespace = NamespaceDirector.getNamespace();
-		metadataService = new StoRIMetadataService(namespace.getAllDefinedVFS(), namespace.getAllDefinedMappingRules());
+		metadataService = new StoriMetadataService(namespace.getAllDefinedVFS(), namespace.getAllDefinedMappingRules());
 	}
 
-	public Metadata(StoRIMetadataService metadataService) {
+	public Metadata(StoriMetadataService metadataService) {
 		this.metadataService = metadataService;
 	}
 
 	@GET
 	@Produces(APPLICATION_JSON)
 	@Path("/{stfnPath:.*}")
-	public StoRIMetadata getFileMetadata(@PathParam("stfnPath") String stfnPath) {
+	public StoriMetadata getFileMetadata(@PathParam("stfnPath") String stfnPath) {
 
 		log.info("GET metadata request for: {}", stfnPath);
 		if (isRootPath(stfnPath)) {
 			throw new WebApplicationException("invalid stfnPath provided", BAD_REQUEST);
 		}
-		StoRIMetadata fileMetadata;
+		StoriMetadata fileMetadata;
 		try {
 			fileMetadata = metadataService.getMetadata(beginWithSlash(stfnPath));
 		} catch (ResourceNotFoundException e) {

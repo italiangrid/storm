@@ -23,10 +23,10 @@ import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.StoRIType;
 import it.grid.storm.rest.metadata.Metadata;
-import it.grid.storm.rest.metadata.model.StoRIMetadata;
-import it.grid.storm.rest.metadata.model.VirtualFSMetadata;
+import it.grid.storm.rest.metadata.model.StoriMetadata;
+import it.grid.storm.rest.metadata.model.VirtualFsMetadata;
 import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
-import it.grid.storm.rest.metadata.service.StoRIMetadataService;
+import it.grid.storm.rest.metadata.service.StoriMetadataService;
 
 public class MetadataTests {
 
@@ -38,7 +38,7 @@ public class MetadataTests {
 	private static final String FILE_PATH = "/storage/test.vo/path/to/filename.dat";
 
 	private VirtualFSInterface vfs;
-	private StoRIMetadata expected;
+	private StoriMetadata expected;
 
 	private VirtualFSInterface getVirtualFS(String name, String rootPath) throws NamespaceException {
 
@@ -53,35 +53,35 @@ public class MetadataTests {
 		return vfs;
 	}
 
-	private Metadata getMetadataServiceSuccess(StoRIMetadata output) throws ResourceNotFoundException, NamespaceException, IOException, SecurityException, FilesystemError, FSException {
-		StoRIMetadataService service = Mockito.mock(StoRIMetadataService.class);
+	private Metadata getMetadataServiceSuccess(StoriMetadata output) throws ResourceNotFoundException, NamespaceException, IOException, SecurityException, FilesystemError, FSException {
+		StoriMetadataService service = Mockito.mock(StoriMetadataService.class);
 		Mockito.when(service.getMetadata(Mockito.anyString())).thenReturn(output);
 		return getMetadataServlet(service);
 	}
 
 	private Metadata getMetadataServiceNotFound() throws ResourceNotFoundException, NamespaceException, IOException, SecurityException, FilesystemError, FSException {
-		StoRIMetadataService service = Mockito.mock(StoRIMetadataService.class);
+		StoriMetadataService service = Mockito.mock(StoriMetadataService.class);
 		Mockito.when(service.getMetadata(Mockito.anyString())).thenThrow(new ResourceNotFoundException(FILE_PATH + " not exists"));
 		return getMetadataServlet(service);
 	}
 
 	private Metadata getMetadataServiceNamespaceException() throws ResourceNotFoundException, NamespaceException, IOException, SecurityException, FilesystemError, FSException {
-		StoRIMetadataService service = Mockito.mock(StoRIMetadataService.class);
+		StoriMetadataService service = Mockito.mock(StoriMetadataService.class);
 		Mockito.when(service.getMetadata(Mockito.anyString())).thenThrow(new NamespaceException("Mocked namespace excpetion"));
 		return getMetadataServlet(service);
 	}
 
-	private Metadata getMetadataServlet(StoRIMetadataService s) {
+	private Metadata getMetadataServlet(StoriMetadataService s) {
 		return new Metadata(s);
 	}
 
 	@Before
 	public void init() throws NamespaceException {
 		vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
-		expected = StoRIMetadata.builder()
+		expected = StoriMetadata.builder()
 			.absolutePath(FILE_PATH)
 			.filesystem(
-					VirtualFSMetadata.builder().name(vfs.getAliasName()).root(vfs.getRootPath()).build())
+					VirtualFsMetadata.builder().name(vfs.getAliasName()).root(vfs.getRootPath()).build())
 			.build();
 	}
 
@@ -89,7 +89,7 @@ public class MetadataTests {
 	public void testSuccess() throws NamespaceException, ResourceNotFoundException, IOException, SecurityException, FilesystemError, FSException {
 
 		Metadata servlet = getMetadataServiceSuccess(expected);
-		StoRIMetadata response = servlet.getFileMetadata(STFN_PATH);
+		StoriMetadata response = servlet.getFileMetadata(STFN_PATH);
 		assertThat(response.getAbsolutePath(), equalTo(expected.getAbsolutePath()));
 		assertThat(response.getFilesystem().getName(), equalTo(expected.getFilesystem().getName()));
 		assertThat(response.getFilesystem().getRoot(), equalTo(expected.getFilesystem().getRoot()));
@@ -99,7 +99,7 @@ public class MetadataTests {
 	public void testSuccessWithWrongToken() throws NamespaceException, ResourceNotFoundException, IOException, SecurityException, FilesystemError, FSException {
 
 		Metadata servlet = getMetadataServiceSuccess(expected);
-		StoRIMetadata response = servlet.getFileMetadata(STFN_PATH);
+		StoriMetadata response = servlet.getFileMetadata(STFN_PATH);
 		assertThat(response.getAbsolutePath(), equalTo(expected.getAbsolutePath()));
 		assertThat(response.getFilesystem().getName(), equalTo(expected.getFilesystem().getName()));
 		assertThat(response.getFilesystem().getRoot(), equalTo(expected.getFilesystem().getRoot()));
@@ -109,7 +109,7 @@ public class MetadataTests {
 	public void testSuccessStfnNoSlash() throws NamespaceException, ResourceNotFoundException, IOException, SecurityException, FilesystemError, FSException {
 
 		Metadata servlet = getMetadataServiceSuccess(expected);
-		StoRIMetadata response = servlet.getFileMetadata(STFN_NOSLASH_PATH);
+		StoriMetadata response = servlet.getFileMetadata(STFN_NOSLASH_PATH);
 		assertThat(response.getAbsolutePath(), equalTo(expected.getAbsolutePath()));
 		assertThat(response.getFilesystem().getName(), equalTo(expected.getFilesystem().getName()));
 		assertThat(response.getFilesystem().getRoot(), equalTo(expected.getFilesystem().getRoot()));
