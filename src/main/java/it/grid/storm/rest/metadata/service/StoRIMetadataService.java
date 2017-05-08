@@ -79,9 +79,9 @@ public class StoRIMetadataService extends ResourceService {
 				.migrated(StormEA.getMigrated(canonicalPath))
 				.premigrated(StormEA.getPremigrated(canonicalPath))
 				.checksum(StormEA.getChecksum(canonicalPath, "adler32"))
-				.TSMRecD(StormEA.getTSMRecD(canonicalPath))
-				.TSMRecR(StormEA.getTSMRecR(canonicalPath))
-				.TSMRecT(StormEA.getTSMRecT(canonicalPath))
+				.tsmRecD(StormEA.getTSMRecD(canonicalPath))
+				.tsmRecR(StormEA.getTSMRecR(canonicalPath))
+				.tsmRecT(StormEA.getTSMRecT(canonicalPath))
 				.build();
 		}
 		return StoRIMetadata.builder()

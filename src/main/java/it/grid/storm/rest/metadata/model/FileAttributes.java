@@ -12,23 +12,23 @@ public class FileAttributes {
 	private final Boolean migrated;
 	private final Boolean premigrated;
 	private final String checksum;
-	private final Long TSMRecD;
-	private final Integer TSMRecR;
-	private final String TSMRecT;
+	private final Long tsmRecD;
+	private final Integer tsmRecR;
+	private final String tsmRecT;
 
 	@JsonCreator
 	public FileAttributes(@JsonProperty("pinned") Boolean pinned,
 			@JsonProperty("migrated") Boolean migrated, @JsonProperty("premigrated") Boolean premigrated,
-			@JsonProperty("checksum") String checksum, @JsonProperty("TSMRecD") Long TSMRecD,
-			@JsonProperty("TSMRecR") Integer TSMRecR, @JsonProperty("TSMRecT") String TSMRecT) {
+			@JsonProperty("checksum") String checksum, @JsonProperty("tsmRecD") Long tsmRecD,
+			@JsonProperty("tsmRecR") Integer tsmRecR, @JsonProperty("tsmRecT") String tsmRecT) {
 
 		this.pinned = pinned;
 		this.migrated = migrated;
 		this.premigrated = premigrated;
 		this.checksum = checksum;
-		this.TSMRecD = TSMRecD;
-		this.TSMRecR = TSMRecR;
-		this.TSMRecT = TSMRecT;
+		this.tsmRecD = tsmRecD;
+		this.tsmRecR = tsmRecR;
+		this.tsmRecT = tsmRecT;
 	}
 
 	public Boolean getPinned() {
@@ -48,15 +48,15 @@ public class FileAttributes {
 	}
 
 	public Long getTSMRecD() {
-		return TSMRecD;
+		return tsmRecD;
 	}
 
 	public Integer getTSMRecR() {
-		return TSMRecR;
+		return tsmRecR;
 	}
 
 	public String getTSMRecT() {
-		return TSMRecT;
+		return tsmRecT;
 	}
 
 	public FileAttributes(Builder builder) {
@@ -65,9 +65,9 @@ public class FileAttributes {
 		this.migrated = builder.migrated;
 		this.premigrated = builder.premigrated;
 		this.checksum = builder.checksum;
-		this.TSMRecD = builder.TSMRecD;
-		this.TSMRecR = builder.TSMRecR;
-		this.TSMRecT = builder.TSMRecT;
+		this.tsmRecD = builder.tsmRecD;
+		this.tsmRecR = builder.tsmRecR;
+		this.tsmRecT = builder.tsmRecT;
 	}
 
 	public static Builder builder() {
@@ -80,9 +80,9 @@ public class FileAttributes {
 		private Boolean migrated;
 		private Boolean premigrated;
 		private String checksum;
-		private Long TSMRecD;
-		private Integer TSMRecR;
-		private String TSMRecT;
+		private Long tsmRecD;
+		private Integer tsmRecR;
+		private String tsmRecT;
 
 		public Builder pinned(Boolean pinned) {
 			this.pinned = pinned;
@@ -104,18 +104,18 @@ public class FileAttributes {
 			return this;
 		}
 
-		public Builder TSMRecD(Long TSMRecD) {
-			this.TSMRecD = TSMRecD;
+		public Builder tsmRecD(Long TSMRecD) {
+			this.tsmRecD = TSMRecD;
 			return this;
 		}
 
-		public Builder TSMRecR(Integer TSMRecR) {
-			this.TSMRecR = TSMRecR;
+		public Builder tsmRecR(Integer TSMRecR) {
+			this.tsmRecR = TSMRecR;
 			return this;
 		}
 
-		public Builder TSMRecT(String TSMRecT) {
-			this.TSMRecT = TSMRecT;
+		public Builder tsmRecT(String TSMRecT) {
+			this.tsmRecT = TSMRecT;
 			return this;
 		}
 
