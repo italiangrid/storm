@@ -44,7 +44,7 @@ public class RestTokenFilter implements Filter {
 
 		} else {
 
-			log.warn("Invalid token provided", request);
+			log.warn("Invalid token provided - request: {}", request);
 			response.setStatus(SC_UNAUTHORIZED);
 			response.getWriter().print("Invalid token provided");
 		}
