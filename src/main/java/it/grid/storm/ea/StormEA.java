@@ -217,7 +217,6 @@ public class StormEA {
 		if (ea.hasXAttr(fileName, EA_TEST_ONLINE)) {
 			return Boolean.valueOf(ea.getXAttr(fileName, EA_TEST_ONLINE));
 		}
-		ea.setXAttr(fileName, EA_TEST_ONLINE, "true");
 		return true;
 	}
 
