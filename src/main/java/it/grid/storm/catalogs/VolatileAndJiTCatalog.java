@@ -18,7 +18,7 @@
 package it.grid.storm.catalogs;
 
 import it.grid.storm.acl.AclManager;
-import it.grid.storm.acl.AclManagerFSAndHTTPS;
+import it.grid.storm.acl.AclManagerFS;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.config.Configuration;
@@ -301,7 +301,7 @@ public class VolatileAndJiTCatalog {
 				LocalUser auxUser = new LocalUser(jituid, jitgid);
 				FilesystemPermission auxACL = new FilesystemPermission(jitacl);
 
-				AclManager manager = AclManagerFSAndHTTPS.getInstance();
+				AclManager manager = AclManagerFS.getInstance();
 				if (auxFile == null) {
 					log.warn("VolatileAndJiT CATALOG! Unable to setting up the ACL. "
 						+ "LocalFile is null!");

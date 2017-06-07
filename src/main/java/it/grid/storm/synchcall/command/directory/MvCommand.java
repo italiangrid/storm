@@ -17,7 +17,7 @@
 
 package it.grid.storm.synchcall.command.directory;
 
-import it.grid.storm.acl.AclManagerFSAndHTTPS;
+import it.grid.storm.acl.AclManagerFS;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
@@ -457,7 +457,7 @@ public class MvCommand extends DirectoryCommand implements Command {
 	private void setAcl(StoRI oldFileStoRI, StoRI newFileStoRI) {
 
 		try {
-			AclManagerFSAndHTTPS.getInstance().moveHttpsPermissions(
+			AclManagerFS.getInstance().moveHttpsPermissions(
 				oldFileStoRI.getLocalFile(), newFileStoRI.getLocalFile());
 		} catch (IllegalArgumentException e) {
 			log
@@ -473,7 +473,7 @@ public class MvCommand extends DirectoryCommand implements Command {
 		if (newFileStoRI.hasJustInTimeACLs()) {
 			// JiT
 			try {
-				AclManagerFSAndHTTPS.getInstance().grantHttpsUserPermission(
+				AclManagerFS.getInstance().grantHttpsUserPermission(
 					newFileStoRI.getLocalFile(), localUser,
 					FilesystemPermission.ReadWrite);
 			} catch (IllegalArgumentException e) {
@@ -485,7 +485,7 @@ public class MvCommand extends DirectoryCommand implements Command {
 		} else {
 			// AoT
 			try {
-				AclManagerFSAndHTTPS.getInstance().grantHttpsGroupPermission(
+				AclManagerFS.getInstance().grantHttpsGroupPermission(
 					newFileStoRI.getLocalFile(), localUser,
 					FilesystemPermission.ReadWrite);
 			} catch (IllegalArgumentException e) {
