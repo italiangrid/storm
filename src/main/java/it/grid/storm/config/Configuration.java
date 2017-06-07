@@ -17,6 +17,8 @@
 
 package it.grid.storm.config;
 
+import it.grid.storm.https.impl.DefaultHTTPPlugin;
+
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -2142,6 +2144,17 @@ public class Configuration {
       // load from external source
       return cr.getConfiguration().getBoolean(TAPE_SUPPORT_ENABLED_KEY);
     }
+  }
+
+
+
+  /**
+   * @return
+   */
+  public String getGRIDHTTPSPluginClassName() {
+
+    return DefaultHTTPPlugin.class.getName();
+
   }
 
   /**

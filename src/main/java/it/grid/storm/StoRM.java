@@ -45,6 +45,9 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.codahale.metrics.Slf4jReporter;
+import com.codahale.metrics.Slf4jReporter.LoggingLevel;
+
 /**
  * This class represents a StoRM as a whole: it sets the configuration file
  * which contains properties necessary for other classes of StoRM, it sets up
@@ -133,6 +136,21 @@ public class StoRM {
     }
   }
 
+  private void configureGridHTTPSPlugin() {
+
+    if (Configuration.getInstance().getGridhttpsEnabled()) {
+
+      log.info("Initializing the https plugin");
+
+      String httpsFactoryName = Configuration.getInstance()
+        .getGRIDHTTPSPluginClassName();
+
+      Bootstrap.initializeAclManager(httpsFactoryName,
+        LoggerFactory.getLogger(Bootstrap.class));
+    }
+
+  }
+
   private void configureXMLRPCService() {
 
     try {
@@ -209,6 +227,8 @@ public class StoRM {
 
     // Initialize Used Space
     Bootstrap.initializeUsedSpace();
+
+    configureGridHTTPSPlugin();
 
     // Start the "advanced" picker
     picker = new AdvancedPicker();
