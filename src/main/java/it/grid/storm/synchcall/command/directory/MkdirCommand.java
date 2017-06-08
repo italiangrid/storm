@@ -17,7 +17,7 @@
 
 package it.grid.storm.synchcall.command.directory;
 
-import it.grid.storm.acl.AclManagerFSAndHTTPS;
+import it.grid.storm.acl.AclManagerFS;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
@@ -323,7 +323,7 @@ private void checkInputData(InputData data) throws IllegalArgumentException {
 				throw new Exception("ACL setup error. Invalid local user.");
 			}
 		}
-		AclManagerFSAndHTTPS.getInstance().grantGroupPermission(file, localUser,
+		AclManagerFS.getInstance().grantGroupPermission(file, localUser,
 			permission);
 	}
 
@@ -351,7 +351,7 @@ private void checkInputData(InputData data) throws IllegalArgumentException {
 				ace.getGroupID(), ace.getFilePermissionString());
 
 			LocalUser user = new LocalUser(ace.getGroupID(), ace.getGroupID());
-			AclManagerFSAndHTTPS.getInstance().grantGroupPermission(dir, user,
+			AclManagerFS.getInstance().grantGroupPermission(dir, user,
 					permission);
 		}
 	}
@@ -361,7 +361,7 @@ private void checkInputData(InputData data) throws IllegalArgumentException {
 
 		log.debug("SrmMkdir: Adding default ACL for directory {}: {}", file,
 			permission);
-		AclManagerFSAndHTTPS.getInstance().grantHttpsServiceGroupPermission(file,
+		AclManagerFS.getInstance().grantHttpsServiceGroupPermission(file,
 			permission);
 	}
 

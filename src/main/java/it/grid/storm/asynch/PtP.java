@@ -11,7 +11,7 @@
 
 package it.grid.storm.asynch;
 
-import it.grid.storm.acl.AclManagerFSAndHTTPS;
+import it.grid.storm.acl.AclManagerFS;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
@@ -632,7 +632,7 @@ public class PtP implements Delegable, Chooser, Request {
       permission, localUser, fileStori.getAbsolutePath());
 
     try {
-      AclManagerFSAndHTTPS.getInstance().grantUserPermission(
+      AclManagerFS.getInstance().grantUserPermission(
         fileStori.getLocalFile(), localUser, permission);
     } catch (IllegalArgumentException e) {
       log.error("Unable to grant user traverse permission on parent file. "
@@ -672,7 +672,7 @@ public class PtP implements Delegable, Chooser, Request {
       permission, localUser, fileStori.getAbsolutePath());
 
     try {
-      AclManagerFSAndHTTPS.getInstance().grantGroupPermission(
+      AclManagerFS.getInstance().grantGroupPermission(
         fileStori.getLocalFile(), localUser, permission);
     } catch (IllegalArgumentException e) {
       log.error("Unable to grant user traverse permission on parent file. "
@@ -720,7 +720,7 @@ public class PtP implements Delegable, Chooser, Request {
       file);
 
     try {
-      AclManagerFSAndHTTPS.getInstance().grantHttpsServiceGroupPermission(file,
+      AclManagerFS.getInstance().grantHttpsServiceGroupPermission(file,
         permission);
     } catch (IllegalArgumentException e) {
       log.error("Unable to grant user permission on the created folder. "
@@ -948,7 +948,7 @@ public class PtP implements Delegable, Chooser, Request {
               + "is null!");
           } else {
             try {
-              AclManagerFSAndHTTPS.getInstance().grantGroupPermission(
+              AclManagerFS.getInstance().grantGroupPermission(
                 fileStoRI.getLocalFile(), u, ace.getFilesystemPermission());
             } catch (IllegalArgumentException e) {
               log.error("Unable to grant group permission on the file. "

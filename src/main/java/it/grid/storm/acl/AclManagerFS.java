@@ -3,31 +3,19 @@
  */
 package it.grid.storm.acl;
 
-import it.grid.storm.config.Configuration;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.LocalUser;
-import it.grid.storm.https.HTTPPluginManager;
-import it.grid.storm.https.HTTPSPluginInterface;
 
 /**
  * @author Michele Dibenedetto
  * 
  */
-public class AclManagerFSAndHTTPS implements AclManager {
+public class AclManagerFS implements AclManager {
 
-	private static AclManagerFSAndHTTPS instance = new AclManagerFSAndHTTPS();
-	private boolean isHttpsEnabled = Configuration.getInstance()
-		.getGridhttpsEnabled();
-	private final AclManagementInterface aclManagement;
+	private static AclManagerFS instance = new AclManagerFS();
 
-	private AclManagerFSAndHTTPS() {
-
-		if (isHttpsEnabled) {
-			aclManagement = HTTPPluginManager.getHTTPSPluginInstance();
-		} else {
-			aclManagement = null;
-		}
+	private AclManagerFS() {
 
 	}
 
@@ -62,9 +50,6 @@ public class AclManagerFSAndHTTPS implements AclManager {
 		}
 		FilesystemPermission newPermission = localFile.grantGroupPermission(
 			localUser, permission);
-		if (isHttpsEnabled) {
-			aclManagement.grantGroupPermission(localFile, localUser, permission);
-		}
 		return newPermission;
 	}
 
@@ -92,9 +77,6 @@ public class AclManagerFSAndHTTPS implements AclManager {
 		}
 		FilesystemPermission newPermission = localFile.grantUserPermission(
 			localUser, permission);
-		if (isHttpsEnabled) {
-			aclManagement.grantUserPermission(localFile, localUser, permission);
-		}
 		return newPermission;
 	}
 
@@ -113,9 +95,6 @@ public class AclManagerFSAndHTTPS implements AclManager {
 		}
 		FilesystemPermission newPermission = localFile
 			.removeGroupPermission(localUser);
-		if (isHttpsEnabled) {
-			aclManagement.removeGroupPermission(localFile, localUser);
-		}
 		return newPermission;
 	}
 
@@ -134,9 +113,6 @@ public class AclManagerFSAndHTTPS implements AclManager {
 		}
 		FilesystemPermission newPermission = localFile
 			.removeUserPermission(localUser);
-		if (isHttpsEnabled) {
-			aclManagement.removeUserPermission(localFile, localUser);
-		}
 		return newPermission;
 	}
 
@@ -156,9 +132,6 @@ public class AclManagerFSAndHTTPS implements AclManager {
 		}
 		FilesystemPermission newPermission = localFile.revokeGroupPermission(
 			localUser, permission);
-		if (isHttpsEnabled) {
-			aclManagement.revokeGroupPermission(localFile, localUser, permission);
-		}
 		return newPermission;
 	}
 
@@ -178,9 +151,6 @@ public class AclManagerFSAndHTTPS implements AclManager {
 		}
 		FilesystemPermission newPermission = localFile.revokeUserPermission(
 			localUser, permission);
-		if (isHttpsEnabled) {
-			aclManagement.revokeUserPermission(localFile, localUser, permission);
-		}
 		return newPermission;
 	}
 
@@ -200,9 +170,6 @@ public class AclManagerFSAndHTTPS implements AclManager {
 		}
 		FilesystemPermission newPermission = localFile.setGroupPermission(
 			localUser, permission);
-		if (isHttpsEnabled) {
-			aclManagement.setGroupPermission(localFile, localUser, permission);
-		}
 		return newPermission;
 	}
 
@@ -222,9 +189,6 @@ public class AclManagerFSAndHTTPS implements AclManager {
 		}
 		FilesystemPermission newPermission = localFile.setUserPermission(localUser,
 			permission);
-		if (isHttpsEnabled) {
-			aclManagement.setUserPermission(localFile, localUser, permission);
-		}
 		return newPermission;
 	}
 
@@ -235,13 +199,6 @@ public class AclManagerFSAndHTTPS implements AclManager {
 		if (localFile == null) {
 			throw new IllegalArgumentException(
 				"Unable to perform the operation. The received file parameter is null");
-		}
-		if (isHttpsEnabled) {
-			if (!localFile.exists()) {
-				throw new IllegalArgumentException(
-					"Unable to perform the operation. The received file parameter points to a non existent file");
-			}
-			aclManagement.removeAllPermissions(localFile);
 		}
 	}
 
@@ -255,13 +212,6 @@ public class AclManagerFSAndHTTPS implements AclManager {
 				"Unable to perform the operation. The received null parameters: localFile="
 					+ localFile + " localUser=" + localUser + " permission=" + permission);
 		}
-		if (isHttpsEnabled) {
-			if (!localFile.exists()) {
-				throw new IllegalArgumentException(
-					"Unable to perform the operation. The received file parameter points to a non existent file");
-			}
-			aclManagement.grantUserPermission(localFile, localUser, permission);
-		}
 	}
 
 	@Override
@@ -272,14 +222,6 @@ public class AclManagerFSAndHTTPS implements AclManager {
 			throw new IllegalArgumentException(
 				"Unable to perform the operation. The received null parameters: localFile="
 					+ localFile + " permission=" + permission);
-		}
-		if (isHttpsEnabled && aclManagement instanceof HTTPSPluginInterface) {
-			if (!localFile.exists()) {
-				throw new IllegalArgumentException(
-					"Unable to perform the operation. The received file parameter points to a non existent file");
-			}
-			((HTTPSPluginInterface) aclManagement).grantServiceUserPermission(
-				localFile, permission);
 		}
 	}
 
@@ -293,13 +235,6 @@ public class AclManagerFSAndHTTPS implements AclManager {
 				"Unable to perform the operation. The received null parameters: localFile="
 					+ localFile + " localUser=" + localUser + " permission=" + permission);
 		}
-		if (isHttpsEnabled) {
-			if (!localFile.exists()) {
-				throw new IllegalArgumentException(
-					"Unable to perform the operation. The received file parameter points to a non existent file");
-			}
-			aclManagement.grantGroupPermission(localFile, localUser, permission);
-		}
 	}
 
 	@Override
@@ -311,14 +246,6 @@ public class AclManagerFSAndHTTPS implements AclManager {
 				"Unable to perform the operation. The received null parameters: localFile="
 					+ localFile + " permission=" + permission);
 		}
-		if (isHttpsEnabled && aclManagement instanceof HTTPSPluginInterface) {
-			if (!localFile.exists()) {
-				throw new IllegalArgumentException(
-					"Unable to perform the operation. The received file parameter points to a non existent file");
-			}
-			((HTTPSPluginInterface) aclManagement).grantServiceGroupPermission(
-				localFile, permission);
-		}
 	}
 
 	@Override
@@ -329,13 +256,6 @@ public class AclManagerFSAndHTTPS implements AclManager {
 			throw new IllegalArgumentException(
 				"Unable to perform the operation. The received null parameters: fromLocalFile="
 					+ fromLocalFile + " toLocalFile=" + toLocalFile);
-		}
-		if (isHttpsEnabled) {
-			if (!toLocalFile.exists()) {
-				throw new IllegalArgumentException(
-					"Unable to perform the operation. The received destination file parameter points to a non existent file");
-			}
-			aclManagement.moveAllPermissions(fromLocalFile, toLocalFile);
 		}
 	}
 
