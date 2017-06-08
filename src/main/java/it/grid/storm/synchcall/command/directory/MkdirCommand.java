@@ -116,25 +116,25 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 			user = getUser(data);
 			stori = resolveStoRI(surl, user);
 			checkUserAuthorization(stori, user);
-			log.debug("srmMkdir authorized for {} for directory = {}",
-				userToString(user), stori.getPFN());
-			createFolder(stori.getLocalFile());
-			returnStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS,
-				"Directory created with success");
-			log.debug("srmMkdir: updating used space info ...");
-			try {
-				increaseUsedSpaceInfo(stori.getLocalFile());
-			} catch (NamespaceException e) {
-				log.error("srmMkdir: {}", e.getMessage());
-				returnStatus.extendExplaination("Unable to increase used space info: "
-					+ e.getMessage());
-			}
-			log.debug("srmMkdir: managing ACL ...");
-			try {
-				manageAcl(stori, user, returnStatus);
-			} catch (Exception e) {
-				log.error("srmMkdir: {}", e.getMessage());
-				returnStatus.extendExplaination("Unable to set ACL: " + e.getMessage());
+			log.debug("srmMkdir authorized for {} for directory = {}", userToString(user),
+					stori.getPFN());
+			returnStatus = createFolder(stori.getLocalFile());
+			if (returnStatus.isSRM_SUCCESS()) {
+				log.debug("srmMkdir: updating used space info ...");
+				try {
+					increaseUsedSpaceInfo(stori.getLocalFile());
+				} catch (NamespaceException e) {
+					log.error("srmMkdir: {}", e.getMessage());
+					returnStatus.extendExplaination(
+							"Unable to increase used space info: " + e.getMessage());
+				}
+				log.debug("srmMkdir: managing ACL ...");
+				try {
+					manageAcl(stori, user, returnStatus);
+				} catch (Exception e) {
+					log.error("srmMkdir: {}", e.getMessage());
+					returnStatus.extendExplaination("Unable to set ACL: " + e.getMessage());
+				}
 			}
 		} catch (MkdirException e) {
 			log.error("srmMkdir: {}", e.getMessage());
@@ -144,25 +144,26 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 		return new MkdirOutputData(returnStatus);
 	}
 	
-	private void createFolder(LocalFile file) throws MkdirException {
+	private TReturnStatus createFolder(LocalFile file) throws MkdirException {
 
 		LocalFile parent = file.getParentFile();
 		log.debug("srmMkdir: Parent directory is {}", parent);
 		if (parent == null) {
-			throw new MkdirException(TStatusCode.SRM_INVALID_PATH,
+		    return new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
 				"Parent directory does not exists. Recursive directory creation Not Allowed");
 		}
 		if (!file.mkdir()) {
 			if (file.isDirectory()) {
 				log.debug("srmMkdir: The specified path is an existent directory.");
-				throw new MkdirException(TStatusCode.SRM_DUPLICATION_ERROR,
+				return new TReturnStatus(TStatusCode.SRM_DUPLICATION_ERROR,
 					"Directory specified exists!");
 			}
 			log.debug("srmMkdir: The specified path is an existent file.");
-			throw new MkdirException(TStatusCode.SRM_INVALID_PATH,
+			return new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
 				"Path specified exists as a file");
 		}
 		log.debug("SrmMkdir: Request success!");
+		return new TReturnStatus(TStatusCode.SRM_SUCCESS, "Directory created with success");
 	}
 
 private void checkInputData(InputData data) throws IllegalArgumentException {

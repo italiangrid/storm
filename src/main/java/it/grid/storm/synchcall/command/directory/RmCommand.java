@@ -180,10 +180,10 @@ public class RmCommand implements Command {
 
     LocalFile localFile = stori.getLocalFile();
     if (!localFile.exists()) {
-      throw new RmException(TStatusCode.SRM_INVALID_PATH, "File does not exist");
+      return new TReturnStatus(TStatusCode.SRM_INVALID_PATH, "File does not exist");
     }
     if (localFile.isDirectory()) {
-      throw new RmException(TStatusCode.SRM_INVALID_PATH,
+      return new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
         "The specified file is a directory. Not removed");
     }
 
@@ -196,8 +196,8 @@ public class RmCommand implements Command {
     manager.abortAllPutRequestsForSURL(user, surl, "File has been removed.");
 
     if (!localFile.delete()) {
-      log.error("srmRm: File not removed!");
-      throw new RmException(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+      log.warn("srmRm: File not removed!");
+      return new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
         "File not removed, permission denied.");
     }
     returnStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, "File removed");
