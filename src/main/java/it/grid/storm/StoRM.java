@@ -20,13 +20,6 @@ package it.grid.storm;
 import static it.grid.storm.rest.RestService.startServer;
 import static it.grid.storm.rest.RestService.stop;
 
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import it.grid.storm.asynch.AdvancedPicker;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.catalogs.StoRMDataSource;
@@ -45,6 +38,13 @@ import it.grid.storm.startup.BootstrapException;
 import it.grid.storm.synchcall.SimpleSynchcallDispatcher;
 import it.grid.storm.xmlrpc.StoRMXmlRpcException;
 import it.grid.storm.xmlrpc.XMLRPCHttpServer;
+
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class represents a StoRM as a whole: it sets the configuration file
@@ -134,21 +134,6 @@ public class StoRM {
     }
   }
 
-  private void configureGridHTTPSPlugin() {
-
-    if (Configuration.getInstance().getGridhttpsEnabled()) {
-
-      log.info("Initializing the https plugin");
-
-      String httpsFactoryName = Configuration.getInstance()
-        .getGRIDHTTPSPluginClassName();
-
-      Bootstrap.initializeAclManager(httpsFactoryName,
-        LoggerFactory.getLogger(Bootstrap.class));
-    }
-
-  }
-
   private void configureXMLRPCService() {
 
     try {
@@ -225,8 +210,6 @@ public class StoRM {
 
     // Initialize Used Space
     Bootstrap.initializeUsedSpace();
-
-    configureGridHTTPSPlugin();
 
     // Start the "advanced" picker
     picker = new AdvancedPicker();

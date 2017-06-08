@@ -11,7 +11,7 @@
 
 package it.grid.storm.asynch;
 
-import it.grid.storm.acl.AclManagerFSAndHTTPS;
+import it.grid.storm.acl.AclManagerFS;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
@@ -677,7 +677,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
         localUser, fileStori.getAbsolutePath());
 
     try {
-      AclManagerFSAndHTTPS.getInstance().grantUserPermission(
+      AclManagerFS.getInstance().grantUserPermission(
           fileStori.getLocalFile(), localUser, permission);
     } catch (IllegalArgumentException e) {
       log.error("Unable to grant user traverse permission on parent file. "
@@ -715,7 +715,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
         localUser, fileStori.getAbsolutePath());
 
     try {
-      AclManagerFSAndHTTPS.getInstance().grantGroupPermission(
+      AclManagerFS.getInstance().grantGroupPermission(
           fileStori.getLocalFile(), localUser, permission);
     } catch (IllegalArgumentException e) {
       log.error("Unable to grant user traverse permission on parent file. "
@@ -760,7 +760,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
     log.debug("Adding https ACL {} for directory : '{}'", permission, file);
 
     try {
-      AclManagerFSAndHTTPS.getInstance().grantHttpsServiceGroupPermission(file,
+      AclManagerFS.getInstance().grantHttpsServiceGroupPermission(file,
           permission);
     } catch (IllegalArgumentException e) {
       log.error("Unable to grant user permission on the created folder. "
@@ -797,7 +797,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
         continue;
       }
       try {
-        AclManagerFSAndHTTPS.getInstance().grantGroupPermission(localFile, u,
+        AclManagerFS.getInstance().grantGroupPermission(localFile, u,
             ace.getFilesystemPermission());
       } catch (IllegalArgumentException e) {
         log.error("Unable to grant group permissions on the file. "

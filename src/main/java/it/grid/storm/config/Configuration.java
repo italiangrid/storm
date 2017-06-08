@@ -29,8 +29,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.grid.storm.https.impl.DefaultHTTPPlugin;
-
 /**
  * Singleton holding all configuration values that any other object in the StoRM
  * backend reads from configuration files, databases, etc. Implements a
@@ -2143,17 +2141,6 @@ public class Configuration {
       // load from external source
       return cr.getConfiguration().getBoolean(TAPE_SUPPORT_ENABLED_KEY);
     }
-  }
-
-
-
-  /**
-   * @return
-   */
-  public String getGRIDHTTPSPluginClassName() {
-
-    return DefaultHTTPPlugin.class.getName();
-
   }
 
   /**
