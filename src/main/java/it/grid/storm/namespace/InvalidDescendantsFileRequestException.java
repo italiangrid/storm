@@ -29,7 +29,9 @@ import java.io.*;
  * @version 1.0
  */
 
-public class InvalidDescendantsFileRequestException extends Exception {
+public class InvalidDescendantsFileRequestException extends RuntimeException {
+
+	private static final long serialVersionUID = 1L;
 
 	private boolean isNotDirectory = false;
 

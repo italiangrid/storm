@@ -90,6 +90,7 @@
 				<xs:enumeration value="it.grid.storm.filesystem.swig.gpfs"/>
 				<xs:enumeration value="it.grid.storm.filesystem.swig.gpfs23"/>
 				<xs:enumeration value="it.grid.storm.filesystem.swig.xfs"/>
+				<xs:enumeration value="it.grid.storm.filesystem.swig.test"/>
 			</xs:restriction>
 		</xs:simpleType>
 	</xs:element>

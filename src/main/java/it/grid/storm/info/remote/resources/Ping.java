@@ -11,7 +11,7 @@
 
 package it.grid.storm.info.remote.resources;
 
-import it.grid.storm.info.remote.Constants;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -24,7 +24,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
-import com.sun.jersey.core.spi.factory.ResponseBuilderImpl;
+import it.grid.storm.info.remote.Constants;
 
 @Path("/info/ping")
 public class Ping {
@@ -56,12 +56,10 @@ public class Ping {
 			System.err
 				.println("Unable to decode parameters. UnsupportedEncodingException : "
 					+ e.getMessage());
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.BAD_REQUEST);
-			responseBuilder
-				.entity("Unable to decode paramethesr, unsupported encoding \'"
-					+ Constants.ENCODING_SCHEME + "\'");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(BAD_REQUEST)
+				.entity("Unable to decode parameters, unsupported encoding \'" + Constants.ENCODING_SCHEME
+						+ "\'")
+				.build());
 		}
 		return "Hello by GET my friend " + unoDecoded + " from " + dueDecoded;
 	}
@@ -82,12 +80,10 @@ public class Ping {
 			System.err
 				.println("Unable to decode parameters. UnsupportedEncodingException : "
 					+ e.getMessage());
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.BAD_REQUEST);
-			responseBuilder
-				.entity("Unable to decode paramethesr, unsupported encoding \'"
-					+ Constants.ENCODING_SCHEME + "\'");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(BAD_REQUEST)
+				.entity("Unable to decode parameters, unsupported encoding \'" + Constants.ENCODING_SCHEME
+						+ "\'")
+				.build());
 		}
 		return "Hello by PUT my friend " + unoDecoded + " from " + dueDecoded;
 	}

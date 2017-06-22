@@ -29,7 +29,9 @@ import java.io.*;
  * @version 1.0
  */
 
-public class InvalidDescendantsPathRequestException extends Exception {
+public class InvalidDescendantsPathRequestException extends RuntimeException {
+
+	private static final long serialVersionUID = 1L;
 
 	private boolean pathNotExists = false;
 

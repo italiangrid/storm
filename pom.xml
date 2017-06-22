@@ -11,7 +11,7 @@
 
     <!-- versions of the project dependencies -->
     <commonsConfigurationVersion>1.4</commonsConfigurationVersion>
-    <jerseyVersion>1.17.1</jerseyVersion>
+    <jerseyVersion>2.25.1</jerseyVersion>
     <jettyVersion>8.1.9.v20130131</jettyVersion>
     <slf4jVersion>1.7.2</slf4jVersion>
     <logbackVersion>1.0.9</logbackVersion>
@@ -40,6 +40,9 @@
 
     <guavaVersion>18.0</guavaVersion>
     <metrics.version>3.1.0</metrics.version>
+
+    <mockitoVersion>1.10.19</mockitoVersion>
+    <hamcrestVersion>1.3</hamcrestVersion>
 
     <nativeInterfaceVersion>1.0.5</nativeInterfaceVersion>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -262,7 +265,6 @@
       <version>${metrics.version}</version>
     </dependency>
 
-
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
@@ -279,18 +281,45 @@
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
       <version>${commonsConfigurationVersion}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>javax.servlet</groupId>
+                <artifactId>servlet-api</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
 
     <dependency>
-      <groupId>com.sun.jersey</groupId>
-      <artifactId>jersey-servlet</artifactId>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>javax.ws.rs-api</artifactId>
+      <version>2.0.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-server</artifactId>
+      <version>${jerseyVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.containers</groupId>
+      <artifactId>jersey-container-servlet-core</artifactId>
+      <version>${jerseyVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.media</groupId>
+      <artifactId>jersey-media-json-jackson</artifactId>
+      <version>${jerseyVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.ext</groupId>
+      <artifactId>jersey-bean-validation</artifactId>
       <version>${jerseyVersion}</version>
     </dependency>
 
     <dependency>
-      <groupId>com.sun.jersey</groupId>
-      <artifactId>jersey-json</artifactId>
-      <version>${jerseyVersion}</version>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <version>${jettyVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
@@ -360,10 +389,16 @@
       <groupId>org.apache.xmlrpc</groupId>
       <artifactId>xmlrpc-server</artifactId>
       <version>${xmlrpcVersion}</version>
+      <exclusions>
+          <exclusion>
+              <groupId>javax.servlet</groupId>
+              <artifactId>servlet-api</artifactId>
+          </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>javax.xml</groupId>
-      <artifactId>jaxrpc</artifactId>
+      <artifactId>jaxrpc-api</artifactId>
       <version>${jaxrpcVersion}</version>
     </dependency>
 
@@ -501,6 +536,19 @@
       <artifactId>jakarta-oro</artifactId>
       <version>${jakartaOroVersion}</version>
       <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>${mockitoVersion}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-all</artifactId>
+      <version>${hamcrestVersion}</version>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>

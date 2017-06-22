@@ -586,6 +586,13 @@ public class VirtualFS implements VirtualFSInterface {
     return stori;
   }
 
+	@Override
+	public StoRI createFile(String relativePath, StoRIType type, MappingRule rule)
+			throws NamespaceException {
+
+		return new StoRIImpl(this, rule, relativePath, type);
+	}
+
   /****************************************************************
    * Methods used by StoRI to perform IMPLICIT SPACE RESERVATION
    *****************************************************************/
@@ -1335,7 +1342,7 @@ public class VirtualFS implements VirtualFSInterface {
    * VERSION 1.4 *
    *******************************************/
 
-  public TSpaceToken getSpaceToken() throws NamespaceException {
+  public TSpaceToken getSpaceToken() {
 
     return this.spaceToken;
   }
@@ -1384,5 +1391,4 @@ public class VirtualFS implements VirtualFSInterface {
 
     return spaceUpdater.decreaseUsedSpace(this, size);
   }
-
 }

@@ -32,6 +32,8 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
+
 /**
  * <p>
  * Title:
@@ -937,10 +939,10 @@ public class XMLParserUtil implements XMLConst {
 		return result;
 	}
 
-	private List getListValue(String collectionElement) {
+	private List<String> getListValue(String collectionElement) {
 
 		List<String> propList = configuration.getList(collectionElement);
-		List<String> prop = new ArrayList();
+		List<String> prop = Lists.newArrayList();
 		// For a set or list
 		for (Object element2 : propList) {
 			String element = (String) element2;

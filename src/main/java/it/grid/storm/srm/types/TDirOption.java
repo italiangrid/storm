@@ -55,10 +55,13 @@ public class TDirOption {
 
 	public static TDirOption makeNotDirectory() {
 
-		TDirOption builtInstance = new TDirOption(false);
-		return builtInstance;
+		return new TDirOption(false);
 	}
 
+	public static TDirOption makeFirstLevel() {
+
+		return new TDirOption(true, false, 1);
+	}
 	/**
 	 * Constructor that requires boolean isDirectory, boolean allLevel, int
 	 * numLevel. An exception is thrown if allLevel is true, and numLevel>0.

@@ -30,7 +30,9 @@ import java.util.*;
  * @version 1.0
  */
 
-public class InvalidDescendantsEmptyRequestException extends Exception {
+public class InvalidDescendantsEmptyRequestException extends RuntimeException {
+
+	private static final long serialVersionUID = 1L;
 
 	private boolean isEmptyDir = false;
 
