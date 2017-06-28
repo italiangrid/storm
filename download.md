@@ -13,42 +13,49 @@ Information about previous releases can be found [here](releases.html) or on the
 
 ### Repository configuration
 
-StoRM packages can be obtained from the EMI repository or from the StoRM product team package repository.
+StoRM packages can be obtained from the UMD repositories or from the StoRM product team package repository.
 
-#### EMI 3
+#### UMD 3
 
-You can find [general EMI 3 installation instructions](https://twiki.cern.ch/twiki/bin/view/EMI/GenericInstallationConfigurationEMI3) on the EMI site, but it basically boils down to installing the EMI repository
+You can find [general UMD 3 installation instructions][UMD3site] on the EGI site, 
+but it basically boils down to installing the UMD repositories.
 
-	rpm --import http://emisoft.web.cern.ch/emisoft/dist/EMI/3/RPM-GPG-KEY-emi
-	wget http://emisoft.web.cern.ch/emisoft/dist/EMI/3/sl5/x86_64/base/emi-release-3.0.0-2.el5.noarch.rpm
-	yum localinstall -y emi-release-3.0.0-2.el5.noarch.rpm
+In short:
+
+    # Install UMD rpm pgp-key
+    rpm --import http://repository.egi.eu/sw/production/umd/UMD-RPM-PGP-KEY
+
+    # Install UMD release
+    wget http://repository.egi.eu/sw/production/umd/3/sl6/x86_64/updates/umd-release-3.14.4-1.el6.noarch.rpm
+    yum localinstall umd-release–3.14.4-1.el6.noarch.rpm
 
 Follow the [system administration guide]({{ site.baseurl }}/documentation/sysadmin-guide/) for detailed installation instructions.
 
 #### StoRM
 
 The latest certified [StoRM packages][prod_repo_url] can be found in the StoRM
-production repositories for [SL5][prod_repo_sl5] and [SL6][prod_repo_sl6].
-Note that you will still EMI3 repositories installed (as detailed above) for
+production repositories for [SL6][prod_repo_sl6].
+Note that you should also have UMD repositories installed (as detailed above) for
 your setup to work as expected.
 
 To install the StoRM production repository files, run the following commands (as root):
 
-    (SL5) # wget http://italiangrid.github.io/storm/repo/storm_sl5.repo -O /etc/yum.repos.d/storm_sl5.repo
-    (SL6) # wget http://italiangrid.github.io/storm/repo/storm_sl6.repo -O /etc/yum.repos.d/storm_sl6.repo
+    wget http://italiangrid.github.io/storm/repo/storm_sl6.repo -O /etc/yum.repos.d/storm_sl6.repo
+
 ---
+
 ### Preview releases
 
-[Preview packages][preview_repo_url] can be found in the preview repositories for [SL5][preview_repo_sl5] and [SL6][preview_repo_sl6].
+[Preview packages][preview_repo_url] can be found in the preview repositories for [SL6][preview_repo_sl6].
 
 ---
 
 ### Nightly builds
 
-Development packages are built regularly on our [continuous integration infrastructure](http://radiohead.cnaf.infn.it:9999/view/STORM/).
+Development packages are built regularly on our [continuous integration infrastructure][developCI].
 
 Artifacts for the development branch (not recommended for production) can be found in the development
-yum repositories for [SL5][devel_repo_sl5] and [SL6][devel_repo_sl6].
+yum repositories for [SL6][devel_repo_sl6].
 
 ---
 
@@ -67,15 +74,14 @@ The StoRM source is available on [Github](https://github.com) in the following r
 - [StoRM XMLRPC api](https://github.com/italiangrid/storm-xmlrpc-api)
 - [StoRM GridHTTPs plugin](https://github.com/italiangrid/storm-gridhttps-plugin)
 - [StoRM GridFTP](https://github.com/italiangrid/storm-gridftp-dsi)
+- [CDMI StoRM](https://github.com/italiangrid/cdmi-storm)
 
 
 [latest_release_notes]: {{site.baseurl}}{{site.releasenotes_path}}/StoRM-v{{site.latest_release}}.html
-[devel_repo_sl5]: {{site.baseurl}}/repo/storm_develop_sl5.repo
 [devel_repo_sl6]: {{site.baseurl}}/repo/storm_develop_sl6.repo
-[prod_repo_sl5]: {{site.baseurl}}/repo/storm_sl5.repo
 [prod_repo_sl6]: {{site.baseurl}}/repo/storm_sl6.repo
-[preview_repo_sl5]: {{site.baseurl}}/repo/storm_preview_sl5.repo
 [preview_repo_sl6]: {{site.baseurl}}/repo/storm_preview_sl6.repo
 [prod_repo_url]: http://ci-01.cnaf.infn.it/download/storm/emi3
 [preview_repo_url]: http://ci-01.cnaf.infn.it/download/storm/preview
-[preview_repo_url]: http://ci-01.cnaf.infn.it/download/storm/preview
+[developCI]: https://ci.cloud.cnaf.infn.it/job/pkg.storm/job/develop/
+[UMD3site]: http://repository.egi.eu/category/umd_releases/distribution/umd-3/
