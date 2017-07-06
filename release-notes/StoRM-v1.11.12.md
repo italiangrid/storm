@@ -45,7 +45,7 @@ This release provides fixes to some outstanding bugs and improvements:
 * fixes minor bugs on the virtual filesystem returned during StoRI children creation;
 * fixes minor bugs on the storage-area resolution when moving resources through different storage-areas;
 * adds a REST metadata endpoint (more info [here](https://github.com/italiangrid/storm/tree/develop/src/main/java/it/grid/storm/rest/metadata));
-* **requires Java 8**;
+* requires Java 8;
 * removes all the unused stuff about the dismissed storm-gridhttps-plugin.
 
 #### Released components
