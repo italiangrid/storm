@@ -9,7 +9,7 @@ cluster file systems, as GPFS from IBM and Lustre from SUN.
 ## Build from source
 
 ### Supported platforms
-* Scientific Linux 5 on x86_64 architecture
+
 * Scientific Linux 6 on x86_64 architecture
 
 ### Build instructions
@@ -17,9 +17,8 @@ cluster file systems, as GPFS from IBM and Lustre from SUN.
 You need git to get the code, and Maven to build.
 
 Build command:
-```bash
-mvn compile
-```
+
+    mvn compile
 
 ## Hacking StoRM
 
