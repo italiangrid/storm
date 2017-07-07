@@ -13,7 +13,7 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.12]({{ site.baseurl 
 
 ### Description
 
-This release contains the necessary code fixes due the removal of all the _storm-gridhttps-plugin_ related stuff.
+This release contains the necessary fixes due to the removal of all the _storm-gridhttps-plugin_ related stuff.
 
 If used to configure the dismissed _storm-gridhttps-server_ component, now it requires `STORM_GRIDHTTPS_USER` to be equal to `STORM_USER`.
 

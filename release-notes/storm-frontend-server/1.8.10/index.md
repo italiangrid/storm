@@ -13,8 +13,9 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.12]({{ site.baseurl 
 
 ### Description
 
-This release contains the necessary code fixes due the add of the token to the communication with 
-the Backend recall interface (more info [here][recallinterface]).
+This release contains the necessary code fix due to the introduction 
+of a secret token that clients has to provide when contacting the 
+backend recall interface (more info [here][recallinterface]).
 
 ### Bug fixes
 
