@@ -72,9 +72,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.20</version>
         <configuration>
-          <!-- skips tests by default, until we have not reviewed them and make sure
-            they work -->
-          <skipTests>true</skipTests>
+          <skipTests>false</skipTests>
         </configuration>
       </plugin>
 
