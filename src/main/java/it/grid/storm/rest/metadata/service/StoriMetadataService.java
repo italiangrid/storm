@@ -7,7 +7,6 @@ import static it.grid.storm.rest.metadata.model.StoriMetadata.ResourceType.FOLDE
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -18,80 +17,71 @@ import com.google.common.collect.Lists;
 
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FSException;
-import it.grid.storm.filesystem.FilesystemError;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.VirtualFSInterface;
-import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.rest.metadata.model.FileAttributes;
 import it.grid.storm.rest.metadata.model.StoriMetadata;
 import it.grid.storm.rest.metadata.model.VirtualFsMetadata;
 import it.grid.storm.srm.types.TDirOption;
 
-public class StoriMetadataService extends ResourceService {
+public class StoriMetadataService {
 
-	private static final Logger log = LoggerFactory.getLogger(StoriMetadataService.class);
+  private static final Logger log = LoggerFactory.getLogger(StoriMetadataService.class);
 
-	public StoriMetadataService(Collection<VirtualFSInterface> vfsList,
-			Collection<MappingRule> rulesList) {
+  private ResourceService resourceService;
 
-		super(vfsList, rulesList);
-	}
+  public StoriMetadataService(ResourceService resourceService) {
 
-	public StoriMetadata getMetadata(String stfnPath)
-			throws ResourceNotFoundException, NamespaceException, IOException, SecurityException, FilesystemError, FSException {
+    this.resourceService = resourceService;
+  }
 
-		StoRI stori = getResource(stfnPath);
-		LocalFile localFile = stori.getLocalFile();
-		if (localFile.exists()) {
-			log.debug("{} exists", localFile.getAbsolutePath());
-			return buildFileMetadata(stori);
-		}
-		String errorMessage = String.format("%s not exists", localFile.getAbsolutePath());
-		throw new ResourceNotFoundException(errorMessage);
-	}
+  public StoriMetadata getMetadata(String stfnPath)
+      throws ResourceNotFoundException, NamespaceException, IOException, FSException {
 
-	private StoriMetadata buildFileMetadata(StoRI stori)
-			throws IOException, SecurityException, FilesystemError, NamespaceException, FSException {
+    StoRI stori = resourceService.getResource(stfnPath);
+    LocalFile localFile = stori.getLocalFile();
+    if (localFile.exists()) {
+      log.debug("{} exists", localFile.getAbsolutePath());
+      return buildFileMetadata(stori);
+    }
+    String errorMessage = String.format("%s not exists", localFile.getAbsolutePath());
+    throw new ResourceNotFoundException(errorMessage);
+  }
 
-		VirtualFSInterface vfs = stori.getVirtualFileSystem();
-		String canonicalPath = stori.getLocalFile().getCanonicalPath();
-		log.debug("VirtualFS is {}", vfs.getAliasName());
-		VirtualFsMetadata vfsMeta =
-				VirtualFsMetadata.builder().name(vfs.getAliasName()).root(vfs.getRootPath()).build();
+  private StoriMetadata buildFileMetadata(StoRI stori) throws IOException, FSException {
 
-		FileAttributes attributes = null;
-		List<String> children = null;
-		if (stori.getLocalFile().isDirectory()) {
-			children = Lists.newArrayList();
-			try {
-				for (StoRI child : stori.getChildren(TDirOption.makeFirstLevel())) {
-					children.add(child.getFilename());
-				}
-			} catch (InvalidDescendantsEmptyRequestException e) {
-				log.debug("{} is an empty directory", stori.getLocalFile());
-			}
-		} else {
-			attributes = FileAttributes.builder()
-				.pinned(StormEA.isPinned(canonicalPath))
-				.migrated(StormEA.getMigrated(canonicalPath))
-				.premigrated(StormEA.getPremigrated(canonicalPath))
-				.checksum(StormEA.getChecksum(canonicalPath, "adler32"))
-				.tsmRecD(StormEA.getTSMRecD(canonicalPath))
-				.tsmRecR(StormEA.getTSMRecR(canonicalPath))
-				.tsmRecT(StormEA.getTSMRecT(canonicalPath))
-				.build();
-		}
-		return StoriMetadata.builder()
-			.absolutePath(stori.getAbsolutePath())
-			.lastModified(new Date((new File(canonicalPath)).lastModified()))
-			.type(stori.getLocalFile().isDirectory() ? FOLDER : FILE)
-			.status(stori.getLocalFile().isOnDisk() ? ONLINE : NEARLINE)
-			.filesystem(vfsMeta)
-			.attributes(attributes)
-			.children(children)
-			.build();
-	}
+    VirtualFSInterface vfs = stori.getVirtualFileSystem();
+    String canonicalPath = stori.getLocalFile().getCanonicalPath();
+    log.debug("VirtualFS is {}", vfs.getAliasName());
+    VirtualFsMetadata vfsMeta =
+        VirtualFsMetadata.builder().name(vfs.getAliasName()).root(vfs.getRootPath()).build();
+
+    FileAttributes attributes = null;
+    List<String> children = null;
+    if (stori.getLocalFile().isDirectory()) {
+      children = Lists.newArrayList();
+      try {
+        for (StoRI child : stori.getChildren(TDirOption.makeFirstLevel())) {
+          children.add(child.getFilename());
+        }
+      } catch (InvalidDescendantsEmptyRequestException e) {
+        log.debug("{} is an empty directory", stori.getLocalFile());
+      }
+    } else {
+      attributes = FileAttributes.builder().pinned(StormEA.isPinned(canonicalPath))
+          .migrated(StormEA.getMigrated(canonicalPath))
+          .premigrated(StormEA.getPremigrated(canonicalPath))
+          .checksum(StormEA.getChecksum(canonicalPath, "adler32"))
+          .tsmRecD(StormEA.getTSMRecD(canonicalPath)).tsmRecR(StormEA.getTSMRecR(canonicalPath))
+          .tsmRecT(StormEA.getTSMRecT(canonicalPath)).build();
+    }
+    return StoriMetadata.builder().absolutePath(stori.getAbsolutePath())
+        .lastModified(new Date((new File(canonicalPath)).lastModified()))
+        .type(stori.getLocalFile().isDirectory() ? FOLDER : FILE)
+        .status(stori.getLocalFile().isOnDisk() ? ONLINE : NEARLINE).filesystem(vfsMeta)
+        .attributes(attributes).children(children).build();
+  }
 }

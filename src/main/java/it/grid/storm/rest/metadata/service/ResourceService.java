@@ -19,70 +19,70 @@ import it.grid.storm.namespace.model.StoRIType;
 
 public class ResourceService {
 
-	private static final Logger log = LoggerFactory.getLogger(ResourceService.class);
+  private static final Logger log = LoggerFactory.getLogger(ResourceService.class);
 
-	protected Collection<VirtualFSInterface> vfsList;
-	protected Collection<MappingRule> rulesList;
+  protected Collection<VirtualFSInterface> vfsList;
+  protected Collection<MappingRule> rulesList;
 
-	public ResourceService(Collection<VirtualFSInterface> vfsList,
-			Collection<MappingRule> rulesList) {
+  public ResourceService(Collection<VirtualFSInterface> vfsList,
+      Collection<MappingRule> rulesList) {
 
-		checkNotNull(vfsList, "Invalid null list of Virtual FS");
-		checkNotNull(rulesList, "Invalid null list of Mapping Rules");
-		this.vfsList = vfsList;
-		this.rulesList = rulesList;
-	}
+    checkNotNull(vfsList, "Invalid null list of Virtual FS");
+    checkNotNull(rulesList, "Invalid null list of Mapping Rules");
+    this.vfsList = vfsList;
+    this.rulesList = rulesList;
+  }
 
-	public StoRI getResource(String stfnPath) throws ResourceNotFoundException, NamespaceException {
+  public StoRI getResource(String stfnPath) throws ResourceNotFoundException, NamespaceException {
 
-		log.debug("Get StoRI resource from {} ...", stfnPath);
+    log.debug("Get StoRI resource from {} ...", stfnPath);
 
-		MappingRule rule = getRule(stfnPath);
-		log.debug("Mapping rule is {}", rule);
+    MappingRule rule = getRule(stfnPath);
+    log.debug("Mapping rule is {}", rule);
 
-		String relativePath = getRelativePath(rule.getStFNRoot(), stfnPath);
-		log.debug("Relative path is {}", relativePath);
+    String relativePath = getRelativePath(rule.getStFNRoot(), stfnPath);
+    log.debug("Relative path is {}", relativePath);
 
-		String absolutePath = getAbsolutePath(rule.getMappedFS().getRootPath(), relativePath);
-		log.debug("Absolute path is {}", absolutePath);
+    String absolutePath = getAbsolutePath(rule.getMappedFS().getRootPath(), relativePath);
+    log.debug("Absolute path is {}", absolutePath);
 
-		StoRIType type = isDirectory(absolutePath) ? FOLDER : FILE;
-		log.debug("StoRI type is {}", type);
+    StoRIType type = isDirectory(absolutePath) ? FOLDER : FILE;
+    log.debug("StoRI type is {}", type);
 
-		return rule.getMappedFS().createFile(relativePath, type , rule);
-	}
+    return rule.getMappedFS().createFile(relativePath, type, rule);
+  }
 
-	private MappingRule getRule(String stfnPath) throws ResourceNotFoundException {
+  private MappingRule getRule(String stfnPath) throws ResourceNotFoundException {
 
-		MappingRule rule = getWinnerRule(stfnPath, rulesList, vfsList);
+    MappingRule rule = getWinnerRule(stfnPath, rulesList, vfsList);
 
-		if (rule == null) {
-			String errorMessage = String.format("Unable to map %s to a rule", stfnPath);
-			log.debug(errorMessage);
-			throw new ResourceNotFoundException(errorMessage);
-		}
-		return rule;
-	}
+    if (rule == null) {
+      String errorMessage = String.format("Unable to map %s to a rule", stfnPath);
+      log.debug(errorMessage);
+      throw new ResourceNotFoundException(errorMessage);
+    }
+    return rule;
+  }
 
-	private boolean isDirectory(String absolutePath) {
+  private boolean isDirectory(String absolutePath) {
 
-		return new File(absolutePath).isDirectory();
-	}
+    return new File(absolutePath).isDirectory();
+  }
 
-	private String getRelativePath(String stfnRoot, String stfnPath) {
+  private String getRelativePath(String stfnRoot, String stfnPath) {
 
-		String path = stfnPath.replaceFirst(stfnRoot, "");
-		if (path.startsWith(File.separator)) {
-			path = path.substring(1);
-		}
-		return path;		
-	}
+    String path = stfnPath.replaceFirst(stfnRoot, "");
+    if (path.startsWith(File.separator)) {
+      path = path.substring(1);
+    }
+    return path;
+  }
 
-	private String getAbsolutePath(String rootPath, String relativePath) {
+  private String getAbsolutePath(String rootPath, String relativePath) {
 
-		if (rootPath.endsWith(File.separator)) {
-			return rootPath + relativePath;
-		}
-		return rootPath + File.separator + relativePath;
-	}
+    if (rootPath.endsWith(File.separator)) {
+      return rootPath + relativePath;
+    }
+    return rootPath + File.separator + relativePath;
+  }
 }
