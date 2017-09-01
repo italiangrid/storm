@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "YAIM StoRM v.4.3.9 release notes"
-release_date: "01.10.2017"
+release_date: "01.09.2017"
 features:
   - id: STOR-946
     title: Remove storm-gridhttps-plugin configuration

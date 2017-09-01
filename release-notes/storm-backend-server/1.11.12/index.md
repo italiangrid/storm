@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM BackEnd v. 1.11.12 release notes"
-release_date: "01.10.2017"
+release_date: "01.09.2017"
 rfcs:
   - id: STOR-282
     title: Fix overlapping virtual filesystems error in StoRI children creation
