@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM Frontend v.1.8.10 release notes"
-release_date: "30.06.2017"
+release_date: "01.10.2017"
 rfcs:
   - id: STOR-929
     title: Fix StoRM Recall Interface

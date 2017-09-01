@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "CDMI StoRM v.0.1.0 release notes"
-release_date: 30.06.2017
+release_date: "01.10.2017"
 ---
 
 ## CDMI StoRM v. 0.1.0

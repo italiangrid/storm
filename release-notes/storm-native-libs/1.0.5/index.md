@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM native libs v.1.0.5 release notes"
-release_date: 30.06.2017
+release_date: "01.10.2017"
 features:
   - id: STOR-945
     title: Move to Java 1.8
