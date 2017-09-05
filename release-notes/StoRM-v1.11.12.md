@@ -12,6 +12,8 @@ rfcs:
   - id: STOR-929
     title: Fix StoRM Recall Interface
 features:
+  - id: STOR-441
+    title: Migrate RESTFul services to Jersey 2.x
   - id: STOR-930
     title: Add Metadata Endpoint
   - id: STOR-945
