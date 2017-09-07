@@ -45,13 +45,13 @@ components:
 
 This release provides fixes to some outstanding bugs and improvements:
 
-* fixes/adds the insert of a recall task through the REST interface (more info [here](https://github.com/italiangrid/storm/tree/develop/src/main/java/it/grid/storm/tape/recalltable/resources));
-* fixes a minor bug on the virtual filesystem returned during StoRI children creation;
-* fixes a minor bug on the storage-area resolution when moving resources through different storage-areas;
-* fixes bug that makes sanity check failing with latest GPFS versions;
-* adds a REST metadata endpoint (more info [here](https://github.com/italiangrid/storm/tree/develop/src/main/java/it/grid/storm/rest/metadata));
 * requires Java 8;
-* removes all the unused stuff about the dismissed storm-gridhttps-plugin.
+* fixes the insertion of a file tape recall task in the [recall task management REST API][recall-task-rest-api];
+* fixes a couple of problems related to namespace and storage area resolution;
+* fixes a bug that causes sanity check failures with GPFS version >= 4.2.2;
+* adds a [REST API][metadata-rest-api] to query metadata (online/offline status, checksum, etc.)
+	about filesystem resources managed by StoRM. The main client of this API is the INDIGO-Datacloud [CDMI StoRM plugin][cdmi-storm-plugin];
+* removes the deprecated storm-gridhttps-plugin.
 
 #### Released components
 
@@ -112,3 +112,6 @@ Relaunch YAIM configuration. Example:
 Follow the instructions in the [System Administration Guide][storm-sysadmin-guide].
 
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.12
+[recall-task-rest-api]: https://github.com/italiangrid/storm/tree/develop/src/main/java/it/grid/storm/tape/recalltable/resources
+[metadata-rest-api]: https://github.com/italiangrid/storm/tree/develop/src/main/java/it/grid/storm/rest/metadata
+[cdmi-storm-plugin]: {{site.baseurl}}/release-notes/cdmi-storm/0.1.0/
