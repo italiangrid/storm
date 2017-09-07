@@ -38,6 +38,9 @@ version: {{ page.version }}
   * [GridFTP logging](#stormgridftplogging)
 * [Information Service](#informationservice)
   * [StoRM Info Provider](#storminfoprovider)
+* [CDMI StoRM](#cdmistorm)
+  * [Introduction](#cdmistormintro)
+  * [Installation and Configuration](#cdmistorminstall)
 
 ------
 
@@ -1617,6 +1620,33 @@ Example of the output generated when StoRM service is down:
     dn: GLUE2EndpointID=cloud-vm45.cloud.cnaf.infn.it/storage/endpoint/HTTPS,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
     GLUE2EndpointServingState: closed
 
+## CDMI StoRM <a name="cdmistorm">&nbsp;</a>
+
+### Introduction <a name="cdmistormintro">&nbsp;</a>
+
+CDMI StoRM is a plugin for the [INDIGO DataCloud CDMI server][indigo-cdmi-server] in order to support StoRM 
+as storage back-end and allow users to negotiate the Quality of Service of stored data through CDMI.
+
+In short, through the CDMI server users/admins can:
+
+- read the status of a resource (access latency, number of replicas, size, etc..);
+- schedule, if allowed, a change of its related Quality of Service.
+
+Currently, in StoRM use case, changing the QoS of a resource means recalling a file from tape.
+
+{% assign image_src="cdmi-storm.png" %}
+{% assign image_width="30%" %}
+{% include documentation/image.html %}
+{% assign label_title="Fig. 5" %}
+{% assign label_description="CDMI StoRM architecture overview." %}
+{% include documentation/label.html %}
+
+Refer to the [CDMI server user guide][indigo-cdmi-server-user-guide] for all the details about INDIGO DataCloud QoS management.
+
+### Installation and Configuration <a name="cdmistorminstall">&nbsp;</a>
+
+You can found CDMI StoRM details about installation and configuration [here][indigo-cdmi-deployment-guide].
+
 
 [Scientific Linux]: http://www.scientificlinux.org
 [SL5]: http://linuxsoft.cern.ch/scientific/5x/
@@ -1627,12 +1657,15 @@ Example of the output generated when StoRM service is down:
 [SPLguide]: https://twiki.cern.ch/twiki/bin/view/EGEE/SimplifiedPolicyLanguage
 [pap_admin_CLI]: https://twiki.cern.ch/twiki/bin/view/EGEE/AuthZPAPCLI
 [gridftp-admin-striped]: http://toolkit.globus.org/toolkit/docs/6.0/gridftp/admin/index.html#gridftp-admin-striped
-
 [X509_SA_conf_example]: {{site.baseurl}}/documentation/how-to/storage-area-configuration-examples/1.11.3/index.html#sa-anonymous-rw-x509
 [LDAPconfiguration]: {{site.baseurl}}/documentation/how-to/how-to-share-users-openldap/1.11.4/
 [webdav-guide]: storm-webdav-guide.html
 [storm-gridhttps-guide]: storm-gridhttps-guide.html
 [used-space-example]: {{site.baseurl}}/documentation/how-to/how-to-initialize-storage-area-used-space/
 [info-provider-177]: {{site.baseurl}}/release-notes/storm-dynamic-info-provider/1.7.7/
-
 [umd3distpage]: http://repository.egi.eu/category/umd_releases/distribution/umd-3/
+
+[indigo-cdmi-spi]: https://github.com/indigo-dc/cdmi-spi
+[indigo-cdmi-server]: https://github.com/indigo-dc/cdmi
+[indigo-cdmi-server-user-guide]: https://indigo-dc.gitbooks.io/cdmi-qos/content/doc/api_walkthrough.html
+[indigo-cdmi-deployment-guide]: https://github.com/italiangrid/cdmi-storm/blob/master/doc/admin.md
