@@ -7,11 +7,26 @@ title: StoRM releases
 
 The following is the list of last StoRM releases, with the released components list and a link to the release notes.
 
-## StoRM v.1.11.11
+## StoRM v.1.11.12
 
-<span class="label" style="margin-top: -20px;">10.05.2016</span> <span class="label label-info" style="margin-top: -20px;">current</span>
+<span class="label" style="margin-top: -20px;">30.06.2017</span> <span class="label label-info" style="margin-top: -20px;">current</span>
 
 This is the latest release for StoRM, available on StoRM repositories.
+
+| Component            | Version    
+|:---------------------|:-----------
+|StoRM Backend         |[1.11.12]({{site.baseurl}}/release-notes/storm-backend-server/1.11.12/)
+|StoRM Frontend        |[1.8.10]({{site.baseurl}}/release-notes/storm-frontend-server/1.8.10/)
+|StoRM WebDAV          |[1.0.5]({{site.baseurl}}/release-notes/storm-webdav/1.0.5/)
+|YAIM StoRM            |[4.3.9]({{site.baseurl}}/release-notes/yaim-storm/4.3.9/)
+|StoRM Native Libs     |[1.0.5]({{site.baseurl}}/release-notes/storm-native-libs/1.0.3/)
+|CDMI StoRM            |[0.1.0]({{site.baseurl}}/release-notes/cdmi-storm/0.1.0/)
+
+See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.12.html).
+
+## StoRM v.1.11.11
+
+<span class="label" style="margin-top: -20px;">10.05.2016</span>
 
 | Component            | Version    |
 |:---------------------|:-----------|
@@ -45,6 +60,7 @@ See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.
 |StoRM WebDAV          |[1.0.3]({{site.baseurl}}/release-notes/storm-webdav/1.0.3/)|
 |YAIM StoRM            |[4.3.8]({{site.baseurl}}/release-notes/yaim-storm/4.3.8/)|
 |StoRM Info Provider   |[1.7.8-2]({{site.baseurl}}/release-notes/yaim-storm/1.7.8-2/)|
+|StoRM Native Libs     |[1.0.4]({{site.baseurl}}/release-notes/storm-native-libs/1.0.4/)|
 
 See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.9.html).
 

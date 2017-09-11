@@ -52,8 +52,12 @@ Released on **{{rdata.date}}**.
 {% assign rfcs = (rfcs | sort: 'id') %}
 
 <ul>
+{% assign lastId = null %}
 {% for rfc in rfcs %}
-  <li>[<a href="{{ site.issue_base_url }}{{ rfc.id }}">{{ rfc.id }}</a>] - {{ rfc.title }}</li>
+  {% if rfc.id != lastId %}
+    <li>[<a href="{{ site.issue_base_url }}{{ rfc.id }}">{{ rfc.id }}</a>] - {{ rfc.title }}</li>
+  {% endif %}
+  {% assign lastId = rfc.id %}
 {% endfor %}
 </ul>
 
@@ -66,8 +70,12 @@ Released on **{{rdata.date}}**.
 {% assign features = (features | sort: 'id') %}
 
 <ul>
+{% assign lastId = null %}
 {% for rfc in features %}
-  <li>[<a href="{{ site.issue_base_url }}{{ rfc.id }}">{{ rfc.id }}</a>] - {{ rfc.title }}</li>
+  {% if rfc.id != lastId %}
+    <li>[<a href="{{ site.issue_base_url }}{{ rfc.id }}">{{ rfc.id }}</a>] - {{ rfc.title }}</li>
+  {% endif %}
+  {% assign lastId = rfc.id %}
 {% endfor %}
 </ul>
 
@@ -75,7 +83,7 @@ Released on **{{rdata.date}}**.
 
 ### Installation and configuration
 
-Packages can be obtained from our repositories (see the instructions in the [download section]({{site.baseurl}}/download.html)) and will soon be available on the EMI-3 repository.
+Packages can be obtained from our repositories (see the instructions in the [download section]({{site.baseurl}}/download.html)).
 
 {{ rdata.installation | replace: '!SITE_URL!', site.baseurl }}
 
