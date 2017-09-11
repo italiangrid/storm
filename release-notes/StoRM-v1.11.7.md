@@ -37,6 +37,8 @@ components:
 
 ## StoRM v. 1.11.7
 
+<span class="label label-warning">CentOS 5</span> <span class="label label-success">CentOS 6</span>
+
 Released on **{{ page.release_date }}**
 
 ### Description

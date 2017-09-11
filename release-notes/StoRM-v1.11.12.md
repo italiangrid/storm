@@ -43,6 +43,12 @@ components:
 
 ## StoRM v. 1.11.12
 
+Released on **{{ page.release_date }}**.
+
+Supported platforms: <span class="label label-success">CentOS 6</span>
+
+#### Description
+
 This release provides fixes to some outstanding bugs and improvements:
 
 * requires Java 8;
