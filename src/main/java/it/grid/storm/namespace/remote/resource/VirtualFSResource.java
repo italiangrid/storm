@@ -1,5 +1,7 @@
 package it.grid.storm.namespace.remote.resource;
 
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+
 /*
  * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -14,12 +16,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.VirtualFSInterface;
-import it.grid.storm.namespace.model.SAInfo;
-import it.grid.storm.namespace.remote.Constants;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -30,7 +26,11 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.jersey.core.spi.factory.ResponseBuilderImpl;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.SAInfo;
+import it.grid.storm.namespace.remote.Constants;
 
 /**
  * @author Michele Dibenedetto
@@ -58,10 +58,9 @@ public class VirtualFSResource {
 			log
 				.error("Unable to retrieve virtual file system list. NamespaceException : "
 					+ e.getMessage());
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
-			responseBuilder.entity("Unable to retrieve virtual file systems");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)
+				.entity("Unable to retrieve virtual file systems")
+				.build());
 		}
 		Map<String, SAInfo> output = new HashMap<String, SAInfo>();
 		for (VirtualFSInterface vfs : vfsCollection) {

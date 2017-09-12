@@ -22,7 +22,6 @@ import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtGPersistentChunkData;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.RequestSummaryData;
-import it.grid.storm.namespace.InvalidDescendantsAuthRequestException;
 import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
 import it.grid.storm.namespace.InvalidDescendantsFileRequestException;
 import it.grid.storm.namespace.InvalidDescendantsPathRequestException;
@@ -347,16 +346,6 @@ public final class PtGFeeder implements Delegable {
 			gsm.failedChunk(chunkData);
 			return;
 			
-		} catch (InvalidDescendantsAuthRequestException e) {
-			
-			log.debug("ATTENTION in PtGFeeder! PtGFeeder received request to"
-				+ " expand a directory for which the user has no rights.");
-			// No rights to directory!
-			chunkData.changeStatusSRM_AUTHORIZATION_FAILURE("srmPrepareToGet with "
-				+ "dirOption set: user has no right to access directory!");
-			PtGChunkCatalog.getInstance().update(chunkData);
-			gsm.failedChunk(chunkData);
-			return;
 		}
 		
 		log.debug("PtGFeeder - Number of children in parent: {}", storiChildren.size());

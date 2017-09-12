@@ -68,7 +68,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     .getLogger(PutDoneCommand.class);
 
   private static final String SRM_COMMAND = "srmPutDone";
-  
+
   public PutDoneCommand() {
 
   };

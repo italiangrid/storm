@@ -17,10 +17,6 @@
 
 package it.grid.storm.persistence.model;
 
-import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
-import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
-
 import java.io.Serializable;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -31,6 +27,12 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
+import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
 public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 
@@ -132,7 +134,7 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 		return pinLifetime;
 	}
 
-	public TapeRecallStatus getRecallStatus() {
+	public TapeRecallStatus getStatus() {
 
 		return status;
 	}
@@ -147,11 +149,6 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 		return requestToken;
 	}
 
-	public String getRequestTokenStr() {
-
-		return requestToken.getValue();
-	}
-
 	public String getRequestType() {
 
 		return requestType;
@@ -162,6 +159,7 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 		return retryAttempt;
 	}
 
+	@JsonIgnore
 	public int getStatusId() {
 
 		return status.getStatusId();

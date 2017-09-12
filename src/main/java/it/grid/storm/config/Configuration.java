@@ -17,8 +17,6 @@
 
 package it.grid.storm.config;
 
-import it.grid.storm.https.impl.DefaultHTTPPlugin;
-
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -48,9 +46,8 @@ public class Configuration {
     .getLogger(Configuration.class);
 
   private ConfigReader cr = new ConfigReader(); // set an empty ConfigReader
-  // as default
-  static Configuration instance = new Configuration(); // only
-  // instance of this configuration class
+
+  static Configuration instance = new Configuration();
 
   private static final String MANAGED_SURLS_KEY = "storm.service.SURL.endpoint";
   private static final String MANAGED_SURL_DEFAULT_PORTS_KEY = "storm.service.SURL.default-ports";
@@ -2146,17 +2143,6 @@ public class Configuration {
     }
   }
 
-
-
-  /**
-   * @return
-   */
-  public String getGRIDHTTPSPluginClassName() {
-
-    return DefaultHTTPPlugin.class.getName();
-
-  }
-
   /**
    * @return
    */
@@ -2318,7 +2304,7 @@ public class Configuration {
       return configurationStringBuilder.toString();
     }
   }
-  
+
   public String getHTTPTURLPrefix(){
     return cr.getConfiguration().getString(HTTP_TURL_PREFIX,"/fileTransfer");
   }

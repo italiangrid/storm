@@ -102,7 +102,6 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 	private Hashtable<String, VirtualFSInterface> vfss;
 	private Hashtable<String, MappingRule> maprules;
 	private Hashtable<String, ApproachableRule> apprules;
-	// private ReservedSpaceCatalog spaceCatalog;
 
 	private XMLParserUtil parserUtil;
 	private final XMLConfiguration configuration;

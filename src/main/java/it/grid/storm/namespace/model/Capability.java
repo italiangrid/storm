@@ -21,8 +21,6 @@ import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.balancer.BalancingStrategyFactory;
 import it.grid.storm.balancer.Node;
 import it.grid.storm.balancer.ftp.FTPNode;
-import it.grid.storm.balancer.http.HTTPNode;
-import it.grid.storm.balancer.http.HTTPSNode;
 import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
@@ -138,8 +136,7 @@ public class Capability implements CapabilityInterface {
 		protocolPoolsByScheme.put(protocol, protPool);
 
 		// Building Balancer and put it into Map of Balancers
-		if (protocol.equals(Protocol.GSIFTP) || protocol.equals(Protocol.HTTP)
-			|| protocol.equals(Protocol.HTTPS)) {
+		if (protocol.equals(Protocol.GSIFTP)) {
 			BalancingStrategy<? extends Node> balancingStrategy = null;
 			LinkedList<Node> nodeList = new LinkedList<Node>();
 			Node node = null;
@@ -178,7 +175,7 @@ public class Capability implements CapabilityInterface {
 			}
 			balancerByScheme.put(protocol, balancingStrategy);
 		} else {
-			log.error("The current version manage only GSIFTP and HTTP/HTTPS POOL.");
+			log.error("The current version manage only GSIFTP.");
 		}
 	}
 
@@ -187,10 +184,6 @@ public class Capability implements CapabilityInterface {
 
 		if (Protocol.GSIFTP == protocol)
 			return new FTPNode(hostname, port);
-		if (Protocol.HTTP == protocol)
-			return new HTTPNode(hostname, port);
-		if (Protocol.HTTPS == protocol)
-			return new HTTPSNode(hostname, port);
 		throw new Exception("Unsupported protocol, no node type available: "
 			+ protocol);
 	}
@@ -200,10 +193,6 @@ public class Capability implements CapabilityInterface {
 
 		if (Protocol.GSIFTP == protocol)
 			return new FTPNode(hostname, port, memberWeight);
-		if (Protocol.HTTP == protocol)
-			return new HTTPNode(hostname, port, memberWeight);
-		if (Protocol.HTTPS == protocol)
-			return new HTTPSNode(hostname, port, memberWeight);
 		throw new Exception("Unsupported protocol, no node type available: "
 			+ protocol);
 	}

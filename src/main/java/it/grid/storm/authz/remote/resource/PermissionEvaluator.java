@@ -1,5 +1,18 @@
 package it.grid.storm.authz.remote.resource;
 
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+
+import java.util.Arrays;
+import java.util.List;
+
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * 
  * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
@@ -35,13 +48,6 @@ import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.srm.types.TOverwriteMode;
-import java.util.Arrays;
-import java.util.List;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.sun.jersey.core.spi.factory.ResponseBuilderImpl;
 
 class PermissionEvaluator {
 
@@ -68,11 +74,9 @@ class PermissionEvaluator {
 		} catch (NamespaceException e) {
 			log.error("Unable to determine a VFS that maps the requested file "
 				+ "path '{}'. NamespaceException: {}", filePathDecoded, e.getMessage());
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.NOT_FOUND);
-			responseBuilder
-				.entity("Unable to determine file path\'s associated virtual file system");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(NOT_FOUND)
+				.entity("Unable to determine file path\'s associated virtual file system")
+				.build());
 		}
 		if (!fileVFS.getCapabilities().getAllManagedProtocols()
 			.contains(Protocol.HTTPS)) {
@@ -116,11 +120,9 @@ class PermissionEvaluator {
 		} catch (NamespaceException e) {
 			log.error("Unable to determine a VFS that maps the requested file "
 				+ "path '{}'. NamespaceException: {}", filePathDecoded, e.getMessage());
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.NOT_FOUND);
-			responseBuilder
-				.entity("Unable to determine file path\'s associated virtual file system");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(NOT_FOUND)
+				.entity("Unable to determine file path\'s associated virtual file system")
+				.build());
 		}
 		if (!fileVFS.isApproachableByUser(gu)) {
 			log.debug("User '{}' is not authorized to approach the requeste Storage "
@@ -146,11 +148,9 @@ class PermissionEvaluator {
 		} catch (NamespaceException e) {
 			log.error("Unable to determine a VFS that maps the requested file "
 				+ "path '{}'. NamespaceException: {}", filePathDecoded, e.getMessage());
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.NOT_FOUND);
-			responseBuilder
-				.entity("Unable to determine file path\'s associated virtual file system");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(NOT_FOUND)
+				.entity("Unable to determine file path\'s associated virtual file system")
+				.build());
 		}
 		if (!fileVFS.getCapabilities().getAllManagedProtocols()
 			.contains(Protocol.HTTP)) {
@@ -173,11 +173,9 @@ class PermissionEvaluator {
 		} catch (NamespaceException e) {
 			log.error("Unable to determine a VFS that maps the requested file "
 				+ "path '{}'. NamespaceException: {}", filePathDecoded, e.getMessage());
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.NOT_FOUND);
-			responseBuilder
-				.entity("Unable to determine file path\'s associated virtual file system");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(NOT_FOUND)
+				.entity("Unable to determine file path\'s associated virtual file system")
+				.build());
 		}
 		if (!fileVFS.isApproachableByAnonymous()
 			&& !(request.isReadOnly() && fileVFS.isHttpWorldReadable())) {
@@ -228,11 +226,9 @@ class PermissionEvaluator {
 				if (VFSRootPath == null) {
 					log.error("Unable to build StFN for path '{}'. VFS: {} has null "
 						+ "RootPath", filePathDecoded, fileVFS.getAliasName());
-					ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-					responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
-					responseBuilder
-						.entity("Unable to build StFN for path the provided path");
-					throw new WebApplicationException(responseBuilder.build());
+					throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)
+						.entity("Unable to build StFN for path the provided path")
+						.build());
 				}
 				if (!VFSRootPath.startsWith("/")) {
 					VFSRootPath = "/" + VFSRootPath;
@@ -247,11 +243,9 @@ class PermissionEvaluator {
 					if (VFSStFNRoot == null) {
 						log.error("Unable to build StFN for path '{}'. VFS: {} has null "
 							+ "StFNRoot", filePathDecoded, fileVFS.getAliasName());
-						ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-						responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
-						responseBuilder
-							.entity("Unable to build StFN for path the provided path");
-						throw new WebApplicationException(responseBuilder.build());
+						throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)
+							.entity("Unable to build StFN for path the provided path")
+							.build());
 					}
 					if (!VFSStFNRoot.startsWith("/")) {
 						VFSStFNRoot = "/" + VFSStFNRoot;
@@ -263,38 +257,30 @@ class PermissionEvaluator {
 				} else {
 					log.error("Unable to determine the StFNRoot for file path's VFS. "
 						+ "VFSMappingRules is empty!");
-					ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-					responseBuilder.status(Response.Status.NOT_FOUND);
-					responseBuilder
-						.entity("Unable to determine the StFNRoot for file path's VFS");
-					throw new WebApplicationException(responseBuilder.build());
+					throw new WebApplicationException(Response.status(NOT_FOUND)
+						.entity("Unable to determinate the StFNRoot for file path's VFS")
+						.build());
 				}
 			} else {
 				log.error("None of the VFS maps the requested file path '{}'. "
 					+ "fileVFS is null!", filePathDecoded);
-				ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-				responseBuilder.status(Response.Status.NOT_FOUND);
-				responseBuilder
-					.entity("Unable to determine file path\'s associated virtual file system");
-				throw new WebApplicationException(responseBuilder.build());
+				throw new WebApplicationException(Response.status(NOT_FOUND)
+					.entity("Unable to determine file path\'s associated virtual file system")
+					.build());
 			}
 		} catch (NamespaceException e) {
 			log.error("Unable to determine a VFS that maps the requested file "
 				+ "path '{}'. NamespaceException: {}", filePathDecoded, e.getMessage());
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.NOT_FOUND);
-			responseBuilder
-				.entity("Unable to determine file path\'s associated virtual file system");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(NOT_FOUND)
+				.entity("Unable to determine file path\'s associated virtual file system")
+				.build());
 		}
 		if (!filePathDecoded.startsWith(VFSRootPath)) {
 			log.error("The provided file path does not starts with the VFSRoot "
 				+ "of its VFS");
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
-			responseBuilder
-				.entity("The provided file path does not starts with the VFSRoot of its VFS");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)
+				.entity("The provided file path does not starts with the VFSRoot of its VFS")
+				.build());
 		}
 		String fileStFNpath = VFSStFNRoot
 			+ filePathDecoded.substring(VFSRootPath.length(),
@@ -304,11 +290,9 @@ class PermissionEvaluator {
 		} catch (InvalidStFNAttributeException e) {
 			log.error("Unable to build StFN for path '{}'. "
 				+ "InvalidStFNAttributeException: {}", fileStFNpath, e.getMessage());
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
-			responseBuilder
-				.entity("Unable to determine file path\'s associated virtual file system");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)
+				.entity("Unable to determine file path\'s associated virtual file system")
+				.build());
 		}
 	}
 
@@ -327,12 +311,10 @@ class PermissionEvaluator {
 			log.error("Unable to build the GridUserInterface object for DN '{}' "
 				+ "and FQANS '{}'. IllegalArgumentException: {}", DNDecoded, 
 				Arrays.toString(FQANSArray), e.getMessage());
-			ResponseBuilderImpl builder = new ResponseBuilderImpl();
-			builder.status(Response.Status.BAD_REQUEST);
-			builder.entity("Unable to build a GridUser for DN \'" + DNDecoded
-				+ "\' and FQANS \'" + Arrays.toString(FQANSArray)
-				+ "\'. Missing argument(s)");
-			throw new WebApplicationException(builder.build());
+			throw new WebApplicationException(Response.status(BAD_REQUEST)
+				.entity("Unable to build a GridUser for DN \'" + DNDecoded + "\' and FQANS \'"
+						+ Arrays.toString(FQANSArray) + "\'. Missing argument(s)")
+				.build());
 		}
 	}
 

@@ -1,5 +1,7 @@
 package it.grid.storm.namespace.remote.resource;
 
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+
 /*
  * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -26,8 +28,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sun.jersey.core.spi.factory.ResponseBuilderImpl;
 
 /**
  * @author Michele Dibenedetto
@@ -56,10 +56,9 @@ public class VirtualFSResourceCompat_1_1 {
 			log
 				.error("Unable to retrieve virtual file system list. NamespaceException : "
 					+ e.getMessage());
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
-			responseBuilder.entity("Unable to retrieve virtual file systems");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)
+				.entity("Unable to retrieve virtual file systems")
+				.build());
 		}
 		for (VirtualFSInterface vfs : vfsCollection) {
 			if (!vfsListString.equals("")) {
@@ -71,10 +70,9 @@ public class VirtualFSResourceCompat_1_1 {
 				log
 					.error("Unable to encode the virtual file system. NamespaceException : "
 						+ e.getMessage());
-				ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-				responseBuilder.status(Response.Status.INTERNAL_SERVER_ERROR);
-				responseBuilder.entity("Unable to encode the virtual file system");
-				throw new WebApplicationException(responseBuilder.build());
+				throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)
+					.entity("Unable to encode the virtual file system")
+					.build());
 			}
 		}
 		return vfsListString;

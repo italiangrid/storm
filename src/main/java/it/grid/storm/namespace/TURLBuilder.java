@@ -19,9 +19,6 @@ package it.grid.storm.namespace;
 
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.config.Configuration;
-import it.grid.storm.filesystem.LocalFile;
-import it.grid.storm.https.HTTPPluginManager;
-import it.grid.storm.https.HTTPSPluginException;
 import it.grid.storm.namespace.model.Authority;
 import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.srm.types.InvalidTTURLAttributesException;
@@ -87,41 +84,5 @@ public class TURLBuilder {
 	public static TTURL buildXROOTTURL(Authority authority, PFN physicalFN) {
 
 		return buildROOTTURL(authority, physicalFN);
-	}
-
-	public static TTURL buildHTTPTURL(Authority authority, LocalFile localFile)
-		throws HTTPSPluginException {
-
-		String serviceRelativePath = HTTPPluginManager
-			.getHTTPSPluginInstance()
-			.mapLocalPath(authority.getServiceHostname(), localFile.getAbsolutePath());
-
-		return buildTURL(Protocol.HTTP, authority, "", serviceRelativePath);
-	}
-
-	public static TTURL buildHTTPSTURL(Authority authority, LocalFile localFile)
-		throws HTTPSPluginException {
-
-		String serviceRelativePath = HTTPPluginManager
-			.getHTTPSPluginInstance()
-			.mapLocalPath(authority.getServiceHostname(), localFile.getAbsolutePath());
-		return buildTURL(Protocol.HTTPS, authority, "", serviceRelativePath);
-	}
-
-	private static TTURL buildTURL(Protocol protocol, Authority authority,
-		String extraSlashes, String serviceRelativePath) {
-
-		TTURL turl = null;
-		String turlString = null;
-		try {
-			turlString = protocol.getProtocolPrefix() + authority.toString()
-				+ extraSlashes + serviceRelativePath;
-			log.debug("turlString used to build the TURL : {}", turlString);
-			turl = TTURL.makeFromString(turlString);
-		} catch (InvalidTTURLAttributesException e) {
-			log.error("Error while constructing TURL with Authority '{}'. {}",
-			  authority, e.getMessage(), e);
-		}
-		return turl;
 	}
 }

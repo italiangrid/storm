@@ -20,22 +20,18 @@
  */
 package it.grid.storm.startup;
 
-import it.grid.storm.authz.AuthzDirector;
-import it.grid.storm.authz.DirectorException;
-import it.grid.storm.https.HTTPPluginManager;
-import it.grid.storm.https.HTTPSPluginInterface;
-import it.grid.storm.info.SpaceInfoManager;
-
-import java.io.File;
-import java.lang.reflect.Constructor;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
+import it.grid.storm.authz.AuthzDirector;
+import it.grid.storm.authz.DirectorException;
+import it.grid.storm.info.SpaceInfoManager;
+
+import java.io.File;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zappi
@@ -98,62 +94,5 @@ public class Bootstrap {
 	public static void initializeUsedSpace() {
 
 		SpaceInfoManager.getInstance().initializeUsedSpace();
-	}
-
-	/**
-	 * @param httpsInterfaceClassName
-	 * @param log
-	 */
-	public static void initializeAclManager(String httpsInterfaceClassName,
-		Logger log) {
-
-		log.debug("ACL manager. httpsInterfaceClassName: {}", 
-		  httpsInterfaceClassName);
-
-		Class httpsInterfaceClass = null;
-		try {
-			httpsInterfaceClass = Class.forName(httpsInterfaceClassName);
-		} catch (ClassNotFoundException e) {
-		  log.error("Unable to load https plugin class {}. Message: {}", 
-		    httpsInterfaceClassName, e.getMessage(), e);
-			return;
-		}
-		if (!HTTPSPluginInterface.class.isAssignableFrom(httpsInterfaceClass)) {
-		  log.error("Unable to load the https plugin. "
-		    + "The specified class '{}' does not implement "
-		    + "the HTTPSPluginInterface.",
-		    httpsInterfaceClassName);
-			return;
-		}
-
-		Constructor c = null;
-
-		try {
-			c = httpsInterfaceClass.getConstructor(null);
-		} catch (Throwable e) {
-		  log.error("Error instantiating https plugin: {}", e.getMessage(),e);
-			return;
-		}
-
-		Class[] parameters = c.getParameterTypes();
-
-		if (parameters != null && parameters.length > 0) {
-		  log.error("Invalid number of arguments for https plugin constructor.");
-			return;
-		}
-
-		HTTPSPluginInterface httpsInterface = null;
-		try {
-			httpsInterface = (HTTPSPluginInterface) c.newInstance();
-		} catch (Throwable e) {
-		  log.error("Error instantiating HTTPS plugin {}: {}", 
-		    httpsInterfaceClassName,
-		    e.getMessage(), e);
-			return;
-		}
-
-		log.info("Initializing ACL manager");
-		HTTPPluginManager.init(httpsInterface);
-		log.info("ACL manager initialization completed");
 	}
 }

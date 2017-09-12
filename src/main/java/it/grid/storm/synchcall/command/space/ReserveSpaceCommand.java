@@ -18,7 +18,7 @@
 package it.grid.storm.synchcall.command.space;
 
 import it.grid.storm.acl.AclManager;
-import it.grid.storm.acl.AclManagerFSAndHTTPS;
+import it.grid.storm.acl.AclManagerFS;
 import it.grid.storm.catalogs.InvalidSpaceDataAttributesException;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.types.PFN;
@@ -530,7 +530,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
     FilesystemPermission fp = FilesystemPermission.ReadWrite;
 
-    AclManager manager = AclManagerFSAndHTTPS.getInstance();
+    AclManager manager = AclManagerFS.getInstance();
     LocalFile localFile = spaceStori.getLocalFile();
     LocalUser localUser;
     try {
@@ -764,7 +764,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
       if (hasJiTACL) {
         try {
-          AclManager manager = AclManagerFSAndHTTPS.getInstance();
+          AclManager manager = AclManagerFS.getInstance();
           LocalFile localFile = spaceFile.getLocalFile();
           LocalUser localUser = user.getLocalUser();
           if (localFile == null || localUser == null) {
@@ -791,7 +791,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
         }
       } else {
         try {
-          AclManager manager = AclManagerFSAndHTTPS.getInstance();
+          AclManager manager = AclManagerFS.getInstance();
           LocalFile localFile = spaceFile.getLocalFile();
           LocalUser localUser = user.getLocalUser();
           if (localFile == null || localUser == null) {
@@ -928,7 +928,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
     if (hasJiTACL) {
       try {
-        AclManager manager = AclManagerFSAndHTTPS.getInstance();
+        AclManager manager = AclManagerFS.getInstance();
         localFile = spaceFile.getLocalFile();
         LocalUser localUser = user.getLocalUser();
         if (localFile == null || localUser == null) {
@@ -958,7 +958,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
       }
     } else {
       try {
-        AclManager manager = AclManagerFSAndHTTPS.getInstance();
+        AclManager manager = AclManagerFS.getInstance();
         localFile = spaceFile.getLocalFile();
         LocalUser localUser = user.getLocalUser();
         if (localFile == null || localUser == null) {

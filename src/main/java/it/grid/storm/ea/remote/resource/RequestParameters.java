@@ -1,13 +1,17 @@
 package it.grid.storm.ea.remote.resource;
 
-import it.grid.storm.authz.remote.Constants;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.sun.jersey.core.spi.factory.ResponseBuilderImpl;
+
+import it.grid.storm.authz.remote.Constants;
 
 class RequestParameters {
 
@@ -36,12 +40,10 @@ class RequestParameters {
 			filePathDecoded = URLDecoder.decode(filePath, Constants.ENCODING_SCHEME);
 		} catch (UnsupportedEncodingException e) {
 		  log.error(e.getMessage(), e);
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.BAD_REQUEST);
-			responseBuilder
+			throw new WebApplicationException(Response.status(BAD_REQUEST)
 				.entity("Unable to decode filePath paramether, unsupported encoding \'"
-					+ Constants.ENCODING_SCHEME + "\'");
-			throw new WebApplicationException(responseBuilder.build());
+						+ Constants.ENCODING_SCHEME + "\'")
+				.build());
 		}
 
 		log.debug("Decoded filePath = {}", filePathDecoded);
@@ -50,11 +52,9 @@ class RequestParameters {
 			log
 				.error("Unable to evaluate permissions. Some parameters are missing : filePath {}",
 				  filePathDecoded);
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.BAD_REQUEST);
-			responseBuilder
-				.entity("Unable to manage checksum. Some parameters are missing");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(BAD_REQUEST)
+				.entity("Unable to manage checksum. Some parameters are missing")
+				.build());
 		}
 		return filePathDecoded;
 	}
@@ -69,12 +69,10 @@ class RequestParameters {
 			checksumDecoded = URLDecoder.decode(checksum, Constants.ENCODING_SCHEME);
 		} catch (UnsupportedEncodingException e) {
 		  log.error(e.getMessage(), e);
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.BAD_REQUEST);
-			responseBuilder
+			throw new WebApplicationException(Response.status(BAD_REQUEST)
 				.entity("Unable to decode checksum paramether, unsupported encoding \'"
-					+ Constants.ENCODING_SCHEME + "\'");
-			throw new WebApplicationException(responseBuilder.build());
+						+ Constants.ENCODING_SCHEME + "\'")
+				.build());
 		}
 		log.debug("Decoded checksum = " + checksumDecoded);
 
@@ -82,11 +80,9 @@ class RequestParameters {
 			log
 				.error("Unable to evaluate permissions. Some parameters are missing : checksum {}"
 					, checksumDecoded);
-			ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
-			responseBuilder.status(Response.Status.BAD_REQUEST);
-			responseBuilder
-				.entity("Unable to manage checksum. Some parameters are missing");
-			throw new WebApplicationException(responseBuilder.build());
+			throw new WebApplicationException(Response.status(BAD_REQUEST)
+				.entity("Unable to manage checksum. Some parameters are missing")
+				.build());
 		}
 		return checksumDecoded;
 	}
