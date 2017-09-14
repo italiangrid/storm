@@ -387,7 +387,7 @@ Then you can configure StoRM by launching YAIM with:
 
 as better explained [here](#launching-yaim).
 
-### General YAIM variables <a name="generalyaim">&nbsp;</a>
+### General YAIM variables <a name="generalyaimvars">&nbsp;</a>
 
 Create a **site-info.def** file in your CONFDIR/ directory.
 Edit this file by providing a value to the general variables summarized in Tab.1.
