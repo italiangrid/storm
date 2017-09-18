@@ -52,11 +52,18 @@ Update the involved packages:
 
     $ yum update storm-backend-server storm-frontend-server storm-webdav storm-native-libs yaim-storm
 
-Remove the dismissed _storm-gridhttps-plugin_:
+Update the namespace schema (you should have a `.rpmnew` file on disk):
+
+    $ cd /etc/storm/backend-server
+    $ mv namespace-1.5.0.xsd namespace-1.5.0.xsd.rpmold
+    $ mv namespace-1.5.0.xsd.rpmnew namespace-1.5.0.xsd
+
+Remove the deprecated `storm-gridhttps-plugin`:
 
     $ yum remove storm-gridhttps-plugin
 
-The java components (_storm-backend-server_, _storm-webdav_ and _storm-native-libs_) now explicitly **requires Java 8**.
+The StoRM Backend, WebDAV and native-libs rpms explicitly **requires Java 8** since this version. 
+This version will not start unless it is run on Java 8.
 
 The output of `java -version` will tell which is the active version on your system:
 
@@ -65,19 +72,13 @@ The output of `java -version` will tell which is the active version on your syst
     OpenJDK Runtime Environment (build 1.8.0_131-b11)
     OpenJDK 64-Bit Server VM (build 25.131-b11, mixed mode)
 
-You can configure the active JRE using update-alternatives:
-
-    $ update-alternatives --config java
-
-Try to remove, if there's no other dependencies, old java versions installed:
+Remove old java versions installed:
 
     $ yum remove java-1.6.0-openjdk java-1.7.0-openjdk java-1.7.0-openjdk-devel
 
-Update the namespace schema (you should have a `.rpmnew` file on disk):
+If you have a more complex deployment and you can't remove them, you can try to configure the active JRE using update-alternatives:
 
-    $ cd /etc/storm/backend-server
-    $ mv namespace-1.5.0.xsd namespace-1.5.0.xsd.rpmold
-    $ mv namespace-1.5.0.xsd.rpmnew namespace-1.5.0.xsd
+    $ update-alternatives --config java
 
 Relaunch YAIM configuration. Example:
 
