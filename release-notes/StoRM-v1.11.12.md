@@ -73,24 +73,41 @@ This release provides fixes to some outstanding bugs and improvements:
 
 #### Upgrade from earlier StoRM versions
 
-Update the involved packages:
+Follow the following instructions when you are upgrading StoRM to v1.11.12.
+
+##### 1. Update the involved packages
+
+Services to be updated are:
+
+* storm-backend-server
+* storm-native-libs
+* storm-frontend-server
+* storm-webdav
+* yaim-storm
+
+Example:
 
     $ yum update storm-backend-server storm-frontend-server storm-webdav storm-native-libs yaim-storm
 
-Update the namespace schema (you should have a `.rpmnew` file on disk):
+##### 2. Update the namespace schema
+
+You should have a `.rpmnew` file on disk:
 
     $ cd /etc/storm/backend-server
     $ mv namespace-1.5.0.xsd namespace-1.5.0.xsd.rpmold
     $ mv namespace-1.5.0.xsd.rpmnew namespace-1.5.0.xsd
 
-Remove the deprecated `storm-gridhttps-plugin`:
+##### 3. Remove `storm-gridhttps-plugin`
+
+It's a component that is no more used and with old java dependencies that **MUST** be removed:
 
     $ yum remove storm-gridhttps-plugin
 
-The StoRM Backend, WebDAV and native-libs rpms explicitly **requires Java 8** since this version. 
-This version will not start unless it is run on Java 8.
+##### 4. Remove old Java versions
 
-The output of `java -version` will tell which is the active version on your system:
+Since this version, the `storm-backend-server`, `storm-webdav` and `storm-native-libs` rpms explicitly **REQUIRES JAVA 8**.
+
+`java -version` will tell which is the active version on your system:
 
     $ java -version
     openjdk version "1.8.0_131"
@@ -105,7 +122,9 @@ If you have a more complex deployment and you can't remove them, you can try to 
 
     $ update-alternatives --config java
 
-Relaunch YAIM configuration. Example:
+##### 5. Relaunch YAIM configuration
+
+Example:
 
     $ /opt/glite/yaim/bin/yaim -c -s /etc/storm/siteinfo/storm.def \
       -n se_storm_backend \
