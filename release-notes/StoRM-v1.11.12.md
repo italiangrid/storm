@@ -114,7 +114,7 @@ Since this version, the `storm-backend-server`, `storm-webdav` and `storm-native
     OpenJDK Runtime Environment (build 1.8.0_131-b11)
     OpenJDK 64-Bit Server VM (build 25.131-b11, mixed mode)
 
-Remove old java versions installed:
+Remove old java versions installed on your system with the following command:
 
     $ yum remove java-1.6.0-openjdk java-1.7.0-openjdk java-1.7.0-openjdk-devel
 
