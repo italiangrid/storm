@@ -33,6 +33,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static it.grid.storm.persistence.model.TapeRecallTO.BOL_REQUEST;
+import static it.grid.storm.persistence.model.TapeRecallTO.PTG_REQUEST;
+import static it.grid.storm.tape.recalltable.model.TapeRecallStatus.IN_PROGRESS;
+import static it.grid.storm.tape.recalltable.model.TapeRecallStatus.QUEUED;
+
 import it.grid.storm.asynch.Suspendedable;
 import it.grid.storm.catalogs.BoLPersistentChunkData;
 import it.grid.storm.catalogs.PersistentChunkData;
@@ -354,15 +359,14 @@ public class TapeRecallCatalog {
       groupTaskId = this.insertNewTask(task);
       /*
        * Add to the map this task, if a task for the same group is available,
-       * add the tqask to its bucket
+       * add the task to its bucket
        */
-      Collection<Suspendedable> chunkBucket = recallBuckets.get(groupTaskId);
-      if (chunkBucket != null) {
+      if (recallBuckets.containsKey(groupTaskId)) {
         // add to the bucket
-        chunkBucket.add(chunk);
+        recallBuckets.get(groupTaskId).add(chunk);
       } else {
         // create a new bucket
-        chunkBucket = new ConcurrentLinkedQueue<Suspendedable>();
+        Collection<Suspendedable> chunkBucket = new ConcurrentLinkedQueue<>();
         chunkBucket.add(chunk);
         recallBuckets.put(groupTaskId, chunkBucket);
       }
@@ -445,34 +449,31 @@ public class TapeRecallCatalog {
     TapeRecallStatus recallTaskStatus, Date timestamp)
       throws DataAccessException {
 
-    // critical section
-    // begin
-    boolean updated;
+    if (recallTaskStatus == IN_PROGRESS || recallTaskStatus == QUEUED) {
+        log.warn("Setting the status to IN_PROGRESS or QUEUED using setGroupTaskStatus() is not a legal operation, doing it anyway. groupTaskId={}", groupTaskId);
+    }
+
+    boolean updated = false;
     Collection<Suspendedable> chunkBucket = null;
+
     synchronized (this) {
-      updated = tapeRecallDAO.setGroupTaskStatus(groupTaskId,
-        recallTaskStatus.getStatusId(), timestamp);
-      if (updated) {
-        if ((recallTaskStatus == TapeRecallStatus.IN_PROGRESS)
-          || (recallTaskStatus == TapeRecallStatus.QUEUED)) {
-          log.warn(
-            "Setting the status to IN_PROGRESS or QUEUED using setGroupTaskStatus() is not a legal operation, doing it anyway. groupTaskId={}",
-            groupTaskId);
-        } else {
-          // the status is a terminal status
+
+      updated = tapeRecallDAO.setGroupTaskStatus(groupTaskId, recallTaskStatus.getStatusId(), timestamp);
+
+      if (updated && recallTaskStatus.isFinalStatus()) {
+        // the status is a terminal status
+        if (recallBuckets.containsKey(groupTaskId)) {
           chunkBucket = recallBuckets.remove(groupTaskId);
-          // end
-          if (chunkBucket == null) {
-            log.error(
-              "Unable to perform the final status update. No bucket found for Recall Group Task ID {}",
-              groupTaskId.toString());
-            throw new DataAccessException(
-              "Unable to perform the final status update. No bucket found for Recall Group Task ID "
-                + groupTaskId.toString());
+        } else {
+          if (expectedChunks(groupTaskId)) {
+            String errorMessage = String.format("Unable to perform the final status update. No bucket found for Recall Group Task ID %s", groupTaskId);
+            log.error(errorMessage);
+            throw new DataAccessException(errorMessage);
           }
         }
       }
     }
+
     if (chunkBucket != null) {
       updateChuncksStatus(chunkBucket, recallTaskStatus);
     }
@@ -495,5 +496,20 @@ public class TapeRecallCatalog {
     for (Suspendedable chunk : chunkBucket) {
       chunk.completeRequest(recallTaskStatus);
     }
+  }
+
+  private boolean expectedChunks(UUID groupTaskId) throws DataAccessException {
+
+    List<TapeRecallTO> recallTasks = tapeRecallDAO.getGroupTasks(groupTaskId);
+    if (recallTasks.isEmpty()) {
+      String errorMessage = String.format("Unable to perform the final status update. No recall tasks found for Recall Group Task ID %s", groupTaskId);
+      log.error(errorMessage);
+      throw new DataAccessException(errorMessage);
+    }
+    return recallTasks.stream().filter(t -> isChuckRequest(t)).count() > 0;
+  }
+
+  private boolean isChuckRequest(TapeRecallTO t) {
+    return t.getRequestType().equals(BOL_REQUEST) || t.getRequestType().equals(PTG_REQUEST);
   }
 }

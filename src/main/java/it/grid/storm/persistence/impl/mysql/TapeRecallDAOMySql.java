@@ -25,6 +25,7 @@ import it.grid.storm.persistence.util.helper.TapeRecallMySQLHelper;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
+import jersey.repackaged.com.google.common.collect.Lists;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -170,7 +171,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 		throws DataAccessException {
 
 		TapeRecallTO task = null;
-		ArrayList<TapeRecallTO> taskList = new ArrayList<TapeRecallTO>();
+		List<TapeRecallTO> taskList = Lists.newArrayList();
 
 		Connection dbConnection = getConnection();
 		ResultSet res = null;
@@ -180,7 +181,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 			prepStatement = sqlHelper
 				.getQueryGetGroupTasks(dbConnection, groupTaskId);
 
-			log.debug("QUERY: " + prepStatement.toString());
+			log.debug("QUERY: {}", prepStatement);
 			res = prepStatement.executeQuery();
 
 			if (res.first() == false) {
@@ -196,7 +197,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 			} while (res.next());
 		} catch (SQLException e) {
 			throw new DataAccessException("Error executing query: '"
-				+ prepStatement.toString() + "' " + e.getMessage(), e);
+				+ prepStatement + "' " + e.getMessage(), e);
 		} finally {
 			releaseConnection(res, prepStatement, dbConnection);
 		}
