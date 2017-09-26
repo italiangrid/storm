@@ -43,7 +43,7 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 	public static final String PTG_REQUEST = "ptg";
 	public static final String BOL_REQUEST = "bol";
 	public static final String BACK_REQUEST = "back";
-	public static final String POST_REQUEST = "post";
+	public static final String RECALL_REQUEST = "recall";
 	public static final String startChar = "";
 	public static final char sepChar = '\u0009';
 	public static final String dateFormat = "dd-MM-yyyy HH.mm.ss";
