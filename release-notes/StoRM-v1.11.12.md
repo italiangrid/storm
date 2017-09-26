@@ -59,6 +59,8 @@ This release provides fixes to some outstanding bugs and improvements:
 	about filesystem resources managed by StoRM. The main client of this API is the INDIGO-Datacloud [CDMI StoRM plugin][cdmi-storm-plugin];
 * removes the deprecated storm-gridhttps-plugin.
 
+This release requires latest [gemss][gemss-repo] version. It **doesn't work** with gemss less than or equal to v1.7.2. So, please, BE CAREFUL on update.
+
 #### Released components
 
 {% include list-components.liquid %}
@@ -140,3 +142,4 @@ Follow the instructions in the [System Administration Guide][storm-sysadmin-guid
 [recall-task-rest-api]: https://github.com/italiangrid/storm/tree/develop/src/main/java/it/grid/storm/tape/recalltable/resources
 [metadata-rest-api]: https://github.com/italiangrid/storm/tree/develop/src/main/java/it/grid/storm/rest/metadata
 [cdmi-storm-plugin]: {{site.baseurl}}/release-notes/cdmi-storm/0.1.0/
+[gemss-repo]: https://github.com/italiangrid/gemss
