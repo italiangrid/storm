@@ -59,7 +59,8 @@ This release provides fixes to some outstanding bugs and improvements:
 	about filesystem resources managed by StoRM. The main client of this API is the INDIGO-Datacloud [CDMI StoRM plugin][cdmi-storm-plugin];
 * removes the deprecated storm-gridhttps-plugin.
 
-This release requires latest [gemss][gemss-repo] version. It **doesn't work** with gemss less than or equal to v1.7.2. So, please, BE CAREFUL on update.
+This release requires [gemss][gemss-repo] version greater than v1.7.2. 
+It **doesn't work** with gemss less than or equal to v1.7.2.
 
 #### Released components
 
