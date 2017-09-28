@@ -505,6 +505,6 @@ public class TapeRecallCatalog {
   }
 
   private static boolean isRequestTypeBolOrPtg(TapeRecallTO t) {
-    return t.getRequestType().equals(BOL_REQUEST) || t.getRequestType().equals(PTG_REQUEST);
+    return BOL_REQUEST.equals(t.getRequestType()) || PTG_REQUEST.equals(t.getRequestType());
   }
 }
