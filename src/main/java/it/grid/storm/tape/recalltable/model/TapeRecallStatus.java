@@ -52,19 +52,19 @@ public enum TapeRecallStatus {
 
   public static TapeRecallStatus getRecallTaskStatus(String status) {
 
-    if (status.equalsIgnoreCase("success")) {
+    if ("success".equalsIgnoreCase(status)) {
       return SUCCESS;
     }
-    if (status.equalsIgnoreCase("queued")) {
+    if ("queued".equalsIgnoreCase(status)) {
       return QUEUED;
     }
-    if (status.equalsIgnoreCase("in-progress")) {
+    if ("in-progress".equalsIgnoreCase(status)) {
       return IN_PROGRESS;
     }
-    if (status.equalsIgnoreCase("error")) {
+    if ("error".equalsIgnoreCase(status)) {
       return ERROR;
     }
-    if (status.equalsIgnoreCase("aborted")) {
+    if ("aborted".equalsIgnoreCase(status)) {
       return ABORTED;
     }
     return UNDEFINED;
@@ -129,16 +129,16 @@ public enum TapeRecallStatus {
    */
   public boolean precedes(TapeRecallStatus otherStatus) {
 
-    if (this.equals(UNDEFINED) || otherStatus.equals(UNDEFINED)) {
+    if (UNDEFINED.equals(this) || UNDEFINED.equals(otherStatus)) {
       return false;
     }
     if (this.equals(otherStatus)) {
       return false;
     }
-    if (this.equals(QUEUED)) {
+    if (QUEUED.equals(this)) {
       return true;
     }
-    return this.equals(IN_PROGRESS) && otherStatus.isFinalStatus();
+    return IN_PROGRESS.equals(this) && otherStatus.isFinalStatus();
   }
 
   @Override
