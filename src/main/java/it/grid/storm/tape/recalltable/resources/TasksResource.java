@@ -21,13 +21,13 @@
 package it.grid.storm.tape.recalltable.resources;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import it.grid.storm.config.Configuration;
 import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.TapeRecallException;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
-import jersey.repackaged.com.google.common.collect.Maps;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
