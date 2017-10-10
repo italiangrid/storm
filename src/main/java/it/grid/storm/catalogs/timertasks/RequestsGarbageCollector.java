@@ -134,7 +134,7 @@ public class RequestsGarbageCollector extends TimerTask {
 	 *          expired
 	 * @return The number of requests involved.
 	 */
-	synchronized private int purgeExpiredRequests(int purgeSize,
+	private synchronized int purgeExpiredRequests(int purgeSize,
 		long expiredRequestTime) {
 
 		ptgCat.transitExpiredSRM_FILE_PINNED();
@@ -152,7 +152,7 @@ public class RequestsGarbageCollector extends TimerTask {
 	 *          deleted
 	 * @return The number of requests involved.
 	 */
-	synchronized private int purgeExpiredRecallRequests(int purgeSize) {
+	private synchronized int purgeExpiredRecallRequests(int purgeSize) {
 
 		int n = new TapeRecallCatalog().purgeCatalog(purgeSize);
 		if (n == 0) {

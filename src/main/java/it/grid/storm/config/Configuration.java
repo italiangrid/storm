@@ -130,6 +130,7 @@ public class Configuration {
   private static final String DEFAULT_FILE_STORAGE_TYPE_KEY = "default.storagetype";
   private static final String PURGE_BATCH_SIZE_KEY = "purge.size";
   private static final String EXPIRED_REQUEST_TIME_KEY = "expired.request.time";
+  private static final String EXPIRED_INPROGRESS_PTP_TIME_KEY = "expired.request.ptp.time";
   private static final String REQUEST_PURGER_DELAY_KEY = "purge.delay";
   private static final String REQUEST_PURGER_PERIOD_KEY = "purge.interval";
   private static final String EXPIRED_REQUEST_PURGING_KEY = "purging";
@@ -2307,6 +2308,10 @@ public class Configuration {
 
   public String getHTTPTURLPrefix(){
     return cr.getConfiguration().getString(HTTP_TURL_PREFIX,"/fileTransfer");
+  }
+
+  public long getInProgressPutRequestExpirationTime() {
+    return cr.getConfiguration().getLong(EXPIRED_INPROGRESS_PTP_TIME_KEY);
   }
 
 }

@@ -31,10 +31,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +43,16 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static it.grid.storm.srm.types.TStatusCode.SRM_ABORTED;
+import static it.grid.storm.srm.types.TStatusCode.SRM_FAILURE;
+import static it.grid.storm.srm.types.TStatusCode.SRM_FILE_LIFETIME_EXPIRED;
+import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_INPROGRESS;
+import static it.grid.storm.srm.types.TStatusCode.SRM_SPACE_AVAILABLE;
+import static it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS;
+
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * DAO class for PtPChunkCatalog. This DAO is specifically designed to connect
@@ -87,8 +94,13 @@ public class PtPChunkDAO {
 	/* initial delay in milliseconds before starting timer */
 	private final long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;
 
+	/* how many seconds are necessary to consider an 'in-progress' PTP must be consider expired  */
+	private final long expirationTime = Configuration.getInstance().getInProgressPutRequestExpirationTime();
+
 	/* boolean that tells whether reconnection is needed because of MySQL bug! */
 	private boolean reconnect = false;
+
+	private StatusCodeConverter statusCodeConverter = StatusCodeConverter.getInstance();
 
 	private PtPChunkDAO() {
 
@@ -168,7 +180,7 @@ public class PtPChunkDAO {
 			updatePut.setLong(10, to.primaryKey());
 			logWarnings(updatePut.getWarnings());
 			// run updateStatusPut...
-			log.trace("PtP CHUNK DAO - update method: {}", updatePut.toString());
+			log.trace("PtP CHUNK DAO - update method: {}", updatePut);
 			updatePut.executeUpdate();
 			logWarnings(updatePut.getWarnings());
 		} catch (SQLException e) {
@@ -207,7 +219,7 @@ public class PtPChunkDAO {
 			stmt.setLong(3, chunkTO.primaryKey());
 			logWarnings(stmt.getWarnings());
 
-			log.trace("PtP CHUNK DAO - update incomplete: {}", stmt.toString());
+			log.trace("PtP CHUNK DAO - update incomplete: {}", stmt);
 			stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
 		} catch (SQLException e) {
@@ -224,7 +236,7 @@ public class PtPChunkDAO {
 	 * operation. In case of any error, an error message gets logged but no
 	 * exception is thrown; a null PtPChunkDataTO is returned.
 	 */
-	public synchronized PtPChunkDataTO refresh(long primary_key) {
+	public synchronized PtPChunkDataTO refresh(long id) {
 
 		if (!checkConnection()) {
 			log.error("PtP CHUNK DAO: refresh - unable to get a valid connection!");
@@ -248,11 +260,11 @@ public class PtPChunkDAO {
 			stmt = con.prepareStatement(prot);
 			logWarnings(con.getWarnings());
 
-			List<String> protocols = new ArrayList<String>();
-			stmt.setLong(1, primary_key);
+			List<String> protocols = Lists.newArrayList();
+			stmt.setLong(1, id);
 			logWarnings(stmt.getWarnings());
 
-			log.trace("PtP CHUNK DAO - refresh method: {}", stmt.toString());
+			log.trace("PtP CHUNK DAO - refresh method: {}", stmt);
 			rs = stmt.executeQuery();
 			logWarnings(stmt.getWarnings());
 			while (rs.next()) {
@@ -265,10 +277,10 @@ public class PtPChunkDAO {
 			stmt = con.prepareStatement(refresh);
 			logWarnings(con.getWarnings());
 
-			stmt.setLong(1, primary_key);
+			stmt.setLong(1, id);
 			logWarnings(stmt.getWarnings());
 
-			log.trace("PtP CHUNK DAO - refresh method: {}", stmt.toString());
+			log.trace("PtP CHUNK DAO - refresh method: {}", stmt);
 			rs = stmt.executeQuery();
 			logWarnings(stmt.getWarnings());
 
@@ -288,7 +300,7 @@ public class PtPChunkDAO {
 					.getString("rp.normalized_targetSURL_StFN"));
 				int uniqueID = rs.getInt("rp.targetSURL_uniqueID");
 				if (!rs.wasNull()) {
-					chunkDataTO.setSurlUniqueID(new Integer(uniqueID));
+					chunkDataTO.setSurlUniqueID(Integer.valueOf(uniqueID));
 				}
 
 				chunkDataTO.setExpectedFileSize(rs.getLong("rp.expectedFileSize"));
@@ -301,8 +313,8 @@ public class PtPChunkDAO {
 				 * This code is only for the 1.3.18. This is a workaround to get FQANs
 				 * using the proxy field on request_queue. The FE use the proxy field of
 				 * request_queue to insert a single FQAN string containing all FQAN
-				 * separeted by the "#" char. The proxy is a BLOB, hence it has to be
-				 * properly conveted in string.
+				 * separated by the "#" char. The proxy is a BLOB, hence it has to be
+				 * properly converted in string.
 				 */
 				java.sql.Blob blob = rs.getBlob("rq.proxy");
 				if (!rs.wasNull() && blob != null) {
@@ -312,12 +324,12 @@ public class PtPChunkDAO {
 				if (rs.next()) {
 					log.warn("ATTENTION in PtP CHUNK DAO! Possible DB corruption! "
 						+ "refresh method invoked for specific chunk with id {}, but found "
-						+ "more than one such chunks!", primary_key);
+						+ "more than one such chunks!", id);
 				}
 			} else {
 				log.warn("ATTENTION in PtP CHUNK DAO! Possible DB corruption! "
 					+ "refresh method invoked for specific chunk with id {}, but chunk "
-					+ "NOT found in persistence!", primary_key);
+					+ "NOT found in persistence!", id);
 			}
 		} catch (SQLException e) {
 			log.error("PtP CHUNK DAO! Unable to refresh chunk! {}", e.getMessage(), e);
@@ -363,11 +375,11 @@ public class PtPChunkDAO {
 			find = con.prepareStatement(str);
 			logWarnings(con.getWarnings());
 
-			List<String> protocols = new ArrayList<String>();
+			List<String> protocols = Lists.newArrayList();
 			find.setString(1, strToken);
 			logWarnings(find.getWarnings());
 
-			log.trace("PtP CHUNK DAO - find method: {}", find.toString());
+			log.trace("PtP CHUNK DAO - find method: {}", find);
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());
 
@@ -386,15 +398,15 @@ public class PtPChunkDAO {
 			find = con.prepareStatement(str);
 			logWarnings(con.getWarnings());
 
-			List<PtPChunkDataTO> list = new ArrayList<PtPChunkDataTO>();
+			List<PtPChunkDataTO> list = Lists.newArrayList();
 			find.setString(1, strToken);
 			logWarnings(find.getWarnings());
 
 			find.setInt(2,
-				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
+				statusCodeConverter.toDB(TStatusCode.SRM_ABORTED));
 			logWarnings(find.getWarnings());
 
-			log.trace("PtP CHUNK DAO - find method: {}", find.toString());
+			log.trace("PtP CHUNK DAO - find method: {}", find);
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());
 			PtPChunkDataTO chunkDataTO = null;
@@ -413,8 +425,8 @@ public class PtPChunkDAO {
 				 * This code is only for the 1.3.18. This is a workaround to get FQANs
 				 * using the proxy field on request_queue. The FE use the proxy field of
 				 * request_queue to insert a single FQAN string containing all FQAN
-				 * separeted by the "#" char. The proxy is a BLOB, hence it has to be
-				 * properly conveted in string.
+				 * separated by the "#" char. The proxy is a BLOB, hence it has to be
+				 * properly converted in string.
 				 */
 				java.sql.Blob blob = rs.getBlob("rq.proxy");
 				if (!rs.wasNull() && blob != null) {
@@ -428,7 +440,7 @@ public class PtPChunkDAO {
 					.getString("rp.normalized_targetSURL_StFN"));
 				int uniqueID = rs.getInt("rp.targetSURL_uniqueID");
 				if (!rs.wasNull()) {
-					chunkDataTO.setSurlUniqueID(new Integer(uniqueID));
+					chunkDataTO.setSurlUniqueID(Integer.valueOf(uniqueID));
 				}
 
 				chunkDataTO.setExpectedFileSize(rs.getLong("rp.expectedFileSize"));
@@ -441,7 +453,7 @@ public class PtPChunkDAO {
 		} catch (SQLException e) {
 			log.error("PTP CHUNK DAO: {}", e.getMessage(), e);
 			/* return empty Collection! */
-			return new ArrayList<PtPChunkDataTO>();
+			return Lists.newArrayList();
 		} finally {
 			close(rs);
 			close(find);
@@ -458,7 +470,7 @@ public class PtPChunkDAO {
 		if (!checkConnection()) {
 			log
 				.error("PtP CHUNK DAO: findReduced - unable to get a valid connection!");
-			return new ArrayList<ReducedPtPChunkDataTO>();
+			return Lists.newArrayList();
 		}
 		PreparedStatement find = null;
 		ResultSet rs = null;
@@ -479,7 +491,7 @@ public class PtPChunkDAO {
 			find = con.prepareStatement(str);
 			logWarnings(con.getWarnings());
 
-			List<ReducedPtPChunkDataTO> list = new ArrayList<ReducedPtPChunkDataTO>();
+			List<ReducedPtPChunkDataTO> list = Lists.newArrayList();
 			find.setString(1, reqtoken);
 			logWarnings(find.getWarnings());
 			if (addInClause) {
@@ -491,7 +503,7 @@ public class PtPChunkDAO {
 				}
 			}
 			logWarnings(find.getWarnings());
-			log.trace("PtP CHUNK DAO! findReduced with request token; {}", find.toString());
+			log.trace("PtP CHUNK DAO! findReduced with request token; {}", find);
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());
 
@@ -517,7 +529,7 @@ public class PtPChunkDAO {
 		} catch (SQLException e) {
 			log.error("PTP CHUNK DAO: {}", e.getMessage(), e);
 			/* return empty Collection! */
-			return new ArrayList<ReducedPtPChunkDataTO>();
+			return Lists.newArrayList();
 		} finally {
 			close(rs);
 			close(find);
@@ -527,7 +539,7 @@ public class PtPChunkDAO {
 	/**
 	 * Method that returns a Collection of ReducedPtPChunkDataTO corresponding to
 	 * the IDs supplied in the given List of Long. If the List is null or empty,
-	 * an empty collection is returned and error messagges get logged.
+	 * an empty collection is returned and error messages get logged.
 	 */
 	public synchronized Collection<ReducedPtPChunkDataTO> findReduced(
 		List<Long> ids) {
@@ -536,7 +548,7 @@ public class PtPChunkDAO {
 			if (!checkConnection()) {
 				log
 					.error("PtP CHUNK DAO: findReduced - unable to get a valid connection!");
-				return new ArrayList<ReducedPtPChunkDataTO>();
+				return Lists.newArrayList();
 			}
 			PreparedStatement find = null;
 			ResultSet rs = null;
@@ -549,8 +561,8 @@ public class PtPChunkDAO {
 				find = con.prepareStatement(str);
 				logWarnings(con.getWarnings());
 
-				List<ReducedPtPChunkDataTO> list = new ArrayList<ReducedPtPChunkDataTO>();
-				log.trace("PtP CHUNK DAO! fetchReduced; {}", find.toString());
+				List<ReducedPtPChunkDataTO> list = Lists.newArrayList();
+				log.trace("PtP CHUNK DAO! fetchReduced; {}", find);
 				rs = find.executeQuery();
 				logWarnings(find.getWarnings());
 
@@ -576,7 +588,7 @@ public class PtPChunkDAO {
 			} catch (SQLException e) {
 				log.error("PTP CHUNK DAO: {}", e.getMessage(), e);
 				/* return empty Collection */
-				return new ArrayList<ReducedPtPChunkDataTO>();
+				return Lists.newArrayList();
 			} finally {
 				close(rs);
 				close(find);
@@ -584,7 +596,7 @@ public class PtPChunkDAO {
 		} else {
 			log.warn("ATTENTION in PtP CHUNK DAO! fetchReduced "
 				+ "invoked with null or empty list of IDs!");
-			return new ArrayList<ReducedPtPChunkDataTO>();
+			return Lists.newArrayList();
 		}
 	}
 
@@ -594,7 +606,7 @@ public class PtPChunkDAO {
 	 * model. This method attempts to change the status of the chunk to
 	 * SRM_FAILURE and record it in the DB, in the status_Put table. This
 	 * operation could potentially fail because the source of the malformed
-	 * problems could be a problematic DB; indeed, initially only log messagges
+	 * problems could be a problematic DB; indeed, initially only log messages
 	 * were recorded. Yet it soon became clear that the source of malformed data
 	 * were actually the clients themselves and/or FE recording in the DB. In
 	 * these circumstances the client would find its request as being in the
@@ -609,7 +621,7 @@ public class PtPChunkDAO {
 			return;
 		}
 		String signalSQL = "UPDATE status_Put sp SET sp.statusCode="
-			+ StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FAILURE)
+			+ statusCodeConverter.toDB(TStatusCode.SRM_FAILURE)
 			+ ", sp.explanation=? " + "WHERE sp.request_PutID=" + auxTO.primaryKey();
 		PreparedStatement signal = null;
 		try {
@@ -619,8 +631,7 @@ public class PtPChunkDAO {
 			signal.setString(1, "This chunk of the request is malformed!");
 			logWarnings(signal.getWarnings());
 
-			log.trace("PtP CHUNK DAO - signalMalformedPtPChunk method: {}", 
-				signal.toString());
+			log.trace("PtP CHUNK DAO - signalMalformedPtPChunk method: {}", signal);
 			signal.executeUpdate();
 			logWarnings(signal.getWarnings());
 		} catch (SQLException e) {
@@ -635,7 +646,7 @@ public class PtPChunkDAO {
 	/**
 	 * Method that returns the number of Put requests on the given SURL, that are
 	 * in SRM_SPACE_AVAILABLE state. This method is intended to be used by
-	 * PtPChunkCatalog in the isSRM_SPACE_AVAILABLE method ivocation. In case of
+	 * PtPChunkCatalog in the isSRM_SPACE_AVAILABLE method invocation. In case of
 	 * any error, 0 is returned.
 	 */
 	public synchronized int numberInSRM_SPACE_AVAILABLE(int surlUniqueID) {
@@ -659,12 +670,11 @@ public class PtPChunkDAO {
 			stmt.setInt(1, surlUniqueID);
 			logWarnings(stmt.getWarnings());
 
-			stmt.setInt(2,StatusCodeConverter.getInstance().toDB(
+			stmt.setInt(2,statusCodeConverter.toDB(
 				TStatusCode.SRM_SPACE_AVAILABLE));
 			logWarnings(stmt.getWarnings());
 
-			log.trace("PtP CHUNK DAO - numberInSRM_SPACE_AVAILABLE method: {}", 
-				stmt.toString());
+			log.trace("PtP CHUNK DAO - numberInSRM_SPACE_AVAILABLE method: {}", stmt);
 			rs = stmt.executeQuery();
 			logWarnings(stmt.getWarnings());
 
@@ -691,7 +701,7 @@ public class PtPChunkDAO {
 	 */
 	public synchronized Map<Long,String> getExpiredSRM_SPACE_AVAILABLE() {
 
-		Map<Long,String> ids = new HashMap<Long,String>();
+		Map<Long,String> ids = Maps.newHashMap();
 
 		if (!checkConnection()) {
 			log
@@ -713,21 +723,73 @@ public class PtPChunkDAO {
 			stmt
 				.setInt(
 					1,
-					StatusCodeConverter.getInstance().toDB(
+					statusCodeConverter.toDB(
 						TStatusCode.SRM_SPACE_AVAILABLE));
 			logWarnings(stmt.getWarnings());
 
-			log.trace("PtP CHUNK DAO - transitExpiredSRM_SPACE_AVAILABLE: {}", stmt.toString());
+			log.trace("PtP CHUNK DAO - getExpiredSRM_SPACE_AVAILABLE: {}", stmt);
 
 			rs = stmt.executeQuery();
 			logWarnings(stmt.getWarnings());
 
 			while (rs.next()) {
-			    ids.put(new Long(rs.getLong("rp.ID")), rs.getString("rp.targetSURL"));
+			    ids.put(Long.valueOf(rs.getLong("rp.ID")), rs.getString("rp.targetSURL"));
 			}
 		} catch (SQLException e) {
 			log.error("PtPChunkDAO! Unable to select expired "
 				+ "SRM_SPACE_AVAILABLE chunks of PtP requests. {}", e.getMessage(), e);
+
+		} finally {
+			close(rs);
+			close(stmt);
+		}
+		return ids;
+	}
+
+	/**
+	 * Method that retrieves all expired requests in SRM_REQUEST_INPROGRESS state.
+	 *
+	 * @return a Map containing the ID of the request as key and the relative
+	 * SURL as value
+	 */
+	public synchronized Map<Long,String> getExpiredSRM_REQUEST_INPROGRESS() {
+
+		Map<Long,String> ids = Maps.newHashMap();
+
+		if (!checkConnection()) {
+			log
+				.error("PtP CHUNK DAO: getExpiredSRM_REQUEST_INPROGRESS - unable to get a valid connection!");
+			return ids;
+		}
+
+		String query = "SELECT rp.ID, rp.targetSURL FROM "
+			+ "status_Put sp JOIN (request_Put rp, request_queue rq) ON sp.request_PutID=rp.ID AND rp.request_queueID=rq.ID "
+			+ "WHERE rq.status=? AND rq.timeStamp <= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL ? SECONDS)";
+
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			stmt = con.prepareStatement(query);
+			logWarnings(con.getWarnings());
+
+			stmt.setInt(1, statusCodeConverter.toDB(SRM_REQUEST_INPROGRESS));
+			logWarnings(stmt.getWarnings());
+
+			stmt.setLong(2, expirationTime);
+			logWarnings(stmt.getWarnings());
+
+			log.trace("PtP CHUNK DAO - getExpiredSRM_REQUEST_INPROGRESS: {}", stmt);
+
+			rs = stmt.executeQuery();
+			logWarnings(stmt.getWarnings());
+
+			while (rs.next()) {
+			    ids.put(Long.valueOf(rs.getLong("rp.ID")), rs.getString("rp.targetSURL"));
+			}
+		} catch (SQLException e) {
+			log.error("PtPChunkDAO! Unable to select expired "
+				+ "SRM_REQUEST_INPROGRESS chunks of PtP requests. {}", e.getMessage(), e);
 
 		} finally {
 			close(rs);
@@ -743,8 +805,7 @@ public class PtPChunkDAO {
 	 * nothing happens and no exception is thrown, but proper messages get
 	 * logged.
 	 */
-	public synchronized void transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(
-		List<Long> ids) {
+	public synchronized void transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS(List<Long> ids) {
 
 		if (!checkConnection()) {
 			log
@@ -763,15 +824,14 @@ public class PtPChunkDAO {
 			logWarnings(con.getWarnings());
 
 			stmt.setInt(1,
-				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
+				statusCodeConverter.toDB(SRM_SUCCESS));
 			logWarnings(stmt.getWarnings());
 
-			stmt.setInt(2, StatusCodeConverter.getInstance().toDB(
-						TStatusCode.SRM_SPACE_AVAILABLE));
+			stmt.setInt(2, statusCodeConverter.toDB(SRM_SPACE_AVAILABLE));
 			logWarnings(stmt.getWarnings());
 
 			log.trace("PtP CHUNK DAO - "
-				+ "transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS: {}", stmt.toString());
+				+ "transitSRM_SPACE_AVAILABLEtoSRM_SUCCESS: {}", stmt);
 
 			int count = stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
@@ -790,7 +850,7 @@ public class PtPChunkDAO {
 			close(stmt);
 		}
 	}
-	
+
     /**
      * Method that updates chunks in SRM_SPACE_AVAILABLE state, into
      * SRM_FILE_LIFETIME_EXPIRED. An array of Long representing the primary key
@@ -802,7 +862,7 @@ public class PtPChunkDAO {
      * 
      * @return The number of the updated records into the db
      */
-    public synchronized int transitExpiredSRM_SPACE_AVAILABLEtoSRM_FILE_LIFETIME_EXPIRED(List<Long> ids) {
+    public synchronized int transitExpiredSRM_SPACE_AVAILABLEtoSRM_FILE_LIFETIME_EXPIRED(Collection<Long> ids) {
 
         Preconditions.checkNotNull(ids, "Invalid list of id");
         
@@ -827,20 +887,18 @@ public class PtPChunkDAO {
             stmt = con.prepareStatement(querySQL);
             logWarnings(con.getWarnings());
 
-            stmt.setInt(1, StatusCodeConverter.getInstance()
-                .toDB(TStatusCode.SRM_FILE_LIFETIME_EXPIRED));
+            stmt.setInt(1, statusCodeConverter.toDB(SRM_FILE_LIFETIME_EXPIRED));
             logWarnings(stmt.getWarnings());
             
             stmt.setString(2, "Expired pinLifetime");
             logWarnings(stmt.getWarnings());
 
-            stmt.setInt(3, StatusCodeConverter.getInstance()
-                .toDB(TStatusCode.SRM_SPACE_AVAILABLE));
+            stmt.setInt(3, statusCodeConverter.toDB(SRM_SPACE_AVAILABLE));
             logWarnings(stmt.getWarnings());
 
             log.trace(
                 "PtP CHUNK DAO - transit SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED: {}",
-                stmt.toString());
+                stmt);
 
             count = stmt.executeUpdate();
             logWarnings(stmt.getWarnings());
@@ -856,6 +914,71 @@ public class PtPChunkDAO {
         log.trace("PtPChunkDAO! {} chunks of PtP requests were transited "
           + "from SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED.", count);
         return count;
+    }
+
+    /**
+     * Method that updates chunks selected by id into SRM_FAILURE.
+     * An array of Long representing the id of each request is required.
+     *
+     * @param the list of the request id to update
+     *
+     * @return The number of the updated records. Zero or less than the input list size in case of errors.
+     */
+    public synchronized int transitExpiredSRM_REQUEST_INPROGRESStoSRM_FAILURE(Collection<Long> ids) {
+
+        Preconditions.checkNotNull(ids, "Invalid list of id");
+
+        if (ids.isEmpty()) {
+            return 0;
+        }
+
+        if (!checkConnection()) {
+            log.error("Unable to get a valid connection to the database!");
+            return 0;
+        }
+
+        String querySQL = "UPDATE request_queue rq, request_Put rp, status_Put sp "
+            + "SET sp.statusCode=?, sp.explanation=?, rq.status=? "
+            + "WHERE rq.ID = rp.request_queueID and rp.ID = sp.request_PutID "
+            + "AND rp.ID IN (?)";
+
+        PreparedStatement stmt = null;
+        int count = 0;
+        try {
+            stmt = con.prepareStatement(querySQL);
+            logWarnings(con.getWarnings());
+
+            stmt.setInt(1, statusCodeConverter.toDB(SRM_FAILURE));
+            logWarnings(stmt.getWarnings());
+
+            stmt.setString(2, "In progress request expired.");
+            logWarnings(stmt.getWarnings());
+
+            stmt.setInt(3, statusCodeConverter.toDB(SRM_FAILURE));
+            logWarnings(stmt.getWarnings());
+
+            stmt.setString(4, StringUtils.join(ids.toArray(), ','));
+            logWarnings(stmt.getWarnings());
+
+            log.trace(
+                "PtP CHUNK DAO - transit SRM_REQUEST_INPROGRESS to SRM_FAILURE: {}",
+                stmt);
+
+            count = stmt.executeUpdate();
+            logWarnings(stmt.getWarnings());
+
+        } catch (SQLException e) {
+            log.error(
+                "PtPChunkDAO! Unable to transit chunks from "
+                    + "SRM_REQUEST_INPROGRESS to SRM_FAILURE! {}",
+                e.getMessage(), e);
+        } finally {
+            close(stmt);
+        }
+        log.trace("PtPChunkDAO! {} chunks of PtP requests were transited "
+          + "from SRM_REQUEST_INPROGRESS to SRM_FAILURE.", count);
+        return count;
+
     }
 
 	/**
@@ -881,15 +1004,14 @@ public class PtPChunkDAO {
 		try {
 			stmt = con.prepareStatement(str);
 			logWarnings(con.getWarnings());
-			stmt.setInt(1,
-				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
+
+			stmt.setInt(1, statusCodeConverter.toDB(SRM_ABORTED));
 			logWarnings(stmt.getWarnings());
 
 			stmt.setString(2, explanation);
 			logWarnings(stmt.getWarnings());
 
-			stmt.setInt(3, StatusCodeConverter.getInstance().toDB(
-						TStatusCode.SRM_SPACE_AVAILABLE));
+			stmt.setInt(3, statusCodeConverter.toDB(SRM_SPACE_AVAILABLE));
 			logWarnings(stmt.getWarnings());
 
 			stmt.setInt(4, surlUniqueID);
@@ -899,7 +1021,7 @@ public class PtPChunkDAO {
 			logWarnings(stmt.getWarnings());
 
 			log.trace("PtP CHUNK DAO - "
-				+ "transitSRM_SPACE_AVAILABLEtoSRM_ABORTED: {}", stmt.toString());
+				+ "transitSRM_SPACE_AVAILABLEtoSRM_ABORTED: {}", stmt);
 			int count = stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
 
@@ -954,9 +1076,9 @@ public class PtPChunkDAO {
 	private void logWarnings(SQLWarning w) {
 
 		if (w != null) {
-			log.debug("PTP CHUNK DAO: {}", w.toString());
+			log.debug("PTP CHUNK DAO: {}", w);
 			while ((w = w.getNextWarning()) != null) {
-				log.debug("PTP CHUNK DAO: {}", w.toString());
+				log.debug("PTP CHUNK DAO: {}", w);
 			}
 		}
 	}
@@ -1078,10 +1200,10 @@ public class PtPChunkDAO {
 		try {
 			stmt = con.prepareStatement(str);
 			logWarnings(con.getWarnings());
-			stmt.setInt(1, StatusCodeConverter.getInstance().toDB(statusCode));
+			stmt.setInt(1, statusCodeConverter.toDB(statusCode));
 			logWarnings(stmt.getWarnings());
 
-			log.trace("PTP CHUNK DAO - updateStatus: {}", stmt.toString());
+			log.trace("PTP CHUNK DAO - updateStatus: {}", stmt);
 			count = stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
 			if (count == 0) {
@@ -1188,14 +1310,13 @@ public class PtPChunkDAO {
 		try {
 			stmt = con.prepareStatement(str);
 			logWarnings(con.getWarnings());
-			stmt.setInt(1, StatusCodeConverter.getInstance().toDB(newStatusCode));
+			stmt.setInt(1, statusCodeConverter.toDB(newStatusCode));
 			logWarnings(stmt.getWarnings());
 
-			stmt
-				.setInt(2, StatusCodeConverter.getInstance().toDB(expectedStatusCode));
+			stmt.setInt(2, statusCodeConverter.toDB(expectedStatusCode));
 			logWarnings(stmt.getWarnings());
 
-			log.trace("PTP CHUNK DAO - updateStatusOnMatchingStatus: {}", stmt.toString());
+			log.trace("PTP CHUNK DAO - updateStatusOnMatchingStatus: {}", stmt);
 			count = stmt.executeUpdate();
 			logWarnings(stmt.getWarnings());
 			if (count == 0) {
@@ -1241,9 +1362,9 @@ public class PtPChunkDAO {
 	
 	private List<PtPChunkDataTO> chunkTOfromResultSet(ResultSet rs) 
 	  throws SQLException{
-	   
-	  List<PtPChunkDataTO> results = new ArrayList<PtPChunkDataTO>();
-    
+
+	  List<PtPChunkDataTO> results = Lists.newArrayList();
+
 	  while (rs.next()) {
 	    
 	    PtPChunkDataTO chunkDataTO = new PtPChunkDataTO();
@@ -1261,8 +1382,8 @@ public class PtPChunkDAO {
        * This code is only for the 1.3.18. This is a workaround to get FQANs
        * using the proxy field on request_queue. The FE use the proxy field of
        * request_queue to insert a single FQAN string containing all FQAN
-       * separeted by the "#" char. The proxy is a BLOB, hence it has to be
-       * properly conveted in string.
+       * separated by the "#" char. The proxy is a BLOB, hence it has to be
+       * properly converted in string.
        */
       java.sql.Blob blob = rs.getBlob("rq.proxy");
       if (!rs.wasNull() && blob != null) {
@@ -1276,7 +1397,7 @@ public class PtPChunkDAO {
         .getString("rp.normalized_targetSURL_StFN"));
       int uniqueID = rs.getInt("rp.targetSURL_uniqueID");
       if (!rs.wasNull()) {
-        chunkDataTO.setSurlUniqueID(new Integer(uniqueID));
+        chunkDataTO.setSurlUniqueID(Integer.valueOf(uniqueID));
       }
 
       chunkDataTO.setExpectedFileSize(rs.getLong("rp.expectedFileSize"));       
@@ -1327,12 +1448,12 @@ public class PtPChunkDAO {
       close(stat);
     }
 	}
-	
-	
+
+
   public synchronized List<PtPChunkDataTO> findActivePtPsOnSURL(String surl) {
     return findActivePtPsOnSURL(surl, null);
   }
-  
+
   public synchronized List<PtPChunkDataTO> findActivePtPsOnSURL(String surl,
     String currentRequestToken) {
 
@@ -1396,7 +1517,7 @@ public class PtPChunkDAO {
 		}
 		if (!checkConnection()) {
 			log.error("PtP CHUNK DAO: find - unable to get a valid connection!");
-			return new ArrayList<PtPChunkDataTO>();
+			return Lists.newArrayList();
 		}
 		PreparedStatement find = null;
 		ResultSet rs = null;
@@ -1419,9 +1540,9 @@ public class PtPChunkDAO {
 			find = con.prepareStatement(str);
 			logWarnings(con.getWarnings());
 
-			List<PtPChunkDataTO> list = new ArrayList<PtPChunkDataTO>();
+			List<PtPChunkDataTO> list = Lists.newArrayList();
 
-			log.trace("PtP CHUNK DAO - find method: {}", find.toString());
+			log.trace("PtP CHUNK DAO - find method: {}", find);
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());
 			PtPChunkDataTO chunkDataTO = null;
@@ -1440,8 +1561,8 @@ public class PtPChunkDAO {
 				 * This code is only for the 1.3.18. This is a workaround to get FQANs
 				 * using the proxy field on request_queue. The FE use the proxy field of
 				 * request_queue to insert a single FQAN string containing all FQAN
-				 * separeted by the "#" char. The proxy is a BLOB, hence it has to be
-				 * properly conveted in string.
+				 * separated by the "#" char. The proxy is a BLOB, hence it has to be
+				 * properly converted in string.
 				 */
 				java.sql.Blob blob = rs.getBlob("rq.proxy");
 				if (!rs.wasNull() && blob != null) {
@@ -1455,7 +1576,7 @@ public class PtPChunkDAO {
 					.getString("rp.normalized_targetSURL_StFN"));
 				int uniqueID = rs.getInt("rp.targetSURL_uniqueID");
 				if (!rs.wasNull()) {
-					chunkDataTO.setSurlUniqueID(new Integer(uniqueID));
+					chunkDataTO.setSurlUniqueID(Integer.valueOf(uniqueID));
 				}
 
 				chunkDataTO.setExpectedFileSize(rs.getLong("rp.expectedFileSize"));				
@@ -1467,7 +1588,7 @@ public class PtPChunkDAO {
 		} catch (SQLException e) {
 			log.error("PTP CHUNK DAO: {}", e.getMessage(), e);
 			/* return empty Collection! */
-			return new ArrayList<PtPChunkDataTO>();
+			return Lists.newArrayList();
 		} finally {
 			close(rs);
 			close(find);
@@ -1478,7 +1599,7 @@ public class PtPChunkDAO {
 
 		if (!checkConnection()) {
 			log.error("PtP CHUNK DAO: find - unable to get a valid connection!");
-			return new ArrayList<String>();
+			return Lists.newArrayList();
 		}
 		String str = null;
 		PreparedStatement find = null;
@@ -1490,11 +1611,11 @@ public class PtPChunkDAO {
 			find = con.prepareStatement(str);
 			logWarnings(con.getWarnings());
 
-			List<String> protocols = new ArrayList<String>();
+			List<String> protocols = Lists.newArrayList();
 			find.setLong(1, requestQueueId);
 			logWarnings(find.getWarnings());
 
-			log.trace("PtP CHUNK DAO - findProtocols method: {}", find.toString());
+			log.trace("PtP CHUNK DAO - findProtocols method: {}", find);
 			rs = find.executeQuery();
 			logWarnings(find.getWarnings());
 
@@ -1506,7 +1627,7 @@ public class PtPChunkDAO {
 		} catch (SQLException e) {
 			log.error("PTP CHUNK DAO: {}", e.getMessage(), e);
 			/* return empty Collection! */
-			return new ArrayList<String>();
+			return Lists.newArrayList();
 		} finally {
 			close(rs);
 			close(find);
@@ -1535,7 +1656,7 @@ public class PtPChunkDAO {
 	 */
 	private String makeSURLUniqueIDWhere(int[] surlUniqueIDs) {
 
-		StringBuffer sb = new StringBuffer("(");
+		StringBuilder sb = new StringBuilder("(");
 		for (int i = 0; i < surlUniqueIDs.length; i++) {
 			if (i > 0) {
 				sb.append(",");
@@ -1551,7 +1672,7 @@ public class PtPChunkDAO {
 	 */
 	private String makeSurlString(String[] surls) {
 
-		StringBuffer sb = new StringBuffer("(");
+		StringBuilder sb = new StringBuilder("(");
 		int n = surls.length;
 		
 		for (int i = 0; i < n; i++) {
@@ -1561,7 +1682,7 @@ public class PtPChunkDAO {
 			try {
 				requestedSURL = SURL.makeSURLfromString(surls[i]);
 			} catch (NamespaceException e) {
-				log.error(e.getMessage());
+				log.error(e.getMessage(), e);
 				log.debug("Skip '{}' during query creation", surls[i]);
 				continue;
 			}
