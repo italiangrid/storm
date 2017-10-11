@@ -174,9 +174,9 @@ public class RequestsGarbageCollector extends TimerTask {
 	private long computeNextDelay(TGarbageData gd) {
 
 		/* max delay from configuration in milliseconds */
-		long maxDelay = config.getRequestPurgerPeriod() * 1000;
+		long maxDelay = config.getRequestPurgerPeriod() * 1000L;
 		/* min delay accepted in milliseconds */
-		long minDelay = 10000;
+		long minDelay = 10000L;
 
 		long nextDelay;
 

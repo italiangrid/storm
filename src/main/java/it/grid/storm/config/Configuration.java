@@ -2311,7 +2311,7 @@ public class Configuration {
   }
 
   public long getInProgressPutRequestExpirationTime() {
-    return cr.getConfiguration().getLong(EXPIRED_INPROGRESS_PTP_TIME_KEY);
+    return cr.getConfiguration().getLong(EXPIRED_INPROGRESS_PTP_TIME_KEY, 2592000L);
   }
 
 }

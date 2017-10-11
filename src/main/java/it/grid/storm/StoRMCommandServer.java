@@ -354,6 +354,9 @@ public class StoRMCommandServer {
 			if (!storm.spaceGCIsRunning()) {
 				storm.startSpaceGC();
 			}
+			if (!storm.isExpiredAgentRunning()) {
+			    storm.startExpiredAgent();
+			}
 			return response;
 		}
 
@@ -367,7 +370,8 @@ public class StoRMCommandServer {
 			storm.stopXmlRpcServer();
 			storm.stopRestServer();
 			storm.stopSpaceGC();
-			
+			storm.stopExpiredAgent();
+
 			GPFSQuotaManager.INSTANCE.shutdown();
 			
 			return true;
@@ -455,13 +459,15 @@ public class StoRMCommandServer {
 		private boolean servicesRunning() {
 
 			return storm.pickerIsRunning() && storm.xmlRpcServerIsRunning()
-				&& storm.restServerIsRunning() && storm.spaceGCIsRunning();
+				&& storm.restServerIsRunning() && storm.spaceGCIsRunning()
+				&& storm.isExpiredAgentRunning();
 		}
 
 		private boolean servicesStopped() {
 
 			return !storm.pickerIsRunning() && !storm.xmlRpcServerIsRunning()
-				&& !storm.restServerIsRunning() && !storm.spaceGCIsRunning();
+				&& !storm.restServerIsRunning() && !storm.spaceGCIsRunning()
+				&& !storm.isExpiredAgentRunning();
 		}
 
 		private boolean servicesStarting() {
