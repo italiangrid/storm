@@ -17,6 +17,8 @@
 
 package it.grid.storm.persistence.impl.mysql;
 
+import com.google.common.collect.Lists;
+
 import it.grid.storm.persistence.PersistenceDirector;
 import it.grid.storm.persistence.dao.TapeRecallDAO;
 import it.grid.storm.persistence.exceptions.DataAccessException;
@@ -33,11 +35,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -79,11 +79,11 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 					.getQueryNumberInProgress(dbConnection, voName);
 			}
 
-			log.debug("QUERY: {}", prepStatement.toString());
+			log.debug("QUERY: {}", prepStatement);
 
 			res = prepStatement.executeQuery();
 
-			if (res.first() == true) {
+			if (res.first()) {
 				status = res.getInt(1);
 			}
 		} catch (SQLException e) {
@@ -115,10 +115,10 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 				prepStatement = sqlHelper.getQueryNumberQueued(dbConnection, voName);
 			}
 
-			log.debug("QUERY: {}", prepStatement.toString());
+			log.debug("QUERY: {}", prepStatement);
 			res = prepStatement.executeQuery();
 
-			if (res.first() == true) {
+			if (res.first()) {
 				status = res.getInt(1);
 			}
 		} catch (SQLException e) {
@@ -151,15 +151,15 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 					.getQueryReadyForTakeOver(dbConnection, voName);
 			}
 
-			log.debug("QUERY: {}", prepStatement.toString());
+			log.debug("QUERY: {}", prepStatement);
 			res = prepStatement.executeQuery();
 
-			if (res.first() == true) {
+			if (res.first()) {
 				status = res.getInt(1);
 			}
 		} catch (SQLException e) {
 			throw new DataAccessException("Error executing query: '"
-				+ prepStatement.toString() + "' " + e.getMessage(), e);
+				+ prepStatement + "' " + e.getMessage(), e);
 		} finally {
 			releaseConnection(res, prepStatement, dbConnection);
 		}
@@ -184,11 +184,11 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 			log.debug("QUERY: {}", prepStatement);
 			res = prepStatement.executeQuery();
 
-			if (res.first() == false) {
+			if (!res.first()) {
 				log.error("No tasks with GroupTaskId='{}'", groupTaskId);
 				throw new DataAccessException(
 					"No recall table row retrieved executing query: '"
-						+ prepStatement.toString() + "'");
+						+ prepStatement + "'");
 			}
 			do {
 				task = new TapeRecallTO();
@@ -217,16 +217,16 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 			prepStatement = sqlHelper
 				.getQueryGetGroupTasks(dbConnection, groupTaskId);
 
-			log.debug("QUERY: {}", prepStatement.toString());
+			log.debug("QUERY: {}", prepStatement);
 			res = prepStatement.executeQuery();
 			response = res.first();
-			if (response == false) {
+			if (!response) {
 				log.info("No tasks found with GroupTaskId='{}'",groupTaskId);
 			}
 		} catch (SQLException e) {
 		  log.error(e.getMessage(), e);
 			throw new DataAccessException("Error executing query: '"
-				+ prepStatement.toString() + "' " + e.getMessage(), e);
+				+ prepStatement + "' " + e.getMessage(), e);
 		} finally {
 			releaseConnection(res, prepStatement, dbConnection);
 		}
@@ -245,25 +245,22 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 		try {
 			prepStatement = sqlHelper.getQueryGetTask(dbConnection, taskId,
 				requestToken);
-			log.debug("QUERY: {}", prepStatement.toString());
+			log.debug("QUERY: {}", prepStatement);
 			res = prepStatement.executeQuery();
 
-			if (res.first() == false) {
-				log.error("No task found for requestToken={} taskId={}. Query={}",
-				  requestToken ,
-				  taskId.toString(),
-				  prepStatement.toString());
-				  
+			if (!res.first()) {
+				log.error("No task found for requestToken={} taskId={}. Query={}", requestToken, taskId, prepStatement);
+
 				throw new DataAccessException("No task found for requestToken="
-					+ requestToken + " " + "taskId=" + taskId.toString() + ". Query = "
-					+ prepStatement.toString());
+					+ requestToken + " " + "taskId=" + taskId + ". Query = "
+					+ prepStatement);
 			}
 			task = new TapeRecallTO();
 			setTaskInfo(task, res);
 		} catch (SQLException e) {
 		  log.error(e.getMessage(), e);
 			throw new DataAccessException("Error executing query: '"
-				+ prepStatement.toString() + "' " + e.getMessage(), e);
+				+ prepStatement + "' " + e.getMessage(), e);
 		} finally {
 			releaseConnection(res, prepStatement, dbConnection);
 		}
@@ -285,13 +282,13 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 			prepStatement = sqlHelper.getQueryGetTask(dbConnection, taskId,
 				requestToken);
 
-			log.debug("QUERY: {}", prepStatement.toString());
+			log.debug("QUERY: {}", prepStatement);
 			res = prepStatement.executeQuery();
 			response = res.first();
 		} catch (SQLException e) {
-		  log.error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 			throw new DataAccessException("Error executing query: '"
-				+ prepStatement.toString() + "' " + e.getMessage(), e);
+				+ prepStatement + "' " + e.getMessage(), e);
 		} finally {
 			releaseConnection(res, prepStatement, dbConnection);
 		}
@@ -303,10 +300,9 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 		UUID proposedGroupTaskId) throws DataAccessException {
 
 		if (task.getTaskId() == null || task.getRequestToken() == null
-			|| task.getRequestToken().getValue().trim().equals("")) {
+			|| task.getRequestToken().getValue().trim().isEmpty()) {
 			log
-				.error("received Task insert request with empty primary key field TaskId or RequestToken. TaskId = "
-					+ task.getTaskId() + " , request token = " + task.getRequestToken());
+				.error("received Task insert request with empty primary key field TaskId or RequestToken. TaskId = {}, request token = {}", task.getTaskId(), task.getRequestToken());
 			throw new DataAccessException(
 				"Unable to create insert the task wth the provided UUID and "
 					+ "request token using UUID-namebased algorithm. TaskId = "
@@ -320,7 +316,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 		try {
 			dbConnection.setAutoCommit(false);
 		} catch (SQLException e) {
-			log.error("Error setting autocommit to false! " + e.getMessage());
+			log.error("Error setting autocommit to false! {}", e.getMessage());
 			throw new DataAccessException("Error setting autocommit to false! "
 				+ e.getMessage(), e);
 		}
@@ -335,15 +331,15 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 				prepStat = sqlHelper.getQueryGetGroupTaskIds(dbConnection,
 					task.getTaskId(), statuses);
 			}
-			log.debug("QUERY: " + prepStat.toString());
+			log.debug("QUERY: {}", prepStat);
 
 			res = prepStat.executeQuery();
 
-			if (res.first() == true) {
+			if (res.first()) {
 				/* Take the first, but there can be more than one result */
 				String uuidString = res
 					.getString(TapeRecallMySQLHelper.COL_GROUP_TASK_ID);
-				status = new Integer(res.getInt(TapeRecallMySQLHelper.COL_STATUS));
+				status = Integer.valueOf(res.getInt(TapeRecallMySQLHelper.COL_STATUS));
 				task.setStatusId(status.intValue());
 				task.setGroupTaskId(UUID.fromString(uuidString));
 				Calendar calendar = new GregorianCalendar();
@@ -355,8 +351,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 					log.error("Unable to set status update timestamps on the coned task");
 				}
 			} else {
-				log.debug("No task found for taskId=" + task.getTaskId()
-					+ " Creating a new group entry");
+				log.debug("No task found for taskId={} Creating a new group entry", task.getTaskId());
 				task.setGroupTaskId(proposedGroupTaskId);
 				task.setStatusId(status.intValue());
 			}
@@ -369,13 +364,13 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 					"Cannot create the query because the task is null or empty.");
 			}
 			try {
-				log.debug("Query(insert-task)=" + prepStat.toString());
+				log.debug("Query(insert-task)={}", prepStat);
 				prepStat.executeUpdate();
 				commit(dbConnection);
 			} catch (SQLException e) {
 				rollback(dbConnection);
 				throw new DataAccessException("Error executing query : "
-					+ prepStat.toString() + " ; " + e.getMessage(), e);
+					+ prepStat + " ; " + e.getMessage(), e);
 			}
 		} catch (SQLException e) {
 			rollback(dbConnection);
@@ -412,7 +407,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
 		} catch (SQLException e) {
 			throw new DataAccessException("Error executing query: "
-				+ prepStatement.toString(), e);
+				+ prepStatement, e);
 		} finally {
 			releaseConnection(null, prepStatement, dbConnection);
 		}
@@ -434,7 +429,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 			prepStatement.executeUpdate();
 		} catch (SQLException e) {
 			throw new DataAccessException("Error executing query: "
-				+ prepStatement.toString(), e);
+				+ prepStatement, e);
 		} finally {
 			releaseConnection(null, prepStatement, dbConnection);
 		}
@@ -471,7 +466,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
 		Connection dbConnection = getConnection();
 
-		List<TapeRecallTO> taskList = new LinkedList<TapeRecallTO>();
+		List<TapeRecallTO> taskList = Lists.newLinkedList();
 		TapeRecallTO task = null;
 		ResultSet res = null;
 
@@ -480,7 +475,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 		try {
 			dbConnection.setAutoCommit(false);
 		} catch (SQLException e) {
-			log.error("Error setting autocommit to false! " + e.getMessage());
+			log.error("Error setting autocommit to false! {}", e.getMessage());
 			throw new DataAccessException("Error setting autocommit to false! "
 				+ e.getMessage(), e);
 		}
@@ -493,9 +488,9 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 					dbConnection, numberOfTaks, voName);
 			}
 			// start transaction
-			log.debug("QUERY: " + prepStatement.toString());
+			log.debug("QUERY: {}", prepStatement);
 			res = prepStatement.executeQuery();
-			if (res.first() == false) {
+			if (!res.first()) {
 				log.info("No tape recall rows ready for takeover");
 				return taskList;
 			}
@@ -523,7 +518,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 		} catch (SQLException e) {
 			rollback(dbConnection);
 			throw new DataAccessException("Error executing query: "
-				+ prepStatement.toString(), e);
+				+ prepStatement, e);
 		} finally {
 			releaseConnection(res, prepStatement, dbConnection);
 		}
@@ -536,7 +531,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
 		Connection dbConnection = getConnection();
 		ResultSet res = null;
-		List<TapeRecallTO> taskList = new ArrayList<TapeRecallTO>();
+		List<TapeRecallTO> taskList = Lists.newArrayList();
 
 		PreparedStatement prepStatement = null;
 
@@ -544,7 +539,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 			prepStatement = sqlHelper.getQueryGetAllTasksInProgress(dbConnection,
 				numberOfTaks);
 
-			log.debug("getAllInProgressTasks query: " + prepStatement.toString());
+			log.debug("getAllInProgressTasks query: {}", prepStatement);
 
 			res = prepStatement.executeQuery();
 
@@ -565,9 +560,9 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
 		} catch (Exception e) {
 
-			log.error("Error executing query: {}", prepStatement.toString(), e);
+			log.error("Error executing query: {}", prepStatement, e);
 			throw new DataAccessException("Error executing query: "
-				+ prepStatement.toString(), e);
+				+ prepStatement, e);
 
 		} finally {
 
@@ -662,7 +657,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 		try {
 			dbConnection.setAutoCommit(false);
 		} catch (SQLException e) {
-			log.error("Error setting autocommit to false! " + e.getMessage());
+			log.error("Error setting autocommit to false! {}", e.getMessage());
 			throw new DataAccessException("Error setting autocommit to false! "
 				+ e.getMessage(), e);
 		}
@@ -677,33 +672,31 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 				prepStatement = sqlHelper.getQueryGetGroupTasks(dbConnection,
 					groupTaskId);
 
-				log.debug("QUERY: " + prepStatement.toString());
+				log.debug("QUERY: {}", prepStatement);
 				// retrieves the tasks of this task group
 				res = prepStatement.executeQuery();
 
-				if (res.first() == false) {
-					log.error("No tasks with GroupTaskId='" + groupTaskId + "'");
+				if (!res.first()) {
+					log.error("No tasks with GroupTaskId='{}'", groupTaskId);
 					throw new DataAccessException(
 						"No recall table row retrieved executing query: '"
-							+ prepStatement.toString() + "'");
+							+ prepStatement + "'");
 				}
 				// verify if their stored status is equal for all
 				oldStatusId = res.getInt(TapeRecallMySQLHelper.COL_STATUS);
 				do {
 					int currentStatusId = res.getInt(TapeRecallMySQLHelper.COL_STATUS);
 					if (currentStatusId != oldStatusId) {
-						log.warn("The tasks with groupTaskId " + groupTaskId
-							+ " have different statuses: " + currentStatusId + " from task "
-							+ res.getString(TapeRecallMySQLHelper.COL_TASK_ID)
-							+ " differs from expected " + oldStatusId);
+						log.warn("The tasks with groupTaskId {} have different statuses: {} from task {} differs "
+						  + "from expected {}", groupTaskId, currentStatusId,
+						  res.getString(TapeRecallMySQLHelper.COL_TASK_ID), oldStatusId);
 						break;
 					}
 					oldStatusId = currentStatusId;
 				} while (res.next());
 			} catch (SQLException e) {
 				log
-					.error("Unable to retrieve groupTaskId related tasks. SQLException: "
-						+ e);
+					.error("Unable to retrieve groupTaskId related tasks. SQLException: {}", e);
 				throw new DataAccessException(
 					"Unable to retrieve groupTaskId related tasks. ");
 			}
@@ -713,10 +706,8 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 				if (!TapeRecallStatus.getRecallTaskStatus(oldStatusId).precedes(
 					newStatusId)) {
 					log
-						.warn("Requested the update of the status of a recall task group to status "
-							+ newStatusId
-							+ " that is precedent to the recorded status "
-							+ oldStatusId + " performing the request the same...");
+						.warn("Requested the update of the status of a recall task group to status {} that is precedent "
+						  + "to the recorded status performing the request the same...", newStatusId, oldStatusId);
 				}
 				String timestampColumn = null;
 				if (TapeRecallStatus.isFinalStatus(newStatusId)) {
@@ -727,8 +718,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 						timestampColumn = TapeRecallMySQLHelper.COL_IN_PROGRESS_DATE;
 					} else {
 						log
-							.warn("unable to determine the status update timestamp column to use given the new statusId \'"
-								+ newStatusId + "\'");
+							.warn("unable to determine the status update timestamp column to use given the new statusId '{}'", newStatusId);
 					}
 				}
 				if (timestampColumn != null) {
@@ -738,8 +728,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 							timestamp);
 					} catch (IllegalArgumentException e) {
 						log
-							.error("Unable to obtain the query to update task status and set status transition timestamp. IllegalArgumentException: "
-								+ e.getMessage());
+							.error("Unable to obtain the query to update task status and set status transition timestamp. IllegalArgumentException: {}", e.getMessage());
 						throw new DataAccessException(
 							"Unable to obtain the query to update task status and set status transition timestamp");
 					} catch (SQLException e) {

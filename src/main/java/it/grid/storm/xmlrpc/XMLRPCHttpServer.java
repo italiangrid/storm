@@ -115,7 +115,7 @@ public final class XMLRPCHttpServer {
 	 * 
 	 * @see it.grid.storm.xmlrpc.XMLRPCServerInterface#createServer()
 	 */
-	public synchronized void start() throws StoRMXmlRpcException {
+	public synchronized void start() {
 
 		if (!running) {
 
