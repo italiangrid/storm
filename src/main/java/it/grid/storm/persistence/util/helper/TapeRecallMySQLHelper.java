@@ -28,28 +28,25 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class TapeRecallMySQLHelper extends SQLHelper {
 
-	private final static String TABLE_NAME = "tape_recall";
+	private static final String TABLE_NAME = "tape_recall";
 
 	// primary key COL_TASK_ID + COL_REQUEST_TOKEN
-	public final static String COL_TASK_ID = "taskId";
-	public final static String COL_REQUEST_TOKEN = "requestToken";
-	public final static String COL_REQUEST_TYPE = "requestType";
-	public final static String COL_FILE_NAME = "fileName";
-	public final static String COL_PIN_LIFETIME = "pinLifetime";
-	public final static String COL_STATUS = "status";
-	public final static String COL_USER_ID = "userID";
-	public final static String COL_VO_NAME = "voName";
-	public final static String COL_DATE = "timeStamp";
-	public final static String COL_RETRY_ATTEMPT = "retryAttempt";
-	public final static String COL_DEFERRED_STARTTIME = "deferredStartTime";
-	public final static String COL_GROUP_TASK_ID = "groupTaskId";
-	public final static String COL_IN_PROGRESS_DATE = "inProgressTime";
-	public final static String COL_FINAL_STATUS_DATE = "finalStatusTime";
+	public static final String COL_TASK_ID = "taskId";
+	public static final String COL_REQUEST_TOKEN = "requestToken";
+	public static final String COL_REQUEST_TYPE = "requestType";
+	public static final String COL_FILE_NAME = "fileName";
+	public static final String COL_PIN_LIFETIME = "pinLifetime";
+	public static final String COL_STATUS = "status";
+	public static final String COL_USER_ID = "userID";
+	public static final String COL_VO_NAME = "voName";
+	public static final String COL_DATE = "timeStamp";
+	public static final String COL_RETRY_ATTEMPT = "retryAttempt";
+	public static final String COL_DEFERRED_STARTTIME = "deferredStartTime";
+	public static final String COL_GROUP_TASK_ID = "groupTaskId";
+	public static final String COL_IN_PROGRESS_DATE = "inProgressTime";
+	public static final String COL_FINAL_STATUS_DATE = "finalStatusTime";
 
 	/**
 	 * Verifies if the given string is the name of one of the timestamp columns

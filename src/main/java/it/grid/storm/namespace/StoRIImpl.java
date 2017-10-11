@@ -273,7 +273,6 @@ public class StoRIImpl implements StoRI {
 
 	public ArrayList<StoRI> getChildren(TDirOption dirOption)
 		throws InvalidDescendantsEmptyRequestException,
-		InvalidDescendantsAuthRequestException,
 		InvalidDescendantsPathRequestException,
 		InvalidDescendantsFileRequestException {
 

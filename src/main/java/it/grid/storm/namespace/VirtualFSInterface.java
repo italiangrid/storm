@@ -82,7 +82,9 @@ public interface VirtualFSInterface {
 
 	public StoRI createFile(String relativePath) throws NamespaceException;
 
-	public StoRI createFile(String relativePath, StoRIType type);
+	public StoRI createFile(String relativePath, StoRIType type) throws NamespaceException;
+
+	public StoRI createFile(String relativePath, StoRIType type, MappingRule rule) throws NamespaceException;
 
 	public void makeSilhouetteForFile(StoRI stori, TSizeInBytes presumedSize)
 		throws NamespaceException;

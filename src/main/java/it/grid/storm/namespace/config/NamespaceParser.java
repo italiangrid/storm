@@ -53,15 +53,15 @@ public interface NamespaceParser {
 
 	public VirtualFSInterface getVFS(String vfsName);
 
-	public List getAllVFS_Roots();
+	public List<String> getAllVFS_Roots();
 
-	public Map getMapVFS_Root();
+	public Map<String, VirtualFSInterface> getMapVFS_Root();
 
-	public List getAllMappingRule_StFNRoots();
+	public List<String> getAllMappingRule_StFNRoots();
 
 	public Map<String, MappingRule> getMappingRules();
 
-	public Map getMappingRuleMAP();
+	public Map<String, String> getMappingRuleMAP();
 
 	public Map<String, ApproachableRule> getApproachableRules();
 

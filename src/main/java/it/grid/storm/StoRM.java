@@ -17,6 +17,9 @@
 
 package it.grid.storm;
 
+import static it.grid.storm.rest.RestService.startServer;
+import static it.grid.storm.rest.RestService.stop;
+
 import it.grid.storm.asynch.AdvancedPicker;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.catalogs.StoRMDataSource;
@@ -30,14 +33,12 @@ import it.grid.storm.health.HealthDirector;
 import it.grid.storm.metrics.StormMetricRegistry;
 import it.grid.storm.metrics.StormMetricsReporter;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.rest.RestService;
 import it.grid.storm.startup.Bootstrap;
 import it.grid.storm.startup.BootstrapException;
 import it.grid.storm.synchcall.SimpleSynchcallDispatcher;
 import it.grid.storm.xmlrpc.StoRMXmlRpcException;
 import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -64,8 +65,8 @@ public class StoRM {
 
   public static final String DEFAULT_CONFIGURATION_FILE_PATH = "/etc/storm/backend-server/storm.properties";
 
-  // Timer object in charge to call periodically the Space Garbace Collector
-  private final Timer GC = new Timer();
+  // Timer object in charge to call periodically the Space Garbage Collector
+  private final Timer gc = new Timer();
 
   private final ReservedSpaceCatalog spaceCatalog;
   private TimerTask cleaningTask = null;
@@ -74,9 +75,50 @@ public class StoRM {
   private boolean isRestServerRunning = false;
   private boolean isSpaceGCRunning = false;
 
+  /**
+   * Public constructor that requires a String containing the complete pathname
+   * to the configuration file, as well as the desired refresh rate in seconds
+   * for changes in configuration. Beware that by pathname it is meant the
+   * complete path starting from root, including the name of the file itself! If
+   * pathname is empty or null, then an attempt will be made to read properties
+   * off /opt/storm/etc/storm.properties. BEWARE!!! For MS Windows installations
+   * this attempt _will_ fail! In any case, failure to read the configuration
+   * file causes StoRM to use hard-coded default values.
+   */
+  public StoRM(String configurationPathname, int refresh) {
+
+    loadConfiguration(configurationPathname, refresh);
+
+    configureLogging();
+
+    configureMetricsReporting();
+
+    configureStoRMDataSource();
+
+    // Start space catalog
+    spaceCatalog = new ReservedSpaceCatalog();
+
+    loadNamespaceConfiguration();
+
+    HealthDirector.initializeDirector(false);
+
+    loadPathAuthzDBConfiguration();
+
+    // Initialize Used Space
+    Bootstrap.initializeUsedSpace();
+
+    // Start the "advanced" picker
+    picker = new AdvancedPicker();
+
+    configureXMLRPCService();
+
+    performSanityChecks();
+
+  }
+
   private void loadConfiguration(String configurationPathname, int refresh) {
 
-    if ((configurationPathname == null) || (configurationPathname.equals(""))) {
+    if ((configurationPathname == null) || (configurationPathname.isEmpty())) {
       configurationPathname = DEFAULT_CONFIGURATION_FILE_PATH;
     }
 
@@ -178,47 +220,6 @@ public class StoRM {
 
   }
 
-  /**
-   * Public constructor that requires a String containing the complete pathname
-   * to the configuration file, as well as the desired refresh rate in seconds
-   * for changes in configuration. Beware that by pathname it is meant the
-   * complete path starting from root, including the name of the file itself! If
-   * pathname is empty or null, then an attempt will be made to read properties
-   * off /opt/storm/etc/storm.properties. BEWARE!!! For MS Windows installations
-   * this attempt _will_ fail! In any case, failure to read the configuratin
-   * file causes StoRM to use hardcoded default values.
-   */
-  public StoRM(String configurationPathname, int refresh) {
-
-    loadConfiguration(configurationPathname, refresh);
-
-    configureLogging();
-
-    configureMetricsReporting();
-
-    configureStoRMDataSource();
-
-    // Start space catalog
-    spaceCatalog = new ReservedSpaceCatalog();
-
-    loadNamespaceConfiguration();
-
-    HealthDirector.initializeDirector(false);
-
-    loadPathAuthzDBConfiguration();
-
-    // Initialize Used Space
-    Bootstrap.initializeUsedSpace();
-
-    // Start the "advanced" picker
-    picker = new AdvancedPicker();
-
-    configureXMLRPCService();
-
-    performSanityChecks();
-
-  }
-
   private void configureStoRMDataSource() {
 
     StoRMDataSource.init();
@@ -227,19 +228,19 @@ public class StoRM {
   /**
    * Method used to start the picker.
    */
-  synchronized public void startPicker() {
+  public synchronized void startPicker() {
 
     picker.startIt();
-    this.isPickerRunning = true;
+    isPickerRunning = true;
   }
 
   /**
    * Method used to stop the picker.
    */
-  synchronized public void stopPicker() {
+  public synchronized void stopPicker() {
 
     picker.stopIt();
-    this.isPickerRunning = false;
+    isPickerRunning = false;
   }
 
   /**
@@ -247,7 +248,7 @@ public class StoRM {
    */
   public synchronized boolean pickerIsRunning() {
 
-    return this.isPickerRunning;
+    return isPickerRunning;
   }
 
   /**
@@ -255,19 +256,19 @@ public class StoRM {
    * 
    * @throws Exception
    */
-  synchronized public void startXmlRpcServer() throws Exception {
+  public synchronized void startXmlRpcServer() {
 
     xmlrpcServer.start();
-    this.isXmlrpcServerRunning = true;
+    isXmlrpcServerRunning = true;
   }
 
   /**
    * Method used to stop xmlrpcServer.
    */
-  synchronized public void stopXmlRpcServer() {
+  public synchronized void stopXmlRpcServer() {
 
     xmlrpcServer.stop();
-    this.isXmlrpcServerRunning = false;
+    isXmlrpcServerRunning = false;
   }
 
   /**
@@ -275,34 +276,26 @@ public class StoRM {
    */
   public synchronized boolean xmlRpcServerIsRunning() {
 
-    return this.isXmlrpcServerRunning;
+    return isXmlrpcServerRunning;
   }
 
   /**
    * RESTFul Service Start-up
    */
-  synchronized public void startRestServer() throws Exception {
+  public synchronized void startRestServer() throws Exception {
 
-    try {
-      RestService.startServer();
-    } catch (IOException e) {
-
-      String emsg = String.format("Unable to start internal HTTP Server "
-        + "listening for RESTFul services. IOException : %s", e.getMessage());
-      log.error(emsg, e);
-      throw new Exception(emsg);
-    }
-    this.isRestServerRunning = true;
+    startServer();
+    isRestServerRunning = true;
   }
 
   /**
    * @throws Exception
    */
-  synchronized public void stopRestServer() {
+  public synchronized void stopRestServer() {
 
     try {
 
-      RestService.stop();
+      stop();
 
     } catch (Exception e) {
 
@@ -310,7 +303,7 @@ public class StoRM {
         + "services: {}", e.getMessage(), e);
     }
 
-    this.isRestServerRunning = false;
+    isRestServerRunning = false;
   }
 
   /**
@@ -318,15 +311,15 @@ public class StoRM {
    */
   public synchronized boolean restServerIsRunning() {
 
-    return this.isRestServerRunning;
+    return isRestServerRunning;
   }
 
   /**
    * Method use to start the space Garbage Collection Thread.
    */
-  synchronized public void startSpaceGC() {
+  public synchronized void startSpaceGC() {
 
-    StoRM.log.debug("Starting Space GC.");
+    log.debug("Starting Space GC.");
     // Delay time before starting
     long delay = Configuration.getInstance().getCleaningInitialDelay() * 1000;
 
@@ -343,23 +336,23 @@ public class StoRM {
         spaceCatalog.purge();
       }
     };
-    GC.scheduleAtFixedRate(this.cleaningTask, delay, period);
-    this.isSpaceGCRunning = true;
+    gc.scheduleAtFixedRate(cleaningTask, delay, period);
+    isSpaceGCRunning = true;
     log.debug("Space GC started.");
   }
 
   /**
      * 
      */
-  synchronized public void stopSpaceGC() {
+   public synchronized void stopSpaceGC() {
 
     log.debug("Stopping Space GC.");
     if (cleaningTask != null) {
       cleaningTask.cancel();
-      GC.purge();
+      gc.purge();
     }
     log.debug("Space GC stopped.");
-    this.isSpaceGCRunning = false;
+    isSpaceGCRunning = false;
   }
 
   /**
@@ -367,6 +360,6 @@ public class StoRM {
    */
   public synchronized boolean spaceGCIsRunning() {
 
-    return this.isSpaceGCRunning;
+    return isSpaceGCRunning;
   }
 }

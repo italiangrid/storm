@@ -20,18 +20,37 @@
  */
 package it.grid.storm.rest;
 
-import it.grid.storm.config.Configuration;
-import it.grid.storm.info.InfoService;
+import java.util.EnumSet;
 
-import org.eclipse.jetty.server.Connector;
+import javax.servlet.DispatcherType;
+
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.jersey.spi.container.servlet.ServletContainer;
+import it.grid.storm.authz.remote.resource.AuthorizationResource;
+import it.grid.storm.authz.remote.resource.AuthorizationResourceCompat_1_0;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.ea.remote.resource.StormEAResource;
+import it.grid.storm.info.remote.resources.Ping;
+import it.grid.storm.info.remote.resources.SpaceStatusResource;
+import it.grid.storm.namespace.remote.resource.VirtualFSResource;
+import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_0;
+import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_1;
+import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_2;
+import it.grid.storm.rest.auth.RestTokenFilter;
+import it.grid.storm.rest.metadata.Metadata;
+import it.grid.storm.tape.recalltable.providers.TapeRecallTOListMessageBodyWriter;
+import it.grid.storm.tape.recalltable.providers.TapeRecallTOMessageBodyReader;
+import it.grid.storm.tape.recalltable.resources.TaskResource;
+import it.grid.storm.tape.recalltable.resources.TasksCardinality;
+import it.grid.storm.tape.recalltable.resources.TasksResource;
 
 /**
  * This class provides static methods for starting and stopping the
@@ -70,44 +89,55 @@ public class RestService {
 	}
 
 	/**
-	 * Configure the {@link Server} object to bind on localhost and on the port
-	 * taken from the service configuration.
-	 */
-	private static void configureServerConnector() {
-
-		Connector connector = new SelectChannelConnector();
-
-		connector.setPort(RestService.getPort());
-
-		server.addConnector(connector);
-	}
-
-	/**
 	 * Configure the {@link Server}. Install the Jersey {@link ServletContainer}
 	 * and configure it to with resources locations.
+	 * @throws Exception 
 	 * 
 	 */
-	private static void configureServer() {
+	private static void configureServer() throws Exception {
 
-		ServletContainer servlet = new ServletContainer();
+		ResourceConfig resourceConfig = new ResourceConfig();
+		/* Register resources: */
+		resourceConfig.register(TaskResource.class);
+		resourceConfig.register(TasksResource.class);
+		resourceConfig.register(TasksCardinality.class);
+		resourceConfig.register(TapeRecallTOListMessageBodyWriter.class);
+		resourceConfig.register(TapeRecallTOMessageBodyReader.class);
+		resourceConfig.register(AuthorizationResource.class);
+		resourceConfig.register(AuthorizationResourceCompat_1_0.class);
+		resourceConfig.register(VirtualFSResource.class);
+		resourceConfig.register(VirtualFSResourceCompat_1_0.class);
+		resourceConfig.register(VirtualFSResourceCompat_1_1.class);
+		resourceConfig.register(VirtualFSResourceCompat_1_2.class);
+		resourceConfig.register(StormEAResource.class);
+		resourceConfig.register(Metadata.class);
+		resourceConfig.register(Ping.class);
+		resourceConfig.register(SpaceStatusResource.class);
+		/* JSON POJO support: */
+		resourceConfig.register(JacksonFeature.class);
 
-		ServletHolder holder = new ServletHolder(servlet);
-		holder.setInitParameter(
-			"com.sun.jersey.config.property.packages",
-			"it.grid.storm.tape.recalltable.resources,"
-				+ "it.grid.storm.tape.recalltable.providers,"
-				+ "it.grid.storm.authz.remote.resource,"
-				+ "it.grid.storm.namespace.remote.resource,"
-				+ "it.grid.storm.ea.remote.resource,"
-				+ InfoService.getResourcePackage());
+		ServletHolder holder = new ServletHolder(new ServletContainer(resourceConfig));
 
-		holder.setInitParameter("com.sun.jersey.api.json.POJOMappingFeature", "true");
-
-		ServletContextHandler servletContextHandler = new ServletContextHandler(
-			ServletContextHandler.SESSIONS);
+		ServletContextHandler servletContextHandler =
+				new ServletContextHandler(ServletContextHandler.SESSIONS);
 		servletContextHandler.setContextPath("/");
 		servletContextHandler.addServlet(holder, "/*");
 
+		if (config.getXmlRpcTokenEnabled()) {
+
+			log.info("Enabling security filter for rest server requests");
+			String token = config.getXmlRpcToken();
+			if (token == null || token.isEmpty()) {
+				log.error("Rest server security token enabled, but token not found");
+				throw new Exception("Rest server security token enabled, but token not found");
+			}
+			FilterHolder filterHolder = new FilterHolder(new RestTokenFilter());
+			filterHolder.setInitParameter("token", token);
+			servletContextHandler.addFilter(filterHolder, "/metadata/*", EnumSet.of(DispatcherType.REQUEST));
+			servletContextHandler.addFilter(filterHolder, "/recalltable/*", EnumSet.of(DispatcherType.REQUEST));
+		}
+
+		server = new Server(RestService.getPort());
 		server.setHandler(servletContextHandler);
 	}
 
@@ -118,9 +148,6 @@ public class RestService {
 	 */
 	public static void startServer() throws Exception {
 
-		server = new Server();
-
-		configureServerConnector();
 		configureServer();
 
 		log.info("Starting RESTFul services ... ");

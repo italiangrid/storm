@@ -93,10 +93,7 @@ public class MtabUtil {
 
 	protected static boolean skipLineForMountPoints(String line) {
 
-		if (line.startsWith("#") || !line.startsWith("/dev/")) {
-			return true;
-		}
-		return false;
+		return line.startsWith("#") || line.isEmpty();
 	}
 
 	public static Map<String, String> getFSMountPoints() throws Exception {
