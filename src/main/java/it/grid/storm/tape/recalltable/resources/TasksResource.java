@@ -20,17 +20,22 @@
  */
 package it.grid.storm.tape.recalltable.resources;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 import it.grid.storm.config.Configuration;
 import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.TapeRecallException;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -42,9 +47,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.Response;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author zappi
@@ -105,13 +107,13 @@ public class TasksResource {
 		}
 
 		// retrieve the tasks
-		ArrayList<TapeRecallTO> tasks = new TapeRecallCatalog().takeoverNTasksWithDoubles(numbOfTask);
+		List<TapeRecallTO> tasks = new TapeRecallCatalog().takeoverNTasksWithDoubles(numbOfTask);
 		
-		HashMap<UUID, ArrayList<TapeRecallTO>> groupTaskMap = buildGroupTaskMap(tasks);
+		HashMap<UUID, List<TapeRecallTO>> groupTaskMap = buildGroupTaskMap(tasks);
 
-		ArrayList<TapeRecallTO> groupTasks = new ArrayList<TapeRecallTO>();
+		List<TapeRecallTO> groupTasks = Lists.newArrayList();
 		
-		for (ArrayList<TapeRecallTO> groupTaskList : groupTaskMap.values()) {
+		for (List<TapeRecallTO> groupTaskList : groupTaskMap.values()) {
 		
 			try {
 			
@@ -146,19 +148,18 @@ public class TasksResource {
 	 * @param tasks
 	 * @return
 	 */
-	private HashMap<UUID, ArrayList<TapeRecallTO>> buildGroupTaskMap(ArrayList<TapeRecallTO> tasks) {
+	private HashMap<UUID, List<TapeRecallTO>> buildGroupTaskMap(List<TapeRecallTO> tasks) {
 
-		HashMap<UUID, ArrayList<TapeRecallTO>> groupTaskMap = 
-			new HashMap<UUID, ArrayList<TapeRecallTO>>();
+		HashMap<UUID, List<TapeRecallTO>> groupTaskMap = Maps.newHashMap();
 		
 		for (TapeRecallTO task : tasks) {
 			
-			ArrayList<TapeRecallTO> taskList = 
+			List<TapeRecallTO> taskList = 
 				groupTaskMap.get(task.getGroupTaskId());
 			
 			if (taskList == null) {
 				
-				taskList = new ArrayList<TapeRecallTO>();
+				taskList = Lists.newArrayList();
 				groupTaskMap.put(task.getGroupTaskId(), taskList);
 			}
 			
@@ -169,14 +170,13 @@ public class TasksResource {
 	}
 
 	/**
-	 * Given a list of tasks with the same taskId oproduces a single task merging
+	 * Given a list of tasks with the same taskId produces a single task merging
 	 * the list members
 	 * 
 	 * @param recallTasks
 	 * @return
 	 */
-	private TapeRecallTO makeOne(ArrayList<TapeRecallTO> recallTasks)
-		throws IllegalArgumentException {
+	private TapeRecallTO makeOne(List<TapeRecallTO> recallTasks) {
 
 		TapeRecallTO taskTO = new TapeRecallTO();
 		
@@ -187,7 +187,7 @@ public class TasksResource {
 		
 			if (!recallTask.getTaskId().equals(taskId)) {
 			
-				log.error("Received a list of not omogeneous tasks, the taskid '{}' is not matched by : {}" , taskId , recallTask.toString());
+				log.error("Received a list of not omogeneous tasks, the taskid '{}' is not matched by : {}" , taskId , recallTask);
 				
 				throw new IllegalArgumentException(
 					"Received a list of not omogeneous tasks");
@@ -280,7 +280,7 @@ public class TasksResource {
 		
 		} catch (IOException e) {
 			
-			e.printStackTrace();
+			log.error(e.getMessage(), e);
 		
 		} finally {
 			
@@ -290,13 +290,11 @@ public class TasksResource {
 			
 			} catch (IOException e) {
 			
-				e.printStackTrace();
+			  log.error(e.getMessage(), e);
 			}
 		}
 		
-		String inputStr = sb.toString();
-		
-		return inputStr;
+		return sb.toString();
 	}
 
 }

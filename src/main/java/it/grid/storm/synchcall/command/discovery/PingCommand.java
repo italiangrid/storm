@@ -36,17 +36,17 @@ import it.grid.storm.tape.recalltable.TapeRecallException;
 import it.grid.storm.tape.recalltable.model.TapeRecallData;
 import it.grid.storm.tape.recalltable.persistence.TapeRecallBuilder;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Properties;
+import java.util.List;
 import java.util.Map.Entry;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Properties;
 
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008
@@ -251,7 +251,6 @@ public class PingCommand extends DiscoveryCommand implements Command {
 	private ArrayOfTExtraInfo test_post_new_task(String param) {
 
 		ArrayOfTExtraInfo arrayResult = new ArrayOfTExtraInfo();
-		String errorStr;
 
 		TapeRecallData rtd;
 		try {
@@ -300,7 +299,7 @@ public class PingCommand extends DiscoveryCommand implements Command {
 
 		try {
 			// Retrieve the Task
-			ArrayList<TapeRecallTO> tasks = new TapeRecallCatalog()
+			List<TapeRecallTO> tasks = new TapeRecallCatalog()
 				.takeoverNTasksWithDoubles(numbOfTask);
 
 			if (tasks != null) {
