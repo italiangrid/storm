@@ -104,10 +104,11 @@ public class RequestsGarbageCollector extends TimerTask {
 			return out;
 		}
 
-		out.nPurgedRequests = purgeExpiredRequests(config.getPurgeBatchSize(),
-			config.getExpiredRequestTime());
+		out.nPurgedRequests = purgeExpiredRequests(config.getExpiredRequestTime(),
+		        config.getPurgeBatchSize());
 
-		out.nPurgedRecalls = purgeExpiredRecallRequests(config.getPurgeBatchSize());
+		out.nPurgedRecalls = purgeExpiredRecallRequests(config.getExpiredRequestTime(),
+		        config.getPurgeBatchSize());
 
 		return out;
 	}
@@ -134,8 +135,7 @@ public class RequestsGarbageCollector extends TimerTask {
 	 *          expired
 	 * @return The number of requests involved.
 	 */
-	synchronized private int purgeExpiredRequests(int purgeSize,
-		long expiredRequestTime) {
+	private synchronized int purgeExpiredRequests(long expiredRequestTime, int purgeSize) {
 
 		ptgCat.transitExpiredSRM_FILE_PINNED();
 		bolCat.transitExpiredSRM_SUCCESS();
@@ -145,16 +145,19 @@ public class RequestsGarbageCollector extends TimerTask {
 	}
 
 	/**
-	 * Method used to purge from db a bunch of completed recall requests.
+	 * Method used to clear a bunch of completed recall requests from database.
 	 * 
+	 * @param expirationTime
+	 *          The number of seconds that must pass before considering a 
+	 *          request as expired
 	 * @param purgeSize
 	 *          The maximum size of the bunch of expired requests that must be
 	 *          deleted
 	 * @return The number of requests involved.
 	 */
-	synchronized private int purgeExpiredRecallRequests(int purgeSize) {
+	private synchronized int purgeExpiredRecallRequests(long expirationTime, int purgeSize) {
 
-		int n = new TapeRecallCatalog().purgeCatalog(purgeSize);
+		int n = new TapeRecallCatalog().purgeCatalog(expirationTime, purgeSize);
 		if (n == 0) {
 			log.trace("No entries have been purged from tape_recall table");
 		} else {

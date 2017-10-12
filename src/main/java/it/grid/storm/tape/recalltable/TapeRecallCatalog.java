@@ -241,12 +241,12 @@ public class TapeRecallCatalog {
    * @param maxSize The max number of purged requests @return the number of
    * purged requests
    */
-  public int purgeCatalog(int maxSize) {
+  public int purgeCatalog(long expirationTime, int maxSize) {
 
     int n = 0;
     try {
-      log.debug("purging.. '{}' tasks.", maxSize);
-      n = tapeRecallDAO.purgeCompletedTasks(maxSize);
+      log.debug("purging.. '{}' tasks ended almost {} seconds ago.", maxSize, expirationTime);
+      n = tapeRecallDAO.purgeCompletedTasks(expirationTime, maxSize);
     } catch (DataAccessException e) {
       log.error("Unable to takeover a task {}", e);
     }
