@@ -27,7 +27,6 @@ import it.grid.storm.persistence.util.helper.TapeRecallMySQLHelper;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
-import jersey.repackaged.com.google.common.collect.Lists;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
