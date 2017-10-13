@@ -77,10 +77,9 @@ public class TapeRecallBuilder {
 		Date currentDate = new Date();
 		task.setInsertionInstant(currentDate);
 
-		task.setRequestType(TapeRecallTO.BACK_REQUEST);
+		task.setRequestType(TapeRecallTO.TRequestType.BACK_REQUEST);
 
 		String localRequestToken = "local-" + UUID.randomUUID();
-		// TRequestToken localRT = TRequestToken.buildLocalRT(localRequestToken);
 		TRequestToken localRT;
 		try {
 			localRT = new TRequestToken(localRequestToken, Calendar.getInstance()
@@ -141,7 +140,7 @@ public class TapeRecallBuilder {
 	 */
 	private static Date parseDate(String dateString) {
 
-		DateFormat formatter = new SimpleDateFormat(TapeRecallTO.dateFormat);
+		DateFormat formatter = new SimpleDateFormat(TapeRecallTO.DATE_FORMAT);
 		Date date = new Date();
 		try {
 			date = formatter.parse(dateString);

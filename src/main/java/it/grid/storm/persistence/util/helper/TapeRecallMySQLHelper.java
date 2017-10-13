@@ -94,7 +94,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 			int idx = 1;
 			prepStat.setString(idx++, recallTask.getTaskId().toString());
 			prepStat.setString(idx++, recallTask.getRequestToken().getValue());
-			prepStat.setString(idx++, recallTask.getRequestType());
+			prepStat.setString(idx++, recallTask.getRequestType().toString());
 			prepStat.setString(idx++, recallTask.getFileName());
 			prepStat.setInt(idx++, recallTask.getPinLifetime());
 			prepStat.setInt(idx++, recallTask.getStatusId());

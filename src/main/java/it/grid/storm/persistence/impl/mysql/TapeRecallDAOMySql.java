@@ -23,6 +23,7 @@ import it.grid.storm.persistence.PersistenceDirector;
 import it.grid.storm.persistence.dao.TapeRecallDAO;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TapeRecallTO;
+import it.grid.storm.persistence.model.TapeRecallTO.TRequestType;
 import it.grid.storm.persistence.util.helper.TapeRecallMySQLHelper;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
@@ -620,7 +621,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 		try {
 
 			task
-				.setRequestType(res.getString(TapeRecallMySQLHelper.COL_REQUEST_TYPE));
+				.setRequestType(TRequestType.fromString(res.getString(TapeRecallMySQLHelper.COL_REQUEST_TYPE)));
 			task.setFileName(res.getString(TapeRecallMySQLHelper.COL_FILE_NAME));
 			task.setPinLifetime(res.getInt(TapeRecallMySQLHelper.COL_PIN_LIFETIME));
 			task.setStatusId(res.getInt(TapeRecallMySQLHelper.COL_STATUS));
