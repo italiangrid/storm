@@ -18,8 +18,8 @@
  */
 package it.grid.storm.tape.recalltable;
 
-import static it.grid.storm.persistence.model.TapeRecallTO.BOL_REQUEST;
-import static it.grid.storm.persistence.model.TapeRecallTO.PTG_REQUEST;
+import static it.grid.storm.persistence.model.TapeRecallTO.TRequestType.BOL_REQUEST;
+import static it.grid.storm.persistence.model.TapeRecallTO.TRequestType.PTG_REQUEST;
 import static it.grid.storm.tape.recalltable.model.TapeRecallStatus.IN_PROGRESS;
 import static it.grid.storm.tape.recalltable.model.TapeRecallStatus.QUEUED;
 
@@ -402,7 +402,7 @@ public class TapeRecallCatalog {
 
       PtGData ptgChunk = (PtGData) chunkData;
 
-      task.setRequestType(TapeRecallTO.PTG_REQUEST);
+      task.setRequestType(PTG_REQUEST);
       task.setPinLifetime((int) ptgChunk.getPinLifeTime().value());
       task.setDeferredRecallInstant(currentDate);
 
@@ -410,7 +410,7 @@ public class TapeRecallCatalog {
 
       BoLPersistentChunkData bolChunk = (BoLPersistentChunkData) chunkData;
 
-      task.setRequestType(TapeRecallTO.BOL_REQUEST);
+      task.setRequestType(BOL_REQUEST);
       task.setPinLifetime((int) bolChunk.getLifeTime().value());
 
       Date deferredStartDate =
