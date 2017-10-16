@@ -74,7 +74,7 @@ public class SAAuthzType {
 
 	public String toString() {
 
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		buf.append(this.getSAAuthzTypeName());
 		return buf.toString();
 	}

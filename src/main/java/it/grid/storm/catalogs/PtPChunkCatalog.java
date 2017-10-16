@@ -140,7 +140,7 @@ public class PtPChunkCatalog {
 	 */
 	private PtPPersistentChunkData makeOne(PtPChunkDataTO auxTO, TRequestToken rt) {
 
-		StringBuffer errorSb = new StringBuffer();
+		StringBuilder errorSb = new StringBuilder();
 		// toSURL
 		TSURL toSURL = null;
 		try {
@@ -515,7 +515,7 @@ public class PtPChunkCatalog {
 	private ReducedPtPChunkData makeOneReduced(
 		ReducedPtPChunkDataTO reducedChunkDataTO) {
 
-		StringBuffer errorSb = new StringBuffer();
+		StringBuilder errorSb = new StringBuilder();
 		// fromSURL
 		TSURL toSURL = null;
 		try {

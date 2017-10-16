@@ -81,7 +81,7 @@ public class MappingRule {
 
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		String sep = System.getProperty("line.separator");
 		sb.append(sep + "   Mapping rule name       : " + this.ruleName + sep);
 		sb.append("      StFN-Root            : " + this.stfnRoot + sep);

@@ -136,7 +136,7 @@ class VomsGridUser extends GridUser implements Serializable {
 	 */
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("Grid User (VOMS) = ");
 		sb.append(" DN:'" + getDistinguishedName().getX500DN_rfc1779() + "'");
 		sb.append(" FQANS:" + fqans);

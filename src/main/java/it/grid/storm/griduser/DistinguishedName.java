@@ -30,9 +30,12 @@ package it.grid.storm.griduser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.security.auth.x500.X500Principal;
+
+import com.google.common.collect.Lists;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -144,33 +147,33 @@ public class DistinguishedName implements SubjectAttribute {
 
 	private void parseDNslahed() {
 
-		ArrayList<String> list = new ArrayList<String>();
-		String DN = distinguishedName;
+		List<String> list = Lists.newArrayList();
+		String dn = distinguishedName;
 		boolean stop = false;
 
 		while (!stop) {
 			// Get index of lat '='
-			int indexOfEq = DN.lastIndexOf('=');
+			int indexOfEq = dn.lastIndexOf('=');
 			// Exit if it does not exists
 			if (indexOfEq == -1) {
 				stop = true;
 				continue;
 			}
 
-			String tmpDN = DN.substring(0, indexOfEq);
+			String tmpDN = dn.substring(0, indexOfEq);
 			// Get index of the first '/' char on the left of the '='
 			int indexOfAttr = tmpDN.lastIndexOf('/');
 
 			// the substring from the indexOfAttr obtained to end of the String
 			// is a attr-value pair!
 			// Add it to the results List.
-			list.add(DN.substring(indexOfAttr + 1, DN.length()));
+			list.add(dn.substring(indexOfAttr + 1, dn.length()));
 
 			// Cut the result from the working DN string, and iterate.
-			DN = DN.substring(0, indexOfAttr);
+			dn = dn.substring(0, indexOfAttr);
 		}
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		String[] attributes = new String[list.size()];
 
 		// Create a string representation of the DN.
@@ -305,7 +308,7 @@ public class DistinguishedName implements SubjectAttribute {
 	@Override
 	public String toString() {
 
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		if (countryName != null) {
 			result.append("C=" + countryName + "\n");
 		}

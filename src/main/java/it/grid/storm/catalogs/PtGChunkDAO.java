@@ -1539,7 +1539,7 @@ public class PtGChunkDAO {
 	 */
 	private String makeWhereString(long[] rowids) {
 
-		StringBuffer sb = new StringBuffer("(");
+		StringBuilder sb = new StringBuilder("(");
 		int n = rowids.length;
 		for (int i = 0; i < n; i++) {
 			sb.append(rowids[i]);
@@ -1556,7 +1556,7 @@ public class PtGChunkDAO {
 	 */
 	private String makeSURLUniqueIDWhere(int[] surlUniqueIDs) {
 
-		StringBuffer sb = new StringBuffer("(");
+		StringBuilder sb = new StringBuilder("(");
 		for (int i = 0; i < surlUniqueIDs.length; i++) {
 			if (i > 0) {
 				sb.append(",");
@@ -1572,7 +1572,7 @@ public class PtGChunkDAO {
 	 */
 	private String makeSurlString(String[] surls) {
 
-		StringBuffer sb = new StringBuffer("(");
+		StringBuilder sb = new StringBuilder("(");
 		int n = surls.length;
 
 		for (int i = 0; i < n; i++) {

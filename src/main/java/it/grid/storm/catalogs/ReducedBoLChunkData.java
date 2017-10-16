@@ -127,7 +127,7 @@ public class ReducedBoLChunkData implements ReducedChunkData {
 	@Override
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("ReducedBoLChunkData\n");
 		sb.append("primaryKey=");
 		sb.append(primaryKey);

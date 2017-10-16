@@ -459,7 +459,7 @@ public class StorageSpaceTO implements Serializable, Comparable<StorageSpaceTO> 
 	@Override
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append(" ==== STORAGE SPACE (token=" + spaceToken + ") ==== \n");
 		sb.append(" STORAGE SPACE ID = " + storageSpaceId);
 		sb.append("\n");

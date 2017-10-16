@@ -252,7 +252,7 @@ public class CopyChunkCatalog {
 	private CopyPersistentChunkData makeOne(CopyChunkDataTO chunkDataTO,
 		TRequestToken rt) {
 
-		StringBuffer errorSb = new StringBuffer();
+		StringBuilder errorSb = new StringBuilder();
 		// fromSURL
 		TSURL fromSURL = null;
 		try {

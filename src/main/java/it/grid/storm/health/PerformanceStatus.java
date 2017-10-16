@@ -78,7 +78,7 @@ public class PerformanceStatus {
 	@Override
 	public String toString() {
 
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		result.append("#" + this.pulseNumberStr + ": ");
 		if (perfStatus.isEmpty()) {
 			result.append("No activity in the last " + timeWindows + " seconds");

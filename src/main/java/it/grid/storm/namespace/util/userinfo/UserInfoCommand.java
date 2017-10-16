@@ -70,7 +70,7 @@ public class UserInfoCommand {
 		int groupId = -1;
 		String[] command = buildCommandString(parameters);
 
-		StringBuffer commandOutput = new StringBuffer();
+		StringBuilder commandOutput = new StringBuilder();
 		for (String element : command) {
 			commandOutput.append(element).append(" ");
 			log.debug("UserInfo Command INPUT String : " + commandOutput.toString());

@@ -48,7 +48,7 @@ public class UserInfoParameters {
 			return "NULL parameters";
 		if (parameters.isEmpty())
 			return "EMPTY parameters";
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		Iterator<String> scan = parameters.iterator();
 		while (scan.hasNext()) {
 			result.append(scan.next());

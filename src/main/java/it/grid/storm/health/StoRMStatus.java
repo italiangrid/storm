@@ -205,7 +205,7 @@ public class StoRMStatus {
 	 */
 	public String toString() {
 
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		result.append(" [#" + this.pulseNumberStr + " lifetime=" + this.lifetimeStr
 			+ "]");
 		result.append(" Heap Free:" + this.heapFreeSize);

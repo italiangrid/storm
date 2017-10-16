@@ -215,7 +215,7 @@ public class RequestSummaryTO {
 
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("SummaryRequestData");
 		sb.append("; requestToken=");
 		sb.append(requestToken);

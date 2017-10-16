@@ -87,7 +87,7 @@ public class QuotaType {
 	@Override
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("QuotaType:").append(quotaType).append("=<").append(value)
 			.append(">");
 		return sb.toString();

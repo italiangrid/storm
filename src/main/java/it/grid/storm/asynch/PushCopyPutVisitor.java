@@ -80,7 +80,7 @@ public class PushCopyPutVisitor implements CopyVisitor {
 					// The SRMClient statusOfPutRequest functionality failed!
 					copy.getLog().error("ERROR IN PushCopyChunk! PutOperation failed: "
 						+ "SRMClient could not do an srmStatusOfPutRequest! {}", e2);
-					StringBuffer sb = new StringBuffer();
+					StringBuilder sb = new StringBuilder();
 					sb.append("Parameters passed to client: ");
 					sb.append("requestToken: ");
 					sb.append(reply.requestToken().toString());
@@ -117,7 +117,7 @@ public class PushCopyPutVisitor implements CopyVisitor {
 				// The SRMClient prepareToPut functionality failed!
 				copy.getLog().error("ERROR IN PushCopyChunk! PutOperation failed: "
 					+ "SRMClient could not do an srmPrepareToPut! {}", e1);
-				StringBuffer sb = new StringBuffer();
+				StringBuilder sb = new StringBuilder();
 				sb.append("Parameters passed to client: ");
 				sb.append("GridUser:");
 				sb.append(copy.getGu().toString());
