@@ -56,9 +56,10 @@ public class InvalidRequestSummaryDataAttributesException extends Exception {
 		negNumFinished = (numFinished < 0);
 	}
 
+	@Override
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("Invalid RequestSummaryData attributes exception: ");
 		sb.append("null-requestToken=");
 		sb.append(nullRequestToken);

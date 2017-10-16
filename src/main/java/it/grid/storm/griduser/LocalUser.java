@@ -78,7 +78,7 @@ public class LocalUser {
 
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append(uid);
 		for (int i = 0; i < gids.length; i++) {
 			sb.append(",");

@@ -361,7 +361,7 @@ public class PtGChunkTO {
 	@Override
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("PtGChunkData\n");
 		sb.append("RequestToken=");
 		sb.append(requestToken);

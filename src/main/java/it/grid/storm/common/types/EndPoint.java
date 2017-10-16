@@ -119,7 +119,7 @@ public class EndPoint {
 		int size = this.name.size();
 		if (size == 0)
 			return ROOT_ENDPOINT;
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (Iterator<String> i = this.name.iterator(); i.hasNext();) {
 			sb.append("/");
 			sb.append(i.next());

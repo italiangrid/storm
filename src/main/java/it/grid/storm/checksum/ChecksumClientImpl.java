@@ -103,7 +103,7 @@ public class ChecksumClientImpl implements ChecksumClient {
 	private String getResponse(HttpURLConnection connection) throws IOException {
 
 		InputStream responseBodyStream = connection.getInputStream();
-		StringBuffer responseBody = new StringBuffer();
+		StringBuilder responseBody = new StringBuilder();
 
 		byte buffer[] = new byte[connection.getContentLength()];
 		int read = 0;

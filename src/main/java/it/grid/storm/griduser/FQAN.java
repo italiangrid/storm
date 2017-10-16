@@ -93,7 +93,7 @@ public class FQAN implements SubjectAttribute {
 
 	public String getGroup() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("/");
 		sb.append(vo);
 		if (group != null) {
@@ -141,7 +141,7 @@ public class FQAN implements SubjectAttribute {
 			fqan = null;
 			return;
 		}
-		StringBuffer bf = new StringBuffer();
+		StringBuilder bf = new StringBuilder();
 		bf.append('/');
 		bf.append(vo);
 		if (group != null) {
@@ -288,7 +288,7 @@ public class FQAN implements SubjectAttribute {
 	 */
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb = sb.append(getGroup());
 		sb.append("/Role=" + ((role != null) ? getRole() : "NULL"));
 		if (capability != null) {

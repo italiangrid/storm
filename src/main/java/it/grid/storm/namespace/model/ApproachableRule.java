@@ -176,7 +176,7 @@ public class ApproachableRule implements Comparable {
 	@Override
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		String sep = System.getProperty("line.separator");
 		sb.append(sep + "  --- APPROACHABLE RULE NAME ---" + sep);
 		sb.append("   Approachable Rule Name : " + this.ruleName + sep);

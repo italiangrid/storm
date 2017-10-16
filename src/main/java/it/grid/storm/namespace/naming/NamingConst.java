@@ -59,20 +59,4 @@ public class NamingConst {
 
 		return "SFN";
 	}
-
-	// public static boolean isWithQueryStringForm() {
-	// return instance.config.getSURLInQueryForm();
-	// }
-
-	// public static String getServiceQueryPrefix() {
-	// StringBuffer result = new StringBuffer("");
-	// if (isWithQueryStringForm()) {
-	// result.append(getServiceEndpoint());
-	// result.append("?");
-	// result.append(getServiceSFNQueryPrefix());
-	// result.append("=");
-	// }
-	// return result.toString();
-	// }
-
 }

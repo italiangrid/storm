@@ -145,7 +145,7 @@ public class GUID implements Serializable {
 	@Override
 	public String toString() {
 
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 
 		buf.append(getHexString(guidValue[0]));
 		buf.append(getHexString(guidValue[1]));

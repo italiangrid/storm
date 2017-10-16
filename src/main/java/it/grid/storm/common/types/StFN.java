@@ -197,7 +197,7 @@ public class StFN {
 		if (size == 0) {
 			return ROOT_STFN;
 		}
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("/");
 		for (Iterator<String> i = name.iterator(); i.hasNext();) {
 			sb.append(i.next());

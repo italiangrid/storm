@@ -48,9 +48,9 @@ public class InsertBuilder extends SQLBuilder {
 
 	public String getWhat() {
 
-		StringBuffer columns = new StringBuffer();
-		StringBuffer values = new StringBuffer();
-		StringBuffer what = new StringBuffer();
+		StringBuilder columns = new StringBuilder();
+		StringBuilder values = new StringBuilder();
+		StringBuilder what = new StringBuilder();
 
 		String columnName = null;
 		Iterator<String> iter = columnsAndData.keySet().iterator();

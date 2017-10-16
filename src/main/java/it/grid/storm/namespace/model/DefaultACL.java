@@ -72,7 +72,7 @@ public class DefaultACL {
 	@Override
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < acl.size(); i++) {
 			sb.append("ACL[" + i + "] = ( ").append(acl.get(i)).append(") \n");
 		}

@@ -54,9 +54,10 @@ public class InvalidReducedPtPChunkDataAttributesException extends Exception {
 		nullFileLifetime = fileLifetime == null;
 	}
 
+	@Override
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("Invalid PtPChunkData attributes: null-toSURL=");
 		sb.append(nullToSURL);
 		sb.append("; null-status=");

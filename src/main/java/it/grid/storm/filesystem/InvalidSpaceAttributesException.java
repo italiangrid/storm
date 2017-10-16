@@ -68,9 +68,10 @@ public class InvalidSpaceAttributesException extends Exception {
 		}
 	}
 
+	@Override
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("InvalidSpaceAttributesException: nullGuaranteedSize=");
 		sb.append(nullGuarSize);
 		sb.append("; nullTotalSize=");
