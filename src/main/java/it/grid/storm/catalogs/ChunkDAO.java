@@ -3,7 +3,6 @@ package it.grid.storm.catalogs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.SQLException;
 import java.sql.SQLWarning;
 
 public class ChunkDAO {
@@ -12,7 +11,7 @@ public class ChunkDAO {
 
   protected ChunkDAO() {}
 
-  public static void printWarnings(SQLWarning warning) throws SQLException {
+  public static void printWarnings(SQLWarning warning) {
 
     if (warning != null) {
       log.warn("---Warning---");

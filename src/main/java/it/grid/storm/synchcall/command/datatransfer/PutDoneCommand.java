@@ -2,16 +2,14 @@
  * 
  * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 
@@ -36,7 +34,6 @@ import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSURLReturnStatus;
-import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.CommandHelper;
 import it.grid.storm.synchcall.command.DataTransferCommand;
@@ -56,6 +53,20 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static it.grid.storm.srm.types.TStatusCode.SRM_ABORTED;
+import static it.grid.storm.srm.types.TStatusCode.SRM_AUTHORIZATION_FAILURE;
+import static it.grid.storm.srm.types.TStatusCode.SRM_DUPLICATION_ERROR;
+import static it.grid.storm.srm.types.TStatusCode.SRM_FAILURE;
+import static it.grid.storm.srm.types.TStatusCode.SRM_INTERNAL_ERROR;
+import static it.grid.storm.srm.types.TStatusCode.SRM_INVALID_PATH;
+import static it.grid.storm.srm.types.TStatusCode.SRM_INVALID_REQUEST;
+import static it.grid.storm.srm.types.TStatusCode.SRM_PARTIAL_SUCCESS;
+import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_TIMED_OUT;
+import static it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS;
+import static it.grid.storm.synchcall.command.CommandHelper.buildStatus;
+
 import com.google.common.base.Preconditions;
 
 /**
@@ -64,79 +75,58 @@ import com.google.common.base.Preconditions;
 
 public class PutDoneCommand extends DataTransferCommand implements Command {
 
-  private static final Logger log = LoggerFactory
-    .getLogger(PutDoneCommand.class);
+  private static final Logger log = LoggerFactory.getLogger(PutDoneCommand.class);
 
   private static final String SRM_COMMAND = "srmPutDone";
 
-  public PutDoneCommand() {
+  private ManageFileTransferRequestFilesInputData inputDataSanityCheck(InputData inputData)
+      throws PutDoneCommandException {
 
-  };
-  
-  private void inputDataSanityCheck(InputData inputData)
-    throws PutDoneCommandException {
+    ManageFileTransferRequestFilesInputData data = null;
 
     try {
-    
-    Preconditions.checkNotNull(inputData, "PutDone: Invalid null input data");
-    Preconditions.checkArgument(
-      inputData instanceof ManageFileTransferRequestFilesInputData,
-      "PutDone: Invalid input data class");
-    ManageFileTransferRequestFilesInputData data = (ManageFileTransferRequestFilesInputData) inputData;
-    Preconditions.checkNotNull(data.getRequestToken(),
-      "PutDone: Invalid null request token");
-    Preconditions.checkNotNull(data.getArrayOfSURLs(),
-      "PutDone: Invalid null array of SURL");
-    Preconditions.checkArgument(data.getArrayOfSURLs().size() > 0,
-      "PutDone: Invalid empty array of SURL");
 
-    } catch (Throwable e) {
-      
-      log.error("PutDone: Invalid input parameters specified [{}: {}]",
-        e.getClass().getName(), e.getMessage());
-      throw new PutDoneCommandException(CommandHelper
-        .buildStatus(TStatusCode.SRM_INVALID_REQUEST, e.getMessage()), e);
-      
+      checkNotNull(inputData, "PutDone: Invalid null input data");
+      checkArgument(inputData instanceof ManageFileTransferRequestFilesInputData,
+          "PutDone: Invalid input data class");
+      data = (ManageFileTransferRequestFilesInputData) inputData;
+      checkNotNull(data.getRequestToken(), "PutDone: Invalid null request token");
+      checkNotNull(data.getArrayOfSURLs(), "PutDone: Invalid null array of SURL");
+      checkArgument(data.getArrayOfSURLs().size() > 0, "PutDone: Invalid empty array of SURL");
+
+    } catch (NullPointerException | IllegalArgumentException e) {
+
+      log.error("PutDone: Invalid input parameters specified [{}: {}]", e.getClass().getName(),
+          e.getMessage());
+      throw new PutDoneCommandException(buildStatus(SRM_INVALID_REQUEST, e.getMessage()), e);
     }
+    return data;
   }
   
   private TReturnStatus buildGlobalStatus(boolean atLeastOneSuccess,
     boolean atLeastOneFailure, boolean atLeastOneAborted) {
 
-    TReturnStatus globalStatus = null;
-    
     if (atLeastOneSuccess) {
       if (!atLeastOneFailure && !atLeastOneAborted) {
-        globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS,
-          "All file requests are successfully completed");
-      } else {
-        globalStatus = CommandHelper.buildStatus(
-          TStatusCode.SRM_PARTIAL_SUCCESS, "Details are on the file statuses");
+        return buildStatus(SRM_SUCCESS, "All file requests are successfully completed");
       }
-    } else {
-      if (atLeastOneFailure) {
-        if (!atLeastOneAborted) {
-          globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
-            "All file requests are failed");
-        } else {
-          globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
-            "Some file requests are failed, the others are aborted");
-        }
-      } else {
-        if (atLeastOneAborted) {
-          globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_ABORTED,
-            "Request aborted");
-        } else {
-          // unexpected
-          log.error(
-            "None of the surls is success, failed or aborted, unexpected!");
-          globalStatus = CommandHelper.buildStatus(
-            TStatusCode.SRM_INTERNAL_ERROR,
-            "Request Failed, no surl status recognized, retry.");
-        }
-      }
+      return buildStatus(SRM_PARTIAL_SUCCESS, "Details are on the file statuses");
     }
-    return globalStatus;
+
+    if (atLeastOneFailure) {
+      if (!atLeastOneAborted) {
+        return buildStatus(SRM_FAILURE, "All file requests are failed");
+      } 
+      return buildStatus(SRM_FAILURE, "Some file requests are failed, the others are aborted");
+    }
+
+    if (atLeastOneAborted) {
+      return buildStatus(SRM_ABORTED, "Request aborted");
+    }
+
+    // unexpected
+    log.error("None of the surls is success, failed or aborted, unexpected!");
+    return buildStatus(SRM_INTERNAL_ERROR, "Request Failed, no surl status recognized, retry.");
   }
 
   private void markSURLsReadyForRead(TRequestToken requestToken, List<TSURL> spaceAvailableSURLs) throws PutDoneCommandException {
@@ -154,7 +144,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     } catch (IllegalArgumentException e) {
         
       log.error("PutDone: Unexpected IllegalArgumentException '{}'", e.getMessage());
-      throw new PutDoneCommandException(CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "Request Failed, retry."), e);
+      throw new PutDoneCommandException(CommandHelper.buildStatus(SRM_INTERNAL_ERROR, "Request Failed, retry."), e);
     }
   }
   
@@ -173,37 +163,33 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     } catch (AuthzException e) {
 
       log.error("PutDone: {}", e.getMessage(), e);
-      throw new PutDoneCommandException(CommandHelper
-        .buildStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage()));
+      throw new PutDoneCommandException(buildStatus(SRM_AUTHORIZATION_FAILURE, e.getMessage()));
 
     } catch (IllegalArgumentException e) {
 
       log.error("PutDone: Unexpected IllegalArgumentException: {}",
         e.getMessage(), e);
-      throw new PutDoneCommandException(CommandHelper
-        .buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "Request Failed, retry."));
+      throw new PutDoneCommandException(buildStatus(SRM_INTERNAL_ERROR, "Request Failed, retry."));
 
     } catch (RequestUnknownException e) {
 
       log.info(
         "PutDone: Invalid request token and surl. RequestUnknownException: {}",
         e.getMessage(), e);
-      throw new PutDoneCommandException(CommandHelper.buildStatus(
-        TStatusCode.SRM_INVALID_REQUEST, "Invalid request token and surls"));
+      throw new PutDoneCommandException(
+          buildStatus(SRM_INVALID_REQUEST, "Invalid request token and surls"));
 
     } catch (UnknownTokenException e) {
 
       log.info("PutDone: Invalid request token. UnknownTokenException: {}",
         e.getMessage(), e);
-      throw new PutDoneCommandException(CommandHelper
-        .buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token"));
+      throw new PutDoneCommandException(buildStatus(SRM_INVALID_REQUEST, "Invalid request token"));
 
     } catch (ExpiredTokenException e) {
 
       log.info("PutDone: The request is expired: ExpiredTokenException: {}",
-        e.getMessage());
-      throw new PutDoneCommandException(CommandHelper
-        .buildStatus(TStatusCode.SRM_REQUEST_TIMED_OUT, "Request expired"));
+        e.getMessage(), e);
+      throw new PutDoneCommandException(buildStatus(SRM_REQUEST_TIMED_OUT, "Request expired"));
     }
 
     return surlsStatuses;
@@ -225,18 +211,18 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     boolean atLeastOneSuccess = false;
     boolean atLeastOneFailure = false;
     boolean atLeastOneAborted = false;
-    
+
+    ManageFileTransferRequestFilesInputData inputData = null;
     try {
       
-      inputDataSanityCheck(absData);
+      inputData = inputDataSanityCheck(absData);
     
     } catch (PutDoneCommandException e) {
-      
+
       printRequestOutcome(e.getReturnStatus());
       return new ManageFileTransferOutputData(e.getReturnStatus());
     }
-    
-    ManageFileTransferRequestFilesInputData inputData = (ManageFileTransferRequestFilesInputData) absData;
+
     GridUserInterface user = inputData instanceof IdentityInputData
       ? ((IdentityInputData) inputData).getUser() : null;
     TRequestToken requestToken = inputData.getRequestToken();
@@ -271,34 +257,30 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
             atLeastOneFailure = true;
             break;
           }
-          newStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS,
-            "Success");
+          newStatus = CommandHelper.buildStatus(SRM_SUCCESS, "Success");
           atLeastOneSuccess = true;
 
           break;
 
         case SRM_SUCCESS:
 
-          newStatus = CommandHelper.buildStatus(
-            TStatusCode.SRM_DUPLICATION_ERROR, "Duplication error");
+          newStatus = buildStatus(SRM_DUPLICATION_ERROR, "Duplication error");
           atLeastOneFailure = true;
           break;
 
         case SRM_ABORTED:
 
-          newStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
-            "PtP status for this SURL is SRM_ABORTED");
+          newStatus = buildStatus(SRM_INVALID_PATH, "PtP status for this SURL is SRM_ABORTED");
           atLeastOneAborted = true;
           break;
 
         default:
 
-          newStatus = CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
-            "Check StatusOfPutRequest for more information");
+          newStatus = buildStatus(SRM_FAILURE, "Check StatusOfPutRequest for more information");
           atLeastOneFailure = true;
           break;
       }
-      
+
       surlsStatuses.updateStatus(surlStatus, newStatus);
     }
     
@@ -316,31 +298,30 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     globalStatus = buildGlobalStatus(atLeastOneSuccess, atLeastOneFailure,
       atLeastOneAborted);
     
-    log.debug("PutDone: Finished with status {}", globalStatus.toString());
+    log.debug("PutDone: Finished with status {}", globalStatus);
     printRequestOutcome(globalStatus, inputData);
     
     return new ManageFileTransferOutputData(globalStatus, surlsStatuses);
   }
 
   private static void printRequestOutcome(TReturnStatus status) {
-    
+
     Preconditions.checkNotNull(status);
     CommandHelper.printRequestOutcome(SRM_COMMAND, log, status);
   }
-  
+
   private static void printRequestOutcome(TReturnStatus status, ManageFileTransferRequestFilesInputData inputData) {
-    
+
     Preconditions.checkNotNull(inputData);
     Preconditions.checkNotNull(status);
-    
+
     CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData,
       inputData.getRequestToken(), inputData.getArrayOfSURLs().asStringList());
   }
 
   private ArrayOfTSURLReturnStatus loadSURLsStatus(GridUserInterface user,
     TRequestToken requestToken, List<TSURL> inputSURLs)
-    throws IllegalArgumentException, RequestUnknownException,
-    UnknownTokenException, ExpiredTokenException {
+    throws RequestUnknownException {
 
     ArrayOfTSURLReturnStatus returnStatuses = new ArrayOfTSURLReturnStatus(
       inputSURLs.size());
@@ -366,7 +347,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         status = surlsStatuses.get(surl);
       } else {
         log.debug("PutDone: SURL '{}' NOT found in the DB!", surl);
-        status = new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
+        status = new TReturnStatus(SRM_INVALID_PATH,
           "SURL does not refer to an existing file for the specified request token");
       }
       TSURLReturnStatus surlRetStatus = new TSURLReturnStatus(surl, status);
@@ -398,14 +379,13 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 			log.error(
 				String.format("User %s is unable to build a stori for surl %s, %s: %s",
 					userStr, surl, e.getClass().getName(), e.getMessage()));
-			throw new PutDoneCommandException(CommandHelper
-				.buildStatus(TStatusCode.SRM_INTERNAL_ERROR, e.getMessage()), e);
+			throw new PutDoneCommandException(buildStatus(SRM_INTERNAL_ERROR, e.getMessage()), e);
 
 		} catch (Exception e) {
 
 			log.info(
 				String.format("User %s is unable to build a stori for surl %s, %s: %s",
-					userStr, surl, e.getClass().getName(), e.getMessage()));
+					userStr, surl, e.getClass().getName(), e.getMessage()), e);
 			return false;
 
 		}
@@ -420,7 +400,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 			}
 		}
 
-		// 2- JiTs must me removed from the TURL;
+		// 2- JiTs must me removed from the TURL
 		if (stori.hasJustInTimeACLs()) {
 			log.debug("PutDone: JiT case, removing ACEs on SURL: " + surl.toString());
 			// Retrieve the PFN of the SURL parents
@@ -438,7 +418,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 			} catch (CannotMapUserException e) {
 				log.warn(
 					"PutDone: Unable to get the local user for user {}. CannotMapUserException: {}",
-					user, e.getMessage());
+					user, e.getMessage(), e);
 			}
 			if (localUser != null) {
 				VolatileAndJiTCatalog.getInstance().expirePutJiTs(stori.getPFN(),

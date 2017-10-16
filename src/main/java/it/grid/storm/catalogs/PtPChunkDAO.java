@@ -1080,18 +1080,10 @@ public class PtPChunkDAO extends ChunkDAO {
 		try {
 			Class.forName(driver);
 			con = DriverManager.getConnection(url, name, password);
-			if (con == null) {
-				log.error("PTP CHUNK DAO! DriverManager returned a null connection!");
-			} else {
-				printWarnings(con.getWarnings());
-				response = con.isValid(0);
-			}
-		} catch (ClassNotFoundException e) {
-			log.error("PTP CHUNK DAO! Exception in setUpConenction! {}", 
-				e.getMessage(), e);
-		} catch (SQLException e) {
-			log.error("PTP CHUNK DAO! Exception in setUpConnection! {}", 
-				e.getMessage(), e);
+			printWarnings(con.getWarnings());
+			response = con.isValid(0);
+		} catch (ClassNotFoundException | SQLException e) {
+			log.error("PTP CHUNK DAO! Exception in setUpConnection! {}", e.getMessage(), e);
 		}
 		return response;
 	}
