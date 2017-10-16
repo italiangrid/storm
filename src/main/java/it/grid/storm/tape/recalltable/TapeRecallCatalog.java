@@ -20,8 +20,6 @@ package it.grid.storm.tape.recalltable;
 
 import static it.grid.storm.persistence.model.TapeRecallTO.TRequestType.BOL_REQUEST;
 import static it.grid.storm.persistence.model.TapeRecallTO.TRequestType.PTG_REQUEST;
-import static it.grid.storm.tape.recalltable.model.TapeRecallStatus.IN_PROGRESS;
-import static it.grid.storm.tape.recalltable.model.TapeRecallStatus.QUEUED;
 
 import com.google.common.collect.Lists;
 
@@ -428,45 +426,41 @@ public class TapeRecallCatalog {
     return task;
   }
 
-  public boolean changeGroupTaskStatus(UUID groupTaskId, TapeRecallStatus recallTaskStatus,
-      Date timestamp) throws DataAccessException {
+  public boolean changeGroupTaskStatus(UUID groupTaskId, TapeRecallStatus status, Date timestamp)
+      throws DataAccessException {
 
-    if (recallTaskStatus == IN_PROGRESS || recallTaskStatus == QUEUED) {
-      log.warn(
-          "Setting the status to IN_PROGRESS or QUEUED using setGroupTaskStatus() is not a legal operation, doing it anyway. groupTaskId={}",
-          groupTaskId);
-    }
-
-    boolean updated = false;
     Collection<Suspendedable> chunkBucket = null;
 
     synchronized (this) {
 
-      updated =
-          tapeRecallDAO.setGroupTaskStatus(groupTaskId, recallTaskStatus.getStatusId(), timestamp);
+      if (!tapeRecallDAO.setGroupTaskStatus(groupTaskId, status.getStatusId(), timestamp)) {
+        log.debug("Updating to status {} at {} didn't affect groupTask {}", status, timestamp, groupTaskId);
+        return false;
+      }
 
-      if (updated && recallTaskStatus.isFinalStatus()) {
-        // the status is a terminal status
-        if (recallBuckets.containsKey(groupTaskId)) {
-          chunkBucket = recallBuckets.remove(groupTaskId);
-        } else {
-          List<TapeRecallTO> recallTasks = getRecallTasksFromGroupTaskId(groupTaskId);
-          if (containsAnyBolOrPtg(recallTasks)) {
-            // recallBuckets should not be empty in case request is a Bol or a Ptg
-            String errorMessage = String.format(
-                "Unable to perform the final status update. No bucket found for Recall Group Task ID %s",
-                groupTaskId);
-            log.error(errorMessage);
-            throw new DataAccessException(errorMessage);
-          }
+      if (!status.isFinalStatus()) {
+        return true;
+      }
+
+      if (recallBuckets.containsKey(groupTaskId)) {
+        chunkBucket = recallBuckets.remove(groupTaskId);
+      } else {
+        List<TapeRecallTO> recallTasks = getRecallTasksFromGroupTaskId(groupTaskId);
+        if (containsAnyBolOrPtg(recallTasks)) {
+          // recallBuckets should not be empty in case request is a Bol or a Ptg
+          String errorMessage = String.format(
+              "Unable to perform the final status update. No bucket found for Recall Group Task ID %s",
+              groupTaskId);
+          log.error(errorMessage);
+          throw new DataAccessException(errorMessage);
         }
       }
     }
 
     if (chunkBucket != null) {
-      updateChuncksStatus(chunkBucket, recallTaskStatus);
+      updateChuncksStatus(chunkBucket, status);
     }
-    return updated;
+    return true;
   }
 
   /**
@@ -501,10 +495,11 @@ public class TapeRecallCatalog {
 
   private boolean containsAnyBolOrPtg(List<TapeRecallTO> recallTasks) {
 
-    return recallTasks.stream().map(TapeRecallCatalog::isRequestTypeBolOrPtg).count() > 0;
-  }
-
-  private static boolean isRequestTypeBolOrPtg(TapeRecallTO t) {
-    return BOL_REQUEST.equals(t.getRequestType()) || PTG_REQUEST.equals(t.getRequestType());
+    for (TapeRecallTO t : recallTasks) {
+      if (BOL_REQUEST.equals(t.getRequestType()) || PTG_REQUEST.equals(t.getRequestType())) {
+        return true;
+      }
+    }
+    return false;
   }
 }
