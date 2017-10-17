@@ -1,8 +1,8 @@
 components:
   storm-backend-server:
       name: StoRM Backend
-      current: 1.11.12
-      previous: [1.11.11,1.11.10,1.11.9,1.11.8,1.11.7,1.11.6,1.11.5,1.11.4,1.11.3,1.11.2,1.11.1]
+      current: 1.11.13
+      previous: [1.11.12,1.11.11,1.11.10,1.11.9,1.11.8,1.11.7,1.11.6,1.11.5,1.11.4,1.11.3,1.11.2,1.11.1]
 
   storm-frontend-server:
       name: StoRM Frontend
@@ -21,8 +21,8 @@ components:
 
   yaim-storm:
       name: YAIM StoRM
-      current: 4.3.9
-      previous: [4.3.8,4.3.7,4.3.6,4.3.5,4.3.4,4.3.3,4.3.2]
+      current: 4.3.10
+      previous: [4.3.9,4.3.8,4.3.7,4.3.6,4.3.5,4.3.4,4.3.3,4.3.2]
 
   storm-dynamic-info-provider:
       name: StoRM Info Provider

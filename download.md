@@ -13,21 +13,24 @@ Information about previous releases can be found [here](releases.html) or on the
 
 ### Repository configuration
 
-StoRM packages can be obtained from the UMD repositories or from the StoRM product team package repository.
+StoRM packages can be obtained from the UMD repositories for SL6 or from the StoRM product team package repository.
 
-#### UMD 3
+#### UMD
 
-You can find [general UMD 3 installation instructions][UMD3site] on the EGI site, 
+> <span class="label label-info" style="margin-top: -20px;">NEW</span> StoRM v1.11.13 now officially supports UMD4 repo for SL6.
+
+You can find [general UMD 4 installation instructions][UMD4site] on the EGI site, 
 but it basically boils down to installing the UMD repositories.
 
 In short:
 
-    # Install UMD rpm pgp-key
-    rpm --import http://repository.egi.eu/sw/production/umd/UMD-RPM-PGP-KEY
-
-    # Install UMD release
-    wget http://repository.egi.eu/sw/production/umd/3/sl6/x86_64/updates/umd-release-3.14.4-1.el6.noarch.rpm
-    yum localinstall umd-release–3.14.4-1.el6.noarch.rpm
+```shell
+# Install UMD rpm pgp-key
+rpm --import http://repository.egi.eu/sw/production/umd/UMD-RPM-PGP-KEY
+# Download and install UMD release
+wget http://repository.egi.eu/sw/production/umd/4/sl6/x86_64/updates/umd-release-4.1.3-1.el6.noarch.rpm
+yum localinstall umd-release-4.1.3-1.el6.noarch.rpm
+```
 
 Follow the [system administration guide]({{ site.baseurl }}/documentation/sysadmin-guide/) for detailed installation instructions.
 
@@ -84,4 +87,4 @@ The StoRM source is available on [Github](https://github.com) in the following r
 [prod_repo_url]: http://ci-01.cnaf.infn.it/download/storm/emi3
 [preview_repo_url]: http://ci-01.cnaf.infn.it/download/storm/preview
 [developCI]: https://ci.cloud.cnaf.infn.it/job/pkg.storm/job/develop/
-[UMD3site]: http://repository.egi.eu/category/umd_releases/distribution/umd-3/
+[UMD4site]: http://repository.egi.eu/category/umd_releases/distribution/umd-4/
