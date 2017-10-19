@@ -17,6 +17,9 @@
 
 package it.grid.storm.persistence.util.helper;
 
+import static it.grid.storm.tape.recalltable.model.TapeRecallStatus.IN_PROGRESS;
+import static it.grid.storm.tape.recalltable.model.TapeRecallStatus.QUEUED;
+
 import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.persistence.util.db.SQLHelper;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
@@ -91,7 +94,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 			int idx = 1;
 			prepStat.setString(idx++, recallTask.getTaskId().toString());
 			prepStat.setString(idx++, recallTask.getRequestToken().getValue());
-			prepStat.setString(idx++, recallTask.getRequestType());
+			prepStat.setString(idx++, recallTask.getRequestType().toString());
 			prepStat.setString(idx++, recallTask.getFileName());
 			prepStat.setInt(idx++, recallTask.getPinLifetime());
 			prepStat.setInt(idx++, recallTask.getStatusId());
@@ -538,48 +541,55 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 		return preparedStatement;
 	}
 
-	/**
-	 * @return the requested query as string
-	 * @throws SQLException
-	 */
-	public PreparedStatement getQueryDeleteCompletedTasks(Connection conn)
-		throws SQLException {
+    /**
+     * @return the requested query as string
+     * @throws SQLException
+     */
+    public String getQueryDeleteCompletedTasks() {
 
-		String str = null;
-		PreparedStatement preparedStatement = null;
+        return "DELETE FROM " + TABLE_NAME + " WHERE " + COL_STATUS + "<>" + QUEUED.getStatusId()
+                + " AND " + COL_STATUS + "<>" + IN_PROGRESS.getStatusId() + " AND " + COL_DATE
+                + " <= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL ? SECOND)";
+    }
 
-		str = "DELETE FROM " + TABLE_NAME + " WHERE " + COL_STATUS + "<>?"
-			+ " AND " + COL_STATUS + "<>?";
+    /**
+     * @return the requested query as @PreparedStatement
+     * @throws SQLException
+     */
+    public PreparedStatement getQueryDeleteCompletedTasks(Connection con, long expirationTime)
+            throws SQLException {
 
-		preparedStatement = conn.prepareStatement(str);
+        PreparedStatement ps = con.prepareStatement(getQueryDeleteCompletedTasks());
+        ps.setLong(1, expirationTime);
 
-		preparedStatement.setInt(1, TapeRecallStatus.QUEUED.getStatusId());
-		preparedStatement.setInt(2, TapeRecallStatus.IN_PROGRESS.getStatusId());
+        return ps;
+    }
 
-		return preparedStatement;
-	}
+    /**
+     * @return the requested query as string
+     * @throws SQLException
+     */
+    public String getQueryDeleteCompletedTasksWithLimit() {
 
-	/**
-	 * @param maxNumTasks
-	 * @return the requested query as string
-	 * @throws SQLException
-	 */
-	public PreparedStatement getQueryDeleteCompletedTasks(Connection conn,
-		int maxNumTasks) throws SQLException {
+        return "DELETE FROM " + TABLE_NAME + " WHERE " + COL_STATUS + "<>" + QUEUED.getStatusId()
+                + " AND " + COL_STATUS + "<>" + IN_PROGRESS.getStatusId() + " AND " + COL_DATE
+                + " <= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL ? SECOND) LIMIT ?";
+    }
 
-		String str = null;
-		PreparedStatement preparedStatement = null;
+    /**
+     * @param maxNumTasks
+     * @return the requested query as string
+     * @throws SQLException
+     */
+    public PreparedStatement getQueryDeleteCompletedTasks(Connection con, long expirationTime,
+            int maxNumTasks) throws SQLException {
 
-		str = "DELETE FROM " + TABLE_NAME + " WHERE " + COL_STATUS + " != ?"
-			+ " AND " + COL_STATUS + " != ?" + " LIMIT  ?";
+        PreparedStatement ps = con.prepareStatement(getQueryDeleteCompletedTasksWithLimit());
 
-		preparedStatement = conn.prepareStatement(str);
+        ps.setLong(1, expirationTime);
+        ps.setInt(2, maxNumTasks);
 
-		preparedStatement.setInt(1, TapeRecallStatus.QUEUED.getStatusId());
-		preparedStatement.setInt(2, TapeRecallStatus.IN_PROGRESS.getStatusId());
-		preparedStatement.setInt(3, maxNumTasks);
-
-		return preparedStatement;
-	}
+        return ps;
+    }
 
 }

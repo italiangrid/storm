@@ -1602,12 +1602,8 @@ public class PtGChunkDAO {
 			con = DriverManager.getConnection(url, name, password);
 			printWarnings(con.getWarnings());
 			response = con.isValid(0);
-		} catch (ClassNotFoundException e) {
-			log.error("PTG CHUNK DAO! Exception in setUpConnection! {}", 
-				e.getMessage(), e);
-		} catch (SQLException e) {
-			log.error("PTG CHUNK DAO! Exception in setUpConenction! {}", 
-				e.getMessage(), e);
+		} catch (ClassNotFoundException | SQLException e) {
+			log.error("PTG CHUNK DAO! Exception in setUpConnection! {}", e.getMessage(), e);
 		}
 		return response;
 	}

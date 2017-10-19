@@ -40,12 +40,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This catalogue holds all info needed to pin files for JiT ACL tracking, and
+ * This catalog holds all info needed to pin files for JiT ACL tracking, and
  * for keeping track of Volatile files. pinLifetime is the time Jit ACLs will be
  * in place: upon expiry ACLs are removed; fileLifetime is the time Volatile
  * files will remain in the system: upon expiry those files are removed. In
- * particular the srmPrepareToPut analyses the request and if the specified file
- * is set to Volatile, then it calls on the catalogue to add the corresponding
+ * particular the srmPrepareToPut analyzes the request and if the specified file
+ * is set to Volatile, then it calls on the catalog to add the corresponding
  * entry for the given fileLifetime. If StoRM is configured for JiT, another
  * method is invoked to add an entry to keep track of the ACLs for the desired
  * pinLifetime. For srmPrepareToGet, only if StoRM is configured for JiT ACLs
@@ -65,11 +65,11 @@ import org.slf4j.LoggerFactory;
  * pinLifetime gets recorded as requested, but upon expiry of the volatile entry
  * any associated acl will get removed as well, regardless of the acl expiry.
  * When lifetime expires: volatile files get erased from the system and their
- * entries in the catalogue are removed; tracked ACLs get removed from the files
- * WITHOUT erasing the files, and their entries in the cataogue are removed;
+ * entries in the catalog are removed; tracked ACLs get removed from the files
+ * WITHOUT erasing the files, and their entries in the catalog are removed;
  * finally for Volatile files with ACLs set up on them, the ACLs are removed AND
- * the files are erased, also cleaning up the catalogue. As a last note, the
- * catalogue checks periodically its entries for any expired ones, and then
+ * the files are erased, also cleaning up the catalog. As a last note, the
+ * catalog checks periodically its entries for any expired ones, and then
  * proceeds with purging; this frequency of cleaning is specified in a
  * configuration parameter, and the net effect is that the pinning/volatile may
  * actually last longer (but never less) because the self cleaning mechanism is
@@ -260,7 +260,7 @@ public class VolatileAndJiTCatalog {
 	 * get cleaned up even if the physical removal of the ACL or erasing of the
 	 * file fails.
 	 */
-	synchronized public void purge() {
+	public synchronized void purge() {
 
 		log.debug("VolatileAndJiT CATALOG! Executing purge!");
 		Calendar rightNow = Calendar.getInstance();
@@ -348,7 +348,7 @@ public class VolatileAndJiTCatalog {
 	 * automatically erased. This implies that all catalogue entries get removed.
 	 * If no entries are present nothing happens.
 	 */
-	synchronized public void removeAllJiTsOn(PFN pfn) {
+	public synchronized void removeAllJiTsOn(PFN pfn) {
 
 		if (pfn != null) {
 			dao.removeAllJiTsOn(pfn.getValue());
@@ -363,7 +363,7 @@ public class VolatileAndJiTCatalog {
 	 * the DB. If null is supplied, an error message gets logged and nothing
 	 * happens. If PFN is not found, nothing happens and _no_ message gets logged.
 	 */
-	synchronized public void removeVolatile(PFN pfn) {
+	public synchronized void removeVolatile(PFN pfn) {
 
 		if (pfn != null) {
 			dao.removeVolatile(pfn.getValue());
@@ -390,7 +390,7 @@ public class VolatileAndJiTCatalog {
 	 * specified. However, when Volatile files expire any related JiTs
 	 * automatically expire in anticipation!
 	 */
-	synchronized public void trackJiT(PFN pfn, LocalUser localUser,
+	public synchronized void trackJiT(PFN pfn, LocalUser localUser,
 		FilesystemPermission acl, Calendar start, TLifeTimeInSeconds pinLifetime) {
 
 		if (pfn != null && localUser != null && acl != null && start != null 
@@ -400,8 +400,8 @@ public class VolatileAndJiTCatalog {
 			int uid = localUser.getUid();
 			int gid = localUser.getPrimaryGid();
 			int intacl = acl.getInt();
-			long pinStart = start.getTimeInMillis() / 1000; // seconds needed and not
-																											// milliseconds!
+			// seconds needed and not milliseconds!
+			long pinStart = start.getTimeInMillis() / 1000;
 			long pinTime = validatePinLifetime(pinLifetime.value());
 			int n = dao.numberJiT(fileName, uid, intacl);
 			if (n == 0) {
@@ -422,11 +422,11 @@ public class VolatileAndJiTCatalog {
 	}
 
 	/**
-	 * Method that adds an entry to the catalogue that keeps track of Volatile
+	 * Method that adds an entry to the catalog that keeps track of Volatile
 	 * files. The PFN and the fileLifetime are needed. If no entry corresponding
 	 * to the given PFN is found, a new one gets recorded. If the PFN is already
 	 * present, then provided the new expiry (obtained by adding together
-	 * current-time and requested-lifetime) exceeds the expiry in the catalogue,
+	 * current-time and requested-lifetime) exceeds the expiry in the catalog,
 	 * the entry is updated. Otherwise nothing takes place. If the supplied
 	 * fileLifetime is zero, then a default value is used instead. This floor
 	 * default value in seconds can be set from the configuration file, with the
@@ -438,9 +438,9 @@ public class VolatileAndJiTCatalog {
 	 * just result in a modification of the expiry, provided the newer one lasts
 	 * longer than the original one. Yet bear in mind that two or more PtP on the
 	 * same file makes NO SENSE AT ALL! If any DB error occurs, then nothing gets
-	 * added/updated and an error messagge gets logged.
+	 * added/updated and an error message gets logged.
 	 */
-	synchronized public void trackVolatile(PFN pfn, Calendar start,
+	public synchronized void trackVolatile(PFN pfn, Calendar start,
 		TLifeTimeInSeconds fileLifetime) {
 
 		if (pfn != null && fileLifetime != null && start != null) {
@@ -473,7 +473,7 @@ public class VolatileAndJiTCatalog {
 			fileLifetime);
 	}
 
-	synchronized public void setStartTime(PFN pfn, Calendar start)
+	public synchronized void setStartTime(PFN pfn, Calendar start)
 		throws Exception {
 
 		if (pfn == null || start == null) {
@@ -483,8 +483,8 @@ public class VolatileAndJiTCatalog {
 		}
 		
 		String fileName = pfn.getValue();
-		long fileStart = start.getTimeInMillis() / 1000; // seconds needed and not
-																											// milliseconds!
+		// seconds needed and not milliseconds!
+		long fileStart = start.getTimeInMillis() / 1000;
 		int n = dao.numberVolatile(fileName);
 		if (n == -1) {
 			log.error("VolatileAndJiT CATALOG! DB problem does not allow to count "
@@ -508,12 +508,12 @@ public class VolatileAndJiTCatalog {
 	 * starting date and time of the lifetime of the supplied PFN, and whose
 	 * second element is the TLifeTime the system is keeping the PFN. If no entry
 	 * is found for the given PFN, an empty List is returned. Likewise if any DB
-	 * error occurs. In any case, proper error messagges get logged. Moreover
+	 * error occurs. In any case, proper error messages get logged. Moreover
 	 * notice that if for any reason the value for the Lifetime read from the DB
 	 * does not allow creation of a valid TLifeTimeInSeconds, an Empty one is
 	 * returned. Error messages in logs warn of the situation.
 	 */
-	synchronized public List volatileInfoOn(PFN pfn) {
+	public synchronized List volatileInfoOn(PFN pfn) {
 
 		ArrayList aux = new ArrayList();
 		if (pfn == null) {
@@ -555,7 +555,7 @@ public class VolatileAndJiTCatalog {
 		if (c == null) {
 			return "";
 		}
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("file,acl,uid,gid\n");
 		JiTData aux = null;
 		for (Iterator<JiTData> i = c.iterator(); i.hasNext();) {
@@ -604,7 +604,7 @@ public class VolatileAndJiTCatalog {
 		if (c == null) {
 			return "";
 		}
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (Iterator<String> i = c.iterator(); i.hasNext();) {
 			sb.append(i.next());
 			if (i.hasNext()) {

@@ -18,10 +18,6 @@
  */
 package it.grid.storm.tape.recalltable.model;
 
-/**
- * @author zappi
- * 
- */
 public enum TapeRecallStatus {
 
 	SUCCESS(0, "success"), QUEUED(1, "queued"), IN_PROGRESS(2, "in-progress"), ERROR(3,
@@ -78,9 +74,9 @@ public enum TapeRecallStatus {
 	 * @param tapeRecallStatus
 	 * @return
 	 */
-	private boolean isFinalStatus() {
+	public boolean isFinalStatus() {
 
-		return isFinalStatus(this.getStatusId());
+		return isFinalStatus(statusId);
 	}
 
 	/**

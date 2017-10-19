@@ -491,19 +491,10 @@ public class CopyChunkDAO {
 		try {
 			Class.forName(driver);
 			con = DriverManager.getConnection(url, name, password);
-			if (con == null) {
-				log
-					.error("COPY CHUNK DAO! DriverManager returned a _null_ connection!");
-			} else {
-				logWarnings(con.getWarnings());
-				response = con.isValid(0);
-			}
-		} catch (ClassNotFoundException e) {
-			log.error("COPY CHUNK DAO! Exception in setUpConnection! {}", 
-				e.getMessage(), e);
-		} catch (SQLException e) {
-			log.error("COPY CHUNK DAO! Exception in setUpConnection! {}", 
-				e.getMessage(), e);
+			logWarnings(con.getWarnings());
+			response = con.isValid(0);
+		} catch (SQLException | ClassNotFoundException e) {
+			log.error("COPY CHUNK DAO! Exception in setUpConnection! {}", e.getMessage(), e);
 		}
 		return response;
 	}

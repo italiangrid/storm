@@ -27,6 +27,9 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static it.grid.storm.persistence.model.TapeRecallTO.TRequestType.BOL_REQUEST;
+import static it.grid.storm.persistence.model.TapeRecallTO.TRequestType.PTG_REQUEST;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
@@ -39,16 +42,13 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 
 	private static final long serialVersionUID = -2907739786996767167L;
 
-	public static final String PTG_REQUEST = "ptg";
-	public static final String BOL_REQUEST = "bol";
-	public static final String BACK_REQUEST = "back";
 	public static final String START_CHAR = "";
 	public static final char SEPARATOR_CHAR = '\u0009';
 	public static final String DATE_FORMAT = "dd-MM-yyyy HH.mm.ss";
 
 	private UUID taskId = null;
 	private TRequestToken requestToken = null;
-	private String requestType = null;
+	private TRequestType requestType = null;
 	private String fileName = null;
 	private String userID = null;
 	private String voName = null;
@@ -142,7 +142,7 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 		return requestToken;
 	}
 
-	public String getRequestType() {
+	public TRequestType getRequestType() {
 
 		return requestType;
 	}
@@ -219,7 +219,7 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 		this.requestToken = requestToken;
 	}
 
-	public void setRequestType(String requestType) {
+	public void setRequestType(TRequestType requestType) {
 
 		this.requestType = requestType;
 	}
@@ -451,4 +451,30 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 			log.error(e.getMessage(), e);
 		}
 	}
+
+	public enum TRequestType {
+
+		PTG_REQUEST("ptg"), BOL_REQUEST("bol"), BACK_REQUEST("back"), RECALL_REQUEST("rec");
+
+		private final String text;
+
+		TRequestType(final String text) {
+			this.text = text;
+		}
+
+		@Override
+		public String toString() {
+			return text;
+		}
+
+		public static TRequestType fromString(String text) {
+			for (TRequestType t : TRequestType.values()) {
+				if (t.text.equalsIgnoreCase(text)) {
+					return t;
+				}
+			}
+			return null;
+		}
+	}
+
 }

@@ -18,6 +18,9 @@
  */
 package it.grid.storm.tape.recalltable;
 
+import static it.grid.storm.persistence.model.TapeRecallTO.TRequestType.BOL_REQUEST;
+import static it.grid.storm.persistence.model.TapeRecallTO.TRequestType.PTG_REQUEST;
+
 import com.google.common.collect.Lists;
 
 import it.grid.storm.asynch.Suspendedable;
@@ -214,7 +217,7 @@ public class TapeRecallCatalog {
 	 */
 	public List<TapeRecallTO> getGroupTasks(UUID groupTaskId) throws DataAccessException {
 
-		return Lists.newArrayList(tapeRecallDAO.getGroupTasks(groupTaskId));
+		return tapeRecallDAO.getGroupTasks(groupTaskId);
 	}
 
 	/**
@@ -228,12 +231,12 @@ public class TapeRecallCatalog {
 	/**
 	 * @param maxSize The max number of purged requests @return the number of purged requests
 	 */
-	public int purgeCatalog(int maxSize) {
+	public int purgeCatalog(long expirationTime, int maxSize) {
 
 		int n = 0;
 		try {
-			log.debug("purging.. '{}' tasks.", maxSize);
-			n = tapeRecallDAO.purgeCompletedTasks(maxSize);
+			log.debug("purging.. '{}' tasks ended almost {} seconds ago.", maxSize, expirationTime);
+			n = tapeRecallDAO.purgeCompletedTasks(expirationTime, maxSize);
 		} catch (DataAccessException e) {
 			log.error("Unable to takeover a task {}", e);
 		}
@@ -338,16 +341,15 @@ public class TapeRecallCatalog {
 		synchronized (this) {
 			groupTaskId = this.insertNewTask(task);
 			/*
-			 * Add to the map this task, if a task for the same group is available, add the tqask to
+			 * Add to the map this task, if a task for the same group is available, add the task to
 			 * its bucket
 			 */
-			Collection<Suspendedable> chunkBucket = recallBuckets.get(groupTaskId);
-			if (chunkBucket != null) {
+			if (recallBuckets.containsKey(groupTaskId)) {
 				// add to the bucket
-				chunkBucket.add(chunk);
+				recallBuckets.get(groupTaskId).add(chunk);
 			} else {
 				// create a new bucket
-				chunkBucket = new ConcurrentLinkedQueue<>();
+				Collection<Suspendedable> chunkBucket = new ConcurrentLinkedQueue<>();
 				chunkBucket.add(chunk);
 				recallBuckets.put(groupTaskId, chunkBucket);
 			}
@@ -399,7 +401,7 @@ public class TapeRecallCatalog {
 
 			PtGData ptgChunk = (PtGData) chunkData;
 
-			task.setRequestType(TapeRecallTO.PTG_REQUEST);
+			task.setRequestType(PTG_REQUEST);
 			task.setPinLifetime((int) ptgChunk.getPinLifeTime().value());
 			task.setDeferredRecallInstant(currentDate);
 
@@ -407,7 +409,7 @@ public class TapeRecallCatalog {
 
 			BoLPersistentChunkData bolChunk = (BoLPersistentChunkData) chunkData;
 
-			task.setRequestType(TapeRecallTO.BOL_REQUEST);
+			task.setRequestType(BOL_REQUEST);
 			task.setPinLifetime((int) bolChunk.getLifeTime().value());
 
 			Date deferredStartDate =
@@ -426,41 +428,42 @@ public class TapeRecallCatalog {
 		return task;
 	}
 
-	public boolean changeGroupTaskStatus(UUID groupTaskId, TapeRecallStatus recallTaskStatus,
-			Date timestamp) throws DataAccessException {
+	public boolean changeGroupTaskStatus(UUID groupTaskId, TapeRecallStatus status, Date timestamp)
+			throws DataAccessException {
 
-		// critical section
-		// begin
-		boolean updated;
 		Collection<Suspendedable> chunkBucket = null;
+
 		synchronized (this) {
-			updated = tapeRecallDAO.setGroupTaskStatus(groupTaskId, recallTaskStatus.getStatusId(),
-					timestamp);
-			if (updated) {
-				if ((recallTaskStatus == TapeRecallStatus.IN_PROGRESS)
-						|| (recallTaskStatus == TapeRecallStatus.QUEUED)) {
-					log.warn(
-							"Setting the status to IN_PROGRESS or QUEUED using setGroupTaskStatus() is not a legal operation, doing it anyway. groupTaskId={}",
+
+			if (!tapeRecallDAO.setGroupTaskStatus(groupTaskId, status.getStatusId(), timestamp)) {
+				log.debug("Updating to status {} at {} didn't affect groupTask {}", status,
+						timestamp, groupTaskId);
+				return false;
+			}
+
+			if (!status.isFinalStatus()) {
+				return true;
+			}
+
+			if (recallBuckets.containsKey(groupTaskId)) {
+				chunkBucket = recallBuckets.remove(groupTaskId);
+			} else {
+				List<TapeRecallTO> recallTasks = getRecallTasksFromGroupTaskId(groupTaskId);
+				if (containsAnyBolOrPtg(recallTasks)) {
+					// recallBuckets should not be empty in case request is a Bol or a Ptg
+					String errorMessage = String.format(
+							"Unable to perform the final status update. No bucket found for Recall Group Task ID %s",
 							groupTaskId);
-				} else {
-					// the status is a terminal status
-					chunkBucket = recallBuckets.remove(groupTaskId);
-					// end
-					if (chunkBucket == null) {
-						log.error(
-								"Unable to perform the final status update. No bucket found for Recall Group Task ID {}",
-								groupTaskId);
-						throw new DataAccessException(
-								"Unable to perform the final status update. No bucket found for Recall Group Task ID "
-										+ groupTaskId.toString());
-					}
+					log.error(errorMessage);
+					throw new DataAccessException(errorMessage);
 				}
 			}
 		}
+
 		if (chunkBucket != null) {
-			updateChuncksStatus(chunkBucket, recallTaskStatus);
+			updateChuncksStatus(chunkBucket, status);
 		}
-		return updated;
+		return true;
 	}
 
 	/**
@@ -477,5 +480,29 @@ public class TapeRecallCatalog {
 		for (Suspendedable chunk : chunkBucket) {
 			chunk.completeRequest(recallTaskStatus);
 		}
+	}
+
+	private List<TapeRecallTO> getRecallTasksFromGroupTaskId(UUID groupTaskId)
+			throws DataAccessException {
+
+		List<TapeRecallTO> recallTasks = tapeRecallDAO.getGroupTasks(groupTaskId);
+		if (recallTasks.isEmpty()) {
+			String errorMessage = String.format(
+					"Unable to perform the final status update. No recall tasks found for Recall Group Task ID %s",
+					groupTaskId);
+			log.error(errorMessage);
+			throw new DataAccessException(errorMessage);
+		}
+		return recallTasks;
+	}
+
+	private boolean containsAnyBolOrPtg(List<TapeRecallTO> recallTasks) {
+
+		for (TapeRecallTO t : recallTasks) {
+			if (BOL_REQUEST.equals(t.getRequestType()) || PTG_REQUEST.equals(t.getRequestType())) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

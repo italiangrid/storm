@@ -23,6 +23,7 @@ import static it.grid.storm.rest.RestService.stop;
 import it.grid.storm.asynch.AdvancedPicker;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.catalogs.StoRMDataSource;
+import it.grid.storm.catalogs.timertasks.ExpiredPutRequestsAgent;
 import it.grid.storm.check.CheckManager;
 import it.grid.storm.check.CheckResponse;
 import it.grid.storm.check.CheckStatus;
@@ -67,13 +68,23 @@ public class StoRM {
 
   // Timer object in charge to call periodically the Space Garbage Collector
   private final Timer gc = new Timer();
+  private TimerTask cleaningTask = null;
+  private boolean isSpaceGCRunning = false;
+
+  /*
+   * Timer object in charge of transit expired put requests from
+   * SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED and from
+   * SRM_REQUEST_INPROGRESS to SRM_FAILURE
+   */
+  private final Timer transiter = new Timer();
+  private TimerTask expiredAgent = null;
+  private boolean isExpiredAgentRunning = false;
 
   private final ReservedSpaceCatalog spaceCatalog;
-  private TimerTask cleaningTask = null;
+
   private boolean isPickerRunning = false;
   private boolean isXmlrpcServerRunning = false;
   private boolean isRestServerRunning = false;
-  private boolean isSpaceGCRunning = false;
 
   /**
    * Public constructor that requires a String containing the complete pathname
@@ -361,5 +372,45 @@ public class StoRM {
   public synchronized boolean spaceGCIsRunning() {
 
     return isSpaceGCRunning;
+  }
+
+  /**
+   * Starts the internal timer needed to periodically check and transit requests whose
+   * pinLifetime has expired and are in SRM_SPACE_AVAILABLE, to SRM_FILE_LIFETIME_EXPIRED.
+   * Moreover, the physical file corresponding to the SURL gets removed;
+   * then any JiT entry gets removed, except those on traverse for the parent directory;
+   * finally any volatile entry gets removed too.
+   * This internal timer also transit requests whose status is still SRM_REQUEST_INPROGRESS
+   * after a configured period to SRM_FAILURE.
+   */
+  public synchronized void startExpiredAgent() {
+
+    /* Delay time before starting cleaning thread! Set to 1 minute */
+    final long delay = Configuration.getInstance().getTransitInitialDelay() * 1000L;
+    /* Period of execution of cleaning! Set to 1 hour */
+    final long period = Configuration.getInstance().getTransitTimeInterval() * 1000L;
+    /* Expiration time before starting move in-progress requests to failure */
+    final long inProgressExpirationTime = Configuration.getInstance().getInProgressPutRequestExpirationTime();
+
+    log.debug("Starting Expired Agent.");
+    expiredAgent = new ExpiredPutRequestsAgent(inProgressExpirationTime);
+    transiter.scheduleAtFixedRate(expiredAgent, delay, period);
+    isExpiredAgentRunning = true;
+    log.debug("Expired Agent started.");
+  }
+
+  public synchronized void stopExpiredAgent() {
+
+    log.debug("Stopping Expired Agent.");
+    if (expiredAgent != null) {
+      expiredAgent.cancel();
+    }
+    log.debug("Expired Agent stopped.");
+    isExpiredAgentRunning = false;
+  }
+
+  public synchronized boolean isExpiredAgentRunning() {
+
+    return isExpiredAgentRunning;
   }
 }
