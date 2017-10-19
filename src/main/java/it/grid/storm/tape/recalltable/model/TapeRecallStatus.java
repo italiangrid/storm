@@ -27,12 +27,12 @@ public enum TapeRecallStatus {
 	SUCCESS(0, "success"), QUEUED(1, "queued"), IN_PROGRESS(2, "in-progress"), ERROR(3,
 			"error"), ABORTED(4, "aborted"), UNDEFINED(5, "undefined");
 
-	private final int taskStatusRepresentation;
+	private final int statusId;
 	private final String statusName;
 
 	private TapeRecallStatus(int statusId, String statusName) {
 
-		taskStatusRepresentation = statusId;
+		this.statusId = statusId;
 		this.statusName = statusName;
 	}
 
@@ -110,7 +110,7 @@ public enum TapeRecallStatus {
 
 	public int getStatusId() {
 
-		return taskStatusRepresentation;
+		return statusId;
 	}
 
 	/**

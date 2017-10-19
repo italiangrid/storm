@@ -24,6 +24,26 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.NamespaceInterface;
+import it.grid.storm.namespace.StoRI;
+import it.grid.storm.persistence.exceptions.DataAccessException;
+import it.grid.storm.persistence.model.TapeRecallTO;
+import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
+import it.grid.storm.rest.metadata.service.ResourceService;
+import it.grid.storm.tape.recalltable.TapeRecallCatalog;
+import it.grid.storm.tape.recalltable.TapeRecallException;
+import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusLogic;
+import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusValidator;
+import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,27 +69,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.Response;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import it.grid.storm.config.Configuration;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
-import it.grid.storm.namespace.StoRI;
-import it.grid.storm.persistence.exceptions.DataAccessException;
-import it.grid.storm.persistence.model.TapeRecallTO;
-import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
-import it.grid.storm.rest.metadata.service.ResourceService;
-import it.grid.storm.tape.recalltable.TapeRecallCatalog;
-import it.grid.storm.tape.recalltable.TapeRecallException;
-import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusLogic;
-import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusValidator;
-import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
-
 /**
  * @author Riccardo Zappi
  * @author Enrico Vianello
@@ -89,14 +88,12 @@ public class TaskResource {
 
 	public TaskResource() throws NamespaceException {
 
-		NamespaceInterface namespace = NamespaceDirector.getNamespace();
+		NamespaceInterface ns = NamespaceDirector.getNamespace();
 		recallCatalog = new TapeRecallCatalog();
-		service =
-				new ResourceService(namespace.getAllDefinedVFS(), namespace.getAllDefinedMappingRules());
+		service = new ResourceService(ns.getAllDefinedVFS(), ns.getAllDefinedMappingRules());
 	}
 
-	public TaskResource(ResourceService service, TapeRecallCatalog recallCatalog)
-			throws NamespaceException {
+	public TaskResource(ResourceService service, TapeRecallCatalog recallCatalog) {
 
 		this.service = service;
 		this.recallCatalog = recallCatalog;
@@ -106,8 +103,8 @@ public class TaskResource {
 	 * Get recall tasks that are currently in progress.
 	 * 
 	 * @param maxResults the maximum number of result to be returned
-	 * @return a Response with a 200 code containing a list of the tasks currently in progress or with
-	 *         a 500 if something went wrong
+	 * @return a Response with a 200 code containing a list of the tasks currently in progress or
+	 *         with a 500 if something went wrong
 	 */
 	@GET
 	public Response getTasks(@QueryParam("maxResults") Integer maxResults) {
@@ -136,9 +133,9 @@ public class TaskResource {
 	 * 
 	 * This method returns a 500 response in case of errors
 	 * 
-	 * The StoRM Frontend calls this method whenever a ptg or bol status request is submitted and the
-	 * related ptg or bol status is marked as in progress in StoRM database. (for both tape enabled
-	 * and disk only SA).
+	 * The StoRM Frontend calls this method whenever a ptg or bol status request is submitted and
+	 * the related ptg or bol status is marked as in progress in StoRM database. (for both tape
+	 * enabled and disk only SA).
 	 */
 	@PUT
 	@Consumes("text/plain")
@@ -160,8 +157,8 @@ public class TaskResource {
 
 		try {
 
-			response =
-					PutTapeRecallStatusLogic.serveRequest(validator.getRequestToken(), validator.getStoRI());
+			response = PutTapeRecallStatusLogic.serveRequest(validator.getRequestToken(),
+					validator.getStoRI());
 
 		} catch (TapeRecallException e) {
 
@@ -204,7 +201,8 @@ public class TaskResource {
 						"Received a tape recall status update but no Recall Group Task found with ID = '{}'",
 						groupTaskId);
 
-				throw new TapeRecallException("No Recall Group Task found with ID = '" + groupTaskId + "'");
+				throw new TapeRecallException(
+						"No Recall Group Task found with ID = '" + groupTaskId + "'");
 			}
 
 		} catch (DataAccessException e) {
@@ -221,7 +219,8 @@ public class TaskResource {
 
 		int eqIndex = inputStr.indexOf('=');
 
-		String value, key = null;
+		String value = null;
+		String key = null;
 
 		if (eqIndex > 0) {
 
@@ -269,9 +268,9 @@ public class TaskResource {
 							"Unable to change the status for group task id {} to status {} DataAccessException : {}",
 							groupTaskId, intValue, e.getMessage(), e);
 
-					throw new TapeRecallException(
-							"Unable to change the status for group task id " + groupTaskId + " to status "
-									+ intValue + " . DataAccessException : " + e.getMessage());
+					throw new TapeRecallException("Unable to change the status for group task id "
+							+ groupTaskId + " to status " + intValue + " . DataAccessException : "
+							+ e.getMessage());
 				}
 
 			} else {
@@ -310,11 +309,11 @@ public class TaskResource {
 		String voName;
 		try {
 			voName = resource.getVirtualFileSystem()
-				.getApproachableRules()
-				.get(0)
-				.getSubjectRules()
-				.getVONameMatchingRule()
-				.getVOName();
+					.getApproachableRules()
+					.get(0)
+					.getSubjectRules()
+					.getVONameMatchingRule()
+					.getVOName();
 		} catch (NamespaceException e) {
 			log.error(e.getMessage());
 			throw new WebApplicationException(e.getMessage(), INTERNAL_SERVER_ERROR);
@@ -460,9 +459,7 @@ public class TaskResource {
 			}
 		}
 
-		String inputStr = sb.toString();
-
-		return inputStr;
+		return sb.toString();
 	}
 
 }
