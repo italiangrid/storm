@@ -58,10 +58,6 @@ public class PingCommand extends DiscoveryCommand implements Command {
 	public static final Logger log = LoggerFactory.getLogger(PingCommand.class);
 	private static final String KEY_ELEMENT_KEY = "key=";
 
-	public PingCommand() {
-
-	}
-
 	public OutputData execute(InputData data) {
 
 		PingOutputData outputData = new PingOutputData();
