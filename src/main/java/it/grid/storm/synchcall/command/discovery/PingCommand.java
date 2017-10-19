@@ -32,16 +32,16 @@ import it.grid.storm.synchcall.data.discovery.PingInputData;
 import it.grid.storm.synchcall.data.discovery.PingOutputData;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Properties;
 import java.util.Map.Entry;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Properties;
 
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008
@@ -57,10 +57,6 @@ public class PingCommand extends DiscoveryCommand implements Command {
 
 	public static final Logger log = LoggerFactory.getLogger(PingCommand.class);
 	private static final String KEY_ELEMENT_KEY = "key=";
-
-	public PingCommand() {
-
-	}
 
 	public OutputData execute(InputData data) {
 
