@@ -17,12 +17,20 @@
 
 package it.grid.storm.catalogs;
 
+import static it.grid.storm.catalogs.ChunkDAOUtils.printWarnings;
+
+import com.google.common.base.Preconditions;
+
 import it.grid.storm.config.Configuration;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.naming.SURL;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -40,12 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Preconditions;
 
 /**
  * DAO class for PtPChunkCatalog. This DAO is specifically designed to connect
@@ -970,12 +972,8 @@ public class PtPChunkDAO {
 		try {
 			Class.forName(driver);
 			con = DriverManager.getConnection(url, name, password);
-			if (con == null) {
-				log.error("PTP CHUNK DAO! DriverManager returned a null connection!");
-			} else {
-				logWarnings(con.getWarnings());
-				response = con.isValid(0);
-			}
+			printWarnings(con.getWarnings());
+			response = con.isValid(0);
 		} catch (ClassNotFoundException e) {
 			log.error("PTP CHUNK DAO! Exception in setUpConenction! {}", 
 				e.getMessage(), e);
