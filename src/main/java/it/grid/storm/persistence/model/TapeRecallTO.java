@@ -230,20 +230,19 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 	}
 
 	/**
-	 * Sets the status of the recall task and if a transition is performed records
-	 * the appropriate time-stamp
+	 * Sets the status of the recall task and if a transition is performed records the appropriate
+	 * time-stamp
 	 * 
 	 * @param status
 	 */
 	public void setStatus(TapeRecallStatus status) {
 
 		this.status = status;
-		if (this.status.equals(TapeRecallStatus.IN_PROGRESS)
-			&& this.inProgressInstant == null) {
+		if (this.status.equals(TapeRecallStatus.IN_PROGRESS) && this.inProgressInstant == null) {
 			this.setInProgressInstant(new Date());
 		} else {
 			if (TapeRecallStatus.isFinalStatus(this.status.getStatusId())
-				&& this.inProgressInstant == null) {
+					&& this.inProgressInstant == null) {
 				this.setFinalStateInstant(new Date());
 			}
 		}
@@ -324,12 +323,12 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 		sb.append(SEPARATOR_CHAR);
 		sb.append(requestToken);
 		sb.append(SEPARATOR_CHAR);
-		
+
 		if (inProgressInstant != null)
 			sb.append(formatter.format(inProgressInstant));
 		else
 			sb.append("null");
-		
+
 		return sb.toString();
 	}
 
