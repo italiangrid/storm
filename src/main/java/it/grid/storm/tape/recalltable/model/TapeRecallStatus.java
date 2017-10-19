@@ -20,130 +20,130 @@ package it.grid.storm.tape.recalltable.model;
 
 public enum TapeRecallStatus {
 
-  SUCCESS(0, "success"), QUEUED(1, "queued"), IN_PROGRESS(2, "in-progress"), ERROR(3,
-      "error"), ABORTED(4, "aborted"), UNDEFINED(5, "undefined");
+	SUCCESS(0, "success"), QUEUED(1, "queued"), IN_PROGRESS(2, "in-progress"), ERROR(3,
+			"error"), ABORTED(4, "aborted"), UNDEFINED(5, "undefined");
 
-  private final int statusId;
-  private final String statusName;
+	private final int statusId;
+	private final String statusName;
 
-  private TapeRecallStatus(int statusId, String statusName) {
+	private TapeRecallStatus(int statusId, String statusName) {
 
-    this.statusId = statusId;
-    this.statusName = statusName;
-  }
+		this.statusId = statusId;
+		this.statusName = statusName;
+	}
 
-  public static TapeRecallStatus getRecallTaskStatus(int statusId) {
+	public static TapeRecallStatus getRecallTaskStatus(int statusId) {
 
-    switch (statusId) {
-      case 0:
-        return SUCCESS;
-      case 1:
-        return QUEUED;
-      case 2:
-        return IN_PROGRESS;
-      case 3:
-        return ERROR;
-      case 4:
-        return ABORTED;
-      default:
-        return UNDEFINED;
-    }
-  }
+		switch (statusId) {
+			case 0:
+				return SUCCESS;
+			case 1:
+				return QUEUED;
+			case 2:
+				return IN_PROGRESS;
+			case 3:
+				return ERROR;
+			case 4:
+				return ABORTED;
+			default:
+				return UNDEFINED;
+		}
+	}
 
-  public static TapeRecallStatus getRecallTaskStatus(String status) {
+	public static TapeRecallStatus getRecallTaskStatus(String status) {
 
-    if ("success".equalsIgnoreCase(status)) {
-      return SUCCESS;
-    }
-    if ("queued".equalsIgnoreCase(status)) {
-      return QUEUED;
-    }
-    if ("in-progress".equalsIgnoreCase(status)) {
-      return IN_PROGRESS;
-    }
-    if ("error".equalsIgnoreCase(status)) {
-      return ERROR;
-    }
-    if ("aborted".equalsIgnoreCase(status)) {
-      return ABORTED;
-    }
-    return UNDEFINED;
-  }
+		if ("success".equalsIgnoreCase(status)) {
+			return SUCCESS;
+		}
+		if ("queued".equalsIgnoreCase(status)) {
+			return QUEUED;
+		}
+		if ("in-progress".equalsIgnoreCase(status)) {
+			return IN_PROGRESS;
+		}
+		if ("error".equalsIgnoreCase(status)) {
+			return ERROR;
+		}
+		if ("aborted".equalsIgnoreCase(status)) {
+			return ABORTED;
+		}
+		return UNDEFINED;
+	}
 
-  /**
-   * @param tapeRecallStatus
-   * @return
-   */
-  public boolean isFinalStatus() {
+	/**
+	 * @param tapeRecallStatus
+	 * @return
+	 */
+	public boolean isFinalStatus() {
 
-    return isFinalStatus(statusId);
-  }
+		return isFinalStatus(statusId);
+	}
 
-  /**
-   * Returns true if the provided status id refers to a status that does not allows state
-   * transitions
-   * 
-   * @param statusId
-   * @return
-   */
-  public static boolean isFinalStatus(int statusId) {
+	/**
+	 * Returns true if the provided status id refers to a status that does not allows state
+	 * transitions
+	 * 
+	 * @param statusId
+	 * @return
+	 */
+	public static boolean isFinalStatus(int statusId) {
 
-    switch (statusId) {
-      case 0:
-        return true; // SUCCESS
-      case 1:
-        return false; // QUEUED
-      case 2:
-        return false; // IN_PROGRESS
-      case 3:
-        return true; // ERROR
-      case 4:
-        return true; // ABORTED
-      default:
-        return false; // UNDEFINED
-    }
-  }
+		switch (statusId) {
+			case 0:
+				return true; // SUCCESS
+			case 1:
+				return false; // QUEUED
+			case 2:
+				return false; // IN_PROGRESS
+			case 3:
+				return true; // ERROR
+			case 4:
+				return true; // ABORTED
+			default:
+				return false; // UNDEFINED
+		}
+	}
 
-  public int getStatusId() {
+	public int getStatusId() {
 
-    return statusId;
-  }
+		return statusId;
+	}
 
-  /**
-   * @param otherStatusId
-   * @return
-   */
-  public boolean precedes(int otherStatusId) {
+	/**
+	 * @param otherStatusId
+	 * @return
+	 */
+	public boolean precedes(int otherStatusId) {
 
-    return precedes(TapeRecallStatus.getRecallTaskStatus(otherStatusId));
-  }
+		return precedes(TapeRecallStatus.getRecallTaskStatus(otherStatusId));
+	}
 
-  /**
-   * Determines if there is a sequence of transitions that can bring from this status to the given
-   * status parameter
-   * 
-   * NOTE: valid transitions are : queued -> inProgress inProgress -> \<any final status\>
-   * 
-   * @param otherStatus
-   * @return
-   */
-  public boolean precedes(TapeRecallStatus otherStatus) {
+	/**
+	 * Determines if there is a sequence of transitions that can bring from this status to the given
+	 * status parameter
+	 * 
+	 * NOTE: valid transitions are : queued -> inProgress inProgress -> \<any final status\>
+	 * 
+	 * @param otherStatus
+	 * @return
+	 */
+	public boolean precedes(TapeRecallStatus otherStatus) {
 
-    if (UNDEFINED.equals(this) || UNDEFINED.equals(otherStatus)) {
-      return false;
-    }
-    if (this.equals(otherStatus)) {
-      return false;
-    }
-    if (QUEUED.equals(this)) {
-      return true;
-    }
-    return IN_PROGRESS.equals(this) && otherStatus.isFinalStatus();
-  }
+		if (UNDEFINED.equals(this) || UNDEFINED.equals(otherStatus)) {
+			return false;
+		}
+		if (this.equals(otherStatus)) {
+			return false;
+		}
+		if (QUEUED.equals(this)) {
+			return true;
+		}
+		return IN_PROGRESS.equals(this) && otherStatus.isFinalStatus();
+	}
 
-  @Override
-  public String toString() {
+	@Override
+	public String toString() {
 
-    return statusName;
-  }
+		return statusName;
+	}
 }
