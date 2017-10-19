@@ -2,16 +2,14 @@
  * 
  * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 
@@ -39,8 +37,7 @@ import org.slf4j.LoggerFactory;
 @Path("/recalltable/cardinality/tasks/")
 public class TasksCardinality {
 
-	private static final Logger log =
-		LoggerFactory.getLogger(TasksCardinality.class);
+	private static final Logger log = LoggerFactory.getLogger(TasksCardinality.class);
 
 	/**
 	 * Get the number of tasks that are queued.
@@ -53,41 +50,26 @@ public class TasksCardinality {
 	@Produces("text/plain")
 	public Response getNumberQueued() {
 
-		String numberQueued = "";
-		
-		int nQueued = -1;
-
-		String errorStr = null;
-
-		TapeRecallCatalog rtCat = null;
+		int nQueued = 0;
 
 		try {
-			
-			rtCat = new TapeRecallCatalog();
-			
+
+			TapeRecallCatalog rtCat = new TapeRecallCatalog();
 			nQueued = rtCat.getNumberTaskQueued();
-			
-			if (nQueued > 0) {
-			
-				log.info("Number of tasks queued = {}" , nQueued);
-			
-			} else {
-				
-				log.trace("Number of tasks queued = {}" , nQueued);
-			}
-			
-			numberQueued += nQueued;
-		
+
 		} catch (DataAccessException e) {
-		
-			errorStr = "Unable to use RecallTable DB.";
-			
-			log.error(errorStr);
-			
+
+			String errorStr = "Unable to use RecallTable DB.";
+			log.error(errorStr, e);
 			return Response.serverError().entity(errorStr).build();
 		}
-		
-		return Response.ok().entity(numberQueued).build();
+
+		if (nQueued > 0) {
+			log.info("Number of tasks queued = {}", nQueued);
+		} else {
+			log.trace("Number of tasks queued = {}", nQueued);
+		}
+		return Response.ok().entity(Integer.toString(nQueued)).build();
 	}
 
 	/**
@@ -100,36 +82,22 @@ public class TasksCardinality {
 	@Produces("text/plain")
 	public Response getReadyForTakeover() {
 
-		String numberReadyForTakeover = "";
-		
-		int nReadyForTakeover = -1;
+		int nReadyForTakeover = 0;
 
-		// string used to built the error message
-		String errorStr = null;
-
-		// recall Table Catalog
-		TapeRecallCatalog rtCat = null;
-		
 		try {
-			
-			rtCat = new TapeRecallCatalog();
-			
+
+			TapeRecallCatalog rtCat = new TapeRecallCatalog();
 			nReadyForTakeover = rtCat.getReadyForTakeOver();
-			
-			log.debug("Number of tasks queued = {}" , nReadyForTakeover);
-			
-			numberReadyForTakeover += nReadyForTakeover;
-		
+
 		} catch (DataAccessException e) {
-		
-			errorStr = "Unable to use RecallTable DB.";
-			
-			log.error(errorStr);
-			
+
+			String errorStr = "Unable to use RecallTable DB.";
+			log.error(errorStr, e);
 			return Response.serverError().entity(errorStr).build();
 		}
-		
-		return Response.ok().entity(numberReadyForTakeover).build();
+
+		log.debug("Number of tasks queued = {}", nReadyForTakeover);
+		return Response.ok().entity(Integer.toString(nReadyForTakeover)).build();
 	}
 
 }

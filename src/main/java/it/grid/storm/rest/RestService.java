@@ -47,7 +47,6 @@ import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_2;
 import it.grid.storm.rest.auth.RestTokenFilter;
 import it.grid.storm.rest.metadata.Metadata;
 import it.grid.storm.tape.recalltable.providers.TapeRecallTOListMessageBodyWriter;
-import it.grid.storm.tape.recalltable.providers.TapeRecallTOMessageBodyReader;
 import it.grid.storm.tape.recalltable.resources.TaskResource;
 import it.grid.storm.tape.recalltable.resources.TasksCardinality;
 import it.grid.storm.tape.recalltable.resources.TasksResource;
@@ -102,7 +101,6 @@ public class RestService {
 		resourceConfig.register(TasksResource.class);
 		resourceConfig.register(TasksCardinality.class);
 		resourceConfig.register(TapeRecallTOListMessageBodyWriter.class);
-		resourceConfig.register(TapeRecallTOMessageBodyReader.class);
 		resourceConfig.register(AuthorizationResource.class);
 		resourceConfig.register(AuthorizationResourceCompat_1_0.class);
 		resourceConfig.register(VirtualFSResource.class);

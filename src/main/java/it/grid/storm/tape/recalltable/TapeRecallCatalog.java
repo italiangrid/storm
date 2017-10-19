@@ -18,18 +18,7 @@
  */
 package it.grid.storm.tape.recalltable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.common.collect.Lists;
 
 import it.grid.storm.asynch.Suspendedable;
 import it.grid.storm.catalogs.BoLPersistentChunkData;
@@ -42,17 +31,26 @@ import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
-/**
- * @author zappi
- */
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+
 public class TapeRecallCatalog {
 
 	private static final Logger log = LoggerFactory.getLogger(TapeRecallCatalog.class);
 
 	private final TapeRecallDAO tapeRecallDAO;
 
-	private static Map<UUID, Collection<Suspendedable>> recallBuckets =
-			new ConcurrentHashMap<UUID, Collection<Suspendedable>>();
+	private static Map<UUID, Collection<Suspendedable>> recallBuckets = new ConcurrentHashMap<>();
 
 	/**
 	 * Default constructor
@@ -216,7 +214,7 @@ public class TapeRecallCatalog {
 	 */
 	public List<TapeRecallTO> getGroupTasks(UUID groupTaskId) throws DataAccessException {
 
-		return new ArrayList<TapeRecallTO>(tapeRecallDAO.getGroupTasks(groupTaskId));
+		return Lists.newArrayList(tapeRecallDAO.getGroupTasks(groupTaskId));
 	}
 
 	/**
@@ -248,9 +246,9 @@ public class TapeRecallCatalog {
 	 *
 	 * @param n @return
 	 */
-	public ArrayList<TapeRecallTO> takeoverNTasksWithDoubles(int numberOfTaks) {
+	public List<TapeRecallTO> takeoverNTasksWithDoubles(int numberOfTaks) {
 
-		ArrayList<TapeRecallTO> taskList = new ArrayList<TapeRecallTO>();
+		List<TapeRecallTO> taskList = Lists.newArrayList();
 		try {
 			taskList.addAll(tapeRecallDAO.takeoverTasksWithDoubles(numberOfTaks));
 		} catch (DataAccessException e) {
@@ -312,7 +310,7 @@ public class TapeRecallCatalog {
 	 */
 	public List<TapeRecallTO> takeoverTasks(int numberOfTaks, String voName) {
 
-		ArrayList<TapeRecallTO> taskList = new ArrayList<TapeRecallTO>();
+		List<TapeRecallTO> taskList = Lists.newArrayList();
 		try {
 			taskList.addAll(tapeRecallDAO.takeoverTasksWithDoubles(numberOfTaks, voName));
 		} catch (DataAccessException e) {
@@ -349,7 +347,7 @@ public class TapeRecallCatalog {
 				chunkBucket.add(chunk);
 			} else {
 				// create a new bucket
-				chunkBucket = new ConcurrentLinkedQueue<Suspendedable>();
+				chunkBucket = new ConcurrentLinkedQueue<>();
 				chunkBucket.add(chunk);
 				recallBuckets.put(groupTaskId, chunkBucket);
 			}
@@ -451,7 +449,7 @@ public class TapeRecallCatalog {
 					if (chunkBucket == null) {
 						log.error(
 								"Unable to perform the final status update. No bucket found for Recall Group Task ID {}",
-								groupTaskId.toString());
+								groupTaskId);
 						throw new DataAccessException(
 								"Unable to perform the final status update. No bucket found for Recall Group Task ID "
 										+ groupTaskId.toString());
@@ -469,7 +467,7 @@ public class TapeRecallCatalog {
 	 * @param taskId @param recallTaskStatus @throws IllegalArgumentException
 	 */
 	private void updateChuncksStatus(Collection<Suspendedable> chunkBucket,
-			TapeRecallStatus recallTaskStatus) throws IllegalArgumentException {
+			TapeRecallStatus recallTaskStatus) {
 
 		if (chunkBucket == null || chunkBucket.isEmpty() || recallTaskStatus == null) {
 			log.error("Unable to perform the final status update. Provided invalid arguments");
