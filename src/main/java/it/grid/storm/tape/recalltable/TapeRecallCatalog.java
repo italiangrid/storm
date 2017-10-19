@@ -336,8 +336,7 @@ public class TapeRecallCatalog {
 		task.setVoName(voName);
 
 		UUID groupTaskId;
-		// critical section
-		// begin
+
 		synchronized (this) {
 			groupTaskId = this.insertNewTask(task);
 			/*
@@ -354,7 +353,6 @@ public class TapeRecallCatalog {
 				recallBuckets.put(groupTaskId, chunkBucket);
 			}
 		}
-		// end
 		return groupTaskId;
 	}
 
