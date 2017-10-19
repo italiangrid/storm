@@ -17,6 +17,8 @@
 
 package it.grid.storm.catalogs;
 
+import static it.grid.storm.catalogs.ChunkDAOUtils.buildInClauseForArray;
+import static it.grid.storm.catalogs.ChunkDAOUtils.printWarnings;
 import static it.grid.storm.srm.types.TStatusCode.SRM_ABORTED;
 import static it.grid.storm.srm.types.TStatusCode.SRM_FAILURE;
 import static it.grid.storm.srm.types.TStatusCode.SRM_FILE_LIFETIME_EXPIRED;
@@ -64,7 +66,7 @@ import java.util.TimerTask;
  * @version 2.0
  * @date June 2005
  */
-public class PtPChunkDAO extends ChunkDAO {
+public class PtPChunkDAO {
 
 	private static final Logger log = LoggerFactory.getLogger(PtPChunkDAO.class);
 
@@ -1080,12 +1082,8 @@ public class PtPChunkDAO extends ChunkDAO {
 		try {
 			Class.forName(driver);
 			con = DriverManager.getConnection(url, name, password);
-			if (con == null) {
-				log.error("PTP CHUNK DAO! DriverManager returned a null connection!");
-			} else {
-				printWarnings(con.getWarnings());
-				response = con.isValid(0);
-			}
+			printWarnings(con.getWarnings());
+			response = con.isValid(0);
 		} catch (ClassNotFoundException e) {
 			log.error("PTP CHUNK DAO! Exception in setUpConenction! {}", 
 				e.getMessage(), e);
