@@ -46,9 +46,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-/**
- * @author zappi
- */
+
 public class TapeRecallCatalog {
 
 	private static final Logger log = LoggerFactory.getLogger(TapeRecallCatalog.class);
@@ -338,8 +336,7 @@ public class TapeRecallCatalog {
 		task.setVoName(voName);
 
 		UUID groupTaskId;
-		// critical section
-		// begin
+
 		synchronized (this) {
 			groupTaskId = this.insertNewTask(task);
 			/*
@@ -356,7 +353,6 @@ public class TapeRecallCatalog {
 				recallBuckets.put(groupTaskId, chunkBucket);
 			}
 		}
-		// end
 		return groupTaskId;
 	}
 
