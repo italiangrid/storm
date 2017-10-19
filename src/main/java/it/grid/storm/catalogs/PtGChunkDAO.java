@@ -17,6 +17,8 @@
 
 package it.grid.storm.catalogs;
 
+import static it.grid.storm.catalogs.ChunkDAOUtils.printWarnings;
+
 import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.namespace.NamespaceDirector;
@@ -29,12 +31,14 @@ import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -47,9 +51,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * DAO class for PtGChunkCatalog. This DAO is specifically designed to connect
@@ -152,20 +153,20 @@ public class PtGChunkDAO {
 
 			// begin transaction
 			con.setAutoCommit(false);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 
 			// find ID of request corresponding to given RequestToken
 			str = "SELECT rq.ID FROM request_queue rq WHERE rq.r_token=?";
 
 			id = con.prepareStatement(str);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 
 			id.setString(1, to.requestToken());
-			logWarnings(id.getWarnings());
+			printWarnings(id.getWarnings());
 
 			log.debug("PTG CHUNK DAO: addChild; {}", id.toString());
 			rsid = id.executeQuery();
-			logWarnings(id.getWarnings());
+			printWarnings(id.getWarnings());
 
 			/* ID of request in request_process! */
 			int request_id = extractID(rsid);
@@ -173,9 +174,9 @@ public class PtGChunkDAO {
 
 			/* end transaction! */
 			con.commit();
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 			con.setAutoCommit(true);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 
 			// update primary key reading the generated key
 			to.setPrimaryKey(id_s);
@@ -217,44 +218,44 @@ public class PtGChunkDAO {
 		try {
 			// begin transaction
 			con.setAutoCommit(false);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 
 			// add to request_queue...
 			str = "INSERT INTO request_queue (config_RequestTypeID,client_dn,pinLifetime,status,errstring,r_token,nbreqfiles,timeStamp) VALUES (?,?,?,?,?,?,?,?)";
 			addNew = con.prepareStatement(str, Statement.RETURN_GENERATED_KEYS);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 			/* Request type set to prepare to get! */
 			addNew.setString(1,
 				RequestTypeConverter.getInstance().toDB(TRequestType.PREPARE_TO_GET));
-			logWarnings(addNew.getWarnings());
+			printWarnings(addNew.getWarnings());
 
 			addNew.setString(2, client_dn);
-			logWarnings(addNew.getWarnings());
+			printWarnings(addNew.getWarnings());
 
 			addNew.setInt(3, to.lifeTime());
-			logWarnings(addNew.getWarnings());
+			printWarnings(addNew.getWarnings());
 
 			addNew.setInt(
 				4,
 				StatusCodeConverter.getInstance().toDB(
 					TStatusCode.SRM_REQUEST_INPROGRESS));
-			logWarnings(addNew.getWarnings());
+			printWarnings(addNew.getWarnings());
 
 			addNew.setString(5, "New PtG Request resulting from srmCopy invocation.");
-			logWarnings(addNew.getWarnings());
+			printWarnings(addNew.getWarnings());
 
 			addNew.setString(6, to.requestToken());
-			logWarnings(addNew.getWarnings());
+			printWarnings(addNew.getWarnings());
 
 			addNew.setInt(7, 1); // number of requested files set to 1!
-			logWarnings(addNew.getWarnings());
+			printWarnings(addNew.getWarnings());
 
 			addNew.setTimestamp(8, new Timestamp(new Date().getTime()));
-			logWarnings(addNew.getWarnings());
+			printWarnings(addNew.getWarnings());
 
 			log.trace("PTG CHUNK DAO: addNew; {}", addNew.toString());
 			addNew.execute();
-			logWarnings(addNew.getWarnings());
+			printWarnings(addNew.getWarnings());
 
 			rs_new = addNew.getGeneratedKeys();
 			int id_new = extractID(rs_new);
@@ -262,17 +263,17 @@ public class PtGChunkDAO {
 			// add protocols...
 			str = "INSERT INTO request_TransferProtocols (request_queueID,config_ProtocolsID) VALUES (?,?)";
 			addProtocols = con.prepareStatement(str);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 			for (Iterator<String> i = to.protocolList().iterator(); i.hasNext();) {
 				addProtocols.setInt(1, id_new);
-				logWarnings(addProtocols.getWarnings());
+				printWarnings(addProtocols.getWarnings());
 
 				addProtocols.setString(2, i.next());
-				logWarnings(addProtocols.getWarnings());
+				printWarnings(addProtocols.getWarnings());
 
 				log.trace("PTG CHUNK DAO: addNew; {}", addProtocols.toString());
 				addProtocols.execute();
-				logWarnings(addProtocols.getWarnings());
+				printWarnings(addProtocols.getWarnings());
 			}
 
 			// addChild...
@@ -280,9 +281,9 @@ public class PtGChunkDAO {
 
 			// end transaction!
 			con.commit();
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 			con.setAutoCommit(true);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 
 			// update primary key reading the generated key
 			to.setPrimaryKey(id_s);
@@ -330,19 +331,19 @@ public class PtGChunkDAO {
 			// first fill in TDirOption
 			str = "INSERT INTO request_DirOption (isSourceADirectory,allLevelRecursive,numOfLevels) VALUES (?,?,?)";
 			addDirOption = con.prepareStatement(str, Statement.RETURN_GENERATED_KEYS);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 			addDirOption.setBoolean(1, to.dirOption());
-			logWarnings(addDirOption.getWarnings());
+			printWarnings(addDirOption.getWarnings());
 
 			addDirOption.setBoolean(2, to.allLevelRecursive());
-			logWarnings(addDirOption.getWarnings());
+			printWarnings(addDirOption.getWarnings());
 
 			addDirOption.setInt(3, to.numLevel());
-			logWarnings(addDirOption.getWarnings());
+			printWarnings(addDirOption.getWarnings());
 
 			log.trace("PTG CHUNK DAO: addNew; {}", addDirOption.toString());
 			addDirOption.execute();
-			logWarnings(addDirOption.getWarnings());
+			printWarnings(addDirOption.getWarnings());
 
 			rs_do = addDirOption.getGeneratedKeys();
 			int id_do = extractID(rs_do);
@@ -350,25 +351,25 @@ public class PtGChunkDAO {
 			// second fill in request_Get... sourceSURL and TDirOption!
 			str = "INSERT INTO request_Get (request_DirOptionID,request_queueID,sourceSURL,normalized_sourceSURL_StFN,sourceSURL_uniqueID) VALUES (?,?,?,?,?)";
 			addGet = con.prepareStatement(str, Statement.RETURN_GENERATED_KEYS);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 			addGet.setInt(1, id_do);
-			logWarnings(addGet.getWarnings());
+			printWarnings(addGet.getWarnings());
 
 			addGet.setInt(2, requestQueueID);
-			logWarnings(addGet.getWarnings());
+			printWarnings(addGet.getWarnings());
 
 			addGet.setString(3, to.fromSURL());
-			logWarnings(addGet.getWarnings());
+			printWarnings(addGet.getWarnings());
 
 			addGet.setString(4, to.normalizedStFN());
-			logWarnings(addGet.getWarnings());
+			printWarnings(addGet.getWarnings());
 
 			addGet.setInt(5, to.surlUniqueID());
-			logWarnings(addGet.getWarnings());
+			printWarnings(addGet.getWarnings());
 
 			log.trace("PTG CHUNK DAO: addNew; {}", addGet.toString());
 			addGet.execute();
-			logWarnings(addGet.getWarnings());
+			printWarnings(addGet.getWarnings());
 
 			rs_g = addGet.getGeneratedKeys();
 			int id_g = extractID(rs_g);
@@ -376,19 +377,19 @@ public class PtGChunkDAO {
 			// third fill in status_Get...
 			str = "INSERT INTO status_Get (request_GetID,statusCode,explanation) VALUES (?,?,?)";
 			addChild = con.prepareStatement(str, Statement.RETURN_GENERATED_KEYS);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 			addChild.setInt(1, id_g);
-			logWarnings(addChild.getWarnings());
+			printWarnings(addChild.getWarnings());
 
 			addChild.setInt(2, to.status());
-			logWarnings(addChild.getWarnings());
+			printWarnings(addChild.getWarnings());
 
 			addChild.setString(3, to.errString());
-			logWarnings(addChild.getWarnings());
+			printWarnings(addChild.getWarnings());
 
 			log.trace("PTG CHUNK DAO: addNew; {}", addChild.toString());
 			addChild.execute();
-			logWarnings(addChild.getWarnings());
+			printWarnings(addChild.getWarnings());
 
 			return id_g;
 		} finally {
@@ -424,35 +425,35 @@ public class PtGChunkDAO {
 				.prepareStatement("UPDATE request_queue rq JOIN (status_Get sg, request_Get rg) ON (rq.ID=rg.request_queueID AND sg.request_GetID=rg.ID) "
 					+ "SET sg.fileSize=?, sg.transferURL=?, sg.statusCode=?, sg.explanation=?, rq.pinLifetime=?, rg.normalized_sourceSURL_StFN=?, rg.sourceSURL_uniqueID=? "
 					+ "WHERE rg.ID=?");
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 
 			updateFileReq.setLong(1, to.fileSize());
-			logWarnings(updateFileReq.getWarnings());
+			printWarnings(updateFileReq.getWarnings());
 
 			updateFileReq.setString(2, to.turl());
-			logWarnings(updateFileReq.getWarnings());
+			printWarnings(updateFileReq.getWarnings());
 
 			updateFileReq.setInt(3, to.status());
-			logWarnings(updateFileReq.getWarnings());
+			printWarnings(updateFileReq.getWarnings());
 
 			updateFileReq.setString(4, to.errString());
-			logWarnings(updateFileReq.getWarnings());
+			printWarnings(updateFileReq.getWarnings());
 
 			updateFileReq.setInt(5, to.lifeTime());
-			logWarnings(updateFileReq.getWarnings());
+			printWarnings(updateFileReq.getWarnings());
 
 			updateFileReq.setString(6, to.normalizedStFN());
-			logWarnings(updateFileReq.getWarnings());
+			printWarnings(updateFileReq.getWarnings());
 
 			updateFileReq.setInt(7, to.surlUniqueID());
-			logWarnings(updateFileReq.getWarnings());
+			printWarnings(updateFileReq.getWarnings());
 
 			updateFileReq.setLong(8, to.primaryKey());
-			logWarnings(updateFileReq.getWarnings());
+			printWarnings(updateFileReq.getWarnings());
 			// execute update
 			log.trace("PTG CHUNK DAO: update method; {}", updateFileReq.toString());
 			updateFileReq.executeUpdate();
-			logWarnings(updateFileReq.getWarnings());
+			printWarnings(updateFileReq.getWarnings());
 		} catch (SQLException e) {
 			log.error("PtG CHUNK DAO: Unable to complete update! {}", 
 				e.getMessage(), e);
@@ -479,20 +480,20 @@ public class PtGChunkDAO {
 		PreparedStatement stmt = null;
 		try {
 			stmt = con.prepareStatement(str);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 
 			stmt.setString(1, chunkTO.normalizedStFN());
-			logWarnings(stmt.getWarnings());
+			printWarnings(stmt.getWarnings());
 
 			stmt.setInt(2, chunkTO.surlUniqueID());
-			logWarnings(stmt.getWarnings());
+			printWarnings(stmt.getWarnings());
 
 			stmt.setLong(3, chunkTO.primaryKey());
-			logWarnings(stmt.getWarnings());
+			printWarnings(stmt.getWarnings());
 
 			log.trace("PtG CHUNK DAO - update incomplete: {}", stmt.toString());
 			stmt.executeUpdate();
-			logWarnings(stmt.getWarnings());
+			printWarnings(stmt.getWarnings());
 		} catch (SQLException e) {
 			log.error("PtG CHUNK DAO: Unable to complete update incomplete! {}", 
 				e.getMessage(), e);
@@ -529,14 +530,14 @@ public class PtGChunkDAO {
 			queryString = "SELECT  sg.statusCode, sg.transferURL "
 				+ "FROM status_Get sg " + "WHERE sg.request_GetID=?";
 			find = con.prepareStatement(queryString);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 			find.setLong(1, primary_key);
-			logWarnings(find.getWarnings());
+			printWarnings(find.getWarnings());
 			log.trace("PTG CHUNK DAO: refresh status method; {}", find.toString());
 
 			rs = find.executeQuery();
 
-			logWarnings(find.getWarnings());
+			printWarnings(find.getWarnings());
 			PtGChunkDataTO chunkDataTO = null;
 			// The result shoul be un
 			while (rs.next()) {
@@ -596,15 +597,15 @@ public class PtGChunkDAO {
 				+ "WHERE rq.r_token=?";
 
 			find = con.prepareStatement(str);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 
 			List<String> protocols = new ArrayList<String>();
 			find.setString(1, strToken);
-			logWarnings(find.getWarnings());
+			printWarnings(find.getWarnings());
 
 			log.trace("PTG CHUNK DAO: find method; {}", find.toString());
 			rs = find.executeQuery();
-			logWarnings(find.getWarnings());
+			printWarnings(find.getWarnings());
 			while (rs.next()) {
 				protocols.add(rs.getString("tp.config_ProtocolsID"));
 			}
@@ -620,18 +621,18 @@ public class PtGChunkDAO {
 				+ "LEFT JOIN request_DirOption d ON rg.request_DirOptionID=d.ID "
 				+ "WHERE rq.r_token=? AND sg.statusCode<>?";
 			find = con.prepareStatement(str);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 			ArrayList<PtGChunkDataTO> list = new ArrayList<PtGChunkDataTO>();
 			find.setString(1, strToken);
-			logWarnings(find.getWarnings());
+			printWarnings(find.getWarnings());
 
 			find.setInt(2,
 				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_ABORTED));
-			logWarnings(find.getWarnings());
+			printWarnings(find.getWarnings());
 
 			log.trace("PTG CHUNK DAO: find method; " + find.toString());
 			rs = find.executeQuery();
-			logWarnings(find.getWarnings());
+			printWarnings(find.getWarnings());
 
 			PtGChunkDataTO chunkDataTO;
 			while (rs.next()) {
@@ -701,15 +702,15 @@ public class PtGChunkDAO {
 				+ "ON (rg.request_queueID=rq.ID AND sg.request_GetID=rg.ID) "
 				+ "WHERE rq.r_token=?";
 			find = con.prepareStatement(str);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 
 			ArrayList<ReducedPtGChunkDataTO> list = new ArrayList<ReducedPtGChunkDataTO>();
 			find.setString(1, reqtoken);
-			logWarnings(find.getWarnings());
+			printWarnings(find.getWarnings());
 
 			log.trace("PtG CHUNK DAO! findReduced with request token; {}", find.toString());
 			rs = find.executeQuery();
-			logWarnings(find.getWarnings());
+			printWarnings(find.getWarnings());
 
 			ReducedPtGChunkDataTO reducedChunkDataTO = null;
 			while (rs.next()) {
@@ -760,15 +761,15 @@ public class PtGChunkDAO {
 
 			find = con.prepareStatement(str);
 
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 
 			ArrayList<ReducedPtGChunkDataTO> list = new ArrayList<ReducedPtGChunkDataTO>();
 			find.setString(1, requestToken.getValue());
-			logWarnings(find.getWarnings());
+			printWarnings(find.getWarnings());
 
 			log.trace("PtG CHUNK DAO! findReduced with griduser+surlarray; {}", find.toString());
 			rs = find.executeQuery();
-			logWarnings(find.getWarnings());
+			printWarnings(find.getWarnings());
 
 			ReducedPtGChunkDataTO chunkDataTO = null;
 			while (rs.next()) {
@@ -826,15 +827,15 @@ public class PtGChunkDAO {
 				+ " AND rg.sourceSURL IN "
 				+ makeSurlString(surls) + " ) ";
 			find = con.prepareStatement(str);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 
 			ArrayList<ReducedPtGChunkDataTO> list = new ArrayList<ReducedPtGChunkDataTO>();
 			find.setString(1, griduser);
-			logWarnings(find.getWarnings());
+			printWarnings(find.getWarnings());
 
 			log.trace("PtG CHUNK DAO! findReduced with griduser+surlarray; {}", find.toString());
 			rs = find.executeQuery();
-			logWarnings(find.getWarnings());
+			printWarnings(find.getWarnings());
 
 			ReducedPtGChunkDataTO chunkDataTO = null;
 			while (rs.next()) {
@@ -892,14 +893,14 @@ public class PtGChunkDAO {
 		PreparedStatement signal = null;
 		try {
 			signal = con.prepareStatement(signalSQL);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 			/* Prepared statement spares DB-specific String notation! */
 			signal.setString(1, "Request is malformed!");
-			logWarnings(signal.getWarnings());
+			printWarnings(signal.getWarnings());
 
 			log.trace("PTG CHUNK DAO: signalMalformed; {}", signal.toString());
 			signal.executeUpdate();
-			logWarnings(signal.getWarnings());
+			printWarnings(signal.getWarnings());
 		} catch (SQLException e) {
 			log.error("PtGChunkDAO! Unable to signal in DB that the request was "
 				+ "malformed! Request: {}; Exception: {}", auxTO.toString(), e.toString());
@@ -933,18 +934,18 @@ public class PtGChunkDAO {
 		ResultSet rs = null;
 		try {
 			find = con.prepareStatement(str);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 			/* Prepared statement spares DB-specific String notation! */
 			find.setInt(1, surlUniqueID);
-			logWarnings(find.getWarnings());
+			printWarnings(find.getWarnings());
 
 			find.setInt(2,
 				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
-			logWarnings(find.getWarnings());
+			printWarnings(find.getWarnings());
 
 			log.trace("PtG CHUNK DAO - numberInSRM_FILE_PINNED method: {}", find.toString());
 			rs = find.executeQuery();
-			logWarnings(find.getWarnings());
+			printWarnings(find.getWarnings());
 
 			int numberFilePinned = 0;
 			if (rs.next()) {
@@ -997,7 +998,7 @@ public class PtGChunkDAO {
 				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
 
 			ResultSet res = preparedStatement.executeQuery();
-			logWarnings(preparedStatement.getWarnings());
+			printWarnings(preparedStatement.getWarnings());
 
 			while (res.next()) {
 				String sourceSURL = res.getString("rg.sourceSURL");
@@ -1040,21 +1041,21 @@ public class PtGChunkDAO {
 				+ "WHERE sg.statusCode=? AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(rq.timeStamp) >= rq.pinLifetime ";
 
 			preparedStatement = con.prepareStatement(str);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 
 			preparedStatement.setInt(1,
 				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_RELEASED));
-			logWarnings(preparedStatement.getWarnings());
+			printWarnings(preparedStatement.getWarnings());
 
 			preparedStatement.setInt(2,
 				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
-			logWarnings(preparedStatement.getWarnings());
+			printWarnings(preparedStatement.getWarnings());
 
 			log.trace("PtG CHUNK DAO - transitExpiredSRM_FILE_PINNED method: {}", 
 				preparedStatement.toString());
 
 			int count = preparedStatement.executeUpdate();
-			logWarnings(preparedStatement.getWarnings());
+			printWarnings(preparedStatement.getWarnings());
 
 			if (count == 0) {
 				log.trace("PtGChunkDAO! No chunk of PtG request was "
@@ -1094,7 +1095,7 @@ public class PtGChunkDAO {
 				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
 
 			ResultSet res = preparedStatement.executeQuery();
-			logWarnings(preparedStatement.getWarnings());
+			printWarnings(preparedStatement.getWarnings());
 
 			while (res.next()) {
 				String sourceSURL = res.getString("rg.sourceSURL");
@@ -1125,7 +1126,7 @@ public class PtGChunkDAO {
 				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_SUCCESS));
 
 			res = preparedStatement.executeQuery();
-			logWarnings(preparedStatement.getWarnings());
+			printWarnings(preparedStatement.getWarnings());
 
 			while (res.next()) {
 				String sourceSURL = res.getString("rb.sourceSURL");
@@ -1203,19 +1204,19 @@ public class PtGChunkDAO {
 		PreparedStatement stmt = null;
 		try {
 			stmt = con.prepareStatement(str);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 			stmt.setInt(1,
 				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_RELEASED));
-			logWarnings(stmt.getWarnings());
+			printWarnings(stmt.getWarnings());
 
 			stmt.setInt(2,
 				StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
-			logWarnings(stmt.getWarnings());
+			printWarnings(stmt.getWarnings());
 
 			log.trace("PtG CHUNK DAO - transitSRM_FILE_PINNEDtoSRM_RELEASED: {}",
 				stmt.toString());
 			int count = stmt.executeUpdate();
-			logWarnings(stmt.getWarnings());
+			printWarnings(stmt.getWarnings());
 			if (count == 0) {
 				log.trace("PtG CHUNK DAO! No chunk of PtG request was "
 					+ "transited from SRM_FILE_PINNED to SRM_RELEASED.");
@@ -1261,16 +1262,16 @@ public class PtGChunkDAO {
 		PreparedStatement stmt = null;
 		try {
 			stmt = con.prepareStatement(str);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 			stmt.setInt(1,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_RELEASED));
-			logWarnings(stmt.getWarnings());
+			printWarnings(stmt.getWarnings());
 
 			stmt.setInt(2,StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_FILE_PINNED));
-			logWarnings(stmt.getWarnings());
+			printWarnings(stmt.getWarnings());
 
 			log.trace("PtG CHUNK DAO - transitSRM_FILE_PINNEDtoSRM_RELEASED: {}", stmt.toString());
 			int count = stmt.executeUpdate();
-			logWarnings(stmt.getWarnings());
+			printWarnings(stmt.getWarnings());
 			if (count == 0) {
 				log.trace("PtG CHUNK DAO! No chunk of PtG request was"
 					+ " transited from SRM_FILE_PINNED to SRM_RELEASED.");
@@ -1304,16 +1305,16 @@ public class PtGChunkDAO {
 		PreparedStatement stmt = null;
 		try {
 			stmt = con.prepareStatement(str);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 			stmt.setInt(1, StatusCodeConverter.getInstance().toDB(statusCode));
-			logWarnings(stmt.getWarnings());
+			printWarnings(stmt.getWarnings());
 
 			stmt.setString(2, (explanation != null ? explanation : ""));
-			logWarnings(stmt.getWarnings());
+			printWarnings(stmt.getWarnings());
 
 			log.trace("PtG CHUNK DAO - updateStatus: {}", stmt.toString());
 			int count = stmt.executeUpdate();
-			logWarnings(stmt.getWarnings());
+			printWarnings(stmt.getWarnings());
 			if (count == 0) {
 				log.trace("PtG CHUNK DAO! No chunk of PtG request was updated to {}.", 
 					statusCode);
@@ -1418,17 +1419,17 @@ public class PtGChunkDAO {
 		PreparedStatement stmt = null;
 		try {
 			stmt = con.prepareStatement(str);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 			stmt.setInt(1, StatusCodeConverter.getInstance().toDB(newStatusCode));
-			logWarnings(stmt.getWarnings());
+			printWarnings(stmt.getWarnings());
 
 			stmt
 				.setInt(2, StatusCodeConverter.getInstance().toDB(expectedStatusCode));
-			logWarnings(stmt.getWarnings());
+			printWarnings(stmt.getWarnings());
 
 			log.trace("PtG CHUNK DAO - updateStatusOnMatchingStatus: {}", stmt.toString());
 			int count = stmt.executeUpdate();
-			logWarnings(stmt.getWarnings());
+			printWarnings(stmt.getWarnings());
 			if (count == 0) {
 				log.trace("PtG CHUNK DAO! No chunk of PtG request was updated "
 					+ "from {} to {}.", expectedStatusCode, newStatusCode);
@@ -1522,19 +1523,6 @@ public class PtGChunkDAO {
 	}
 
 	/**
-	 * Auxiliary private method that logs all SQL warnings.
-	 */
-	private void logWarnings(SQLWarning w) {
-
-		if (w != null) {
-			log.debug("PTG CHUNK DAO: {}", w.toString());
-			while ((w = w.getNextWarning()) != null) {
-				log.debug("PTG CHUNK DAO: {}", w.toString());
-			}
-		}
-	}
-
-	/**
 	 * Method that returns a String containing all IDs.
 	 */
 	private String makeWhereString(long[] rowids) {
@@ -1612,7 +1600,7 @@ public class PtGChunkDAO {
 		try {
 			Class.forName(driver);
 			con = DriverManager.getConnection(url, name, password);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 			response = con.isValid(0);
 		} catch (ClassNotFoundException | SQLException e) {
 			log.error("PTG CHUNK DAO! Exception in setUpConnection! {}", e.getMessage(), e);
@@ -1714,13 +1702,13 @@ public class PtGChunkDAO {
 			}
 
 			find = con.prepareStatement(str);
-			logWarnings(con.getWarnings());
+			printWarnings(con.getWarnings());
 
 			List<PtGChunkDataTO> list = new ArrayList<PtGChunkDataTO>();
 
 			log.trace("PTG CHUNK DAO - find method: {}", find.toString());
 			rs = find.executeQuery();
-			logWarnings(find.getWarnings());
+			printWarnings(find.getWarnings());
 			PtGChunkDataTO chunkDataTO = null;
 			while (rs.next()) {
 

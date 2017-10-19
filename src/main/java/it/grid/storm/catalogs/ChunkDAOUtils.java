@@ -5,11 +5,11 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLWarning;
 
-public class ChunkDAO {
+public class ChunkDAOUtils {
 
-  private static final Logger log = LoggerFactory.getLogger(ChunkDAO.class);
+  private static final Logger log = LoggerFactory.getLogger(ChunkDAOUtils.class);
 
-  protected ChunkDAO() {}
+  protected ChunkDAOUtils() {}
 
   public static void printWarnings(SQLWarning warning) {
 
