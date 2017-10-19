@@ -726,7 +726,7 @@ public class PtPChunkDAO {
 			printWarnings(stmt.getWarnings());
 
 			while (rs.next()) {
-			    ids.put(Long.valueOf(rs.getLong("rp.ID")), rs.getString("rp.targetSURL"));
+			    ids.put(rs.getLong("rp.ID"), rs.getString("rp.targetSURL"));
 			}
 		} catch (SQLException e) {
 			log.error("PtPChunkDAO! Unable to select expired "
@@ -1128,7 +1128,7 @@ public class PtPChunkDAO {
 	}
 
 	public synchronized int updateStatus(int[] surlsUniqueIDs, String[] surls,
-		TStatusCode statusCode, String explanation) throws IllegalArgumentException {
+		TStatusCode statusCode, String explanation) {
 
 		if (explanation == null) {
 			throw new IllegalArgumentException("Unable to perform the updateStatus, "
@@ -1140,7 +1140,7 @@ public class PtPChunkDAO {
 
 	public synchronized int updateStatus(TRequestToken requestToken,
 		int[] surlsUniqueIDs, String[] surls, TStatusCode statusCode,
-		String explanation) throws IllegalArgumentException {
+		String explanation) {
 
 		if (requestToken == null || requestToken.getValue().trim().isEmpty()
 			|| explanation == null) {
@@ -1225,7 +1225,7 @@ public class PtPChunkDAO {
 
 	public synchronized int updateStatusOnMatchingStatus(int[] surlsUniqueIDs,
 		String[] surls, TStatusCode expectedStatusCode, TStatusCode newStatusCode,
-		String explanation) throws IllegalArgumentException {
+		String explanation) {
 
 		if (surlsUniqueIDs == null || surls == null || explanation == null
 			|| surlsUniqueIDs.length == 0 || surls.length == 0
@@ -1241,8 +1241,7 @@ public class PtPChunkDAO {
 
 	public synchronized int updateStatusOnMatchingStatus(
 		TRequestToken requestToken, int[] surlsUniqueIDs, String[] surls,
-		TStatusCode expectedStatusCode, TStatusCode newStatusCode)
-		throws IllegalArgumentException {
+		TStatusCode expectedStatusCode, TStatusCode newStatusCode) {
 
 		if (requestToken == null || requestToken.getValue().trim().isEmpty()
 			|| surlsUniqueIDs == null || surls == null || surlsUniqueIDs.length == 0
@@ -1259,7 +1258,7 @@ public class PtPChunkDAO {
 	private int doUpdateStatusOnMatchingStatus(TRequestToken requestToken,
 		int[] surlsUniqueIDs, String[] surls, TStatusCode expectedStatusCode,
 		TStatusCode newStatusCode, String explanation, boolean withRequestToken,
-		boolean withSurls, boolean withExplanation) throws IllegalArgumentException {
+		boolean withSurls, boolean withExplanation) {
 
 		if ((withRequestToken && requestToken == null)
 			|| (withExplanation && explanation == null)
@@ -1321,8 +1320,7 @@ public class PtPChunkDAO {
 		return count;
 	}
 
-	public Collection<PtPChunkDataTO> find(int[] surlsUniqueIDs,
-		String[] surlsArray, String dn) throws IllegalArgumentException {
+	public Collection<PtPChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray, String dn) {
 
 		if (surlsUniqueIDs == null || surlsUniqueIDs.length == 0
 			|| surlsArray == null || surlsArray.length == 0 || dn == null) {
@@ -1333,8 +1331,7 @@ public class PtPChunkDAO {
 		return find(surlsUniqueIDs, surlsArray, dn, true);
 	}
 
-	public Collection<PtPChunkDataTO> find(int[] surlsUniqueIDs,
-		String[] surlsArray) throws IllegalArgumentException {
+	public Collection<PtPChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray) {
 
 		if (surlsUniqueIDs == null || surlsUniqueIDs.length == 0
 			|| surlsArray == null || surlsArray.length == 0) {
@@ -1349,8 +1346,7 @@ public class PtPChunkDAO {
 	private List<PtPChunkDataTO> chunkTOfromResultSet(ResultSet rs) 
 	  throws SQLException{
 
-	  List<PtPChunkDataTO> results = Lists.newArrayList();
-
+	List<PtPChunkDataTO> results = Lists.newArrayList();
 	  while (rs.next()) {
 	    
 	    PtPChunkDataTO chunkDataTO = new PtPChunkDataTO();
