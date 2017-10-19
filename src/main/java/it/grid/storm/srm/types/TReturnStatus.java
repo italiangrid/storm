@@ -2,22 +2,20 @@
  * 
  * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 
 /**
- * This class represents the TReturnStatus value in SRM request. It is composed
- * by a TStatusCode and an explanetion String
+ * This class represents the TReturnStatus value in SRM request. It is composed by a TStatusCode and
+ * an explanetion String
  * 
  * @author Magnoni Luca
  * @author CNAF - INFN Bologna
@@ -36,195 +34,183 @@ import org.slf4j.LoggerFactory;
 
 public class TReturnStatus implements Serializable {
 
-	private static final long serialVersionUID = -4550845540710062810L;
+    private static final long serialVersionUID = -4550845540710062810L;
 
-	private static final Logger log = LoggerFactory
-		.getLogger(TReturnStatus.class);
-	
-	protected TStatusCode statusCode = null;
-	protected String explanation = null;
-	private Long lastUpdateTIme = null;
+    private static final Logger log = LoggerFactory.getLogger(TReturnStatus.class);
 
-	private static final String EMPTY_EXPLANATION = "";
-	private static final int MAX_EXPLANATION_LENGTH = 255;
+    protected TStatusCode statusCode = null;
+    protected String explanation = null;
+    private Long lastUpdateTIme = null;
 
-	public static final String PNAME_RETURNSTATUS = "returnStatus";
-	public static final String PNAME_STATUS = "status";
+    private static final String EMPTY_EXPLANATION = "";
+    private static final int MAX_EXPLANATION_LENGTH = 255;
 
-	public TReturnStatus(TStatusCode statusCode)
-		throws IllegalArgumentException {
+    public static final String PNAME_RETURNSTATUS = "returnStatus";
+    public static final String PNAME_STATUS = "status";
 
-		this(statusCode, EMPTY_EXPLANATION);
-	}
+    public TReturnStatus(TStatusCode statusCode, String explanation) {
 
-	/**
-	 * Can be Explanation String a null value?
-	 */
-	public TReturnStatus(TStatusCode statusCode, String explanation) {
+        setStatusCode(statusCode);
+        setExplanation(explanation);
+    }
 
-	  setStatusCode(statusCode);
-	  setExplanation(explanation);
-	}
+    public TReturnStatus(TStatusCode statusCode) {
 
-	public TReturnStatus clone() {
+        this(statusCode, EMPTY_EXPLANATION);
+    }
 
-		return new TReturnStatus(getStatusCode(), getExplanation());
-	}
+    public TReturnStatus(TReturnStatus status) {
 
-	/**
-	 * Returns the status code
-	 * 
-	 * @return TStatusCode
-	 */
-	public TStatusCode getStatusCode() {
+        this(status.getStatusCode(), status.getExplanation());
+    }
 
-		return statusCode;
-	}
+    /**
+     * Returns the status code
+     * 
+     * @return TStatusCode
+     */
+    public TStatusCode getStatusCode() {
 
-	/**
-	 * @param statusCode
-	 *          the statusCode to set
-	 */
-	protected void setStatusCode(TStatusCode statusCode) {
+        return statusCode;
+    }
 
-		if (statusCode == null) {
-			throw new IllegalArgumentException(
-				"Cannot set the status code, received null argument: statusCode="
-					+ statusCode);
-		}
-		this.statusCode = statusCode;
-		updated();
-	}
+    /**
+     * @param statusCode the statusCode to set
+     */
+    protected void setStatusCode(TStatusCode statusCode) {
 
-	/**
-	 * Set explanation string
-	 * 
-	 * @param expl
-	 *          String
-	 */
-	protected void setExplanation(String explanationString) {
+        if (statusCode == null) {
+            throw new IllegalArgumentException(
+                    "Cannot set the status code, received null argument: statusCode=" + statusCode);
+        }
+        this.statusCode = statusCode;
+        updated();
+    }
 
-		if (explanationString == null) {
-			explanation = EMPTY_EXPLANATION;
-		} else if (explanationString.length() <= MAX_EXPLANATION_LENGTH) {
-			explanation = explanationString;
-		} else {
-			explanation = explanationString.substring(0, MAX_EXPLANATION_LENGTH);
-			log.warn("TReturnStatus: Explanation string truncated at {} characters: "
-			  + "'{}'", MAX_EXPLANATION_LENGTH, explanation);
-		}
-		updated();
-	}
+    /**
+     * Set explanation string
+     * 
+     * @param expl String
+     */
+    protected void setExplanation(String explanationString) {
 
-	/**
-	 * Returns the explanation string
-	 * 
-	 * @return String
-	 */
-	public String getExplanation() {
+        if (explanationString == null) {
+            explanation = EMPTY_EXPLANATION;
+        } else if (explanationString.length() <= MAX_EXPLANATION_LENGTH) {
+            explanation = explanationString;
+        } else {
+            explanation = explanationString.substring(0, MAX_EXPLANATION_LENGTH);
+            log.warn("TReturnStatus: Explanation string truncated at {} characters: " + "'{}'",
+                    MAX_EXPLANATION_LENGTH, explanation);
+        }
+        updated();
+    }
 
-		return explanation;
-	}
+    /**
+     * Returns the explanation string
+     * 
+     * @return String
+     */
+    public String getExplanation() {
 
-	/**
-	 * @return the lastUpdateTIme
-	 */
-	public Long getLastUpdateTIme() {
+        return explanation;
+    }
 
-		return lastUpdateTIme;
-	}
+    /**
+     * @return the lastUpdateTIme
+     */
+    public Long getLastUpdateTIme() {
 
-	private void updated() {
+        return lastUpdateTIme;
+    }
 
-		this.lastUpdateTIme = Calendar.getInstance().getTimeInMillis();
-	}
+    private void updated() {
 
-	/**
-	 * This method encode a TReturnStatus Object into an Hashtable used for xmlrpc
-	 * communication.
-	 */
-	public void encode(Map outputParam, String name) {
+        this.lastUpdateTIme = Calendar.getInstance().getTimeInMillis();
+    }
 
-		// Return STATUS OF REQUEST
-		HashMap<String, String> globalStatus = new HashMap<String, String>();
-		globalStatus.put("statusCode", getStatusCode().getValue());
-		globalStatus.put("explanation", getExplanation());
+    /**
+     * This method encode a TReturnStatus Object into an Hashtable used for xmlrpc communication.
+     */
+    public void encode(Map outputParam, String name) {
 
-		// Insert TReturnStatus struct into global Output structure
-		outputParam.put(name, globalStatus);
+        // Return STATUS OF REQUEST
+        HashMap<String, String> globalStatus = new HashMap<String, String>();
+        globalStatus.put("statusCode", getStatusCode().getValue());
+        globalStatus.put("explanation", getExplanation());
 
-	}
+        // Insert TReturnStatus struct into global Output structure
+        outputParam.put(name, globalStatus);
 
-	public String toString() {
+    }
 
-		return statusCode + ": " + explanation;
-	}
+    public String toString() {
 
-	public boolean isSRM_SUCCESS() {
+        return statusCode + ": " + explanation;
+    }
 
-		return statusCode.equals(TStatusCode.SRM_SUCCESS);
-	}
+    public boolean isSRM_SUCCESS() {
 
-	public void extendExplaination(String string) {
+        return statusCode.equals(TStatusCode.SRM_SUCCESS);
+    }
 
-		setExplanation(getExplanation() + " [ " + string + " ]");
-	}
+    public void extendExplaination(String string) {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
+        setExplanation(getExplanation() + " [ " + string + " ]");
+    }
 
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-			+ ((explanation == null) ? 0 : explanation.hashCode());
-		result = prime * result
-			+ ((lastUpdateTIme == null) ? 0 : lastUpdateTIme.hashCode());
-		result = prime * result
-			+ ((statusCode == null) ? 0 : statusCode.hashCode());
-		return result;
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((explanation == null) ? 0 : explanation.hashCode());
+        result = prime * result + ((lastUpdateTIme == null) ? 0 : lastUpdateTIme.hashCode());
+        result = prime * result + ((statusCode == null) ? 0 : statusCode.hashCode());
+        return result;
+    }
 
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		TReturnStatus other = (TReturnStatus) obj;
-		if (explanation == null) {
-			if (other.explanation != null) {
-				return false;
-			}
-		} else if (!explanation.equals(other.explanation)) {
-			return false;
-		}
-		if (lastUpdateTIme == null) {
-			if (other.lastUpdateTIme != null) {
-				return false;
-			}
-		} else if (!lastUpdateTIme.equals(other.lastUpdateTIme)) {
-			return false;
-		}
-		if (statusCode != other.statusCode) {
-			return false;
-		}
-		return true;
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        TReturnStatus other = (TReturnStatus) obj;
+        if (explanation == null) {
+            if (other.explanation != null) {
+                return false;
+            }
+        } else if (!explanation.equals(other.explanation)) {
+            return false;
+        }
+        if (lastUpdateTIme == null) {
+            if (other.lastUpdateTIme != null) {
+                return false;
+            }
+        } else if (!lastUpdateTIme.equals(other.lastUpdateTIme)) {
+            return false;
+        }
+        if (statusCode != other.statusCode) {
+            return false;
+        }
+        return true;
+    }
 
 }
