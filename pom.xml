@@ -14,7 +14,7 @@
     <jerseyVersion>2.25.1</jerseyVersion>
     <jettyVersion>8.1.9.v20130131</jettyVersion>
     <slf4jVersion>1.7.2</slf4jVersion>
-    <logbackVersion>1.0.9</logbackVersion>
+    <logbackVersion>1.2.3</logbackVersion>
     <nettyVersion>3.5.0.Final</nettyVersion>
     <jnaVersion>3.3.0</jnaVersion>
     <jettisonVersion>1.1</jettisonVersion>
