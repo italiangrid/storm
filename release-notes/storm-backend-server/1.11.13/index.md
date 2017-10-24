@@ -20,8 +20,8 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.13]({{ site.baseurl 
 This release provides fixes to some outstanding bugs:
 
 * fixes gemss failure of recall task final status update;
-* fixes garbage collector removal of SRM ptp requests that are stuck in SRM_IN_PROGRESS after long time: set the amount of seconds needed to consider an IN-PROGRESS ptp as expired by adding/editing `expired.request.ptp.time` variable into storm.properties configuration file; 
-* fixes garbage collector wrong removal of latest completed recall tasks.
+* fixes garbage collector removal of SRM ptp requests that are stuck in SRM_IN_PROGRESS after long time: set the amount of seconds needed to consider an IN-PROGRESS ptp as expired by adding/editing `expired.request.ptp.time` variable value (default is 2592000L secs = 1 month) into storm.properties configuration file; 
+* fixes garbage collector wrong removal of just completed recall-tasks: now it removes only a bunch of the ones that are `expired.request.time` seconds older (as well as the other asynch requests).
 
 ### Bug fixes
 
