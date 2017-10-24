@@ -14,8 +14,7 @@ import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 
 public class RequestsGarbageCollector extends TimerTask {
 
-	private static final Logger log = LoggerFactory
-		.getLogger(RequestsGarbageCollector.class);
+	private static final Logger log = LoggerFactory.getLogger(RequestsGarbageCollector.class);
 
 	private final Configuration config = Configuration.getInstance();
 	private final RequestSummaryDAO dao = RequestSummaryDAO.getInstance();
@@ -24,17 +23,6 @@ public class RequestsGarbageCollector extends TimerTask {
 
 	private Timer handler;
 	private long delay;
-
-	class TGarbageData {
-
-		int nPurgedRequests = 0;
-		int nPurgedRecalls = 0;
-
-		int getTotalPurged() {
-
-			return nPurgedRequests + nPurgedRecalls;
-		}
-	}
 
 	public RequestsGarbageCollector(Timer handlerTimer, long delay) {
 
@@ -51,35 +39,28 @@ public class RequestsGarbageCollector extends TimerTask {
 
 			if (gd.getTotalPurged() == 0) {
 
-				log.trace(
-					"GARBAGE COLLECTOR didn't find completed requests older than {} seconds",
-					config.getExpiredRequestTime());
-
-			} else if (gd.nPurgedRecalls > 0) {
-
-				log.info(
-					"GARBAGE COLLECTOR removed < {} > completed requests (< {} > recall) older than {} seconds",
-					gd.nPurgedRequests, gd.nPurgedRecalls,
-					config.getExpiredRequestTime());
+				log.trace("GARBAGE COLLECTOR didn't find completed requests older than {} seconds",
+						config.getExpiredRequestTime());
 
 			} else {
 
 				log.info(
-					"GARBAGE COLLECTOR removed < {} > completed requests older than {} seconds",
-					gd.nPurgedRequests, config.getExpiredRequestTime());
+						"GARBAGE COLLECTOR removed < {} > completed requests (< {} > recall) older than {} seconds",
+						gd.getTotalPurgedRequests(), gd.getTotalPurgedRecalls(),
+						config.getExpiredRequestTime());
+
 			}
 
 			long nextDelay = computeNextDelay(gd);
 
 			if (nextDelay != delay) {
 
-				log.info("GARBAGE COLLECTOR: tuning new interval to {} seconds",
-					nextDelay / 1000);
+				log.info("GARBAGE COLLECTOR: tuning new interval to {} seconds", nextDelay / 1000);
 				delay = nextDelay;
 
 			}
 
-		} catch (Throwable t) {
+		} catch (Exception t) {
 
 			/* useful to prevent unexpected exceptions that would kill the GC */
 			log.error(t.getMessage(), t);
@@ -91,26 +72,23 @@ public class RequestsGarbageCollector extends TimerTask {
 	}
 
 	/**
-	 * Delete from database the completed requests older than a specified and
-	 * configurable value.
+	 * Delete from database the completed requests older than a specified and configurable value.
 	 * 
 	 * @return A TGarbageData object containing info about the deleted requests
 	 */
 	private TGarbageData purgeExpiredRequests() {
 
-		TGarbageData out = new TGarbageData();
-
 		if (!enabled()) {
-			return out;
+			return TGarbageData.EMPTY;
 		}
 
-		out.nPurgedRequests = purgeExpiredRequests(config.getExpiredRequestTime(),
-		        config.getPurgeBatchSize());
+		long expirationTime = config.getExpiredRequestTime();
+		int purgeSize = config.getPurgeBatchSize();
 
-		out.nPurgedRecalls = purgeExpiredRecallRequests(config.getExpiredRequestTime(),
-		        config.getPurgeBatchSize());
+		int nRequests = purgeExpiredRequests(expirationTime, purgeSize);
+		int nRecalls = purgeExpiredRecallRequests(expirationTime, purgeSize);
 
-		return out;
+		return new TGarbageData(nRequests, nRecalls);
 	}
 
 	/**
@@ -127,12 +105,9 @@ public class RequestsGarbageCollector extends TimerTask {
 	 * Method used to purge from db a bunch of completed requests, older than the
 	 * specified @expiredRequestTime.
 	 * 
-	 * @param purgeSize
-	 *          The maximum size of the bunch of expired requests that must be
-	 *          deleted
-	 * @param expiredRequestTime
-	 *          The number of seconds after that a request can be considered
-	 *          expired
+	 * @param purgeSize The maximum size of the bunch of expired requests that must be deleted
+	 * @param expiredRequestTime The number of seconds after that a request can be considered
+	 *        expired
 	 * @return The number of requests involved.
 	 */
 	private synchronized int purgeExpiredRequests(long expiredRequestTime, int purgeSize) {
@@ -147,39 +122,28 @@ public class RequestsGarbageCollector extends TimerTask {
 	/**
 	 * Method used to clear a bunch of completed recall requests from database.
 	 * 
-	 * @param expirationTime
-	 *          The number of seconds that must pass before considering a 
-	 *          request as expired
-	 * @param purgeSize
-	 *          The maximum size of the bunch of expired requests that must be
-	 *          deleted
+	 * @param expirationTime The number of seconds that must pass before considering a request as
+	 *        expired
+	 * @param purgeSize The maximum size of the bunch of expired requests that must be deleted
 	 * @return The number of requests involved.
 	 */
 	private synchronized int purgeExpiredRecallRequests(long expirationTime, int purgeSize) {
 
-		int n = new TapeRecallCatalog().purgeCatalog(expirationTime, purgeSize);
-		if (n == 0) {
-			log.trace("No entries have been purged from tape_recall table");
-		} else {
-			log.info("{} entries have been purged from tape_recall table", n);
-		}
-		return n;
+		return new TapeRecallCatalog().purgeCatalog(expirationTime, purgeSize);
 	}
 
 	/**
-	 * Compute a new delay. It will be decreased if the number of purged requests
-	 * is equal to the purge.size value. Otherwise, it will be increased until
-	 * default value.
+	 * Compute a new delay. It will be decreased if the number of purged requests is equal to the
+	 * purge.size value. Otherwise, it will be increased until default value.
 	 * 
-	 * @return the computed next interval predicted from last removed requests
-	 *         info
+	 * @return the computed next interval predicted from last removed requests info
 	 */
 	private long computeNextDelay(TGarbageData gd) {
 
 		/* max delay from configuration in milliseconds */
-		long maxDelay = config.getRequestPurgerPeriod() * 1000;
+		long maxDelay = config.getRequestPurgerPeriod() * 1000L;
 		/* min delay accepted in milliseconds */
-		long minDelay = 10000;
+		long minDelay = 10000L;
 
 		long nextDelay;
 

@@ -17,9 +17,6 @@
 
 package it.grid.storm.persistence.util.helper;
 
-import static it.grid.storm.tape.recalltable.model.TapeRecallStatus.IN_PROGRESS;
-import static it.grid.storm.tape.recalltable.model.TapeRecallStatus.QUEUED;
-
 import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.persistence.util.db.SQLHelper;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
@@ -51,6 +48,26 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 	public static final String COL_IN_PROGRESS_DATE = "inProgressTime";
 	public static final String COL_FINAL_STATUS_DATE = "finalStatusTime";
 
+	private static final String QUERY_DELETE_N_OLD_AND_COMPLETED_TASKS;
+	private static final String QUERY_DELETE_ALL_OLD_AND_COMPLETED_TASKS;
+
+	static {
+
+		QUERY_DELETE_N_OLD_AND_COMPLETED_TASKS =
+				"DELETE FROM tape_recall WHERE status<>1 AND status<>2 "
+						+ "AND timeStamp <= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL ? SECOND) "
+						+ "LIMIT ?";
+
+		QUERY_DELETE_ALL_OLD_AND_COMPLETED_TASKS =
+				"DELETE FROM tape_recall WHERE status<>1 AND status<>2 "
+						+ "AND timeStamp <= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL ? SECOND) ";
+	}
+
+	public TapeRecallMySQLHelper(String dbmsVendor) {
+
+		super(dbmsVendor);
+	}
+
 	/**
 	 * Verifies if the given string is the name of one of the timestamp columns
 	 * 
@@ -62,11 +79,6 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 		return COL_DATE.equals(columnName)
 			|| COL_IN_PROGRESS_DATE.equals(columnName)
 			|| COL_FINAL_STATUS_DATE.equals(columnName);
-	}
-
-	public TapeRecallMySQLHelper(String dbmsVendor) {
-
-		super(dbmsVendor);
 	}
 
 	/**
@@ -541,55 +553,37 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 		return preparedStatement;
 	}
 
-    /**
-     * @return the requested query as string
-     * @throws SQLException
-     */
-    public String getQueryDeleteCompletedTasks() {
+	/**
+	 * @param con
+	 * @param expirationTime
+	 * @return the requested query as @PreparedStatement
+	 * @throws SQLException
+	 */
+	public PreparedStatement getQueryDeleteCompletedTasks(Connection con, long expirationTime)
+			throws SQLException {
 
-        return "DELETE FROM " + TABLE_NAME + " WHERE " + COL_STATUS + "<>" + QUEUED.getStatusId()
-                + " AND " + COL_STATUS + "<>" + IN_PROGRESS.getStatusId() + " AND " + COL_DATE
-                + " <= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL ? SECOND)";
-    }
+		PreparedStatement ps = con.prepareStatement(QUERY_DELETE_ALL_OLD_AND_COMPLETED_TASKS);
+		ps.setLong(1, expirationTime);
 
-    /**
-     * @return the requested query as @PreparedStatement
-     * @throws SQLException
-     */
-    public PreparedStatement getQueryDeleteCompletedTasks(Connection con, long expirationTime)
-            throws SQLException {
+		return ps;
+	}
 
-        PreparedStatement ps = con.prepareStatement(getQueryDeleteCompletedTasks());
-        ps.setLong(1, expirationTime);
+	/**
+	 * @param con
+	 * @param expirationTime
+	 * @param maxNumTasks
+	 * @return the requested query as @PreparedStatement
+	 * @throws SQLException
+	 */
+	public PreparedStatement getQueryDeleteCompletedTasks(Connection con, long expirationTime,
+			int maxNumTasks) throws SQLException {
 
-        return ps;
-    }
+		PreparedStatement ps = con.prepareStatement(QUERY_DELETE_N_OLD_AND_COMPLETED_TASKS);
 
-    /**
-     * @return the requested query as string
-     * @throws SQLException
-     */
-    public String getQueryDeleteCompletedTasksWithLimit() {
+		ps.setLong(1, expirationTime);
+		ps.setInt(2, maxNumTasks);
 
-        return "DELETE FROM " + TABLE_NAME + " WHERE " + COL_STATUS + "<>" + QUEUED.getStatusId()
-                + " AND " + COL_STATUS + "<>" + IN_PROGRESS.getStatusId() + " AND " + COL_DATE
-                + " <= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL ? SECOND) LIMIT ?";
-    }
-
-    /**
-     * @param maxNumTasks
-     * @return the requested query as string
-     * @throws SQLException
-     */
-    public PreparedStatement getQueryDeleteCompletedTasks(Connection con, long expirationTime,
-            int maxNumTasks) throws SQLException {
-
-        PreparedStatement ps = con.prepareStatement(getQueryDeleteCompletedTasksWithLimit());
-
-        ps.setLong(1, expirationTime);
-        ps.setInt(2, maxNumTasks);
-
-        return ps;
-    }
+		return ps;
+	}
 
 }

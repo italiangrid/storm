@@ -18,23 +18,9 @@
  */
 package it.grid.storm.tape.recalltable.model;
 
-/**
- * @author zappi
- * 
- */
 public enum TapeRecallStatus {
 
-	SUCCESS(0, "success"), QUEUED(1, "queued"), IN_PROGRESS(2, "in-progress"), ERROR(3,
-			"error"), ABORTED(4, "aborted"), UNDEFINED(5, "undefined");
-
-	private final int statusId;
-	private final String statusName;
-
-	private TapeRecallStatus(int statusId, String statusName) {
-
-		this.statusId = statusId;
-		this.statusName = statusName;
-	}
+	SUCCESS, QUEUED, IN_PROGRESS, ERROR, ABORTED, UNDEFINED;
 
 	public static TapeRecallStatus getRecallTaskStatus(int statusId) {
 
@@ -54,33 +40,31 @@ public enum TapeRecallStatus {
 		}
 	}
 
-	public static TapeRecallStatus getRecallTaskStatus(String status) {
+	public int getStatusId() {
 
-		if ("success".equalsIgnoreCase(status)) {
-			return SUCCESS;
+		switch (this) {
+			case SUCCESS:
+				return 0;
+			case QUEUED:
+				return 1;
+			case IN_PROGRESS:
+				return 2;
+			case ERROR:
+				return 3;
+			case ABORTED:
+				return 4;
+			default:
+				return 5;
 		}
-		if ("queued".equalsIgnoreCase(status)) {
-			return QUEUED;
-		}
-		if ("in-progress".equalsIgnoreCase(status)) {
-			return IN_PROGRESS;
-		}
-		if ("error".equalsIgnoreCase(status)) {
-			return ERROR;
-		}
-		if ("aborted".equalsIgnoreCase(status)) {
-			return ABORTED;
-		}
-		return UNDEFINED;
 	}
 
 	/**
 	 * @param tapeRecallStatus
 	 * @return
 	 */
-	private boolean isFinalStatus() {
+	public boolean isFinalStatus() {
 
-		return isFinalStatus(this.getStatusId());
+		return SUCCESS.equals(this) || ERROR.equals(this) || ABORTED.equals(this);
 	}
 
 	/**
@@ -92,25 +76,7 @@ public enum TapeRecallStatus {
 	 */
 	public static boolean isFinalStatus(int statusId) {
 
-		switch (statusId) {
-			case 0:
-				return true; // SUCCESS
-			case 1:
-				return false; // QUEUED
-			case 2:
-				return false; // IN_PROGRESS
-			case 3:
-				return true; // ERROR
-			case 4:
-				return true; // ABORTED
-			default:
-				return false; // UNDEFINED
-		}
-	}
-
-	public int getStatusId() {
-
-		return statusId;
+		return getRecallTaskStatus(statusId).isFinalStatus();
 	}
 
 	/**
@@ -119,7 +85,7 @@ public enum TapeRecallStatus {
 	 */
 	public boolean precedes(int otherStatusId) {
 
-		return precedes(TapeRecallStatus.getRecallTaskStatus(otherStatusId));
+		return precedes(getRecallTaskStatus(otherStatusId));
 	}
 
 	/**
@@ -133,21 +99,12 @@ public enum TapeRecallStatus {
 	 */
 	public boolean precedes(TapeRecallStatus otherStatus) {
 
-		if (UNDEFINED.equals(this) || UNDEFINED.equals(otherStatus)) {
+		if (this == otherStatus || this == UNDEFINED || otherStatus == UNDEFINED) {
 			return false;
 		}
-		if (this.equals(otherStatus)) {
-			return false;
-		}
-		if (QUEUED.equals(this)) {
+		if (this == QUEUED) {
 			return true;
 		}
-		return IN_PROGRESS.equals(this) && otherStatus.isFinalStatus();
-	}
-
-	@Override
-	public String toString() {
-
-		return statusName;
+		return this == IN_PROGRESS && otherStatus.isFinalStatus();
 	}
 }
