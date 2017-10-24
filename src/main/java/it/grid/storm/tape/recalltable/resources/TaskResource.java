@@ -18,7 +18,7 @@
  */
 package it.grid.storm.tape.recalltable.resources;
 
-import static it.grid.storm.persistence.model.TapeRecallTO.TRequestType.RECALL_REQUEST;
+import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.REC;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -331,7 +331,8 @@ public class TaskResource {
 		}
 
 		if (request.getVoName() != null && !request.getVoName().equals(voName)) {
-			String message = String.format("The voName %s doesn't match the resolved %s",
+			String message = String.format(
+					"The voName included in the request does not match the voName resolved for this request: %s != %s",
 					request.getVoName(), voName);
 			log.error(message);
 			throw new WebApplicationException(message, BAD_REQUEST);
@@ -341,7 +342,7 @@ public class TaskResource {
 		TapeRecallTO task = new TapeRecallTO();
 		task.setFileName(resource.getAbsolutePath());
 		task.setFakeRequestToken();
-		task.setRequestType(RECALL_REQUEST);
+		task.setRequestType(REC);
 		task.setRetryAttempt(request.getRetryAttempts());
 		task.setUserID(request.getUserId());
 		task.setVoName(voName);

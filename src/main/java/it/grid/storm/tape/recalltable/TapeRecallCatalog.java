@@ -18,8 +18,8 @@
  */
 package it.grid.storm.tape.recalltable;
 
-import static it.grid.storm.persistence.model.TapeRecallTO.TRequestType.BOL_REQUEST;
-import static it.grid.storm.persistence.model.TapeRecallTO.TRequestType.PTG_REQUEST;
+import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.BOL;
+import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.PTG;
 
 import com.google.common.collect.Lists;
 
@@ -398,7 +398,7 @@ public class TapeRecallCatalog {
 
 			PtGData ptgChunk = (PtGData) chunkData;
 
-			task.setRequestType(PTG_REQUEST);
+			task.setRequestType(PTG);
 			task.setPinLifetime((int) ptgChunk.getPinLifeTime().value());
 			task.setDeferredRecallInstant(currentDate);
 
@@ -406,7 +406,7 @@ public class TapeRecallCatalog {
 
 			BoLPersistentChunkData bolChunk = (BoLPersistentChunkData) chunkData;
 
-			task.setRequestType(BOL_REQUEST);
+			task.setRequestType(BOL);
 			task.setPinLifetime((int) bolChunk.getLifeTime().value());
 
 			Date deferredStartDate =
@@ -496,7 +496,7 @@ public class TapeRecallCatalog {
 	private boolean containsAnyBolOrPtg(List<TapeRecallTO> recallTasks) {
 
 		for (TapeRecallTO t : recallTasks) {
-			if (BOL_REQUEST.equals(t.getRequestType()) || PTG_REQUEST.equals(t.getRequestType())) {
+			if (BOL.equals(t.getRequestType()) || PTG.equals(t.getRequestType())) {
 				return true;
 			}
 		}
