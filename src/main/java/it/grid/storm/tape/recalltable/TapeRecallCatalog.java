@@ -233,14 +233,13 @@ public class TapeRecallCatalog {
 	 */
 	public int purgeCatalog(long expirationTime, int maxSize) {
 
-		int n = 0;
+		log.debug("purging '{}' completed tasks older than '{}' seconds ...", maxSize, expirationTime);
 		try {
-			log.debug("purging.. '{}' tasks ended almost {} seconds ago.", maxSize, expirationTime);
-			n = tapeRecallDAO.purgeCompletedTasks(expirationTime, maxSize);
+			return tapeRecallDAO.purgeCompletedTasks(expirationTime, maxSize);
 		} catch (DataAccessException e) {
 			log.error("Unable to takeover a task {}", e);
+			return 0;
 		}
-		return n;
 	}
 
 	/**
