@@ -10,8 +10,6 @@ import static it.grid.storm.tape.recalltable.model.TapeRecallStatus.getRecallTas
 import static it.grid.storm.tape.recalltable.model.TapeRecallStatus.isFinalStatus;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
 
 import org.junit.Test;
 
@@ -60,8 +58,18 @@ public class TapeRecallStatusTest {
 	@Test
 	public void testSuccessPrecedes() {
 
-		assertThat(SUCCESS.precedes(anyInt()), equalTo(false));
-		assertThat(SUCCESS.precedes(any(TapeRecallStatus.class)), equalTo(false));
+		assertThat(SUCCESS.precedes(0), equalTo(false));
+		assertThat(SUCCESS.precedes(1), equalTo(false));
+		assertThat(SUCCESS.precedes(2), equalTo(false));
+		assertThat(SUCCESS.precedes(3), equalTo(false));
+		assertThat(SUCCESS.precedes(4), equalTo(false));
+		assertThat(SUCCESS.precedes(5), equalTo(false));
+		assertThat(SUCCESS.precedes(SUCCESS), equalTo(false));
+		assertThat(SUCCESS.precedes(QUEUED), equalTo(false));
+		assertThat(SUCCESS.precedes(IN_PROGRESS), equalTo(false));
+		assertThat(SUCCESS.precedes(ERROR), equalTo(false));
+		assertThat(SUCCESS.precedes(ABORTED), equalTo(false));
+		assertThat(SUCCESS.precedes(UNDEFINED), equalTo(false));
 	}
 
 	@Test
@@ -101,21 +109,51 @@ public class TapeRecallStatusTest {
 	@Test
 	public void testErrorPrecedes() {
 
-		assertThat(ERROR.precedes(anyInt()), equalTo(false));
-		assertThat(ERROR.precedes(any(TapeRecallStatus.class)), equalTo(false));
+		assertThat(ERROR.precedes(0), equalTo(false));
+		assertThat(ERROR.precedes(1), equalTo(false));
+		assertThat(ERROR.precedes(2), equalTo(false));
+		assertThat(ERROR.precedes(3), equalTo(false));
+		assertThat(ERROR.precedes(4), equalTo(false));
+		assertThat(ERROR.precedes(5), equalTo(false));
+		assertThat(ERROR.precedes(SUCCESS), equalTo(false));
+		assertThat(ERROR.precedes(QUEUED), equalTo(false));
+		assertThat(ERROR.precedes(IN_PROGRESS), equalTo(false));
+		assertThat(ERROR.precedes(ERROR), equalTo(false));
+		assertThat(ERROR.precedes(ABORTED), equalTo(false));
+		assertThat(ERROR.precedes(UNDEFINED), equalTo(false));
 	}
 
 	@Test
 	public void testAbortedPrecedes() {
 
-		assertThat(ABORTED.precedes(anyInt()), equalTo(false));
-		assertThat(ABORTED.precedes(any(TapeRecallStatus.class)), equalTo(false));
+		assertThat(ABORTED.precedes(0), equalTo(false));
+		assertThat(ABORTED.precedes(1), equalTo(false));
+		assertThat(ABORTED.precedes(2), equalTo(false));
+		assertThat(ABORTED.precedes(3), equalTo(false));
+		assertThat(ABORTED.precedes(4), equalTo(false));
+		assertThat(ABORTED.precedes(5), equalTo(false));
+		assertThat(ABORTED.precedes(SUCCESS), equalTo(false));
+		assertThat(ABORTED.precedes(QUEUED), equalTo(false));
+		assertThat(ABORTED.precedes(IN_PROGRESS), equalTo(false));
+		assertThat(ABORTED.precedes(ERROR), equalTo(false));
+		assertThat(ABORTED.precedes(ABORTED), equalTo(false));
+		assertThat(ABORTED.precedes(UNDEFINED), equalTo(false));
 	}
 
 	@Test
 	public void testUndefinedPrecedes() {
 
-		assertThat(UNDEFINED.precedes(anyInt()), equalTo(false));
-		assertThat(UNDEFINED.precedes(any(TapeRecallStatus.class)), equalTo(false));
+		assertThat(UNDEFINED.precedes(0), equalTo(false));
+		assertThat(UNDEFINED.precedes(1), equalTo(false));
+		assertThat(UNDEFINED.precedes(2), equalTo(false));
+		assertThat(UNDEFINED.precedes(3), equalTo(false));
+		assertThat(UNDEFINED.precedes(4), equalTo(false));
+		assertThat(UNDEFINED.precedes(5), equalTo(false));
+		assertThat(UNDEFINED.precedes(SUCCESS), equalTo(false));
+		assertThat(UNDEFINED.precedes(QUEUED), equalTo(false));
+		assertThat(UNDEFINED.precedes(IN_PROGRESS), equalTo(false));
+		assertThat(UNDEFINED.precedes(ERROR), equalTo(false));
+		assertThat(UNDEFINED.precedes(ABORTED), equalTo(false));
+		assertThat(UNDEFINED.precedes(UNDEFINED), equalTo(false));
 	}
 }
