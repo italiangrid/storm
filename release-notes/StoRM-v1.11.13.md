@@ -7,10 +7,11 @@ rfcs:
     title: Failure on updating recall task status
   - id: STOR-951
     title: Pool account mapping fails since lcmaps-plugins-basic v1.6.4
-  - id: STOR-954
-    title: StoRM backend should garbage collect requests that are stuck in SRM_IN_PROGRESS for a configurable amount of time
   - id: STOR-955
     title: Garbage Collector ignore timestamps on cleaning recall tasks
+features:
+  - id: STOR-954
+    title: StoRM backend should garbage collect requests that are stuck in SRM_IN_PROGRESS for a configurable amount of time  
 components:
   - name: StoRM Backend
     package: storm-backend-server
@@ -30,11 +31,23 @@ Supported platforms: <span class="label label-success">CentOS 6</span>
 
 This release provides fixes to some outstanding bugs:
 
-* fixes gemss failure of recall task final status update;
-* fixes pool account mapping failure that happens with lcmaps-plugins-basic versions greater than 1.6.3, by setting storm user as the owner of the gridmap directory;
-* fixes garbage collector removal of SRM ptp requests that are stuck in SRM_IN_PROGRESS after long time: set the amount of seconds needed to consider an IN-PROGRESS ptp as expired by adding/editing `expired.request.ptp.time` variable value (default is 2592000L secs = 1 month) into storm.properties configuration file; 
-* fixes garbage collector wrong removal of just completed recall-tasks: now it removes only a bunch of the ones that are `expired.request.time` seconds older (as well as the other asynch requests).
+* fixes a problem that prevented correct status update for tape recalls created through the REST endpoint and handled by GEMSS;
 
+* fixes pool account mapping failures observed when StoRM is deployed with lcmaps-plugins-basic >= 1.6.3;
+
+* enhances the request garbage collector so that PrepareToPut requests that are stuck in the state SRM_REQUEST_INPROGRESS are automatically expired after a configurable amount of time.
+
+This amount of time can be configured through the new property `expired.request.ptp.time`.
+Its default value is **2592000** secs (1 month).
+Add/edit it into your `storm.properties` file.
+
+```bash
+expired.request.ptp.time = 2592000
+```
+
+* fixes a bug in the garbage collector so that now only recall requests older than a configurable amount of time are garbage collected.
+
+This amount of time can be configured through the property `expired.request.time` which is already used for other asynch requests cleared by the Garbage Collector.
 
 #### Released components
 
@@ -43,6 +56,10 @@ This release provides fixes to some outstanding bugs:
 #### Bug fixes
 
 {% include list-rfcs.liquid %}
+
+#### Enhancements
+
+{% include list-features.liquid %}
 
 #### Upgrading from v1.11.12
 
@@ -55,13 +72,13 @@ Example:
 
     $ yum update storm-backend-server yaim-storm
 
-And relaunch YAIM configuration.
+And reconfigure the StoRM services with YAIM.
 
 Example:
 
     $ /opt/glite/yaim/bin/yaim -c -s /etc/storm/siteinfo/storm.def -n se_storm_backend
 
-#### Upgrading from old versions
+#### Upgrading from older versions
 
 Read the following [instructions][upgrading-old].
 
