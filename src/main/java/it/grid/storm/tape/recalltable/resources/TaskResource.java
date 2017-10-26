@@ -18,7 +18,7 @@
  */
 package it.grid.storm.tape.recalltable.resources;
 
-import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.REC;
+import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.RCLL;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -342,7 +342,7 @@ public class TaskResource {
 		TapeRecallTO task = new TapeRecallTO();
 		task.setFileName(resource.getAbsolutePath());
 		task.setFakeRequestToken();
-		task.setRequestType(REC);
+		task.setRequestType(RCLL);
 		task.setRetryAttempt(request.getRetryAttempts());
 		task.setUserID(request.getUserId());
 		task.setVoName(voName);
