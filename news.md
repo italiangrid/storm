@@ -25,6 +25,9 @@ title: StoRM News
     </div>
   </div>
   <div class="span10">
+    {% if post.tag == "release" %}
+    <img src="{{ site.baseurl }}/assets/images/bookmark-orange.png" style="width:20px; float: right; margin: 0 0;"/>
+    {% endif %}
     <img class="media-object pull-left img-rounded" src="http://www.gravatar.com/avatar/{{ author.gravatar }}?s=52" style="margin-right: 20px;">
     <h3><a href="{{site.baseurl}}{{post.url}}">{{post.title}}</a></h3>
     <p><i class="icon-user"></i> {{author.display_name}}</p>
@@ -55,6 +58,9 @@ title: StoRM News
     </div>
   </div>
   <div class="span10">
+    {% if post.tag == "release" %}
+    <img src="{{ site.baseurl }}/assets/images/bookmark-orange.png" style="width:20px; float: right; margin: 0 0;"/>
+    {% endif %}
     <img class="media-object pull-left img-rounded" src="http://www.gravatar.com/avatar/{{ author.gravatar }}?s=52" style="margin-right: 20px;">
     <h3><a href="{{site.baseurl}}{{post.url}}">{{post.title}}</a></h3>
     <p><i class="icon-user"></i> {{author.display_name}}</p>
