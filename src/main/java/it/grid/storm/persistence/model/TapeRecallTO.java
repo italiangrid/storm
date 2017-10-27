@@ -40,7 +40,7 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 
 	public enum RecallTaskType {
 
-		PTG, BOL, BACK, REC;
+		PTG, BOL, BACK, RCLL;
 	}
 
 	private static final Logger log = LoggerFactory.getLogger(TapeRecallTO.class);
