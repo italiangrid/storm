@@ -18,44 +18,21 @@
  */
 package it.grid.storm.tape.recalltable.model;
 
+import jersey.repackaged.com.google.common.base.Preconditions;
+
 public enum TapeRecallStatus {
 
 	SUCCESS, QUEUED, IN_PROGRESS, ERROR, ABORTED, UNDEFINED;
 
 	public static TapeRecallStatus getRecallTaskStatus(int statusId) {
 
-		switch (statusId) {
-			case 0:
-				return SUCCESS;
-			case 1:
-				return QUEUED;
-			case 2:
-				return IN_PROGRESS;
-			case 3:
-				return ERROR;
-			case 4:
-				return ABORTED;
-			default:
-				return UNDEFINED;
-		}
+		Preconditions.checkArgument(statusId < TapeRecallStatus.values().length);
+		return TapeRecallStatus.values()[statusId];
 	}
 
 	public int getStatusId() {
 
-		switch (this) {
-			case SUCCESS:
-				return 0;
-			case QUEUED:
-				return 1;
-			case IN_PROGRESS:
-				return 2;
-			case ERROR:
-				return 3;
-			case ABORTED:
-				return 4;
-			default:
-				return 5;
-		}
+		return this.ordinal();
 	}
 
 	/**
