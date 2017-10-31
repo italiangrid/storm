@@ -48,6 +48,26 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 	public static final String COL_IN_PROGRESS_DATE = "inProgressTime";
 	public static final String COL_FINAL_STATUS_DATE = "finalStatusTime";
 
+	private static final String QUERY_DELETE_N_OLD_AND_COMPLETED_TASKS;
+	private static final String QUERY_DELETE_ALL_OLD_AND_COMPLETED_TASKS;
+
+	static {
+
+		QUERY_DELETE_N_OLD_AND_COMPLETED_TASKS =
+				"DELETE FROM tape_recall WHERE status<>1 AND status<>2 "
+						+ "AND timeStamp <= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL ? SECOND) "
+						+ "LIMIT ?";
+
+		QUERY_DELETE_ALL_OLD_AND_COMPLETED_TASKS =
+				"DELETE FROM tape_recall WHERE status<>1 AND status<>2 "
+						+ "AND timeStamp <= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL ? SECOND) ";
+	}
+
+	public TapeRecallMySQLHelper(String dbmsVendor) {
+
+		super(dbmsVendor);
+	}
+
 	/**
 	 * Verifies if the given string is the name of one of the timestamp columns
 	 * 
@@ -59,11 +79,6 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 		return COL_DATE.equals(columnName)
 			|| COL_IN_PROGRESS_DATE.equals(columnName)
 			|| COL_FINAL_STATUS_DATE.equals(columnName);
-	}
-
-	public TapeRecallMySQLHelper(String dbmsVendor) {
-
-		super(dbmsVendor);
 	}
 
 	/**
@@ -539,47 +554,36 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 	}
 
 	/**
-	 * @return the requested query as string
+	 * @param con
+	 * @param expirationTime
+	 * @return the requested query as @PreparedStatement
 	 * @throws SQLException
 	 */
-	public PreparedStatement getQueryDeleteCompletedTasks(Connection conn)
-		throws SQLException {
+	public PreparedStatement getQueryDeleteCompletedTasks(Connection con, long expirationTime)
+			throws SQLException {
 
-		String str = null;
-		PreparedStatement preparedStatement = null;
+		PreparedStatement ps = con.prepareStatement(QUERY_DELETE_ALL_OLD_AND_COMPLETED_TASKS);
+		ps.setLong(1, expirationTime);
 
-		str = "DELETE FROM " + TABLE_NAME + " WHERE " + COL_STATUS + "<>?"
-			+ " AND " + COL_STATUS + "<>?";
-
-		preparedStatement = conn.prepareStatement(str);
-
-		preparedStatement.setInt(1, TapeRecallStatus.QUEUED.getStatusId());
-		preparedStatement.setInt(2, TapeRecallStatus.IN_PROGRESS.getStatusId());
-
-		return preparedStatement;
+		return ps;
 	}
 
 	/**
+	 * @param con
+	 * @param expirationTime
 	 * @param maxNumTasks
-	 * @return the requested query as string
+	 * @return the requested query as @PreparedStatement
 	 * @throws SQLException
 	 */
-	public PreparedStatement getQueryDeleteCompletedTasks(Connection conn,
-		int maxNumTasks) throws SQLException {
+	public PreparedStatement getQueryDeleteCompletedTasks(Connection con, long expirationTime,
+			int maxNumTasks) throws SQLException {
 
-		String str = null;
-		PreparedStatement preparedStatement = null;
+		PreparedStatement ps = con.prepareStatement(QUERY_DELETE_N_OLD_AND_COMPLETED_TASKS);
 
-		str = "DELETE FROM " + TABLE_NAME + " WHERE " + COL_STATUS + " != ?"
-			+ " AND " + COL_STATUS + " != ?" + " LIMIT  ?";
+		ps.setLong(1, expirationTime);
+		ps.setInt(2, maxNumTasks);
 
-		preparedStatement = conn.prepareStatement(str);
-
-		preparedStatement.setInt(1, TapeRecallStatus.QUEUED.getStatusId());
-		preparedStatement.setInt(2, TapeRecallStatus.IN_PROGRESS.getStatusId());
-		preparedStatement.setInt(3, maxNumTasks);
-
-		return preparedStatement;
+		return ps;
 	}
 
 }
