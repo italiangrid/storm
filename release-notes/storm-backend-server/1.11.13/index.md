@@ -24,7 +24,7 @@ This release provides fixes to some outstanding bugs:
 
 * enhances the request garbage collector so that PrepareToPut requests that are stuck in the state SRM_REQUEST_INPROGRESS are automatically expired after a configurable amount of time.
 
-This amount of time can be configured through the new property `expired.request.ptp.time`.
+This amount of time can be configured through the new property `expired.inprogress.time`.
 Its default value is **2592000** secs (1 month).
 Add/edit it into your `storm.properties` file.
 
