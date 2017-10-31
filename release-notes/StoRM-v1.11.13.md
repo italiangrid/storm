@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM v.1.11.13 - release notes"
-release_date: "23.10.2017"
+release_date: "31.10.2017"
 rfcs:
   - id: STOR-950
     title: Failure on updating recall task status
