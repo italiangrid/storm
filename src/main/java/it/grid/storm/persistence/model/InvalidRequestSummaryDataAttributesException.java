@@ -2,28 +2,26 @@
  * 
  * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 
 package it.grid.storm.persistence.model;
 
-import it.grid.storm.srm.types.*;
+import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.srm.types.TRequestType;
 
 /**
- * This class represents an Exception thrown when a RequestSummaryData object is
- * created with any invalid attributes: null TRequestToken, null TRequestType,
- * totalFilesInThisRequest<0, numOfQueuedRequests<0, numOfProgessingRequests<0,
- * numFinished<0.
+ * This class represents an Exception thrown when a RequestSummaryData object is created with any
+ * invalid attributes: null TRequestToken, null TRequestType, totalFilesInThisRequest<0,
+ * numOfQueuedRequests<0, numOfProgessingRequests<0, numFinished<0.
  * 
  * @author EGRID - ICTP Trieste
  * @date March 18th, 2005
@@ -31,22 +29,24 @@ import it.grid.storm.srm.types.*;
  */
 public class InvalidRequestSummaryDataAttributesException extends Exception {
 
-	// booleans true if the corresponding variablesare null or negative
-	private boolean nullRequestToken = true;
-	private boolean nullRequestType = true;
-	private boolean negTotalFilesInThisRequest = true;
-	private boolean negNumOfQueuedRequests = true;
-	private boolean negNumOfProgressingRequests = true;
-	private boolean negNumFinished = true;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	private final boolean nullRequestToken;
+	private final boolean nullRequestType;
+	private final boolean negTotalFilesInThisRequest;
+	private final boolean negNumOfQueuedRequests;
+	private final boolean negNumOfProgressingRequests;
+	private final boolean negNumFinished;
 
 	/**
-	 * Constructor that requires the attributes that caused the exception to be
-	 * thrown.
+	 * Constructor that requires the attributes that caused the exception to be thrown.
 	 */
-	public InvalidRequestSummaryDataAttributesException(
-		TRequestToken requestToken, TRequestType requestType,
-		int totalFilesInThisRequest, int numOfQueuedRequests,
-		int numOfProgressingRequests, int numFinished) {
+	public InvalidRequestSummaryDataAttributesException(TRequestToken requestToken,
+			TRequestType requestType, int totalFilesInThisRequest, int numOfQueuedRequests,
+			int numOfProgressingRequests, int numFinished) {
 
 		nullRequestToken = (requestToken == null);
 		nullRequestType = (requestType == null);

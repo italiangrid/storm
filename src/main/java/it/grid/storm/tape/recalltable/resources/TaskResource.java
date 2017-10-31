@@ -18,7 +18,7 @@
  */
 package it.grid.storm.tape.recalltable.resources;
 
-import static it.grid.storm.persistence.model.TapeRecallTO.BOL_REQUEST;
+import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.RCLL;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -40,6 +40,7 @@ import it.grid.storm.tape.recalltable.TapeRecallException;
 import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusLogic;
 import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusValidator;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
+import it.grid.storm.tape.recalltable.model.TaskInsertRequestValidator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,12 +52,8 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -83,7 +80,6 @@ public class TaskResource {
 	private ResourceService service;
 	private TapeRecallCatalog recallCatalog;
 
-	private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 	private ObjectMapper mapper = new ObjectMapper();
 
 	public TaskResource() throws NamespaceException {
@@ -293,46 +289,60 @@ public class TaskResource {
 
 		log.info("POST /recalltable/task {}", request);
 
-		validateRequest(request);
+		TaskInsertRequestValidator validator = new TaskInsertRequestValidator(request);
+		if (!validator.validate()) {
+			log.info("BAD REQUEST: {}", validator.getErrorMessage());
+			Response r = Response.status(BAD_REQUEST).entity(validator.getErrorMessage()).build();
+			throw new WebApplicationException(validator.getErrorMessage(), r);
+		}
 
 		StoRI resource = null;
+
 		try {
+
 			resource = service.getResource(request.getStfn());
+
 		} catch (ResourceNotFoundException e) {
-			log.info(e.getMessage());
+
+			log.info(e.getMessage(), e);
 			throw new WebApplicationException(e.getMessage(), e, NOT_FOUND);
+
 		} catch (NamespaceException e) {
-			log.error(e.getMessage());
+
+			log.error(e.getMessage(), e);
 			throw new WebApplicationException(e.getMessage(), e, INTERNAL_SERVER_ERROR);
 		}
 
 		String voName;
+
 		try {
+
 			voName = resource.getVirtualFileSystem()
 					.getApproachableRules()
 					.get(0)
 					.getSubjectRules()
 					.getVONameMatchingRule()
 					.getVOName();
+
 		} catch (NamespaceException e) {
-			log.error(e.getMessage());
+
+			log.error(e.getMessage(), e);
 			throw new WebApplicationException(e.getMessage(), INTERNAL_SERVER_ERROR);
 		}
 
-		if (request.getVoName() != null) {
-			if (!request.getVoName().equals(voName)) {
-				String message = String.format("The voName %s doesn't match the resolved %s",
-						request.getVoName(), voName);
-				log.error(message);
-				throw new WebApplicationException(message, BAD_REQUEST);
-			}
+		if (request.getVoName() != null && !request.getVoName().equals(voName)) {
+			String message = String.format(
+					"The voName included in the request does not match the voName resolved for this request: %s != %s",
+					request.getVoName(), voName);
+			log.error(message);
+			throw new WebApplicationException(message, BAD_REQUEST);
 		}
 
 		Date currentDate = new Date();
 		TapeRecallTO task = new TapeRecallTO();
 		task.setFileName(resource.getAbsolutePath());
 		task.setFakeRequestToken();
-		task.setRequestType(BOL_REQUEST);
+		task.setRequestType(RCLL);
 		task.setRetryAttempt(request.getRetryAttempts());
 		task.setUserID(request.getUserId());
 		task.setVoName(voName);
@@ -345,9 +355,12 @@ public class TaskResource {
 		UUID groupTaskId = null;
 
 		try {
+
 			groupTaskId = recallCatalog.insertNewTask(task);
+
 		} catch (DataAccessException e) {
-			e.printStackTrace();
+
+			log.error(e.getMessage(), e);
 			throw new WebApplicationException(e, INTERNAL_SERVER_ERROR);
 		}
 
@@ -405,29 +418,6 @@ public class TaskResource {
 	 * Utility method.
 	 * 
 	 */
-
-	/*
-	 * Custom validation method. Jersey validation works but don't show the validation message. The
-	 * exception mapper cannot be implemented cause of a Jersey bug:
-	 * https://java.net/jira/browse/JERSEY-3153 This method manually called the validation on the
-	 * request object and returns the error message as response entity.
-	 */
-	private void validateRequest(TaskInsertRequest request) throws WebApplicationException {
-
-		log.debug("Validating {}", request);
-		Set<ConstraintViolation<TaskInsertRequest>> constraintViolations = validator.validate(request);
-		if (constraintViolations.isEmpty()) {
-			log.debug("Request {} is valid", request);
-			return;
-		}
-		log.debug("Request is invalid, {} violation(s) found: {}", constraintViolations.size(),
-				constraintViolations);
-		String message = constraintViolations.iterator().next().getMessage();
-		log.info("BAD REQUEST: {}", message);
-		throw new WebApplicationException(message,
-				Response.status(BAD_REQUEST).entity(message).build());
-	}
-
 	private String buildInputString(InputStream input) {
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(input));
@@ -445,7 +435,7 @@ public class TaskResource {
 
 		} catch (IOException e) {
 
-			e.printStackTrace();
+			log.error(e.getMessage(), e);
 
 		} finally {
 
@@ -455,7 +445,7 @@ public class TaskResource {
 
 			} catch (IOException e) {
 
-				e.printStackTrace();
+				log.error(e.getMessage(), e);
 			}
 		}
 

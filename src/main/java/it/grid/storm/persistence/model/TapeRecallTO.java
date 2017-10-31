@@ -27,6 +27,9 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.BOL;
+import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.PTG;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
@@ -35,20 +38,22 @@ import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
 public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 
+	public enum RecallTaskType {
+
+		PTG, BOL, BACK, RCLL;
+	}
+
 	private static final Logger log = LoggerFactory.getLogger(TapeRecallTO.class);
 
 	private static final long serialVersionUID = -2907739786996767167L;
 
-	public static final String PTG_REQUEST = "ptg";
-	public static final String BOL_REQUEST = "bol";
-	public static final String BACK_REQUEST = "back";
 	public static final String START_CHAR = "";
 	public static final char SEPARATOR_CHAR = '\u0009';
 	public static final String DATE_FORMAT = "dd-MM-yyyy HH.mm.ss";
 
 	private UUID taskId = null;
 	private TRequestToken requestToken = null;
-	private String requestType = null;
+	private RecallTaskType requestType = null;
 	private String fileName = null;
 	private String userID = null;
 	private String voName = null;
@@ -70,9 +75,9 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 		result.setFileName("/root/" + voName + "/test/" + r.nextInt(1001));
 		result.setRequestToken(TRequestToken.getRandom());
 		if (r.nextInt(2) == 0) {
-			result.setRequestType(BOL_REQUEST);
+			result.setRequestType(BOL);
 		} else {
-			result.setRequestType(PTG_REQUEST);
+			result.setRequestType(PTG);
 		}
 		result.setUserID("FakeId");
 		result.setRetryAttempt(0);
@@ -142,7 +147,7 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 		return requestToken;
 	}
 
-	public String getRequestType() {
+	public RecallTaskType getRequestType() {
 
 		return requestType;
 	}
@@ -219,7 +224,7 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 		this.requestToken = requestToken;
 	}
 
-	public void setRequestType(String requestType) {
+	public void setRequestType(RecallTaskType requestType) {
 
 		this.requestType = requestType;
 	}
@@ -451,4 +456,5 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 			log.error(e.getMessage(), e);
 		}
 	}
+
 }

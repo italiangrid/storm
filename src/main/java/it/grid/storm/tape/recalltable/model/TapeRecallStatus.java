@@ -18,7 +18,7 @@
  */
 package it.grid.storm.tape.recalltable.model;
 
-import jersey.repackaged.com.google.common.base.Preconditions;
+import com.google.common.base.Preconditions;
 
 public enum TapeRecallStatus {
 
