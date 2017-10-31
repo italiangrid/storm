@@ -359,7 +359,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     TReturnStatus status = null;
     for (TSURL surl : inputSURLs) {
 
-      log.debug("PutDone: Checking SURL " + surl);
+      log.debug("PutDone: Checking SURL {}", surl);
 
       if (surlsStatuses.containsKey(surl)) {
         log.debug("PutDone: SURL '{}' found!", surl);
@@ -375,6 +375,9 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     return returnStatuses;
   }
 
+    public static boolean executePutDone(TSURL surl) throws PutDoneCommandException {
+        return executePutDone(surl, null);
+    }
 
 	public static boolean executePutDone(TSURL surl, GridUserInterface user)
 		throws PutDoneCommandException {
@@ -452,7 +455,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 		try {
 			vfs = NamespaceDirector.getNamespace().resolveVFSbyLocalFile(localFile);
 		} catch (NamespaceException e) {
-			log.error(e.getMessage());
+			log.error(e.getMessage(), e);
 			return false;
 		}
 
