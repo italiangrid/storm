@@ -384,36 +384,36 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 		return task.getGroupTaskId();
 	}
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see it.grid.storm.persistence.dao.TapeRecallDAO#purgeCompletedTasks(int)
-     */
-    @Override
-    public int purgeCompletedTasks(long expirationTime, int numTasks) throws DataAccessException {
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see it.grid.storm.persistence.dao.TapeRecallDAO#purgeCompletedTasks(int)
+	 */
+	@Override
+	public int purgeCompletedTasks(long expirationTime, int numTasks) throws DataAccessException {
 
-        PreparedStatement ps = null;
-        Connection con = getConnection();
+		PreparedStatement ps = null;
+		Connection con = getConnection();
 
-        int count = 0;
-        boolean hasLimit = numTasks > 0;
-        try {
-            if (hasLimit) {
-                ps = sqlHelper.getQueryDeleteCompletedTasks(con, expirationTime, numTasks);
-            } else {
-                ps = sqlHelper.getQueryDeleteCompletedTasks(con, expirationTime);
-            }
+		int count = 0;
+		boolean hasLimit = numTasks > 0;
+		try {
+			if (hasLimit) {
+				ps = sqlHelper.getQueryDeleteCompletedTasks(con, expirationTime, numTasks);
+			} else {
+				ps = sqlHelper.getQueryDeleteCompletedTasks(con, expirationTime);
+			}
 
-            count = ps.executeUpdate();
+			count = ps.executeUpdate();
 
-        } catch (SQLException e) {
-            throw new DataAccessException("Error executing query: " + ps, e);
-        } finally {
-            releaseConnection(null, ps, con);
-        }
+		} catch (SQLException e) {
+			throw new DataAccessException("Error executing query: " + ps, e);
+		} finally {
+			releaseConnection(null, ps, con);
+		}
 
-        return count;
-    }
+		return count;
+	}
 
 	@Override
 	public void setGroupTaskRetryValue(UUID groupTaskId, int value)

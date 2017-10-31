@@ -13,12 +13,9 @@
  * the License.
  */
 
-/**
- * 
- */
 package it.grid.storm.tape.recalltable.model;
 
-import jersey.repackaged.com.google.common.base.Preconditions;
+import com.google.common.base.Preconditions;
 
 public enum TapeRecallStatus {
 
@@ -32,7 +29,7 @@ public enum TapeRecallStatus {
 
 	public int getStatusId() {
 
-		return this.ordinal();
+		return ordinal();
 	}
 
 	/**
@@ -41,7 +38,7 @@ public enum TapeRecallStatus {
 	 */
 	public boolean isFinalStatus() {
 
-		return SUCCESS.equals(this) || ERROR.equals(this) || ABORTED.equals(this);
+		return equals(SUCCESS) || equals(ERROR) || equals(ABORTED);
 	}
 
 	/**
@@ -76,12 +73,12 @@ public enum TapeRecallStatus {
 	 */
 	public boolean precedes(TapeRecallStatus otherStatus) {
 
-		if (this == otherStatus || this == UNDEFINED || otherStatus == UNDEFINED) {
+		if (equals(otherStatus) || equals(UNDEFINED) || otherStatus.equals(UNDEFINED)) {
 			return false;
 		}
-		if (this == QUEUED) {
+		if (equals(QUEUED)) {
 			return true;
 		}
-		return this == IN_PROGRESS && otherStatus.isFinalStatus();
+		return equals(IN_PROGRESS) && otherStatus.isFinalStatus();
 	}
 }
