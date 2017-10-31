@@ -5,7 +5,7 @@
   <name>StoRM Backend server</name>
   <groupId>org.italiangrid.storm</groupId>
   <artifactId>storm-backend-server</artifactId>
-  <version>1.11.13-SNAPSHOT</version>
+  <version>1.11.13</version>
 
   <properties>
 
