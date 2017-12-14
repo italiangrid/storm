@@ -1236,7 +1236,7 @@ public class VirtualFS implements VirtualFSInterface {
   @Override
   public String toString() {
 
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     String sep = System.getProperty("line.separator");
     sb.append(sep + "++++++++++++++++++++++++++++++++" + sep);
     sb.append(" VFS Name         : '" + this.aliasName + "'" + sep);

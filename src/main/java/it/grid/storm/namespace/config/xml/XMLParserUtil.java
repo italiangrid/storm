@@ -630,7 +630,7 @@ public class XMLParserUtil implements XMLConst {
 
 		int startIndex = 0;
 		int pos = 0;
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		pos = xpath.indexOf(patternChar, startIndex);
 		String numStr = Integer.toString(number);
 		result.append(xpath.substring(startIndex, pos));

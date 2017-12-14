@@ -54,7 +54,7 @@ public class ExecCommand {
 			InputStreamReader isr = new InputStreamReader(is);
 			BufferedReader br = new BufferedReader(isr);
 			try {
-				StringBuffer readBuffer = new StringBuffer();
+				StringBuilder readBuffer = new StringBuilder();
 				String buff;
 				String eol = System.getProperty("line.separator");
 				while ((buff = br.readLine()) != null) {

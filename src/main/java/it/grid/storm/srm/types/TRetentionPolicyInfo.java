@@ -142,7 +142,7 @@ public class TRetentionPolicyInfo implements Serializable {
 
 	public String toString() {
 
-		StringBuffer buf = new StringBuffer("RetentionPolicyInfo: ");
+		StringBuilder buf = new StringBuilder("RetentionPolicyInfo: ");
 		buf.append("[");
 		buf.append("retentionPolicy: " + retentionPolicy);
 		buf.append("] , [");

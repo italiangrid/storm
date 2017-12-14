@@ -17,6 +17,8 @@
 
 package it.grid.storm.catalogs;
 
+import com.google.common.collect.Lists;
+
 import it.grid.storm.config.Configuration;
 
 import java.sql.Connection;
@@ -46,63 +48,40 @@ import org.slf4j.LoggerFactory;
  */
 public class VolatileAndJiTDAO {
 
-	private static final Logger log = LoggerFactory
-		.getLogger(VolatileAndJiTDAO.class);
+	private static final Logger log = LoggerFactory.getLogger(VolatileAndJiTDAO.class);
 
-	private final String driver = Configuration.getInstance().getDBDriver(); // String
-																																						// with
-																																						// the
-																																						// name
-																																						// of
-																																						// the
-																																						// class
-																																						// for
-																																						// the
-																																						// DB
-																																						// driver
-	private final String url = Configuration.getInstance().getDBURL(); // String
-																																			// referring
-																																			// to the
-																																			// URL of
-																																			// the DB
-	private final String password = Configuration.getInstance().getDBPassword(); // String
-																																								// with
-																																								// the
-																																								// password
-																																								// for
-																																								// the
-																																								// DB
-	private final String name = Configuration.getInstance().getDBUserName(); // String
-																																						// with
-																																						// the
-																																						// name
-																																						// for
-																																						// the
-																																						// DB
-	private Connection con = null; // Connection to DB
+	// The name of the class for the DB driver
+	private final String driver = Configuration.getInstance().getDBDriver();
 
-	private static final VolatileAndJiTDAO dao = new VolatileAndJiTDAO(); // only
-																																				// instance
-																																				// of
-																																				// DAO
+	// The URL of the DB
+	private final String url = Configuration.getInstance().getDBURL();
 
-	private Timer clock = null; // timer thread that will run a taask to alert
-															// when reconnecting is necessary!
-	private TimerTask clockTask = null; // timer task that will update the boolean
-																			// signalling that a reconnection is
-																			// neede!
-	private final long period = Configuration.getInstance()
-		.getDBReconnectPeriod() * 1000;// milliseconds that must pass before
-																		// reconnecting to DB
-	private final long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;// initial
-																																											// delay
-																																											// in
-																																											// millseconds
-																																											// before
-																																											// starting
-																																											// timer
-	private boolean reconnect = false; // boolean that tells whether reconnection
-																			// is needed because of MySQL bug!
+	// The password for the DB
+	private final String password = Configuration.getInstance().getDBPassword();
+
+	// The name for the DB
+	private final String name = Configuration.getInstance().getDBUserName();
+
+	// Connection to DB
+	private Connection con = null;
+
+	// instance of DAO
+	private static final VolatileAndJiTDAO dao = new VolatileAndJiTDAO();
+
+	// timer thread that will run a task to alert when reconnecting is necessary!
+	private Timer clock = null;
+
+	// timer task that will update the boolean signaling that a reconnection is needed!
+	private TimerTask clockTask = null;
+
+	// milliseconds that must pass before reconnecting to DB
+	private final long period = Configuration.getInstance().getDBReconnectPeriod() * 1000;
+
+	// initial delay in milliseconds before starting timer
+	private final long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;
+
+	// boolean that tells whether reconnection is needed because of MySQL bug!
+	private boolean reconnect = false;
 
 	private VolatileAndJiTDAO() {
 
@@ -161,7 +140,7 @@ public class VolatileAndJiTDAO {
 			logWarnings(stmt.getWarnings());
 			stmt.setLong(6, pinLifetime);
 			logWarnings(stmt.getWarnings());
-			log.debug("VolatileAndJiTDAO. addJiT: {}", stmt.toString());
+			log.debug("VolatileAndJiTDAO. addJiT: {}", stmt);
 			stmt.execute();
 		} catch (SQLException e) {
 			log.error("VolatileAndJiTDAO! Error in addJiT: {}", e.getMessage(), e);
@@ -197,7 +176,7 @@ public class VolatileAndJiTDAO {
 			logWarnings(stmt.getWarnings());
 			stmt.setLong(3, fileLifetime);
 			logWarnings(stmt.getWarnings());
-			log.debug("VolatileAndJiTDAO. addVolatile: {}", stmt.toString());
+			log.debug("VolatileAndJiTDAO. addVolatile: {}", stmt);
 			stmt.execute();
 		} catch (SQLException e) {
 			log.error("VolatileAndJiTDAO! Error in addVolatile: {}", e.getMessage(), e);
@@ -232,7 +211,7 @@ public class VolatileAndJiTDAO {
 			stmt.setString(1, filename);
 			logWarnings(stmt.getWarnings());
 
-			log.debug("VolatileAndJiTDAO - existsOnVolatile - {}", stmt.toString());
+			log.debug("VolatileAndJiTDAO - existsOnVolatile - {}", stmt);
 
 			rs = stmt.executeQuery();
 			logWarnings(stmt.getWarnings());
@@ -293,7 +272,7 @@ public class VolatileAndJiTDAO {
 			logWarnings(stmt.getWarnings());
 			stmt.setInt(5, acl);
 			logWarnings(stmt.getWarnings());
-			log.debug("VolatileAndJiTDAO. forceUpdateJiT: {}", stmt.toString());
+			log.debug("VolatileAndJiTDAO. forceUpdateJiT: {}", stmt);
 			int n = stmt.executeUpdate();
 			log.debug("VolatileAndJiTDAO. {} jit entries forced updated.", n);
 		} catch (SQLException e) {
@@ -331,7 +310,7 @@ public class VolatileAndJiTDAO {
 			logWarnings(stmt.getWarnings());
 			stmt.setInt(3, acl);
 			logWarnings(stmt.getWarnings());
-			log.debug("VolatileAndJiTDAO. numberJiT: {}", stmt.toString());
+			log.debug("VolatileAndJiTDAO. numberJiT: {}", stmt);
 			rs = stmt.executeQuery();
 			logWarnings(stmt.getWarnings());
 			int n = -1;
@@ -376,7 +355,7 @@ public class VolatileAndJiTDAO {
 			logWarnings(con.getWarnings());
 			stmt.setString(1, filename);
 			logWarnings(stmt.getWarnings());
-			log.debug("VolatileAndJiTDAO. numberVolatile: {}", stmt.toString());
+			log.debug("VolatileAndJiTDAO. numberVolatile: {}", stmt);
 			rs = stmt.executeQuery();
 			logWarnings(stmt.getWarnings());
 			int n = -1;
@@ -417,7 +396,7 @@ public class VolatileAndJiTDAO {
 			logWarnings(con.getWarnings());
 			stmt.setString(1, filename);
 			logWarnings(stmt.getWarnings());
-			log.debug("VolatileAndJiTDAO. removeJiT: {}", stmt.toString());
+			log.debug("VolatileAndJiTDAO. removeJiT: {}", stmt);
 			int n = stmt.executeUpdate();
 			log.debug("VolatileAndJiTDAO. removeJiT: {} entries removed", n);
 		} catch (SQLException e) {
@@ -449,15 +428,9 @@ public class VolatileAndJiTDAO {
 	public Collection[] removeExpired(long time) {
 
 		if (!checkConnection()) {
-			log
-				.error("VolatileAndJiTDAO. removeExpired:  unable to get a valid connection!");
-			return new Collection[] { new ArrayList(), new ArrayList() }; // in case
-																																		// of any
-																																		// failure
-																																		// return an
-																																		// array of
-																																		// two empty
-																																		// Collection
+			log.error("VolatileAndJiTDAO. removeExpired: unable to get a valid connection!");
+			// in case of any failure return an array of two empty Collection
+			return new Collection[] { new ArrayList(), new ArrayList() };
 		}
 
 		String vol = "SELECT ID,file FROM volatile WHERE (UNIX_TIMESTAMP(start)+fileLifetime<?)";
@@ -473,7 +446,7 @@ public class VolatileAndJiTDAO {
 			logWarnings(con.getWarnings());
 			stmt.setLong(1, time);
 			logWarnings(stmt.getWarnings());
-			log.debug("VolatileAndJiTDAO. removeExpired: {}", stmt.toString());
+			log.debug("VolatileAndJiTDAO. removeExpired: {}", stmt);
 			rs = stmt.executeQuery();
 			logWarnings(stmt.getWarnings());
 			Collection volat = new ArrayList();
@@ -495,7 +468,7 @@ public class VolatileAndJiTDAO {
 			logWarnings(con.getWarnings());
 			stmt.setLong(1, time);
 			logWarnings(stmt.getWarnings());
-			log.debug("VolatileAndJiTDAO. removeExpired: {}", stmt.toString());
+			log.debug("VolatileAndJiTDAO. removeExpired: {}", stmt);
 			rs = stmt.executeQuery();
 			logWarnings(stmt.getWarnings());
 			Collection track = new ArrayList();
@@ -523,7 +496,7 @@ public class VolatileAndJiTDAO {
 					delvol = delvol + makeIDString(volatid);
 					stmt = con.prepareStatement(delvol);
 					logWarnings(con.getWarnings());
-					log.debug("VolatileAndJiTDAO. removeExpired: {}", stmt.toString());
+					log.debug("VolatileAndJiTDAO. removeExpired: {}", stmt);
 					deletedvol = stmt.executeUpdate();
 					logWarnings(stmt.getWarnings());
 					close(stmt);
@@ -534,7 +507,7 @@ public class VolatileAndJiTDAO {
 					deljit = deljit + makeIDString(trackid);
 					stmt = con.prepareStatement(deljit);
 					logWarnings(con.getWarnings());
-					log.debug("VolatileAndJiTDAO. removeExpired: {}", stmt.toString());
+					log.debug("VolatileAndJiTDAO. removeExpired: {}", stmt);
 					deletedjit = stmt.executeUpdate();
 					logWarnings(stmt.getWarnings());
 					close(stmt);
@@ -561,13 +534,8 @@ public class VolatileAndJiTDAO {
 			close(stmt);
 			log.error("VolatileAndJiTDAO! Unable to complete removeExpired! {}", 
 				e.getMessage(), e);
-			return new Collection[] { new ArrayList(), new ArrayList() }; // in case
-																																		// of any
-																																		// failure
-																																		// return an
-																																		// array of
-																																		// two empty
-																																		// Collection
+			// in case of any failure return an array of two empty Collection
+			return new Collection[] { new ArrayList(), new ArrayList() };
 		}
 	}
 
@@ -589,7 +557,7 @@ public class VolatileAndJiTDAO {
 			logWarnings(con.getWarnings());
 			stmt.setString(1, filename);
 			logWarnings(stmt.getWarnings());
-			log.debug("VolatileAndJiTDAO. removeVolatile: {}", stmt.toString());
+			log.debug("VolatileAndJiTDAO. removeVolatile: {}", stmt);
 			int n = stmt.executeUpdate();
 			log.debug("VolatileAndJiTDAO. removeVolatile: {} entries removed.", n);
 		} catch (SQLException e) {
@@ -642,7 +610,7 @@ public class VolatileAndJiTDAO {
 			logWarnings(stmt.getWarnings());
 			stmt.setLong(6, start + pinLifetime);
 			logWarnings(stmt.getWarnings());
-			log.debug("VolatileAndJiTDAO. updateJiT: {}", stmt.toString());
+			log.debug("VolatileAndJiTDAO. updateJiT: {}", stmt);
 			int n = stmt.executeUpdate();
 			log.debug("VolatileAndJiTDAO. {} jit entries updated.", n);
 		} catch (SQLException e) {
@@ -688,7 +656,7 @@ public class VolatileAndJiTDAO {
 			logWarnings(stmt.getWarnings());
 			stmt.setLong(5, start + fileLifetime);
 			logWarnings(stmt.getWarnings());
-			log.debug("VolatileAndJiTDAO. updateVolatile: {}", stmt.toString());
+			log.debug("VolatileAndJiTDAO. updateVolatile: {}", stmt);
 			int n = stmt.executeUpdate();
 			log.debug("VolatileAndJiTDAO. {} volatile entries updated.", n);
 		} catch (SQLException e) {
@@ -716,7 +684,7 @@ public class VolatileAndJiTDAO {
 			logWarnings(stmt.getWarnings());
 			stmt.setString(2, fileName);
 			logWarnings(stmt.getWarnings());
-			log.debug("VolatileAndJiTDAO. updateVolatile: {}", stmt.toString());
+			log.debug("VolatileAndJiTDAO. updateVolatile: {}", stmt);
 			int n = stmt.executeUpdate();
 			log.debug("VolatileAndJiTDAO. {} volatile entries updated.", n);
 		} catch (SQLException e) {
@@ -741,25 +709,24 @@ public class VolatileAndJiTDAO {
 	public List<Long> volatileInfoOn(String filename) {
 
 		if (!checkConnection()) {
-			log.error("VolatileAndJiTDAO. volatileInfoOn:  unable to get a valid "
-				+ "connection!");
-			return new ArrayList<Long>();
+			log.error("VolatileAndJiTDAO. volatileInfoOn:  unable to get a valid connection!");
+			return Lists.newArrayList();
 		}
 		String sql = "SELECT UNIX_TIMESTAMP(start), fileLifetime FROM volatile WHERE file=?";
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
-		List<Long> aux = new ArrayList<Long>();
+		List<Long> aux = Lists.newArrayList();
 		try {
 			stmt = con.prepareStatement(sql);
 			logWarnings(con.getWarnings());
 			stmt.setString(1, filename);
 			logWarnings(stmt.getWarnings());
-			log.debug("VolatileAndJiTDAO - infoOnVolatile - {}", stmt.toString());
+			log.debug("VolatileAndJiTDAO - infoOnVolatile - {}", stmt);
 			rs = stmt.executeQuery();
 			logWarnings(stmt.getWarnings());
 			if (rs.next()) {
-				aux.add(new Long(rs.getLong("UNIX_TIMESTAMP(start)")));
-				aux.add(new Long(rs.getLong("fileLifetime")));
+				aux.add(rs.getLong("UNIX_TIMESTAMP(start)"));
+				aux.add(rs.getLong("fileLifetime"));
 			} else {
 				log.debug("VolatileAndJiTDAO! infoOnVolatile did not find {}", filename);
 			}
@@ -829,9 +796,9 @@ public class VolatileAndJiTDAO {
 	private void logWarnings(SQLWarning warning) {
 
 		if (warning != null) {
-			log.debug("VolatileAndJiTDAO: {}", warning.toString());
+			log.debug("VolatileAndJiTDAO: {}", warning);
 			while ((warning = warning.getNextWarning()) != null) {
-				log.debug("VolatileAndJiTDAO: {}", warning.toString());
+				log.debug("VolatileAndJiTDAO: {}", warning);
 			}
 		}
 	}
@@ -841,7 +808,7 @@ public class VolatileAndJiTDAO {
 	 */
 	private String makeFileString(Collection files) {
 
-		StringBuffer sb = new StringBuffer("(");
+		StringBuilder sb = new StringBuilder("(");
 		for (Iterator i = files.iterator(); i.hasNext();) {
 			sb.append("'");
 			sb.append((String) i.next());
@@ -859,7 +826,7 @@ public class VolatileAndJiTDAO {
 	 */
 	private String makeIDString(Collection rowids) {
 
-		StringBuffer sb = new StringBuffer("(");
+		StringBuilder sb = new StringBuilder("(");
 		for (Iterator i = rowids.iterator(); i.hasNext();) {
 			sb.append(i.next());
 			if (i.hasNext()) {
@@ -896,13 +863,9 @@ public class VolatileAndJiTDAO {
 		try {
 			Class.forName(driver);
 			con = DriverManager.getConnection(url, name, password);
-			if (con == null) {
-				log.error("VolatileAndJiTDAO! DriverManager returned a null Connection!");
-			} else {
-				response = con.isValid(0);
-				logWarnings(con.getWarnings());
-			}
-		} catch (Throwable e) {
+			response = con.isValid(0);
+			logWarnings(con.getWarnings());
+		} catch (Exception e) {
 			log.error("VolatileAndJiTDAO! Exception in setUpconnection! {}", 
 				e.getMessage(), e);
 		}
@@ -910,7 +873,7 @@ public class VolatileAndJiTDAO {
 	}
 
 	/**
-	 * Auxiliary method that takes down a conenctin to the DB.
+	 * Auxiliary method that takes down a connection to the DB.
 	 */
 	private void takeDownConnection() {
 

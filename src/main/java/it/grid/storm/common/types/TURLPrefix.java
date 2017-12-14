@@ -80,7 +80,7 @@ public class TURLPrefix {
 
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("TURLPrefix: ");
 		for (Iterator<Protocol> i = desiredProtocols.iterator(); i.hasNext();) {
 			sb.append(i.next());

@@ -66,15 +66,9 @@ public class PushCopyTransferVisitor implements CopyVisitor {
 			SRMClient srmClient = SRMClientFactory.getInstance().client();
 			copy.getLog().debug("... got it!");
 			// Invoke putDone functionality of SRMClient
+			// starting time from which to count the time-out!
 			long timeOut = new Date().getTime()
-				+ Configuration.getInstance().getSRMClientPutDoneTimeOut() * 1000; // starting
-																																						// time
-																																						// from
-																																						// which
-																																						// to
-																																						// count
-																																						// the
-																																						// time-out!
+				+ Configuration.getInstance().getSRMClientPutDoneTimeOut() * 1000;
 			long sleepTime = Configuration.getInstance()
 				.getSRMClientPutDoneSleepTime() * 1000; // time
 			// interval in milliseconds for periodic polling
@@ -89,7 +83,7 @@ public class PushCopyTransferVisitor implements CopyVisitor {
 						Thread.sleep(sleepTime);
 					} catch (InterruptedException e) {
 					}
-					; // go to sleep before executing!
+					// go to sleep before executing!
 					copy
 						.getLog()
 						.debug(
@@ -105,7 +99,7 @@ public class PushCopyTransferVisitor implements CopyVisitor {
 				// The SRMClient putDone functionality failed!
 				copy.getLog().error("File transfer completed successfully, but problems "
 					+ "were encountered performing final srmPutDone! {}", e2);
-				StringBuffer sb = new StringBuffer();
+				StringBuilder sb = new StringBuilder();
 				sb.append("Parameters passed to client: ");
 				sb.append(", ");
 				sb.append("GridUser: ");

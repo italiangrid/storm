@@ -237,7 +237,7 @@ public class PtGChunkCatalog {
 	private PtGPersistentChunkData makeOne(PtGChunkDataTO chunkDataTO,
 		TRequestToken rt) {
 
-		StringBuffer errorSb = new StringBuffer();
+		StringBuilder errorSb = new StringBuilder();
 		TSURL fromSURL = null;
 		try {
 			fromSURL = TSURL.makeFromStringValidate(chunkDataTO.fromSURL());
@@ -628,7 +628,7 @@ public class PtGChunkCatalog {
 	private ReducedPtGChunkData makeOneReduced(
 		ReducedPtGChunkDataTO reducedChunkDataTO) {
 
-		StringBuffer errorSb = new StringBuffer();
+		StringBuilder errorSb = new StringBuilder();
 		// fromSURL
 		TSURL fromSURL = null;
 		try {

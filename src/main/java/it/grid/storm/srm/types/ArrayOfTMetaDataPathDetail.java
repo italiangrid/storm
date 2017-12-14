@@ -91,7 +91,7 @@ public class ArrayOfTMetaDataPathDetail implements Serializable {
 
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < metaDataList.size(); i++) {
 			sb.append("MetaData[" + i + "]:\n");
 			sb.append(((TMetaDataPathDetail) metaDataList.get(i)).toString());

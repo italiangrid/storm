@@ -17,6 +17,8 @@
 
 package it.grid.storm.persistence.impl.mysql;
 
+import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.valueOf;
+
 import com.google.common.collect.Lists;
 
 import it.grid.storm.persistence.PersistenceDirector;
@@ -388,29 +390,28 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 	 * @see it.grid.storm.persistence.dao.TapeRecallDAO#purgeCompletedTasks(int)
 	 */
 	@Override
-	public int purgeCompletedTasks(int numMaxToPurge) throws DataAccessException {
+	public int purgeCompletedTasks(long expirationTime, int numTasks) throws DataAccessException {
 
-		PreparedStatement prepStatement = null;
-		Connection dbConnection = getConnection();
+		PreparedStatement ps = null;
+		Connection con = getConnection();
 
 		int count = 0;
+		boolean hasLimit = numTasks > 0;
 		try {
-			if (numMaxToPurge == -1) {
-				prepStatement = sqlHelper.getQueryDeleteCompletedTasks(dbConnection);
+			if (hasLimit) {
+				ps = sqlHelper.getQueryDeleteCompletedTasks(con, expirationTime, numTasks);
 			} else {
-				prepStatement = sqlHelper.getQueryDeleteCompletedTasks(dbConnection,
-					numMaxToPurge);
+				ps = sqlHelper.getQueryDeleteCompletedTasks(con, expirationTime);
 			}
 
-			count = prepStatement.executeUpdate();
+			count = ps.executeUpdate();
 
 		} catch (SQLException e) {
-			throw new DataAccessException("Error executing query: "
-				+ prepStatement, e);
+			throw new DataAccessException("Error executing query: " + ps, e);
 		} finally {
-			releaseConnection(null, prepStatement, dbConnection);
+			releaseConnection(null, ps, con);
 		}
-		
+
 		return count;
 	}
 
@@ -620,8 +621,7 @@ public class TapeRecallDAOMySql extends TapeRecallDAO {
 
 		try {
 
-			task
-				.setRequestType(res.getString(TapeRecallMySQLHelper.COL_REQUEST_TYPE));
+			task.setRequestType(valueOf(res.getString(TapeRecallMySQLHelper.COL_REQUEST_TYPE)));
 			task.setFileName(res.getString(TapeRecallMySQLHelper.COL_FILE_NAME));
 			task.setPinLifetime(res.getInt(TapeRecallMySQLHelper.COL_PIN_LIFETIME));
 			task.setStatusId(res.getInt(TapeRecallMySQLHelper.COL_STATUS));

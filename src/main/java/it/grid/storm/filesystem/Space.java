@@ -215,7 +215,7 @@ public class Space {
 
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("Space: guaranteedSize=");
 		sb.append(guaranteedSize.toString());
 		sb.append("; totalSize=");

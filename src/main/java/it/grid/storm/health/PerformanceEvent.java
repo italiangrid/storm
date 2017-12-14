@@ -57,7 +57,7 @@ public class PerformanceEvent {
 	@Override
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append(opType.toString());
 		sb.append(" [ ");
 		sb.append("#" + this.numberOfOperation);

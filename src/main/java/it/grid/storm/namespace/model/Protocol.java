@@ -179,7 +179,7 @@ public class Protocol {
 
 	public String toString() {
 
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		buf.append(this.protocolName + " = " + this.getSchema() + "://");
 		return buf.toString();
 	}

@@ -170,7 +170,7 @@ public class SchedulerStatus {
 	@Override
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("WorkerPool (Sched-Name=");
 		sb.append(this.name);
 		sb.append(") = [core:" + corePoolSize + " ; largest:" + maxPoolSize

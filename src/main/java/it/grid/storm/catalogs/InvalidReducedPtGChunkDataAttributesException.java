@@ -47,9 +47,10 @@ public class InvalidReducedPtGChunkDataAttributesException extends Exception {
 		nullStatus = status == null;
 	}
 
+	@Override
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("Invalid PtGChunkData attributes: null-fromSURL=");
 		sb.append(nullFromSURL);
 		sb.append("; null-status=");

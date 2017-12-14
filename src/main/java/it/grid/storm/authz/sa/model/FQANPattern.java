@@ -17,7 +17,6 @@
 
 package it.grid.storm.authz.sa.model;
 
-import it.grid.storm.authz.sa.conf.AuthzDBReaderException;
 import it.grid.storm.griduser.FQAN;
 import it.grid.storm.griduser.SubjectAttribute;
 
@@ -31,8 +30,6 @@ public abstract class FQANPattern implements SubjectPattern {
 	protected String rolePatternString = null;
 	protected Pattern groupPattern = null;
 	protected Pattern rolePattern = null;
-
-	public abstract boolean isValidPattern() throws AuthzDBReaderException;
 
 	/*
 	 * (non-Javadoc)
@@ -58,10 +55,9 @@ public abstract class FQANPattern implements SubjectPattern {
 	@Override
 	public String toString() {
 
-		StringBuffer result = new StringBuffer();
+	    StringBuilder result = new StringBuilder();
 		String sep = System.getProperty("line.separator");
-		result.append(" FQAN.GroupPatternMatchingRule = " + groupPatternString
-			+ sep);
+		result.append(" FQAN.GroupPatternMatchingRule = " + groupPatternString + sep);
 		result.append(" FQAN.RolePatternMatchinRule = " + rolePatternString + sep);
 		return result.toString();
 	}

@@ -446,7 +446,7 @@ public class NamespaceUtil {
 
 		public String getPath() {
 
-			StringBuffer buf = new StringBuffer();
+			StringBuilder buf = new StringBuilder();
 			if (this.absolutePath) {
 				buf.append(PATH_SEPARATOR);
 			}
@@ -586,7 +586,7 @@ public class NamespaceUtil {
 		@Override
 		public String toString() {
 
-			StringBuffer buf = new StringBuffer();
+			StringBuilder buf = new StringBuilder();
 			buf.append("[");
 			for (int i = 0; i < this.getLength(); i++) {
 				buf.append(" ");

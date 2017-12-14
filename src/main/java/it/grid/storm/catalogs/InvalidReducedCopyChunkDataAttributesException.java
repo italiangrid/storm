@@ -47,9 +47,10 @@ public class InvalidReducedCopyChunkDataAttributesException extends Exception {
 		nullStatus = status == null;
 	}
 
+	@Override
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("Invalid CopyChunkData attributes: null-requestToken=");
 		sb.append("; null-fromSURL=");
 		sb.append(nullFromSURL);

@@ -2,16 +2,14 @@
  * 
  * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 
@@ -23,10 +21,14 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Random;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.BOL;
+import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.PTG;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -36,20 +38,22 @@ import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
 public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 
+	public enum RecallTaskType {
+
+		PTG, BOL, BACK, RCLL;
+	}
+
 	private static final Logger log = LoggerFactory.getLogger(TapeRecallTO.class);
 
 	private static final long serialVersionUID = -2907739786996767167L;
 
-	public static final String PTG_REQUEST = "ptg";
-	public static final String BOL_REQUEST = "bol";
-	public static final String BACK_REQUEST = "back";
-	public static final String startChar = "";
-	public static final char sepChar = '\u0009';
-	public static final String dateFormat = "dd-MM-yyyy HH.mm.ss";
+	public static final String START_CHAR = "";
+	public static final char SEPARATOR_CHAR = '\u0009';
+	public static final String DATE_FORMAT = "dd-MM-yyyy HH.mm.ss";
 
 	private UUID taskId = null;
 	private TRequestToken requestToken = null;
-	private String requestType = null;
+	private RecallTaskType requestType = null;
 	private String fileName = null;
 	private String userID = null;
 	private String voName = null;
@@ -62,32 +66,26 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 	private Date deferredRecallInstant = null;
 	private UUID groupTaskId = null;
 
-	public TapeRecallTO() {
-
-	}
+	private final Calendar endOfTheWorld = new GregorianCalendar(2012, Calendar.DECEMBER, 21);
 
 	public static TapeRecallTO createRandom(Date date, String voName) {
 
 		TapeRecallTO result = new TapeRecallTO();
-		result.setFileName("/root/" + voName + "/test/"
-			+ Math.round(Math.random() * 1000));
+		Random r = new Random();
+		result.setFileName("/root/" + voName + "/test/" + r.nextInt(1001));
 		result.setRequestToken(TRequestToken.getRandom());
-		if (Math.random() % 2 == 0) {
-			result.setRequestType(BOL_REQUEST);
+		if (r.nextInt(2) == 0) {
+			result.setRequestType(BOL);
 		} else {
-			result.setRequestType(PTG_REQUEST);
+			result.setRequestType(PTG);
 		}
 		result.setUserID("FakeId");
 		result.setRetryAttempt(0);
-		result.setPinLifetime((int) Math.round(Math.random() * 1000));
+		result.setPinLifetime(r.nextInt(1001));
 		result.setVoName(voName);
 		result.setInsertionInstant(date);
-		int deferred = 0;
-		if (Math.random() % 2 == 0) {
-			deferred = 1;
-		}
-		Date deferredRecallTime = new Date(date.getTime()
-			+ (deferred * (long) Math.random()));
+		int deferred = r.nextInt(2);
+		Date deferredRecallTime = new Date(date.getTime() + (deferred * (long) Math.random()));
 		result.setDeferredRecallInstant(deferredRecallTime);
 		result.setGroupTaskId(UUID.randomUUID());
 		return result;
@@ -149,7 +147,7 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 		return requestToken;
 	}
 
-	public String getRequestType() {
+	public RecallTaskType getRequestType() {
 
 		return requestType;
 	}
@@ -226,7 +224,7 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 		this.requestToken = requestToken;
 	}
 
-	public void setRequestType(String requestType) {
+	public void setRequestType(RecallTaskType requestType) {
 
 		this.requestType = requestType;
 	}
@@ -237,20 +235,19 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 	}
 
 	/**
-	 * Sets the status of the recall task and if a transition is performed records
-	 * the appropriate time-stamp
+	 * Sets the status of the recall task and if a transition is performed records the appropriate
+	 * time-stamp
 	 * 
 	 * @param status
 	 */
 	public void setStatus(TapeRecallStatus status) {
 
 		this.status = status;
-		if (this.status.equals(TapeRecallStatus.IN_PROGRESS)
-			&& this.inProgressInstant == null) {
+		if (this.status.equals(TapeRecallStatus.IN_PROGRESS) && this.inProgressInstant == null) {
 			this.setInProgressInstant(new Date());
 		} else {
 			if (TapeRecallStatus.isFinalStatus(this.status.getStatusId())
-				&& this.inProgressInstant == null) {
+					&& this.inProgressInstant == null) {
 				this.setFinalStateInstant(new Date());
 			}
 		}
@@ -285,42 +282,40 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 	}
 
 	/**
-	 * Does not print the taskId but the group task Id Does not print the state
-	 * transition time stamps
+	 * Does not print the taskId but the group task Id Does not print the state transition time
+	 * stamps
 	 * 
 	 * @return
 	 */
 	public String toGEMSS() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 
-		sb.append(startChar);
+		sb.append(START_CHAR);
 		sb.append(groupTaskId);
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 
-		Format formatter = new SimpleDateFormat(dateFormat);
+		Format formatter = new SimpleDateFormat(DATE_FORMAT);
 		if (insertionInstant != null) {
 			sb.append(formatter.format(insertionInstant));
 		} else {
-			Calendar endOfTheWorld = new GregorianCalendar(2012, Calendar.DECEMBER,
-				21);
 			insertionInstant = endOfTheWorld.getTime();
 			sb.append(formatter.format(insertionInstant));
 		}
 
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 		sb.append(requestType);
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 		sb.append(fileName);
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 		sb.append(voName);
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 		sb.append(userID);
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 		sb.append(retryAttempt);
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 		sb.append(status);
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 
 		if (deferredRecallInstant != null) {
 			sb.append(formatter.format(deferredRecallInstant));
@@ -328,66 +323,64 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 			sb.append(formatter.format(insertionInstant));
 		}
 
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 		sb.append(pinLifetime);
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 		sb.append(requestToken);
-		sb.append(sepChar);
-		
+		sb.append(SEPARATOR_CHAR);
+
 		if (inProgressInstant != null)
 			sb.append(formatter.format(inProgressInstant));
 		else
 			sb.append("null");
-		
+
 		return sb.toString();
 	}
 
 	@Override
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 
-		sb.append(startChar);
+		sb.append(START_CHAR);
 		sb.append(taskId);
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 
-		Format formatter = new SimpleDateFormat(dateFormat);
+		Format formatter = new SimpleDateFormat(DATE_FORMAT);
 		if (insertionInstant != null) {
 			sb.append(formatter.format(insertionInstant));
 		} else {
-			Calendar endOfTheWorld = new GregorianCalendar(2012, Calendar.DECEMBER,
-				21);
 			insertionInstant = endOfTheWorld.getTime();
 			sb.append(formatter.format(insertionInstant));
 		}
 
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 		sb.append(requestType);
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 		sb.append(fileName);
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 		sb.append(voName);
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 		sb.append(userID);
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 		sb.append(retryAttempt);
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 		sb.append(status);
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 
 		if (inProgressInstant != null) {
 			sb.append(formatter.format(inProgressInstant));
 		} else {
 			sb.append("null");
 		}
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 
 		if (finalStateInstant != null) {
 			sb.append(formatter.format(finalStateInstant));
 		} else {
 			sb.append("null");
 		}
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 
 		if (deferredRecallInstant != null) {
 			sb.append(formatter.format(deferredRecallInstant));
@@ -395,11 +388,11 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 			sb.append(formatter.format(insertionInstant));
 		}
 
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 		sb.append(pinLifetime);
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 		sb.append(requestToken);
-		sb.append(sepChar);
+		sb.append(SEPARATOR_CHAR);
 		sb.append(groupTaskId);
 		return sb.toString();
 	}
@@ -424,22 +417,21 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 	}
 
 	/**
-	 * Intended to be used when building this object from a database row NOTE:
-	 * before to call this method, call the set status method
+	 * Intended to be used when building this object from a database row NOTE: before to call this
+	 * method, call the set status method
 	 * 
 	 * @param inProgressInstant
 	 * @param finalStateInstant
 	 */
-	public void forceStatusUpdateInstants(Date inProgressInstant,
-		Date finalStateInstant) throws IllegalArgumentException {
+	public void forceStatusUpdateInstants(Date inProgressInstant, Date finalStateInstant) {
 
 		if (inProgressInstant != null) {
 			if (this.status.equals(TapeRecallStatus.IN_PROGRESS)
-				|| TapeRecallStatus.isFinalStatus(this.status.getStatusId())) {
+					|| TapeRecallStatus.isFinalStatus(this.status.getStatusId())) {
 				this.inProgressInstant = inProgressInstant;
 			} else {
 				log.error("Unable to force the in progress transition time-stamp. "
-					  + "Invalid status: {}", status);
+						+ "Invalid status: {}", status);
 			}
 		}
 		if (finalStateInstant != null) {
@@ -447,20 +439,22 @@ public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 				this.finalStateInstant = finalStateInstant;
 			} else {
 				log.error("Unable to force the in final status transition time-stamp. "
-				  + "current status {} is not finale", status);
+						+ "current status {} is not finale", status);
 			}
 		}
 	}
 
 	public void setFakeRequestToken() {
 
-		String FAKE_PREFIX = "FAKE-";
+		final String FAKE_PREFIX = "FAKE-";
 		try {
-			this.setRequestToken(new TRequestToken(FAKE_PREFIX.concat(UUID
-				.randomUUID().toString().substring(FAKE_PREFIX.length())), Calendar
-				.getInstance().getTime()));
+			this.setRequestToken(new TRequestToken(
+					FAKE_PREFIX
+							.concat(UUID.randomUUID().toString().substring(FAKE_PREFIX.length())),
+					Calendar.getInstance().getTime()));
 		} catch (InvalidTRequestTokenAttributesException e) {
-		  log.error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 		}
 	}
+
 }

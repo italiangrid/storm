@@ -71,7 +71,7 @@ public class InvalidBoLChunkDataAttributesException extends Exception {
 
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("Invalid BoLChunkData attributes: null-requestToken=");
 		sb.append(nullRequestToken);
 		sb.append("; nul-fromSURL=");

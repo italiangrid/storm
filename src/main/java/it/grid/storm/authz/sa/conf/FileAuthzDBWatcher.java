@@ -153,7 +153,7 @@ public class FileAuthzDBWatcher {
 	@Override
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
 		int count = 1;
 		for (String element : authzDBfiles.keySet()) {

@@ -11,7 +11,6 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
@@ -56,7 +55,7 @@ public class TapeRecallTOListMessageBodyWriter implements
 	public void writeTo(List<TapeRecallTO> tasks, Class<?> type,
 		Type genericType, Annotation[] annotations, MediaType mediaType,
 		MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
-		throws IOException, WebApplicationException {
+		throws IOException {
 
 		StringBuilder sb = new StringBuilder();
 
@@ -65,7 +64,7 @@ public class TapeRecallTOListMessageBodyWriter implements
 		for (TapeRecallTO t : tasks) {
 			
 			sb.append(t.toGEMSS());
-			sb.append(TapeRecallBuilder.elementSep);
+			sb.append(TapeRecallBuilder.ELEMENT_SEP);
 		}
 
 		sb.append("}");

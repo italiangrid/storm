@@ -17,6 +17,8 @@
 
 package it.grid.storm.catalogs;
 
+import com.google.common.collect.Lists;
+
 import it.grid.storm.config.Configuration;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
@@ -122,10 +124,8 @@ public class RequestSummaryDAO {
 
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
-		List<RequestSummaryDataTO> list = new ArrayList<RequestSummaryDataTO>(); // ArrayList
-																																							// containing
-																																							// all
-																																							// retrieved
+		List<RequestSummaryDataTO> list = Lists.newArrayList();
+
 		if (!checkConnection()) {
 			log
 				.error("REQUEST SUMMARY DAO - findNew: unable to get a valid connection!");
@@ -164,7 +164,7 @@ public class RequestSummaryDAO {
 			long auxid; // primary key of retrieved row
 			while (rs.next()) {
 				auxid = rs.getLong("ID");
-				rowids.add(new Long(auxid));
+				rowids.add(Long.valueOf(auxid));
 				aux = new RequestSummaryDataTO();
 				aux.setPrimaryKey(auxid);
 				aux.setRequestType(rs.getString("config_RequestTypeID"));
@@ -176,8 +176,8 @@ public class RequestSummaryDAO {
 				 * This code is only for the 1.3.18. This is a workaround to get FQANs
 				 * using the proxy field on request_queue. The FE use the proxy field of
 				 * request_queue to insert a single FQAN string containing all FQAN
-				 * separeted by the "#" char. The proxy is a BLOB, hence it has to be
-				 * properly conveted in string.
+				 * separated by the "#" char. The proxy is a BLOB, hence it has to be
+				 * properly converted in string.
 				 */
 				java.sql.Blob blob = rs.getBlob("proxy");
 				if (blob != null) {
@@ -202,7 +202,7 @@ public class RequestSummaryDAO {
 				logWarnings(stmt.getWarnings());
 				stmt.setString(1, "Request handled!");
 				logWarnings(stmt.getWarnings());
-				log.trace("REQUEST SUMMARY DAO - findNew: executing {}", stmt.toString());
+				log.trace("REQUEST SUMMARY DAO - findNew: executing {}", stmt);
 				stmt.executeUpdate();
 				close(stmt);
 			}
@@ -231,7 +231,7 @@ public class RequestSummaryDAO {
 	 * request identified by the primary key index is transited to SRM_FAILURE,
 	 * with the supplied explanation String. The supplied index is the primary key
 	 * of the global request. In case of any error, nothing gets done and no
-	 * exception is thrown, but proper error messagges get logged.
+	 * exception is thrown, but proper error messages get logged.
 	 */
 	public void failRequest(long index, String explanation) {
 
@@ -269,7 +269,7 @@ public class RequestSummaryDAO {
 	 * request. The supplied explanation string is used both for the global status
 	 * as well as for each individual chunk. The supplied index is the primary key
 	 * of the global request. In case of any error, nothing gets done and no
-	 * exception is thrown, but proper error messagges get logged.
+	 * exception is thrown, but proper error messages get logged.
 	 */
 	public void failPtGRequest(long index, String explanation) {
 
@@ -641,30 +641,30 @@ public class RequestSummaryDAO {
 				close(update);
 				// update single chunk file statuses
 				TRequestType rtyp = RequestTypeConverter.getInstance().toSTORM(type);
-				String status_table = null;
-				String request_table = null;
-				String join_column = null;
+				String statusTable = null;
+				String requestTable = null;
+				String joinColumn = null;
 				if (rtyp != TRequestType.EMPTY) {
 					if (rtyp == TRequestType.PREPARE_TO_GET) {
-						status_table = "status_Get";
-						request_table = "request_Get";
-						join_column = "request_GetID";
+						statusTable = "status_Get";
+						requestTable = "request_Get";
+						joinColumn = "request_GetID";
 					} else if (rtyp == TRequestType.PREPARE_TO_PUT) {
-						request_table = "request_Put";
-						status_table = "status_Put";
-						join_column = "request_PutID";
+						requestTable = "request_Put";
+						statusTable = "status_Put";
+						joinColumn = "request_PutID";
 					} else if (rtyp == TRequestType.COPY) {
-						request_table = "request_Copy";
-						status_table = "status_Copy";
-						join_column = "request_CopyID";
+						requestTable = "request_Copy";
+						statusTable = "status_Copy";
+						joinColumn = "request_CopyID";
 					} else {
-						request_table = "request_BoL";
-						status_table = "status_BoL";
-						join_column = "request_BoLID";
+						requestTable = "request_BoL";
+						statusTable = "status_BoL";
+						joinColumn = "request_BoLID";
 					}
-					String auxstr = "UPDATE " + status_table
-						+ " s JOIN (request_queue r, " + request_table + " t) ON (s."
-						+ join_column + "=t.ID AND t.request_queueID=r.ID) "
+					String auxstr = "UPDATE " + statusTable
+						+ " s JOIN (request_queue r, " + requestTable + " t) ON (s."
+						+ joinColumn + "=t.ID AND t.request_queueID=r.ID) "
 						+ "SET s.statusCode=?, s.explanation=? " + "WHERE r.ID=?";
 					update = con.prepareStatement(auxstr);
 					logWarnings(con.getWarnings());
@@ -743,30 +743,30 @@ public class RequestSummaryDAO {
 				close(update);
 				// update single chunk file statuses
 				TRequestType rtyp = RequestTypeConverter.getInstance().toSTORM(type);
-				String status_table = null;
-				String request_table = null;
-				String join_column = null;
+				String statusTable = null;
+				String requestTable = null;
+				String joinColumn = null;
 				if (rtyp != TRequestType.EMPTY) {
 					if (rtyp == TRequestType.PREPARE_TO_GET) {
-						request_table = "request_Get";
-						status_table = "status_Get";
-						join_column = "request_GetID";
+						requestTable = "request_Get";
+						statusTable = "status_Get";
+						joinColumn = "request_GetID";
 					} else if (rtyp == TRequestType.PREPARE_TO_PUT) {
-						request_table = "request_Put";
-						status_table = "status_Put";
-						join_column = "request_PutID";
+						requestTable = "request_Put";
+						statusTable = "status_Put";
+						joinColumn = "request_PutID";
 					} else if (rtyp == TRequestType.COPY) {
-						request_table = "request_Copy";
-						status_table = "status_Copy";
-						join_column = "request_CopyID";
+						requestTable = "request_Copy";
+						statusTable = "status_Copy";
+						joinColumn = "request_CopyID";
 					} else {
-						request_table = "request_BoL";
-						status_table = "status_BoL";
-						join_column = "request_BoLID";
+						requestTable = "request_BoL";
+						statusTable = "status_BoL";
+						joinColumn = "request_BoLID";
 					}
-					String auxstr = "UPDATE " + status_table
-						+ " s JOIN (request_queue r, " + request_table + " t ON s."
-						+ join_column + "=t.ID AND t.request_queueID=r.ID )"
+					String auxstr = "UPDATE " + statusTable
+						+ " s JOIN (request_queue r, " + requestTable + " t ON s."
+						+ joinColumn + "=t.ID AND t.request_queueID=r.ID )"
 						+ "SET s.statusCode=?, s.explanation=? " + "WHERE r.ID=?";
 					update = con.prepareStatement(auxstr);
 					logWarnings(con.getWarnings());
@@ -804,8 +804,7 @@ public class RequestSummaryDAO {
 	public void abortChunksOfRequest(String rt, Collection<String> surls) {
 
 		if (!checkConnection()) {
-			log.error("REQUEST SUMMARY DAO - abortChunksOfRequest: unable to get a "
-				+ "valid connection!");
+			log.error("REQUEST SUMMARY DAO - abortChunksOfRequest: unable to get a valid connection!");
 			return;
 		}
 		PreparedStatement update = null;
@@ -828,37 +827,37 @@ public class RequestSummaryDAO {
 				String type = rs.getString("config_RequestTypeID");
 				// update single chunk file statuses
 				TRequestType rtyp = RequestTypeConverter.getInstance().toSTORM(type);
-				String status_table = null;
-				String request_table = null;
-				String join_column = null;
-				String surl_column = null;
+				String statusTable = null;
+				String requestTable = null;
+				String joinColumn = null;
+				String surlColumn = null;
 				if (rtyp != TRequestType.EMPTY) {
 					if (rtyp == TRequestType.PREPARE_TO_GET) {
-						request_table = "request_Get";
-						status_table = "status_Get";
-						join_column = "request_GetID";
-						surl_column = "sourceSURL";
+						requestTable = "request_Get";
+						statusTable = "status_Get";
+						joinColumn = "request_GetID";
+						surlColumn = "sourceSURL";
 					} else if (rtyp == TRequestType.PREPARE_TO_PUT) {
-						request_table = "request_Put";
-						status_table = "status_Put";
-						join_column = "request_PutID";
-						surl_column = "targetSURL";
+						requestTable = "request_Put";
+						statusTable = "status_Put";
+						joinColumn = "request_PutID";
+						surlColumn = "targetSURL";
 					} else if (rtyp == TRequestType.COPY) {
-						request_table = "request_Copy";
-						status_table = "status_Copy";
-						join_column = "request_CopyID";
-						surl_column = "targetSURL";
+						requestTable = "request_Copy";
+						statusTable = "status_Copy";
+						joinColumn = "request_CopyID";
+						surlColumn = "targetSURL";
 					} else {
-						request_table = "request_BoL";
-						status_table = "status_BoL";
-						join_column = "request_BoLID";
-						surl_column = "sourceSURL";
+						requestTable = "request_BoL";
+						statusTable = "status_BoL";
+						joinColumn = "request_BoLID";
+						surlColumn = "sourceSURL";
 					}
-					String auxstr = "UPDATE " + status_table
-						+ " s JOIN (request_queue r, " + request_table + " t ON s."
-						+ join_column + "=t.ID AND t.request_queueID=r.ID "
+					String auxstr = "UPDATE " + statusTable
+						+ " s JOIN (request_queue r, " + requestTable + " t ON s."
+						+ joinColumn + "=t.ID AND t.request_queueID=r.ID "
 						+ "SET s.statusCode=?, s.explanation=? " + "WHERE r.ID=? AND "
-						+ surl_column + " IN " + makeInString(surls);
+						+ surlColumn + " IN " + makeInString(surls);
 					update = con.prepareStatement(auxstr);
 					logWarnings(con.getWarnings());
 					update.setInt(1,
@@ -919,37 +918,37 @@ public class RequestSummaryDAO {
 				String type = rs.getString("config_RequestTypeID");
 				// update single chunk file statuses
 				TRequestType rtyp = RequestTypeConverter.getInstance().toSTORM(type);
-				String status_table = null;
-				String request_table = null;
-				String join_column = null;
-				String surl_column = null;
+				String statusTable = null;
+				String requestTable = null;
+				String joinColumn = null;
+				String surlColumn = null;
 				if (rtyp != TRequestType.EMPTY) {
 					if (rtyp == TRequestType.PREPARE_TO_GET) {
-						request_table = "request_Get";
-						status_table = "status_Get";
-						join_column = "request_GetID";
-						surl_column = "sourceSURL";
+						requestTable = "request_Get";
+						statusTable = "status_Get";
+						joinColumn = "request_GetID";
+						surlColumn = "sourceSURL";
 					} else if (rtyp == TRequestType.PREPARE_TO_PUT) {
-						request_table = "request_Put";
-						status_table = "status_Put";
-						join_column = "request_PutID";
-						surl_column = "targetSURL";
+						requestTable = "request_Put";
+						statusTable = "status_Put";
+						joinColumn = "request_PutID";
+						surlColumn = "targetSURL";
 					} else if (rtyp == TRequestType.COPY) {
-						request_table = "request_Copy";
-						status_table = "status_Copy";
-						join_column = "request_CopyID";
-						surl_column = "targetSURL";
+						requestTable = "request_Copy";
+						statusTable = "status_Copy";
+						joinColumn = "request_CopyID";
+						surlColumn = "targetSURL";
 					} else {
-						request_table = "request_BoL";
-						status_table = "status_BoL";
-						join_column = "request_BoLID";
-						surl_column = "sourceSURL";
+						requestTable = "request_BoL";
+						statusTable = "status_BoL";
+						joinColumn = "request_BoLID";
+						surlColumn = "sourceSURL";
 					}
-					String auxstr = "UPDATE " + status_table
-						+ " s JOIN (request_queue r, " + request_table + " t ON s."
-						+ join_column + "=t.ID AND t.request_queueID=r.ID "
+					String auxstr = "UPDATE " + statusTable
+						+ " s JOIN (request_queue r, " + requestTable + " t ON s."
+						+ joinColumn + "=t.ID AND t.request_queueID=r.ID "
 						+ "SET s.statusCode=?, s.explanation=? " + "WHERE r.ID=? AND "
-						+ surl_column + " IN " + makeInString(surls);
+						+ surlColumn + " IN " + makeInString(surls);
 					update = con.prepareStatement(auxstr);
 					logWarnings(con.getWarnings());
 					update.setInt(1,
@@ -985,7 +984,7 @@ public class RequestSummaryDAO {
 	 */
 	private String makeInString(Collection<String> c) {
 
-		StringBuffer sb = new StringBuffer("(");
+		StringBuilder sb = new StringBuilder("(");
 		for (Iterator<String> i = c.iterator(); i.hasNext();) {
 			sb.append(i.next());
 			if (i.hasNext()) {
@@ -1115,8 +1114,8 @@ public class RequestSummaryDAO {
 
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		List<String> requestTokens = new ArrayList<String>();
-		List<Long> ids = new ArrayList<Long>();
+		List<String> requestTokens = Lists.newArrayList();
+		List<Long> ids = Lists.newArrayList();
 		
 		if (!checkConnection()) {
 			log.error("REQUEST SUMMARY DAO - purgeExpiredRequests: unable to get a "
@@ -1268,7 +1267,7 @@ public class RequestSummaryDAO {
 	 */
 	private String makeWhereString(List<Long> rowids) {
 
-		StringBuffer sb = new StringBuffer("(");
+		StringBuilder sb = new StringBuilder("(");
 		for (Iterator<Long> i = rowids.iterator(); i.hasNext();) {
 			sb.append(i.next());
 			if (i.hasNext()) {
@@ -1289,18 +1288,10 @@ public class RequestSummaryDAO {
 		try {
 			Class.forName(driver);
 			con = DriverManager.getConnection(url, name, password);
-			if (con == null) {
-				log.error("REQUEST SUMMARY DAO! DriverManager returned null connection!");
-			} else {
-				logWarnings(con.getWarnings());
-				response = con.isValid(0);
-			}
-		} catch (ClassNotFoundException e) {
-			log.error("REQUEST SUMMARY DAO! Exception in setUpConnection! {}", 
-				e.getMessage(), e);
-		} catch (SQLException e) {
-			log.error("REQUEST SUMMARY DAO! Exception in setUpConnection! {}", 
-				e.getMessage(), e);
+			logWarnings(con.getWarnings());
+			response = con.isValid(0);
+		} catch (ClassNotFoundException | SQLException e) {
+			log.error("REQUEST SUMMARY DAO! Exception in setUpConnection! {}", e.getMessage(), e);
 		}
 		return response;
 	}
@@ -1389,9 +1380,9 @@ public class RequestSummaryDAO {
 	private void logWarnings(SQLWarning warning) {
 
 		if (warning != null) {
-			log.debug("REQUEST SUMMARY DAO: {}", warning.toString());
+			log.debug("REQUEST SUMMARY DAO: {}", warning);
 			while ((warning = warning.getNextWarning()) != null) {
-				log.debug("REQUEST SUMMARY DAO: {}", warning.toString());
+				log.debug("REQUEST SUMMARY DAO: {}", warning);
 			}
 		}
 	}

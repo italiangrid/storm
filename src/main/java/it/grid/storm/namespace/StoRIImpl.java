@@ -558,7 +558,7 @@ public class StoRIImpl implements StoRI {
 	@Override
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		
 		sb.append("\n");
 		sb.append(" stori.stfn           : " + this.getStFN().toString() + "\n");

@@ -124,7 +124,7 @@ public class LogEvent implements Delayed {
 	@Override
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		final char fieldSeparator = '\t';
 		sb.append(userDN).append(fieldSeparator);
 		sb.append(opType.toString()).append(fieldSeparator);

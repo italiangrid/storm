@@ -224,7 +224,7 @@ public class SURL extends SRMURL {
 	 */
 	public String getPathQuery() {
 
-		StringBuffer sb = new StringBuffer(250);
+		StringBuilder sb = new StringBuilder(250);
 		sb.append(getPath());
 		if (this.isQueriedFormSURL()) {
 			sb.append("?");
@@ -253,9 +253,8 @@ public class SURL extends SRMURL {
 	@Override
 	public String toString() {
 
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 		buffer.append(this.transfProtocol.toString());
-		// buffer.append(getServiceEndPoint());
 		buffer.append(this.getPathQuery());
 		return buffer.toString();
 	}

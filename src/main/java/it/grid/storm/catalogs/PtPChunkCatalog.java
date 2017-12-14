@@ -17,7 +17,6 @@
 
 package it.grid.storm.catalogs;
 
-import it.grid.storm.catalogs.timertasks.ExpiredPutRequestsAgent;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.common.types.TimeUnit;
@@ -44,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Timer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,30 +67,7 @@ public class PtPChunkCatalog {
 	private static final PtPChunkCatalog cat = new PtPChunkCatalog();
 	private final PtPChunkDAO dao = PtPChunkDAO.getInstance();
 
-	/*
-	 * Timer object in charge of transiting expired requests from
-	 * SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED!
-	 */
-	private final Timer transiter = new Timer();
-	/* Delay time before starting cleaning thread! Set to 1 minute */
-	private final long delay = Configuration.getInstance()
-		.getTransitInitialDelay() * 1000;
-	/* Period of execution of cleaning! Set to 1 hour */
-	private final long period = Configuration.getInstance()
-		.getTransitTimeInterval() * 1000;
-
-	/**
-	 * Private constructor that starts the internal timer needed to periodically
-	 * check and transit requests whose pinLifetime has expired and are in
-	 * SRM_SPACE_AVAILABLE, to SRM_FILE_LIFETIME_EXPIRED. Moreover, the physical
-	 * file corresponding to the SURL gets removed; then any JiT entry gets
-	 * removed, except those on traverse for the parent directory; finally any
-	 * volatile entry gets removed too.
-	 */
-	private PtPChunkCatalog() {
-
-		transiter.scheduleAtFixedRate(new ExpiredPutRequestsAgent(), delay, period);
-	}
+	private PtPChunkCatalog() {}
 
 	/**
 	 * Method that returns the only instance of PtPChunkCatalog available.
@@ -165,7 +140,7 @@ public class PtPChunkCatalog {
 	 */
 	private PtPPersistentChunkData makeOne(PtPChunkDataTO auxTO, TRequestToken rt) {
 
-		StringBuffer errorSb = new StringBuffer();
+		StringBuilder errorSb = new StringBuilder();
 		// toSURL
 		TSURL toSURL = null;
 		try {
@@ -540,7 +515,7 @@ public class PtPChunkCatalog {
 	private ReducedPtPChunkData makeOneReduced(
 		ReducedPtPChunkDataTO reducedChunkDataTO) {
 
-		StringBuffer errorSb = new StringBuffer();
+		StringBuilder errorSb = new StringBuilder();
 		// fromSURL
 		TSURL toSURL = null;
 		try {
