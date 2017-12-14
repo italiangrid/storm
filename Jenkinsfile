@@ -10,21 +10,20 @@ pipeline {
     triggers { cron('@daily') }
   
     stages {
-      stage('prepare'){
-        steps {
-          checkout scm
-        }
-      }
   
       stage('build') {
         steps {
-          sh 'mvn -B clean compile'
+	  container('maven-runner') {
+            sh 'mvn -B clean compile'
+          }
         }
       }
   
       stage('test') {
         steps {
-          sh 'mvn -B clean test'
+          container('maven-runner') {
+            sh 'mvn -B clean test'
+          }
           script {
             currentBuild.result = 'SUCCESS'
           }
@@ -32,7 +31,9 @@ pipeline {
   
         post {
           always {
-            junit '**/target/surefire-reports/TEST-*.xml'
+            container('maven-runner') {
+              junit '**/target/surefire-reports/TEST-*.xml'
+            }
           }
         }
       }
@@ -40,7 +41,9 @@ pipeline {
   
       stage('package') {
         steps {
-          sh 'mvn -B -DskipTests=true clean package'
+          container('maven-runner') {
+            sh 'mvn -B -DskipTests=true clean package'
+          }
         }
       }
     }
