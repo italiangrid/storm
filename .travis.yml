@@ -3,6 +3,8 @@ sudo: required
 dist: trusty
 jdk:
 - openjdk8
+install:
+- /bin/bash travis/install-deps.sh
 script:
 - /bin/bash travis/build.sh
 cache:
