@@ -7,12 +7,18 @@ NATIVE_INTERFACE_BUILD_DIR=/tmp/native-interface
 NATIVE_INTERFACE_BUILD_LOG=/tmp/travis-native-interface-build.out
 
 error_handler() {
-  echo ERROR: An error was encountered bulding mitreid 
+  echo ERROR: An error was encountered installing dependencies 
   tail -1000 ${MITREID_BUILD_LOG}
   exit 1
 }
 
 trap 'error_handler' ERR
+
+sudo apt-get -qq update
+sudo apt-get install -y epel-release
+sudo apt-get install -y jpackage-utils
+
+
 git clone ${STORM_NATIVE_INTERFACE_REPO} ${NATIVE_INTERFACE_BUILD_DIR} 
 pushd ${NATIVE_INTERFACE_BUILD_DIR}
 git checkout ${STORM_NATIVE_INTERFACE_BRANCH}
