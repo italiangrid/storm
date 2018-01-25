@@ -14,11 +14,6 @@ error_handler() {
 
 trap 'error_handler' ERR
 
-sudo apt-get -qq update
-sudo apt-get install -y epel-release
-sudo apt-get install -y jpackage-utils
-
-
 git clone ${STORM_NATIVE_INTERFACE_REPO} ${NATIVE_INTERFACE_BUILD_DIR} 
 pushd ${NATIVE_INTERFACE_BUILD_DIR}
 git checkout ${STORM_NATIVE_INTERFACE_BRANCH}

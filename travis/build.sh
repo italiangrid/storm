@@ -20,7 +20,11 @@ trap 'error_handler' ERR
 bash -c "while true; do echo \$(date) - building ...; sleep $PING_SLEEP; done" &
 PING_LOOP_PID=$!
 
-mvn clean package >> $BUILD_OUTPUT 2>&1
-echo "StoRM build & test completed succesfully"
+mvn -B clean compile >> $BUILD_OUTPUT 2>&1
+echo "storm-backend-server build completed succesfully"
+
+mvn -B clean test >> $BUILD_OUTPUT 2>&1
+echo "storm-backend-server tests completed succesfully"
+
 tail -100 $BUILD_OUTPUT
 kill ${PING_LOOP_PID}
