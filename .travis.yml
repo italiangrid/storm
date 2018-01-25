@@ -1,0 +1,10 @@
+language: java
+sudo: required
+dist: trusty
+jdk:
+- openjdk8
+script:
+- /bin/bash travis/build.sh
+cache:
+  directories:
+  - "$HOME/.m2/repository"
