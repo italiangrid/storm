@@ -9,7 +9,7 @@ The following is the list of last StoRM releases, with the released components l
 
 ## StoRM v.1.11.13
 
-<span class="label" style="margin-top: -20px;">31.10.2017</span> <span class="label label-info" style="margin-top: -20px;">current</span>
+<span class="label" style="margin-top: -20px;">31.01.2018</span> <span class="label label-info" style="margin-top: -20px;">current</span>
 
 This is the latest release for StoRM, available on StoRM repositories.
 
@@ -17,6 +17,7 @@ This is the latest release for StoRM, available on StoRM repositories.
 |:---------------------|:-----------
 |StoRM Backend         |[1.11.13]({{site.baseurl}}/release-notes/storm-backend-server/1.11.13/)
 |YAIM StoRM            |[4.3.10]({{site.baseurl}}/release-notes/yaim-storm/4.3.10/)
+|StoRM Info Provider   |[1.8.0]({{site.baseurl}}/release-notes/yaim-storm/1.8.0/)|
 
 See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.13.html).
 

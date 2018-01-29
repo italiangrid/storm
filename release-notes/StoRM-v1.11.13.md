@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM v.1.11.13 - release notes"
-release_date: "31.10.2017"
+release_date: "31.01.2018"
 rfcs:
   - id: STOR-950
     title: Failure on updating recall task status
@@ -11,7 +11,9 @@ rfcs:
     title: Garbage Collector ignore timestamps on cleaning recall tasks
 features:
   - id: STOR-954
-    title: StoRM backend should garbage collect requests that are stuck in SRM_IN_PROGRESS for a configurable amount of time  
+    title: StoRM backend should garbage collect requests that are stuck in SRM_IN_PROGRESS for a configurable amount of time
+  - id: STOR-982
+    title: JSON storage usage reporting
 components:
   - name: StoRM Backend
     package: storm-backend-server
@@ -19,6 +21,9 @@ components:
   - name: YAIM StoRM
     package: yaim-storm
     version: 4.3.10
+  - name: StoRM Info Provider
+    package: storm-dynamic-info-provider
+    version: 1.8.0
 ---
 
 ## StoRM v. 1.11.13
@@ -49,6 +54,8 @@ expired.request.ptp.time = 2592000
 
 This amount of time can be configured through the property `expired.request.time` which is already used for other asynch requests cleared by the Garbage Collector.
 
+* adds the ability to generate a storage usage JSON report, following the rules and format defined by WLCG.
+
 #### Released components
 
 {% include list-components.liquid %}
@@ -67,10 +74,11 @@ Update packages:
 
 * storm-backend-server
 * yaim-storm
+* storm-dynamic-info-provider
 
 Example:
 
-    $ yum update storm-backend-server yaim-storm
+    $ yum update storm-backend-server yaim-storm storm-dynamic-info-provider
 
 And reconfigure the StoRM services with YAIM.
 
