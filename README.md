@@ -5,8 +5,12 @@ in the [Jekyll guide](http://jekyllrb.com/docs/installation/).
 
 Then you can get a server up and running with your site by excecuting
 
-	jekyll serve --watch
-	
+	jekyll serve
+
+or launching docker-compose:
+
+    docker-compose up
+
 and browsing it at http://0.0.0.0:4000.
 
 After changes to source files the site is automatically regenerated.
