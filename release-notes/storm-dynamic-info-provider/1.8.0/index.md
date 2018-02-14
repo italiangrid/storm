@@ -13,7 +13,13 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.13][release-notes].
 
 ### Description
 
-This release adds the ability to generate a storage usage JSON report, following the rules and format defined in the [Storage Resource Reporting Proposal for storage providers][proposal] and showed as an example [here][example].
+This release adds the ability to generate a storage usage JSON report, 
+following the rules and format defined in the [Storage Resource Reporting Proposal for storage providers][proposal] 
+and showed as an example [here][example].
+
+An example of how make the JSON site report readble from all VOs' authenticated users through a WebDAV endpoint
+is explained [here][how-to-json-report].
+
 
 ### Bug fixes
 
@@ -40,6 +46,7 @@ StoRM services in the [System Administration Guide][storm-sysadmin-guide].
 
 [release-notes]: {{site.baseurl}}/release-notes/StoRM-v1.11.13.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/
+[how-to-json-report]: {{site.baseurl}}/documentation/how-to/how-to-publish-json-report/
 
 [proposal]: https://docs.google.com/document/d/1yzCvKpxsbcQC5K9MyvXc-vBF1HGPBk4vhjw3MEXoXf8/edit#
 [example]: https://twiki.cern.ch/twiki/pub/LCG/AccountingTaskForce/storage_service_v4.txt

@@ -54,7 +54,7 @@ expired.request.ptp.time = 2592000
 
 This amount of time can be configured through the property `expired.request.time` which is already used for other asynch requests cleared by the Garbage Collector.
 
-* adds the ability to generate a storage usage JSON report, following the rules and format defined by WLCG.
+* adds the ability to generate a storage usage JSON report, following the rules and format defined by WLCG (read more [here][how-to-json-report]).
 
 #### Released components
 
@@ -96,3 +96,4 @@ Follow the instructions in the [System Administration Guide][storm-sysadmin-guid
 
 [upgrading-old]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.12/#upgrading
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide
+[how-to-json-report]: {{site.baseurl}}/documentation/how-to/how-to-publish-json-report/
