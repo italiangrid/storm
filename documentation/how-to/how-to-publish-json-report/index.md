@@ -1,19 +1,19 @@
 ---
 layout: toc
-title: StoRM Storage Resource Manager - How-to publish JSON site report
+title: StoRM Storage Resource Manager - How-to publish storage site report
 ---
 
-# How-to publish JSON site report
+# How-to publish storage site report
 
-- [Configure a storage area](#configure-a-dedicated-storage-area)
-- [Periodically refresh report](#periodically-refresh-report)
-    - [Refresh script](#refresh-script)
-    - [Create a cron-job](#create-a-cron-job)
-- [Get JSON report](#get-json-report)
+- [Configure a storage area](#configure)
+- [Periodically reload report](#reload-report)
+    - [Refresh script](#script)
+    - [Cron-job](#cronjob)
+- [Get JSON report through HTTP](#json)
  
-The following is an example of how make the JSON site report readble from all VOs' authenticated users through a WebDAV endpoint.
+The following is an example of how make the storage site report in JSON readble from all VOs' authenticated users through a WebDAV endpoint.
 
-## Configure a storage area
+## Configure a storage area <a name="configure">&nbsp;</a>
 
 The aim is allowing all the users to access - through a WebDAV endpoint - the JSON report.
 
@@ -56,9 +56,9 @@ $ vim /etc/storm/backend-server/path-authz.db
   @ALL@     /                        WRFDLMN          permit
 ```
 
-## Periodically refresh report
+## Periodically reload report <a name="reload-report">&nbsp;</a>
 
-### Refresh script
+### Refresh script <a name="script">&nbsp;</a>
 
 Write a simple bash script which runs info-provider, gets the updated json-report and replaces the old one.
 
@@ -84,7 +84,7 @@ chown storm:storm $TARGET_REPORT_PATH
 Save it into `/root/update-report.sh`
 
 
-### Create a cron-job 
+### Cron-job<a name="cronjob">&nbsp;</a>
 
 Create a cron-job that runs `update-report.sh` script hourly.
 
@@ -96,7 +96,7 @@ Create `/etc/cron.d/update-site-report` as follow:
 
 At XX:00 the `update-report.sh` script will be executed.
 
-## Get JSON report
+## Get JSON report through HTTP <a name="json">&nbsp;</a>
 
 Acting as `test0` user of test.vo VO, we can access storage area with a simple http get.
 

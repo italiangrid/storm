@@ -12,6 +12,10 @@ version: {{ page.version }}
 
 **Table of contents**
 
+* [Upgrading to StoRM v1.11.13](#upgrading)
+  * [Upgrading from StoRM v1.11.12](#upgrade12)
+  * [Upgrading from StoRM v1.11.11](#upgrade11)
+  * [Upgrading from versions earlier than v1.11.11](#upgradeold)
 * [Installation Prerequisites](#prerequisites)
   * [Platform](#platform)
   * [Requirements](#requirements)
@@ -42,6 +46,95 @@ version: {{ page.version }}
   * [Installation and Configuration](#cdmistorminstall)
 
 ------
+
+## Upgrading to StoRM v1.11.13 <a name="upgrading">&nbsp;</a>
+
+### Upgrading from StoRM v1.11.12 <a name="upgrade12">&nbsp;</a>
+
+Services to be updated are:
+
+* storm-backend-server
+* storm-dynamic-info-provider
+* yaim-storm
+
+Run update:
+
+    $ yum update storm-backend-server yaim-storm storm-dynamic-info-provider
+
+and reconfigure StoRM Backend node with YAIM.
+Example with configuration file `/etc/storm/siteinfo/storm.def`:
+
+    $ /opt/glite/yaim/bin/yaim -c -s /etc/storm/siteinfo/storm.def -n se_storm_backend
+
+Read more [here](#launchingyaim) about YAIM.
+
+### Upgrading from StoRM v1.11.11 <a name="upgrade11">&nbsp;</a>
+
+Follow the instructions below when you are upgrading StoRM from v1.11.11.
+
+#### 1. Update the involved packages
+
+Services to be updated are:
+
+* storm-backend-server
+* storm-dynamic-info-provider
+* storm-native-libs
+* storm-frontend-server
+* storm-webdav
+* yaim-storm
+
+Example:
+
+    $ yum update storm-backend-server storm-dynamic-info-provider storm-frontend-server storm-webdav storm-native-libs yaim-storm
+
+##### 2. Update the namespace schema
+
+You should have a `.rpmnew` file on disk:
+
+    $ cd /etc/storm/backend-server
+    $ mv namespace-1.5.0.xsd namespace-1.5.0.xsd.rpmold
+    $ mv namespace-1.5.0.xsd.rpmnew namespace-1.5.0.xsd
+
+##### 3. Remove `storm-gridhttps-plugin`
+
+It's a component that is no more used and with old java dependencies that **MUST** be removed:
+
+    $ yum remove storm-gridhttps-plugin
+
+##### 4. Remove old Java versions
+
+Since this version, the `storm-backend-server`, `storm-webdav` and `storm-native-libs` rpms explicitly **REQUIRES JAVA 8**.
+
+`java -version` will tell which is the active version on your system:
+
+    $ java -version
+    openjdk version "1.8.0_131"
+    OpenJDK Runtime Environment (build 1.8.0_131-b11)
+    OpenJDK 64-Bit Server VM (build 25.131-b11, mixed mode)
+
+Remove old java versions installed on your system with the following command:
+
+    $ yum remove java-1.6.0-openjdk java-1.7.0-openjdk java-1.7.0-openjdk-devel
+
+If you have a more complex deployment and you can't remove them, you can try to configure the active JRE using update-alternatives:
+
+    $ update-alternatives --config java
+
+##### 5. Relaunch YAIM configuration
+
+Example with configuration file `/etc/storm/siteinfo/storm.def`:
+
+    $ /opt/glite/yaim/bin/yaim -c -s /etc/storm/siteinfo/storm.def \
+      -n se_storm_backend \
+      -n se_storm_frontend \
+      -n se_storm_gridftp \
+      -n se_storm_webdav
+
+Read more [here](#launchingyaim) about YAIM.
+
+### Upgrading from versions earlier than v1.11.11 <a name="upgradeold">&nbsp;</a>
+
+Go to [releases page][releases] and read the upgrading instructions from the release notes.
 
 ## Installation Prerequisites <a name="prerequisites">&nbsp;</a>
 
@@ -244,28 +337,40 @@ Before installing storm components, install the required repositories.
 StoRM packages can be obtained from the UMD repositories and/or from the StoRM product team package repository.
 The EGI Trust Anchors repository is also required.
 
+#### EPEL repositories <a name="epelrepos">&nbsp;</a>
+
+On each production machine the EPEL repositories must be installed.
+
+Install EPEL SL6 repositories as follow:
+
+    yum localinstall http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+
 #### UMD Repositories <a name="umdrepos">&nbsp;</a>
 
-On each production machine that is to be configured for using the UMD repositories, 
-site administrators must follow the installation instructions explained [here][UMD-instructions].
+On each production machine the UMD repositories must be installed. StoRM supports both UDM-3 and UMD-4 repositories for SL6.
+UMD-3 repositories updates will be only emergency updates, then it's encourage to use latest **UMD-4 for SL6** repositories.
 
-In short, remove all UMD and EPEL related repos:
+##### Clean UMD-4 installation
 
-    rm /etc/yum.repos.d/UMD-* /etc/yum.repos.d/epel-*
-
-Install EPEL SL6 repositories:
-
-    wget http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm 
-    yum localinstall epel-release-6-8.noarch.rpm
-
-Install UMD rpm pgp-key:
+Install UMD pgp key:
 
     rpm --import http://repository.egi.eu/sw/production/umd/UMD-RPM-PGP-KEY
 
-Install UMD 4 for SL6 repository:
+Install latest UMD-4 for SL6:
 
-    wget http://repository.egi.eu/sw/production/umd/4/sl6/x86_64/updates/umd-release-4.1.3-1.el6.noarch.rpm
-    yum localinstall umd-release-4.1.3-1.el6.noarch.rpm
+    yum localinstall http://repository.egi.eu/sw/production/umd/4/sl6/x86_64/updates/umd-release-4.1.3-1.el6.noarch.rpm
+
+##### Upgrading from UMD-3
+
+Clear old UMD repositories eventually installed before:
+
+    yum remove umd-release
+
+Install latest UMD-4 for SL6:
+
+    yum localinstall http://repository.egi.eu/sw/production/umd/4/sl6/x86_64/updates/umd-release-4.1.3-1.el6.noarch.rpm
+
+More information about UMD installation can be found [here][UMD-instructions].
 
 #### EGI Trust Anchors Repository <a name="egitrustrepo">&nbsp;</a>
 
@@ -689,7 +794,7 @@ The `namespace.xml` configuration file contains the storage area info like what 
 |   ```default.overwrite```                     |   Default file overwrite mode to use upon *srmPrepareToPut* and *srmCopy* requests. Default: **A**. Possible values are: N, A, D. Please note that N stands for *Never*, A stands for *Always* and D stands for *When files differs*.
 |   ```default.storagetype```                   |   Default File Storage Type to be used for *srmPrepareToPut* and *srmCopy* requests in case is not provided in the request. Default: **V**. Possible values are: V, P, D. Please note that V stands for *Volatile*, P stands for *Permanent* and D stands for *Durable*.
 
-#### Requests garbage collector
+#### Requests garbage collector <a name="requestsgarbagecollector">&nbsp;</a>
 
 The request garbage collector process cleans database from the expired asynchronous SRM requests. The value of `expired.request.time` defines how many seconds are necessary to a request, after its submission, to be considered expired. An appropriate tuning is needed in case of high throughput of SRM requests required for long time.
 
@@ -699,7 +804,7 @@ The request garbage collector process cleans database from the expired asynchron
 | `purge.interval`           |  Time interval in seconds between successive purging run. Default: **600**.
 | `purge.size`               |  Number of requests picked up for cleaning from the requests garbage collector at each run. This value is use also by Tape Recall Garbage Collector. Default: **800**
 | `purge.delay`              |  Initial delay before starting the requests garbage collection process, in seconds. Default: **10**
-| `expired.request.time`     |  Time in seconds to consider a request expired after its submission. Default: **21600** seconds (6 hours)
+| `expired.request.time`     |  Time in seconds to consider a request expired after its submission. Default: **604800** seconds (1 week). From **StoRM 1.11.13** it is used also to identify how much time is needed to consider a completed recall task as cleanable.
 | `expired.inprogress.time`  |  Time in seconds to consider an in-progress ptp request as expired. Default: **2592000** seconds (1 month)
 
 #### Expired put requests agent
@@ -707,7 +812,7 @@ The request garbage collector process cleans database from the expired asynchron
 This agent:
 
 * transits ongoing srmPtP to SRM_FILE_LIFETIME_EXPIRED if the request pin-lifetime is expired (see `pinLifetime.default` variable into Service Information section). 
-* transits to SRM_FAIULURE the srmPtP that after `expired.inprogress.time` seconds are still in SRM_REQUEST_INPROGRESS.
+* transits to SRM_FAILURE the srmPtP that after `expired.inprogress.time` seconds are still in SRM_REQUEST_INPROGRESS.
 
 The agent runs each `transit.interval` seconds and updates all the expired requests.
 
@@ -1625,6 +1730,7 @@ You can found CDMI StoRM details about installation and configuration [here][ind
 [storm-gridhttps-guide]: storm-gridhttps-guide.html
 [used-space-example]: {{site.baseurl}}/documentation/how-to/how-to-initialize-storage-area-used-space/
 [info-provider-177]: {{site.baseurl}}/release-notes/storm-dynamic-info-provider/1.7.7/
+[releases]: {{site.baseurl}}/releases.html
 
 [indigo-cdmi-spi]: https://github.com/indigo-dc/cdmi-spi
 [indigo-cdmi-server]: https://github.com/indigo-dc/cdmi

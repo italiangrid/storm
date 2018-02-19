@@ -1,7 +1,7 @@
 ---
 layout: default
 title: StoRM Info Provider v.1.8.0 release notes
-release_date: "14.02.2018"
+release_date: "19.02.2018"
 rfcs:
   - id: STOR-982
     title: JSON storage usage reporting

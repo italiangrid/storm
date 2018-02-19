@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "YAIM StoRM v.4.3.10 release notes"
-release_date: "14.02.2018"
+release_date: "19.02.2018"
 rfcs:
   - id: STOR-951
     title: Pool account mapping fails since lcmaps-plugins-basic v1.6.4

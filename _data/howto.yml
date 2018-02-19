@@ -70,7 +70,7 @@
   last-update: "09/12/2015"
   older-versions: []
 
-- title: "How-to publish JSON site report"
+- title: "How-to publish storage site report"
   relative-link: "/documentation/how-to/how-to-publish-json-report/"
   description: "Allow VO's authenticated users to access json report"
   last-update: "31/01/2018"

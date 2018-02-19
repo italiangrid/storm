@@ -79,12 +79,11 @@ and make it centered */
     margin: 20px 0;
   }
 
-  /** This is required to make anchors not disappear
-  under fixed navbar **/
+  /** This is required to make anchors not disappear under fixed navigation bar **/
   a[name] {
-    padding-top: 66px;
-    margin-top: -66px;
-    display: inline-block; /* required for webkit browsers */
+    padding-top: 58px;
+    margin-top: -58px;
+    display: inline-block; /* required for web-kit browsers */
   }
 
 

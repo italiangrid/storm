@@ -12,7 +12,7 @@ version: {{ page.version }}
 
 **Table of contents**
 
-* [Upgrading to StoRM v1.11.12](#upgrading)
+* [Upgrading from StoRM v1.11.11](#upgrading)
 * [Installation Prerequisites](#prerequisites)
   * [Platform](#platform)
   * [Requirements](#requirements)
@@ -44,9 +44,9 @@ version: {{ page.version }}
 
 ------
 
-## Upgrading to StoRM v1.11.12 <a name="upgrading">&nbsp;</a>
+## Upgrading from StoRM v1.11.11 <a name="upgrading">&nbsp;</a>
 
-Follow the following instructions when you are upgrading StoRM to v1.11.12.
+Follow the following instructions when you are upgrading StoRM from v1.11.11.
 
 ##### 1. Update the involved packages
 

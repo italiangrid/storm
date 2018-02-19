@@ -8,7 +8,7 @@ title: StoRM News
 {% assign p_year = site.posts[0].date || date: "%Y" %}
 <h4 class="marketing" style="border-bottom: 1px solid #efefef; padding-bottom: 14px; margin-bottom: 16px;">{{ p_year }}</h4>
 
-{% for post in site.posts limit:3 %}
+{% for post in site.posts limit:4 %}
 
 {% assign c_year = post.date || date: "%Y" %}
 {% assign author = site.data.authors[post.author] %}

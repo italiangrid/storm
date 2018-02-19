@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM v.1.11.13 - release notes"
-release_date: "14.02.2018"
+release_date: "19.02.2018"
 rfcs:
   - id: STOR-950
     title: Failure on updating recall task status
@@ -36,14 +36,14 @@ Supported platforms: <span class="label label-success">CentOS 6</span>
 
 This release provides fixes to some outstanding bugs:
 
-* fixes a problem that prevented correct status update for tape recalls created through the REST endpoint and handled by GEMSS;
+* fixes a problem on status update for tape recalls created through the REST endpoint;
 
 * fixes pool account mapping failures observed when StoRM is deployed with lcmaps-plugins-basic >= 1.6.3;
 
 * enhances the request garbage collector so that PrepareToPut requests that are stuck in the state SRM_REQUEST_INPROGRESS are automatically expired after a configurable amount of time.
 
-This amount of time can be configured through the new property `expired.inprogress.time`.
-Its default value is **2592000** secs (1 month).
+This amount of time can be configured through the new property `expired.inprogress.time` (read more [here][gc-guide]).
+<br/>Its default value is **2592000** secs (1 month).
 Add/edit it into your `storm.properties` file.
 
 ```bash
@@ -52,9 +52,19 @@ expired.request.ptp.time = 2592000
 
 * fixes a bug in the garbage collector so that now only recall requests older than a configurable amount of time are garbage collected.
 
-This amount of time can be configured through the property `expired.request.time` which is already used for other asynch requests cleared by the Garbage Collector.
+This amount of time can be configured through the property `expired.request.time` (read more [here][gc-guide])
+which is already used for other asynch requests cleared by the Garbage Collector.<br/>Its default value is **604800** secs (1 week).
+Add/edit it into your `storm.properties` file.
 
-* adds the ability to generate a storage usage JSON report, following the rules and format defined by WLCG (read more [here][how-to-json-report]).
+```bash
+expired.request.time = 604800
+```
+
+* adds the ability to generate a storage usage JSON report, following the rules and format defined by [WLCG][wlcg] (read more [here][how-to-json-report]).
+
+This release supports both UMD-3 repository and UMD-4 repository for SL6, but **a migration to UMD-4 repositories is encouraged**.
+<br/>
+Installation instructions can be found within [System Administration Guide][umd-sysadmin].
 
 #### Released components
 
@@ -68,32 +78,39 @@ This amount of time can be configured through the property `expired.request.time
 
 {% include list-features.liquid %}
 
-#### Upgrading from v1.11.12
+#### Installation
 
-Update packages:
+In case of a clean installation, follow the instructions in the [System Administration Guide][storm-sysadmin-guide].
+
+##### Upgrading from StoRM v1.11.12
+
+Services to be updated are:
 
 * storm-backend-server
-* yaim-storm
 * storm-dynamic-info-provider
+* yaim-storm
 
-Example:
+Run update:
 
     $ yum update storm-backend-server yaim-storm storm-dynamic-info-provider
 
-And reconfigure the StoRM services with YAIM.
-
-Example:
+and reconfigure StoRM Backend node with YAIM.
+Example with configuration file `/etc/storm/siteinfo/storm.def`:
 
     $ /opt/glite/yaim/bin/yaim -c -s /etc/storm/siteinfo/storm.def -n se_storm_backend
 
-#### Upgrading from older versions
+##### Upgrading from earlier versions
 
-Read the following [instructions][upgrading-old].
+<span class="label btn-warning" style="margin-top: -20px;">WARN</span> If you are upgrading StoRM from v1.11.11, read the following [upgrading to v1.11.12 instructions][upgrading-post].
 
-#### Clean install
+If you are upgrading from versions earlier than v1.11.11, find and read the release notes's upgrading instructions [here][releases].
 
-Follow the instructions in the [System Administration Guide][storm-sysadmin-guide].
-
-[upgrading-old]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.12/#upgrading
+[upgrading-post]: {{site.baseurl}}/2017/09/02/upgrading-to-storm-1-11-12.html
+[upgrading]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.13/#upgrading
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide
 [how-to-json-report]: {{site.baseurl}}/documentation/how-to/how-to-publish-json-report/
+[umd-4-page]: http://repository.egi.eu/category/umd_releases/distribution/umd-4
+[umd-sysadmin]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.13/#umdrepos
+[wlcg]: http://wlcg.web.cern.ch/
+[gc-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.13/#requestsgarbagecollector
+[releases]: {{site.baseurl}}/releases.html
