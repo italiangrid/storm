@@ -17,7 +17,7 @@ StoRM packages can be obtained from the UMD repositories for SL6 or from the Sto
 
 #### UMD
 
-> <span class="label label-info" style="margin-top: -20px;">NEW</span> StoRM v1.11.13 now officially supports UMD4 repo for SL6.
+> <span class="label label-info" style="margin-top: -20px;">NEW</span> StoRM v1.11.13 supports UMD-4 repositories.
 
 You can find [general UMD 4 installation instructions][UMD4site] on the EGI site, 
 but it basically boils down to installing the UMD repositories.

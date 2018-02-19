@@ -12,10 +12,10 @@ version: {{ page.version }}
 
 **Table of contents**
 
-* [Upgrading to StoRM v1.11.13](#upgrading)
-  * [Upgrading from StoRM v1.11.12](#upgrade12)
-  * [Upgrading from StoRM v1.11.11](#upgrade11)
-  * [Upgrading from versions earlier than v1.11.11](#upgradeold)
+* [Upgrade to StoRM v1.11.13](#upgrading)
+  * [Upgrade from StoRM v1.11.12](#upgrade12)
+  * [Upgrade from StoRM v1.11.11](#upgrade11)
+  * [Upgrade from versions earlier than v1.11.11](#upgradeold)
 * [Installation Prerequisites](#prerequisites)
   * [Platform](#platform)
   * [Requirements](#requirements)
@@ -47,9 +47,9 @@ version: {{ page.version }}
 
 ------
 
-## Upgrading to StoRM v1.11.13 <a name="upgrading">&nbsp;</a>
+## Upgrade to StoRM v1.11.13 <a name="upgrading">&nbsp;</a>
 
-### Upgrading from StoRM v1.11.12 <a name="upgrade12">&nbsp;</a>
+### Upgrade from StoRM v1.11.12 <a name="upgrade12">&nbsp;</a>
 
 Services to be updated are:
 
@@ -68,7 +68,7 @@ Example with configuration file `/etc/storm/siteinfo/storm.def`:
 
 Read more [here](#launchingyaim) about YAIM.
 
-### Upgrading from StoRM v1.11.11 <a name="upgrade11">&nbsp;</a>
+### Upgrade from StoRM v1.11.11 <a name="upgrade11">&nbsp;</a>
 
 Follow the instructions below when you are upgrading StoRM from v1.11.11.
 
@@ -132,7 +132,7 @@ Example with configuration file `/etc/storm/siteinfo/storm.def`:
 
 Read more [here](#launchingyaim) about YAIM.
 
-### Upgrading from versions earlier than v1.11.11 <a name="upgradeold">&nbsp;</a>
+### Upgrade from versions earlier than v1.11.11 <a name="upgradeold">&nbsp;</a>
 
 Go to [releases page][releases] and read the upgrading instructions from the release notes.
 
@@ -339,16 +339,17 @@ The EGI Trust Anchors repository is also required.
 
 #### EPEL repositories <a name="epelrepos">&nbsp;</a>
 
-On each production machine the EPEL repositories must be installed.
+StoRM depends on EPEL 6 repositories.
 
-Install EPEL SL6 repositories as follow:
+Install them as follows:
 
     yum localinstall http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 
 #### UMD Repositories <a name="umdrepos">&nbsp;</a>
 
-On each production machine the UMD repositories must be installed. StoRM supports both UDM-3 and UMD-4 repositories for SL6.
-UMD-3 repositories updates will be only emergency updates, then it's encourage to use latest **UMD-4 for SL6** repositories.
+StoRM depends on UMD repositories.
+
+Because UMD-3 is currently EOL (and it will receive only emergency updates), **we encourage to install UMD-4**, which is officially supported, without any caveat, from StoRM v1.11.13.
 
 ##### Clean UMD-4 installation
 

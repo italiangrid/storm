@@ -7,9 +7,9 @@ summary: StoRM v1.11.13 officially supports UMD-4 repository for SL6.<br/>Migrat
 
 StoRM v1.11.11 has been the latest StoRM release within the UMD-3 repositories.
 <br/>
-Latest StoRM versions still support UMD-3 repositories but **a migration to UMD-4 repositories is encouraged**.
+Latest StoRM versions still support UMD-3 but **we encourage a migration to UMD-4** because UMD-3 repositories are EOL.
 <br/>
-Installation instructions can be found within [System Administration Guide][syasdmin-guide].
+Installation instructions can be found into [UMD repositories section][umd-repos] of our System Administration Guide.
 
 In short:
 
@@ -19,6 +19,6 @@ In short:
 
 You can find all the complete installation instructions at [EGI Software Repository][umd-4-page] page.
 
-[syasdmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.13/#umdrepos
+[umd-repos]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.13/#umdrepos
 [umd-4-page]: http://repository.egi.eu/category/umd_releases/distribution/umd-4
 [ki-gridmapdir]: https://ggus.eu/?mode=ticket_info&ticket_id=127387

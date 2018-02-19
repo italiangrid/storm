@@ -62,10 +62,6 @@ expired.request.time = 604800
 
 * adds the ability to generate a storage usage JSON report, following the rules and format defined by [WLCG][wlcg] (read more [here][how-to-json-report]).
 
-This release supports both UMD-3 repository and UMD-4 repository for SL6, but **a migration to UMD-4 repositories is encouraged**.
-<br/>
-Installation instructions can be found within [System Administration Guide][umd-sysadmin].
-
 #### Released components
 
 {% include list-components.liquid %}
@@ -82,35 +78,23 @@ Installation instructions can be found within [System Administration Guide][umd-
 
 In case of a clean installation, follow the instructions in the [System Administration Guide][storm-sysadmin-guide].
 
-##### Upgrading from StoRM v1.11.12
+##### Upgrade services
 
-Services to be updated are:
+- [Upgrade from StoRM v1.11.12][upgrade-from-12]
+- [Upgrade from StoRM v1.11.11][upgrade-from-11]
+- [Upgrade from earlier versions][upgrade-from-old]
 
-* storm-backend-server
-* storm-dynamic-info-provider
-* yaim-storm
+##### Upgrade to UMD-4
 
-Run update:
+UMD-3 repositories are currently EOL so **we encourage to use UMD-4**. Read the upgrade instructions **[here][umd-repos]**.
 
-    $ yum update storm-backend-server yaim-storm storm-dynamic-info-provider
-
-and reconfigure StoRM Backend node with YAIM.
-Example with configuration file `/etc/storm/siteinfo/storm.def`:
-
-    $ /opt/glite/yaim/bin/yaim -c -s /etc/storm/siteinfo/storm.def -n se_storm_backend
-
-##### Upgrading from earlier versions
-
-<span class="label btn-warning" style="margin-top: -20px;">WARN</span> If you are upgrading StoRM from v1.11.11, read the following [upgrading to v1.11.12 instructions][upgrading-post].
-
-If you are upgrading from versions earlier than v1.11.11, find and read the release notes's upgrading instructions [here][releases].
-
-[upgrading-post]: {{site.baseurl}}/2017/09/02/upgrading-to-storm-1-11-12.html
-[upgrading]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.13/#upgrading
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide
-[how-to-json-report]: {{site.baseurl}}/documentation/how-to/how-to-publish-json-report/
 [umd-4-page]: http://repository.egi.eu/category/umd_releases/distribution/umd-4
-[umd-sysadmin]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.13/#umdrepos
+[umd-repos]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.13/#umdrepos
 [wlcg]: http://wlcg.web.cern.ch/
 [gc-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.13/#requestsgarbagecollector
-[releases]: {{site.baseurl}}/releases.html
+[how-to-json-report]: {{site.baseurl}}/documentation/how-to/how-to-publish-json-report/
+
+[upgrade-from-12]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.13/#upgrade12
+[upgrade-from-11]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.13/#upgrade11
+[upgrade-from-old]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.13/#upgradeold
