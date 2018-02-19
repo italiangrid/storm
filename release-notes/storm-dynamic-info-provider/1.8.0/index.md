@@ -13,12 +13,14 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.13][release-notes].
 
 ### Description
 
-This release adds the ability to generate a storage usage JSON report, 
-following the rules and format defined in the [Storage Resource Reporting Proposal for storage providers][proposal] 
-and showed as an example [here][example].
+This release adds the ability to generate a storage report in JSON which follows the rules and format defined in the 
+[Storage Resource Reporting Proposal for storage providers][proposal] ([example][example]).
 
-An example of how make the JSON site report readble from all VOs' authenticated users through a WebDAV endpoint
-is explained [here][how-to-json-report].
+If a site administrator wants to configure StoRM to share this report, [here][how-to-json-report] is a guide to:
+
+- periodically refresh report
+- give read permissions to all the authenticated users of one (or more) VO
+- make it accessible through a WebDAV endpoint.
 
 
 ### Bug fixes
