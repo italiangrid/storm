@@ -2,40 +2,41 @@
 layout: home
 title: StoRM Home
 ---
+
 <div class="row-fluid marketing">
 	<h2>Latest News</h2>
 
-	{% for post in site.posts limit:1 %}
+	{% for post in site.posts limit:4 %}
 	<div class="row-fluid marketing news-row">
 		<div class="span2 news-date">
 			<p class="text-left">{{ post.date | date_to_long_string }}</p>
 		</div>
 		<div class="span10">
-			<h3>{{post.title}}</h3>
+		    {% if post.tag == "release" %}
+            <img src="{{ site.baseurl }}/assets/images/bookmark-orange.png" style="width:20px; float: right; margin: 0 0;"/>
+            {% endif %}
+			<h3><a href="{{ site.baseurl }}{{post.url}}">{{post.title}}</a></h3>
 			<p>{{post.summary}}</p>
-
-			<a href="{{ site.baseurl }}{{post.url}}">Read more</a>
-
+<!-- 			<a href="{{ site.baseurl }}{{post.url}}">Read more</a> -->
 		</div>
 	</div>
 	{% endfor %}
+
 </div>
 
 <hr class="soften">
 
-<div class="row-fluid marketing">
-	
-</div>
+<div class="row-fluid marketing"></div>
 
 <div class="row-fluid marketing">
 	<div class="row">
 		<div class="span6">
 			<h2 class="text-center">Implements the SRM specification</h2>
 			<p class="text-center">
-				StoRM is adopted in the context of WLCG computational Grid framework. 
-				It provides data management capabilities in a Grid environment to
-				share, access and transfer data among heterogeneous and
-				geographically distributed data centers. StoRM implements the
+				StoRM is adopted in the context of WLCG computational Grid
+				framework. It provides data management capabilities in a Grid
+				environment to share, access and transfer data among heterogeneous
+				and geographically distributed data centers. StoRM implements the
 				Storage Resource Manager (SRM) <a
 					href="https://sdm.lbl.gov/srm-wg/doc/SRM.v2.2.html#_Toc241633041">specification</a>.
 			</p>

@@ -62,6 +62,8 @@ This release provides fixes to some outstanding bugs and improvements:
 This release requires [gemss][gemss-repo] version greater than v1.7.2. 
 It **doesn't work** with gemss less than or equal to v1.7.2.
 
+This release supports UMD-3 repository and also UMD-4 repository for SL6 with a [known issue][ki-gridmapdir].
+
 #### Released components
 
 {% include list-components.liquid %}
@@ -144,3 +146,5 @@ Follow the instructions in the [System Administration Guide][storm-sysadmin-guid
 [metadata-rest-api]: https://github.com/italiangrid/storm/tree/develop/src/main/java/it/grid/storm/rest/metadata
 [cdmi-storm-plugin]: {{site.baseurl}}/release-notes/cdmi-storm/0.1.0/
 [gemss-repo]: https://github.com/italiangrid/gemss
+
+[ki-gridmapdir]: https://ggus.eu/?mode=ticket_info&ticket_id=127387

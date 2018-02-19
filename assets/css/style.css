@@ -79,12 +79,11 @@ and make it centered */
     margin: 20px 0;
   }
 
-  /** This is required to make anchors not disappear
-  under fixed navbar **/
+  /** This is required to make anchors not disappear under fixed navigation bar **/
   a[name] {
-    padding-top: 66px;
-    margin-top: -66px;
-    display: inline-block; /* required for webkit browsers */
+    padding-top: 58px;
+    margin-top: -58px;
+    display: inline-block; /* required for web-kit browsers */
   }
 
 
@@ -133,6 +132,7 @@ and make it centered */
   .news-row h3 {
     margin-top: 0;
     line-height: 24px;
+    font-weight: normal;
   }
   hr.soften {
     margin: 40px 0;
@@ -157,7 +157,7 @@ and make it centered */
     color: #5a5a5a;
     font-weight: 200;
     margin-top: 0px;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
   }
 
   .marketing h3 {

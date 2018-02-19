@@ -1,7 +1,7 @@
 ---
 layout: toc
 title: StoRM Storage Resource Manager - System Administration Guide
-version: 1.11.12
+version: 1.11.13
 redirect_from:
   - /documentation/sysadmin-guide/
 ---
@@ -12,7 +12,10 @@ version: {{ page.version }}
 
 **Table of contents**
 
-* [Upgrading from StoRM v1.11.11](#upgrading)
+* [Upgrade to StoRM v1.11.13](#upgrading)
+  * [Upgrade from StoRM v1.11.12](#upgrade12)
+  * [Upgrade from StoRM v1.11.11](#upgrade11)
+  * [Upgrade from versions earlier than v1.11.11](#upgradeold)
 * [Installation Prerequisites](#prerequisites)
   * [Platform](#platform)
   * [Requirements](#requirements)
@@ -44,15 +47,37 @@ version: {{ page.version }}
 
 ------
 
-## Upgrading from StoRM v1.11.11 <a name="upgrading">&nbsp;</a>
+## Upgrade to StoRM v1.11.13 <a name="upgrading">&nbsp;</a>
 
-Follow the following instructions when you are upgrading StoRM from v1.11.11.
-
-##### 1. Update the involved packages
+### Upgrade from StoRM v1.11.12 <a name="upgrade12">&nbsp;</a>
 
 Services to be updated are:
 
 * storm-backend-server
+* storm-dynamic-info-provider
+* yaim-storm
+
+Run update:
+
+    $ yum update storm-backend-server yaim-storm storm-dynamic-info-provider
+
+and reconfigure StoRM Backend node with YAIM.
+Example with configuration file `/etc/storm/siteinfo/storm.def`:
+
+    $ /opt/glite/yaim/bin/yaim -c -s /etc/storm/siteinfo/storm.def -n se_storm_backend
+
+Read more [here](#launchingyaim) about YAIM.
+
+### Upgrade from StoRM v1.11.11 <a name="upgrade11">&nbsp;</a>
+
+Follow the instructions below when you are upgrading StoRM from v1.11.11.
+
+#### 1. Update the involved packages
+
+Services to be updated are:
+
+* storm-backend-server
+* storm-dynamic-info-provider
 * storm-native-libs
 * storm-frontend-server
 * storm-webdav
@@ -60,7 +85,7 @@ Services to be updated are:
 
 Example:
 
-    $ yum update storm-backend-server storm-frontend-server storm-webdav storm-native-libs yaim-storm
+    $ yum update storm-backend-server storm-dynamic-info-provider storm-frontend-server storm-webdav storm-native-libs yaim-storm
 
 ##### 2. Update the namespace schema
 
@@ -97,13 +122,19 @@ If you have a more complex deployment and you can't remove them, you can try to 
 
 ##### 5. Relaunch YAIM configuration
 
-Example:
+Example with configuration file `/etc/storm/siteinfo/storm.def`:
 
     $ /opt/glite/yaim/bin/yaim -c -s /etc/storm/siteinfo/storm.def \
       -n se_storm_backend \
       -n se_storm_frontend \
       -n se_storm_gridftp \
       -n se_storm_webdav
+
+Read more [here](#launchingyaim) about YAIM.
+
+### Upgrade from versions earlier than v1.11.11 <a name="upgradeold">&nbsp;</a>
+
+Go to [releases page][releases] and read the upgrading instructions from the release notes.
 
 ## Installation Prerequisites <a name="prerequisites">&nbsp;</a>
 
@@ -306,28 +337,41 @@ Before installing storm components, install the required repositories.
 StoRM packages can be obtained from the UMD repositories and/or from the StoRM product team package repository.
 The EGI Trust Anchors repository is also required.
 
+#### EPEL repositories <a name="epelrepos">&nbsp;</a>
+
+StoRM depends on EPEL 6 repositories.
+
+Install them as follows:
+
+    yum localinstall http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+
 #### UMD Repositories <a name="umdrepos">&nbsp;</a>
 
-On each production machine that is to be configured for using the UMD repositories, 
-site administrators must follow the installation instructions explained [here][umd3distpage].
+StoRM depends on UMD repositories.
 
-In short, remove all UMD and EPEL related repos:
+Because UMD-3 is currently EOL (and it will receive only emergency updates), **we encourage to install UMD-4**, which is officially supported, without any caveat, from StoRM v1.11.13.
 
-    rm /etc/yum.repos.d/UMD-* /etc/yum.repos.d/epel-*
+##### Clean UMD-4 installation
 
-Install EPEL SL6 repositories:
-
-    wget http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm 
-    yum localinstall epel-release-6-8.noarch.rpm
-
-Install UMD rpm pgp-key:
+Install UMD pgp key:
 
     rpm --import http://repository.egi.eu/sw/production/umd/UMD-RPM-PGP-KEY
 
-Install UMD repositories:
+Install latest UMD-4 for SL6:
 
-    wget http://repository.egi.eu/sw/production/umd/3/sl6/x86_64/updates/umd-release-3.14.4-1.el6.noarch.rpm
-    yum localinstall umd-release–3.14.4-1.el6.noarch.rpm
+    yum localinstall http://repository.egi.eu/sw/production/umd/4/sl6/x86_64/updates/umd-release-4.1.3-1.el6.noarch.rpm
+
+##### Upgrading from UMD-3
+
+Clear old UMD repositories eventually installed before:
+
+    yum remove umd-release
+
+Install latest UMD-4 for SL6:
+
+    yum localinstall http://repository.egi.eu/sw/production/umd/4/sl6/x86_64/updates/umd-release-4.1.3-1.el6.noarch.rpm
+
+More information about UMD installation can be found [here][UMD-instructions].
 
 #### EGI Trust Anchors Repository <a name="egitrustrepo">&nbsp;</a>
 
@@ -751,21 +795,27 @@ The `namespace.xml` configuration file contains the storage area info like what 
 |   ```default.overwrite```                     |   Default file overwrite mode to use upon *srmPrepareToPut* and *srmCopy* requests. Default: **A**. Possible values are: N, A, D. Please note that N stands for *Never*, A stands for *Always* and D stands for *When files differs*.
 |   ```default.storagetype```                   |   Default File Storage Type to be used for *srmPrepareToPut* and *srmCopy* requests in case is not provided in the request. Default: **V**. Possible values are: V, P, D. Please note that V stands for *Volatile*, P stands for *Permanent* and D stands for *Durable*.
 
-#### Requests garbage collector
+#### Requests garbage collector <a name="requestsgarbagecollector">&nbsp;</a>
 
 The request garbage collector process cleans database from the expired asynchronous SRM requests. The value of `expired.request.time` defines how many seconds are necessary to a request, after its submission, to be considered expired. An appropriate tuning is needed in case of high throughput of SRM requests required for long time.
 
-|   Property Name           |   Description     |
-|:--------------------------|:------------------|
-|   `purging`               |   Enable the request garbage collector. Default: **true**. Possible values are: true, false.
-|   `purge.interval`        |   Time interval in seconds between successive purging run. Default: **600**.
-|   `purge.size`            |   Number of requests picked up for cleaning from the requests garbage collector at each run. This value is use also by Tape Recall Garbage Collector. Default: **800**
-|   `purge.delay`           |   Initial delay before starting the requests garbage collection process, in seconds. Default: **10**
-|   `expired.request.time`  |   Time in seconds to consider a request expired after its submission. Default: **21600** seconds (6h)
+|   Property Name            |   Description     |
+|:---------------------------|:------------------|
+| `purging`                  |  Enable the request garbage collector. Default: **true**. Possible values are: true, false.
+| `purge.interval`           |  Time interval in seconds between successive purging run. Default: **600**.
+| `purge.size`               |  Number of requests picked up for cleaning from the requests garbage collector at each run. This value is use also by Tape Recall Garbage Collector. Default: **800**
+| `purge.delay`              |  Initial delay before starting the requests garbage collection process, in seconds. Default: **10**
+| `expired.request.time`     |  Time in seconds to consider a request expired after its submission. Default: **604800** seconds (1 week). From **StoRM 1.11.13** it is used also to identify how much time is needed to consider a completed recall task as cleanable.
+| `expired.inprogress.time`  |  Time in seconds to consider an in-progress ptp request as expired. Default: **2592000** seconds (1 month)
 
 #### Expired put requests agent
 
-This agent transits ongoing srmPtP to SRM_FILE_LIFETIME_EXPIRED if the request pin-lifetime is expired (see `pinLifetime.default` variable into Service Information section). The agent runs each `transit.interval` seconds and updates all the expired requests.
+This agent:
+
+* transits ongoing srmPtP to SRM_FILE_LIFETIME_EXPIRED if the request pin-lifetime is expired (see `pinLifetime.default` variable into Service Information section). 
+* transits to SRM_FAILURE the srmPtP that after `expired.inprogress.time` seconds are still in SRM_REQUEST_INPROGRESS.
+
+The agent runs each `transit.interval` seconds and updates all the expired requests.
 
 |   Property Name    |   Description     |
 |:-------------------|:------------------|
@@ -1669,7 +1719,7 @@ You can found CDMI StoRM details about installation and configuration [here][ind
 [Scientific Linux]: http://www.scientificlinux.org
 [SL5]: http://linuxsoft.cern.ch/scientific/5x/
 [SL6]: http://linuxsoft.cern.ch/scientific/6x/
-[UMD-instructions]: http://repository.egi.eu/category/umd_releases/distribution/umd-3/
+[UMD-instructions]: http://repository.egi.eu/category/umd_releases/distribution/umd-4/
 [how-to-nis]: http://www.tldp.org/HOWTO/NIS-HOWTO/index.html
 [egi-instructions]: https://wiki.egi.eu/wiki/EGI_IGTF_Release#Using_YUM_package_management
 [SPLguide]: https://twiki.cern.ch/twiki/bin/view/EGEE/SimplifiedPolicyLanguage
@@ -1681,7 +1731,7 @@ You can found CDMI StoRM details about installation and configuration [here][ind
 [storm-gridhttps-guide]: storm-gridhttps-guide.html
 [used-space-example]: {{site.baseurl}}/documentation/how-to/how-to-initialize-storage-area-used-space/
 [info-provider-177]: {{site.baseurl}}/release-notes/storm-dynamic-info-provider/1.7.7/
-[umd3distpage]: http://repository.egi.eu/category/umd_releases/distribution/umd-3/
+[releases]: {{site.baseurl}}/releases.html
 
 [indigo-cdmi-spi]: https://github.com/indigo-dc/cdmi-spi
 [indigo-cdmi-server]: https://github.com/indigo-dc/cdmi
