@@ -114,7 +114,7 @@ public class ArrayOfSURLs implements Serializable {
 
 	public String toString() {
 
-		StringBuffer buf = new StringBuffer("");
+		StringBuilder buf = new StringBuilder("");
 
 		if (surlList != null) {
 			for (int i = 0; i < surlList.size(); i++) {

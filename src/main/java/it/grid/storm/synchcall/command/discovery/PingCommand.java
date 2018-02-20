@@ -19,7 +19,6 @@ package it.grid.storm.synchcall.command.discovery;
 
 import it.grid.storm.Constants;
 import it.grid.storm.config.Configuration;
-import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.srm.types.ArrayOfTExtraInfo;
 import it.grid.storm.srm.types.InvalidTExtraInfoAttributeException;
@@ -32,21 +31,17 @@ import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.discovery.PingInputData;
 import it.grid.storm.synchcall.data.discovery.PingOutputData;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
-import it.grid.storm.tape.recalltable.TapeRecallException;
-import it.grid.storm.tape.recalltable.model.TapeRecallData;
-import it.grid.storm.tape.recalltable.persistence.TapeRecallBuilder;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Properties;
+import java.util.List;
 import java.util.Map.Entry;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Properties;
 
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008
@@ -62,10 +57,6 @@ public class PingCommand extends DiscoveryCommand implements Command {
 
 	public static final Logger log = LoggerFactory.getLogger(PingCommand.class);
 	private static final String KEY_ELEMENT_KEY = "key=";
-
-	public PingCommand() {
-
-	}
 
 	public OutputData execute(InputData data) {
 
@@ -191,9 +182,6 @@ public class PingCommand extends DiscoveryCommand implements Command {
 				log.error(e.getMessage(),e);
 			}
 			break;
-		case TEST_POST_NEW_TASK:
-			arrayResult = test_post_new_task(extractParam(key));
-			break;
 		case TEST_PUT_NEW_STATUS:
 			arrayResult = test_put_new_status(extractParam(key));
 			break;
@@ -243,37 +231,6 @@ public class PingCommand extends DiscoveryCommand implements Command {
 		return arrayResult;
 	}
 
-	/**
-	 * 
-	 * @param param
-	 * @return
-	 */
-	private ArrayOfTExtraInfo test_post_new_task(String param) {
-
-		ArrayOfTExtraInfo arrayResult = new ArrayOfTExtraInfo();
-		String errorStr;
-
-		TapeRecallData rtd;
-		try {
-			rtd = TapeRecallData.buildFromString(param);
-			TapeRecallTO task = TapeRecallBuilder.buildFromPOST(rtd);
-			try {
-				new TapeRecallCatalog().insertNewTask(task);
-			} catch (DataAccessException e) {
-				log.error(e.getMessage(),e);
-				return arrayResult;
-			}
-			URI newResource = URI.create("/" + task.getTaskId());
-			log.debug("New resource created: {}", newResource);
-
-		} catch (TapeRecallException e) {
-			log.error(e.getMessage(),e);
-			return arrayResult;
-		}
-
-		return arrayResult;
-	}
-
 	private ArrayOfTExtraInfo test_put_new_status(String param) {
 
 		ArrayOfTExtraInfo arrayResult = new ArrayOfTExtraInfo();
@@ -300,7 +257,7 @@ public class PingCommand extends DiscoveryCommand implements Command {
 
 		try {
 			// Retrieve the Task
-			ArrayList<TapeRecallTO> tasks = new TapeRecallCatalog()
+			List<TapeRecallTO> tasks = new TapeRecallCatalog()
 				.takeoverNTasksWithDoubles(numbOfTask);
 
 			if (tasks != null) {

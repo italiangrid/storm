@@ -491,19 +491,10 @@ public class CopyChunkDAO {
 		try {
 			Class.forName(driver);
 			con = DriverManager.getConnection(url, name, password);
-			if (con == null) {
-				log
-					.error("COPY CHUNK DAO! DriverManager returned a _null_ connection!");
-			} else {
-				logWarnings(con.getWarnings());
-				response = con.isValid(0);
-			}
-		} catch (ClassNotFoundException e) {
-			log.error("COPY CHUNK DAO! Exception in setUpConnection! {}", 
-				e.getMessage(), e);
-		} catch (SQLException e) {
-			log.error("COPY CHUNK DAO! Exception in setUpConnection! {}", 
-				e.getMessage(), e);
+			logWarnings(con.getWarnings());
+			response = con.isValid(0);
+		} catch (SQLException | ClassNotFoundException e) {
+			log.error("COPY CHUNK DAO! Exception in setUpConnection! {}", e.getMessage(), e);
 		}
 		return response;
 	}
@@ -642,7 +633,7 @@ public class CopyChunkDAO {
 	 */
 	private String makeSURLUniqueIDWhere(int[] surlUniqueIDs) {
 
-		StringBuffer sb = new StringBuffer("(");
+		StringBuilder sb = new StringBuilder("(");
 		for (int i = 0; i < surlUniqueIDs.length; i++) {
 			if (i > 0) {
 				sb.append(",");
@@ -658,7 +649,7 @@ public class CopyChunkDAO {
 	 */
 	private String makeSurlString(String[] surls) {
 
-		StringBuffer sb = new StringBuffer("(");
+		StringBuilder sb = new StringBuilder("(");
 		int n = surls.length;
 		for (int i = 0; i < n; i++) {
 			sb.append("'");

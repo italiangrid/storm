@@ -149,7 +149,7 @@ public class RequestSummaryCatalog {
 		TRequestType auxrtype = RequestTypeConverter.getInstance().toSTORM(
 			to.requestType());
 		if (auxrtype == TRequestType.EMPTY) {
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			sb.append("TRequestType could not be created from its String representation ");
 			sb.append(to.requestType());
 			sb.append("\n");
@@ -172,7 +172,7 @@ public class RequestSummaryCatalog {
 			auxgu = loadVomsGridUser(to.clientDN(), to.vomsAttributes(),
 				to.requestToken());
 		} catch (MalformedGridUserException e) {
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			sb.append("VomsGridUser could not be created from DN String ");
 			sb.append(to.clientDN());
 			sb.append(" voms attributes String ");

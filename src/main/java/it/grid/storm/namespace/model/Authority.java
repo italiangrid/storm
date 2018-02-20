@@ -71,7 +71,7 @@ public class Authority {
 
 	private String getHostnameAndPort() {
 
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		if (hostname != null) {
 			result.append(hostname);
 			if (port > 0) {

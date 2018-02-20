@@ -11,6 +11,9 @@
 
 package it.grid.storm.tape.recalltable.model;
 
+import static it.grid.storm.tape.recalltable.model.TapeRecallStatus.SUCCESS;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
+
 import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.namespace.StoRI;
@@ -22,7 +25,6 @@ import it.grid.storm.tape.recalltable.TapeRecallException;
 import java.util.Date;
 import java.util.UUID;
 
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
@@ -47,70 +49,63 @@ public class PutTapeRecallStatusLogic {
 		throws TapeRecallException {
 
 		LocalFile localFile = stori.getLocalFile();
-		String outputMessage;
 		boolean fileOnDisk;
+
 		try {
 			fileOnDisk = localFile.isOnDisk();
 		} catch (FSException e) {
 			log.error("Unable to test file {} presence on disk. FSException {}" , localFile.getAbsolutePath()	, e.getMessage() , e);
 			throw new TapeRecallException("Error checking file existence");
 		}
-		if (fileOnDisk) {
-			if (stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
-				String pfn = localFile.getAbsolutePath();
 
-				UUID taskId = TapeRecallTO.buildTaskIdFromFileName(pfn);
-				TapeRecallCatalog rtCat = new TapeRecallCatalog();
-				boolean exists = false;
-				try {
-					exists = rtCat.existsTask(taskId, requestToken);
-				} catch (DataAccessException e) {
-					log.error("Error checking existence of a recall task for taskId={}  requestToken={}. DataAccessException: {}" , taskId , requestToken	, e.getMessage() , e);
-					throw new TapeRecallException("Error reading from tape recall table");
-				}
-				if (exists) {
-					TapeRecallTO task;
-					try {
-						task = rtCat.getTask(taskId, requestToken);
-					} catch (DataAccessException e) {
-						log
-							.error("Unable to update task recall status because unable to retrieve groupTaskId for token {}. DataAccessException: {}"
-								, requestToken , e.getMessage(),e);
-						throw new TapeRecallException(
-							"Error reading from tape recall table");
-					}
-					UUID groupTaskId = task.getGroupTaskId();
-					if (!TapeRecallStatus.getRecallTaskStatus(task.getStatusId()).equals(
-						TapeRecallStatus.SUCCESS)) {
-						boolean statusUpdated;
-						try {
-							statusUpdated = rtCat.changeGroupTaskStatus(groupTaskId,
-								TapeRecallStatus.SUCCESS, new Date());
-						} catch (DataAccessException e) {
-							log.error("Unable to update task recall status for token {} with groupTaskId={}. DataAccessException : {}", requestToken , groupTaskId , e.getMessage() , e);
-							throw new TapeRecallException("Error updating tape recall table");
-						}
-						if (statusUpdated) {
-							log.info("Task status set to SUCCESS. groupTaskId={} requestToken={} pfn={}" , groupTaskId , requestToken , pfn);
-						}
-						outputMessage = "true";
-					} else {
-						// status already updated, nothing to do
-						outputMessage = "true";
-					}
-				} else {
-					// no recall tasks for this file, nothing to do
-					outputMessage = "true";
-				}
-			} else {
-				// tape not enable for StoRI filesystem, nothing to do
-				outputMessage = "true";
-			}
-		} else {
-			outputMessage = "false";
+		if (!fileOnDisk) {
+		  return Response.ok(false, TEXT_PLAIN_TYPE).status(200).build();
 		}
 
-		return Response.ok(outputMessage, MediaType.TEXT_PLAIN_TYPE).status(200)
-			.build();
+		if (!stori.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
+		  // tape not enable for StoRI filesystem, nothing to do
+		  return Response.ok(true, TEXT_PLAIN_TYPE).status(200).build();
+		}
+
+		String pfn = localFile.getAbsolutePath();
+		UUID taskId = TapeRecallTO.buildTaskIdFromFileName(pfn);
+		TapeRecallCatalog rtCat = new TapeRecallCatalog();
+		boolean exists = false;
+		try {
+			exists = rtCat.existsTask(taskId, requestToken);
+		} catch (DataAccessException e) {
+			log.error("Error checking existence of a recall task for taskId={}  requestToken={}. DataAccessException: {}" , taskId , requestToken	, e.getMessage() , e);
+			throw new TapeRecallException("Error reading from tape recall table");
+		}
+		if (!exists) {
+		  // no recall tasks for this file, nothing to do
+		  return Response.ok(true, TEXT_PLAIN_TYPE).status(200).build();
+		}
+
+		TapeRecallTO task;
+		try {
+			task = rtCat.getTask(taskId, requestToken);
+		} catch (DataAccessException e) {
+			log.error("Unable to update task recall status because unable to retrieve groupTaskId for token {}. DataAccessException: {}", requestToken , e.getMessage(),e);
+			throw new TapeRecallException("Error reading from tape recall table");
+		}
+
+		if (TapeRecallStatus.getRecallTaskStatus(task.getStatusId()).equals(SUCCESS)) {
+		  // status already updated, nothing to do
+		  return Response.ok(true, TEXT_PLAIN_TYPE).status(200).build();
+		}
+
+		UUID groupTaskId = task.getGroupTaskId();
+		boolean updated;
+		try {
+		  updated = rtCat.changeGroupTaskStatus(groupTaskId, SUCCESS, new Date());
+		} catch (DataAccessException e) {
+		  log.error("Unable to update task recall status for token {} with groupTaskId={}. DataAccessException : {}", requestToken , groupTaskId , e.getMessage() , e);
+		  throw new TapeRecallException("Error updating tape recall table");
+		}
+		if (updated) {
+			log.info("Task status set to SUCCESS. groupTaskId={} requestToken={} pfn={}" , groupTaskId , requestToken , pfn);
+		}
+		return Response.ok(true, TEXT_PLAIN_TYPE).status(200).build();
 	}
 }

@@ -51,9 +51,10 @@ public class InvalidRequestSummaryDataAttributesException extends Exception {
 		nullVomsGridUser = (gu == null);
 	}
 
+	@Override
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("Invalid RequestSummaryData attributes exception: ");
 		sb.append("nullRequestType=");
 		sb.append(nullRequestType);

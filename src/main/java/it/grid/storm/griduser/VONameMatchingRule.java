@@ -68,7 +68,7 @@ public class VONameMatchingRule {
 
 	public String toString() {
 
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		result.append(" VONAME=" + voNameString);
 		return result.toString();
 	}

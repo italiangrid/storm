@@ -156,7 +156,7 @@ public class BoLChunkCatalog {
 	 */
 	private BoLPersistentChunkData makeOne(BoLChunkDataTO auxTO, TRequestToken rt) {
 
-		StringBuffer errorSb = new StringBuffer();
+		StringBuilder errorSb = new StringBuilder();
 		TSURL fromSURL = null;
 		try {
 			fromSURL = TSURL.makeFromStringValidate(auxTO.getFromSURL());
@@ -602,7 +602,7 @@ public class BoLChunkCatalog {
 	private ReducedBoLChunkData makeOneReduced(
 		ReducedBoLChunkDataTO reducedChunkDataTO) {
 
-		StringBuffer errorSb = new StringBuffer();
+		StringBuilder errorSb = new StringBuilder();
 		// fromSURL
 		TSURL fromSURL = null;
 		try {

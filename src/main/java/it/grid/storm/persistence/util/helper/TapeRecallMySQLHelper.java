@@ -28,28 +28,45 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class TapeRecallMySQLHelper extends SQLHelper {
 
-	private final static String TABLE_NAME = "tape_recall";
+	private static final String TABLE_NAME = "tape_recall";
 
 	// primary key COL_TASK_ID + COL_REQUEST_TOKEN
-	public final static String COL_TASK_ID = "taskId";
-	public final static String COL_REQUEST_TOKEN = "requestToken";
-	public final static String COL_REQUEST_TYPE = "requestType";
-	public final static String COL_FILE_NAME = "fileName";
-	public final static String COL_PIN_LIFETIME = "pinLifetime";
-	public final static String COL_STATUS = "status";
-	public final static String COL_USER_ID = "userID";
-	public final static String COL_VO_NAME = "voName";
-	public final static String COL_DATE = "timeStamp";
-	public final static String COL_RETRY_ATTEMPT = "retryAttempt";
-	public final static String COL_DEFERRED_STARTTIME = "deferredStartTime";
-	public final static String COL_GROUP_TASK_ID = "groupTaskId";
-	public final static String COL_IN_PROGRESS_DATE = "inProgressTime";
-	public final static String COL_FINAL_STATUS_DATE = "finalStatusTime";
+	public static final String COL_TASK_ID = "taskId";
+	public static final String COL_REQUEST_TOKEN = "requestToken";
+	public static final String COL_REQUEST_TYPE = "requestType";
+	public static final String COL_FILE_NAME = "fileName";
+	public static final String COL_PIN_LIFETIME = "pinLifetime";
+	public static final String COL_STATUS = "status";
+	public static final String COL_USER_ID = "userID";
+	public static final String COL_VO_NAME = "voName";
+	public static final String COL_DATE = "timeStamp";
+	public static final String COL_RETRY_ATTEMPT = "retryAttempt";
+	public static final String COL_DEFERRED_STARTTIME = "deferredStartTime";
+	public static final String COL_GROUP_TASK_ID = "groupTaskId";
+	public static final String COL_IN_PROGRESS_DATE = "inProgressTime";
+	public static final String COL_FINAL_STATUS_DATE = "finalStatusTime";
+
+	private static final String QUERY_DELETE_N_OLD_AND_COMPLETED_TASKS;
+	private static final String QUERY_DELETE_ALL_OLD_AND_COMPLETED_TASKS;
+
+	static {
+
+		QUERY_DELETE_N_OLD_AND_COMPLETED_TASKS =
+				"DELETE FROM tape_recall WHERE status<>1 AND status<>2 "
+						+ "AND timeStamp <= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL ? SECOND) "
+						+ "LIMIT ?";
+
+		QUERY_DELETE_ALL_OLD_AND_COMPLETED_TASKS =
+				"DELETE FROM tape_recall WHERE status<>1 AND status<>2 "
+						+ "AND timeStamp <= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL ? SECOND) ";
+	}
+
+	public TapeRecallMySQLHelper(String dbmsVendor) {
+
+		super(dbmsVendor);
+	}
 
 	/**
 	 * Verifies if the given string is the name of one of the timestamp columns
@@ -62,11 +79,6 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 		return COL_DATE.equals(columnName)
 			|| COL_IN_PROGRESS_DATE.equals(columnName)
 			|| COL_FINAL_STATUS_DATE.equals(columnName);
-	}
-
-	public TapeRecallMySQLHelper(String dbmsVendor) {
-
-		super(dbmsVendor);
 	}
 
 	/**
@@ -94,7 +106,7 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 			int idx = 1;
 			prepStat.setString(idx++, recallTask.getTaskId().toString());
 			prepStat.setString(idx++, recallTask.getRequestToken().getValue());
-			prepStat.setString(idx++, recallTask.getRequestType());
+			prepStat.setString(idx++, recallTask.getRequestType().name());
 			prepStat.setString(idx++, recallTask.getFileName());
 			prepStat.setInt(idx++, recallTask.getPinLifetime());
 			prepStat.setInt(idx++, recallTask.getStatusId());
@@ -542,47 +554,36 @@ public class TapeRecallMySQLHelper extends SQLHelper {
 	}
 
 	/**
-	 * @return the requested query as string
+	 * @param con
+	 * @param expirationTime
+	 * @return the requested query as @PreparedStatement
 	 * @throws SQLException
 	 */
-	public PreparedStatement getQueryDeleteCompletedTasks(Connection conn)
-		throws SQLException {
+	public PreparedStatement getQueryDeleteCompletedTasks(Connection con, long expirationTime)
+			throws SQLException {
 
-		String str = null;
-		PreparedStatement preparedStatement = null;
+		PreparedStatement ps = con.prepareStatement(QUERY_DELETE_ALL_OLD_AND_COMPLETED_TASKS);
+		ps.setLong(1, expirationTime);
 
-		str = "DELETE FROM " + TABLE_NAME + " WHERE " + COL_STATUS + "<>?"
-			+ " AND " + COL_STATUS + "<>?";
-
-		preparedStatement = conn.prepareStatement(str);
-
-		preparedStatement.setInt(1, TapeRecallStatus.QUEUED.getStatusId());
-		preparedStatement.setInt(2, TapeRecallStatus.IN_PROGRESS.getStatusId());
-
-		return preparedStatement;
+		return ps;
 	}
 
 	/**
+	 * @param con
+	 * @param expirationTime
 	 * @param maxNumTasks
-	 * @return the requested query as string
+	 * @return the requested query as @PreparedStatement
 	 * @throws SQLException
 	 */
-	public PreparedStatement getQueryDeleteCompletedTasks(Connection conn,
-		int maxNumTasks) throws SQLException {
+	public PreparedStatement getQueryDeleteCompletedTasks(Connection con, long expirationTime,
+			int maxNumTasks) throws SQLException {
 
-		String str = null;
-		PreparedStatement preparedStatement = null;
+		PreparedStatement ps = con.prepareStatement(QUERY_DELETE_N_OLD_AND_COMPLETED_TASKS);
 
-		str = "DELETE FROM " + TABLE_NAME + " WHERE " + COL_STATUS + " != ?"
-			+ " AND " + COL_STATUS + " != ?" + " LIMIT  ?";
+		ps.setLong(1, expirationTime);
+		ps.setInt(2, maxNumTasks);
 
-		preparedStatement = conn.prepareStatement(str);
-
-		preparedStatement.setInt(1, TapeRecallStatus.QUEUED.getStatusId());
-		preparedStatement.setInt(2, TapeRecallStatus.IN_PROGRESS.getStatusId());
-		preparedStatement.setInt(3, maxNumTasks);
-
-		return preparedStatement;
+		return ps;
 	}
 
 }

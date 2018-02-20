@@ -2,110 +2,103 @@ package it.grid.storm.space;
 
 import java.util.Date;
 
-public class DUResult implements Cloneable {
+public class DUResult {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#clone()
-	 */
-	@Override
-	public Object clone() throws CloneNotSupportedException {
+    private long size;
+    private String absRootPath;
+    private long durationTime;
+    private Date startTime;
+    private ExitCode cmdResult;
 
-		return new DUResult(this.getSize(), this.absRootPath, this.startTime,
-			this.durationTime, this.cmdResult);
-	}
+    /**
+     * @param size
+     * @param absRootPath
+     * @param startTime
+     * @param durationTime
+     * @param cmdResult
+     */
+    public DUResult(long size, String absRootPath, Date startTime, long durationTime,
+            ExitCode cmdResult) {
 
-	private long size;
-	private String absRootPath;
-	private long durationTime;
-	private Date startTime;
-	private ExitCode cmdResult;
+        super();
+        this.size = size;
+        this.absRootPath = absRootPath;
+        this.durationTime = durationTime;
+        this.startTime = startTime;
+        this.cmdResult = cmdResult;
+    }
 
-	/**
-	 * @param size
-	 * @param absRootPath
-	 * @param startTime
-	 * @param durationTime
-	 * @param cmdResult
-	 */
-	public DUResult(long size, String absRootPath, Date startTime,
-		long durationTime, ExitCode cmdResult) {
+    public DUResult(DUResult duResult) {
+        this(duResult.getSize(), duResult.getAbsRootPath(), duResult.getStartTime(),
+                duResult.getDurationTime(), duResult.getCmdResult());
+    }
 
-		super();
-		this.size = size;
-		this.absRootPath = absRootPath;
-		this.durationTime = durationTime;
-		this.startTime = startTime;
-		this.cmdResult = cmdResult;
-	}
+    /**
+     * @return the size
+     */
+    public final long getSize() {
 
-	/**
-	 * @return the size
-	 */
-	public final long getSize() {
+        return size;
+    }
 
-		return size;
-	}
+    /**
+     * @return the absRootPath
+     */
+    public final String getAbsRootPath() {
 
-	/**
-	 * @return the absRootPath
-	 */
-	public final String getAbsRootPath() {
+        return absRootPath;
+    }
 
-		return absRootPath;
-	}
+    /**
+     * @return the durationTime
+     */
+    public final long getDurationTime() {
 
-	/**
-	 * @return the durationTime
-	 */
-	public final long getDurationTime() {
+        return durationTime;
+    }
 
-		return durationTime;
-	}
+    /**
+     * @return the startTime
+     */
+    public final Date getStartTime() {
 
-	/**
-	 * @return the startTime
-	 */
-	public final Date getStartTime() {
+        return startTime;
+    }
 
-		return startTime;
-	}
+    public boolean isSuccess() {
 
-	public boolean isSuccess() {
+        return (this.cmdResult.equals(ExitCode.SUCCESS));
+    }
 
-		return (this.cmdResult.equals(ExitCode.SUCCESS));
-	}
+    public boolean isPoisoned() {
 
-	public boolean isPoisoned() {
+        return (this.cmdResult.equals(ExitCode.POISON_PILL));
+    }
 
-		return (this.cmdResult.equals(ExitCode.POISON_PILL));
-	}
+    /**
+     * @return the cmdResult
+     */
+    public final ExitCode getCmdResult() {
 
-	/**
-	 * @return the cmdResult
-	 */
-	public final ExitCode getCmdResult() {
+        return cmdResult;
+    }
 
-		return cmdResult;
-	}
+    @Override
+    public String toString() {
 
-	@Override
-	public String toString() {
-
-		StringBuilder builder = new StringBuilder();
-		builder.append("DUResult [size=");
-		builder.append(size);
-		builder.append(", absRootPath=");
-		builder.append(absRootPath);
-		builder.append(", durationTime=");
-		builder.append(durationTime);
-		builder.append(", startTime=");
-		builder.append(startTime);
-		builder.append(", cmdResult=");
-		builder.append(cmdResult);
-		builder.append("]");
-		return builder.toString();
-	}
+        StringBuilder builder = new StringBuilder();
+        builder.append("DUResult [size=");
+        builder.append(size);
+        builder.append(", absRootPath=");
+        builder.append(absRootPath);
+        builder.append(", durationTime=");
+        builder.append(durationTime);
+        builder.append(", startTime=");
+        builder.append(startTime);
+        builder.append(", cmdResult=");
+        builder.append(cmdResult);
+        builder.append("]");
+        return builder.toString();
+    }
 
 }

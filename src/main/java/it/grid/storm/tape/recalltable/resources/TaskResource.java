@@ -18,43 +18,14 @@
  */
 package it.grid.storm.tape.recalltable.resources;
 
-import static it.grid.storm.persistence.model.TapeRecallTO.BOL_REQUEST;
+import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.RCLL;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.GenericEntity;
-import javax.ws.rs.core.Response;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import it.grid.storm.config.Configuration;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
@@ -69,6 +40,31 @@ import it.grid.storm.tape.recalltable.TapeRecallException;
 import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusLogic;
 import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusValidator;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
+import it.grid.storm.tape.recalltable.model.TaskInsertRequestValidator;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.GenericEntity;
+import javax.ws.rs.core.Response;
 
 /**
  * @author Riccardo Zappi
@@ -84,19 +80,16 @@ public class TaskResource {
 	private ResourceService service;
 	private TapeRecallCatalog recallCatalog;
 
-	private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 	private ObjectMapper mapper = new ObjectMapper();
 
 	public TaskResource() throws NamespaceException {
 
-		NamespaceInterface namespace = NamespaceDirector.getNamespace();
+		NamespaceInterface ns = NamespaceDirector.getNamespace();
 		recallCatalog = new TapeRecallCatalog();
-		service =
-				new ResourceService(namespace.getAllDefinedVFS(), namespace.getAllDefinedMappingRules());
+		service = new ResourceService(ns.getAllDefinedVFS(), ns.getAllDefinedMappingRules());
 	}
 
-	public TaskResource(ResourceService service, TapeRecallCatalog recallCatalog)
-			throws NamespaceException {
+	public TaskResource(ResourceService service, TapeRecallCatalog recallCatalog) {
 
 		this.service = service;
 		this.recallCatalog = recallCatalog;
@@ -106,8 +99,8 @@ public class TaskResource {
 	 * Get recall tasks that are currently in progress.
 	 * 
 	 * @param maxResults the maximum number of result to be returned
-	 * @return a Response with a 200 code containing a list of the tasks currently in progress or with
-	 *         a 500 if something went wrong
+	 * @return a Response with a 200 code containing a list of the tasks currently in progress or
+	 *         with a 500 if something went wrong
 	 */
 	@GET
 	public Response getTasks(@QueryParam("maxResults") Integer maxResults) {
@@ -136,9 +129,9 @@ public class TaskResource {
 	 * 
 	 * This method returns a 500 response in case of errors
 	 * 
-	 * The StoRM Frontend calls this method whenever a ptg or bol status request is submitted and the
-	 * related ptg or bol status is marked as in progress in StoRM database. (for both tape enabled
-	 * and disk only SA).
+	 * The StoRM Frontend calls this method whenever a ptg or bol status request is submitted and
+	 * the related ptg or bol status is marked as in progress in StoRM database. (for both tape
+	 * enabled and disk only SA).
 	 */
 	@PUT
 	@Consumes("text/plain")
@@ -160,8 +153,8 @@ public class TaskResource {
 
 		try {
 
-			response =
-					PutTapeRecallStatusLogic.serveRequest(validator.getRequestToken(), validator.getStoRI());
+			response = PutTapeRecallStatusLogic.serveRequest(validator.getRequestToken(),
+					validator.getStoRI());
 
 		} catch (TapeRecallException e) {
 
@@ -204,7 +197,8 @@ public class TaskResource {
 						"Received a tape recall status update but no Recall Group Task found with ID = '{}'",
 						groupTaskId);
 
-				throw new TapeRecallException("No Recall Group Task found with ID = '" + groupTaskId + "'");
+				throw new TapeRecallException(
+						"No Recall Group Task found with ID = '" + groupTaskId + "'");
 			}
 
 		} catch (DataAccessException e) {
@@ -221,7 +215,8 @@ public class TaskResource {
 
 		int eqIndex = inputStr.indexOf('=');
 
-		String value, key = null;
+		String value = null;
+		String key = null;
 
 		if (eqIndex > 0) {
 
@@ -269,9 +264,9 @@ public class TaskResource {
 							"Unable to change the status for group task id {} to status {} DataAccessException : {}",
 							groupTaskId, intValue, e.getMessage(), e);
 
-					throw new TapeRecallException(
-							"Unable to change the status for group task id " + groupTaskId + " to status "
-									+ intValue + " . DataAccessException : " + e.getMessage());
+					throw new TapeRecallException("Unable to change the status for group task id "
+							+ groupTaskId + " to status " + intValue + " . DataAccessException : "
+							+ e.getMessage());
 				}
 
 			} else {
@@ -294,46 +289,60 @@ public class TaskResource {
 
 		log.info("POST /recalltable/task {}", request);
 
-		validateRequest(request);
+		TaskInsertRequestValidator validator = new TaskInsertRequestValidator(request);
+		if (!validator.validate()) {
+			log.info("BAD REQUEST: {}", validator.getErrorMessage());
+			Response r = Response.status(BAD_REQUEST).entity(validator.getErrorMessage()).build();
+			throw new WebApplicationException(validator.getErrorMessage(), r);
+		}
 
 		StoRI resource = null;
+
 		try {
+
 			resource = service.getResource(request.getStfn());
+
 		} catch (ResourceNotFoundException e) {
-			log.info(e.getMessage());
+
+			log.info(e.getMessage(), e);
 			throw new WebApplicationException(e.getMessage(), e, NOT_FOUND);
+
 		} catch (NamespaceException e) {
-			log.error(e.getMessage());
+
+			log.error(e.getMessage(), e);
 			throw new WebApplicationException(e.getMessage(), e, INTERNAL_SERVER_ERROR);
 		}
 
 		String voName;
+
 		try {
+
 			voName = resource.getVirtualFileSystem()
-				.getApproachableRules()
-				.get(0)
-				.getSubjectRules()
-				.getVONameMatchingRule()
-				.getVOName();
+					.getApproachableRules()
+					.get(0)
+					.getSubjectRules()
+					.getVONameMatchingRule()
+					.getVOName();
+
 		} catch (NamespaceException e) {
-			log.error(e.getMessage());
+
+			log.error(e.getMessage(), e);
 			throw new WebApplicationException(e.getMessage(), INTERNAL_SERVER_ERROR);
 		}
 
-		if (request.getVoName() != null) {
-			if (!request.getVoName().equals(voName)) {
-				String message = String.format("The voName %s doesn't match the resolved %s",
-						request.getVoName(), voName);
-				log.error(message);
-				throw new WebApplicationException(message, BAD_REQUEST);
-			}
+		if (request.getVoName() != null && !request.getVoName().equals(voName)) {
+			String message = String.format(
+					"The voName included in the request does not match the voName resolved for this request: %s != %s",
+					request.getVoName(), voName);
+			log.error(message);
+			throw new WebApplicationException(message, BAD_REQUEST);
 		}
 
 		Date currentDate = new Date();
 		TapeRecallTO task = new TapeRecallTO();
 		task.setFileName(resource.getAbsolutePath());
 		task.setFakeRequestToken();
-		task.setRequestType(BOL_REQUEST);
+		task.setRequestType(RCLL);
 		task.setRetryAttempt(request.getRetryAttempts());
 		task.setUserID(request.getUserId());
 		task.setVoName(voName);
@@ -346,9 +355,12 @@ public class TaskResource {
 		UUID groupTaskId = null;
 
 		try {
+
 			groupTaskId = recallCatalog.insertNewTask(task);
+
 		} catch (DataAccessException e) {
-			e.printStackTrace();
+
+			log.error(e.getMessage(), e);
 			throw new WebApplicationException(e, INTERNAL_SERVER_ERROR);
 		}
 
@@ -406,29 +418,6 @@ public class TaskResource {
 	 * Utility method.
 	 * 
 	 */
-
-	/*
-	 * Custom validation method. Jersey validation works but don't show the validation message. The
-	 * exception mapper cannot be implemented cause of a Jersey bug:
-	 * https://java.net/jira/browse/JERSEY-3153 This method manually called the validation on the
-	 * request object and returns the error message as response entity.
-	 */
-	private void validateRequest(TaskInsertRequest request) throws WebApplicationException {
-
-		log.debug("Validating {}", request);
-		Set<ConstraintViolation<TaskInsertRequest>> constraintViolations = validator.validate(request);
-		if (constraintViolations.isEmpty()) {
-			log.debug("Request {} is valid", request);
-			return;
-		}
-		log.debug("Request is invalid, {} violation(s) found: {}", constraintViolations.size(),
-				constraintViolations);
-		String message = constraintViolations.iterator().next().getMessage();
-		log.info("BAD REQUEST: {}", message);
-		throw new WebApplicationException(message,
-				Response.status(BAD_REQUEST).entity(message).build());
-	}
-
 	private String buildInputString(InputStream input) {
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(input));
@@ -446,7 +435,7 @@ public class TaskResource {
 
 		} catch (IOException e) {
 
-			e.printStackTrace();
+			log.error(e.getMessage(), e);
 
 		} finally {
 
@@ -456,13 +445,11 @@ public class TaskResource {
 
 			} catch (IOException e) {
 
-				e.printStackTrace();
+				log.error(e.getMessage(), e);
 			}
 		}
 
-		String inputStr = sb.toString();
-
-		return inputStr;
+		return sb.toString();
 	}
 
 }

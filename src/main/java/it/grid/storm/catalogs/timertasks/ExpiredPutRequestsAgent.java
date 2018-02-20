@@ -1,99 +1,93 @@
 package it.grid.storm.catalogs.timertasks;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TimerTask;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import it.grid.storm.catalogs.PtPChunkDAO;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.synchcall.command.datatransfer.PutDoneCommand;
 import it.grid.storm.synchcall.command.datatransfer.PutDoneCommandException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
+import java.util.TimerTask;
+
 
 public class ExpiredPutRequestsAgent extends TimerTask {
 
-	private static final Logger log = LoggerFactory
-		.getLogger(ExpiredPutRequestsAgent.class);
-	
-	private final PtPChunkDAO dao = PtPChunkDAO.getInstance();
-	private final String name = ExpiredPutRequestsAgent.class.getName();
+    private static final Logger log = LoggerFactory.getLogger(ExpiredPutRequestsAgent.class);
 
-	private Map<Long,String> getExpiredRequests() {
-		
-		return dao.getExpiredSRM_SPACE_AVAILABLE();
-	}
-	
-	private int expireRequests(List<Long> ids) {
+    private static final String NAME = "Expired-PutRequests-Agent";
 
-		return dao.transitExpiredSRM_SPACE_AVAILABLEtoSRM_FILE_LIFETIME_EXPIRED(
-			new ArrayList<Long>(ids));
-	}
-	
-	private void executePutDone(Map<Long,String> ids) {
-		
-		for (Entry<Long, String> entry : ids.entrySet()) {
-			
-			log.debug("{}: processing request with id = {} and surl = {}", name,
-				entry.getKey(), entry.getValue());
-			
-			TSURL surl = null;
-			try {
-				
-				surl = TSURL.makeFromStringValidate(entry.getValue());
-				log.debug("{}: computing srmPutDone on SURL {}", name, surl);
-				PutDoneCommand.executePutDone(surl, null);
-				
-			} catch (InvalidTSURLAttributesException e1) {
-				
-				log.error("Unexpected SURL conversion error: unable to convert "
-					+ "the value read from database '{}' to a valid TSURL object",
-					surl);
-				continue;
-				
-			} catch (PutDoneCommandException e) {
-				
-				log.error(e.getMessage(), e);
-				continue;
-			
-			}
-		}
-	}
-	
-	@Override
-	public synchronized void run() {
-		
-		try {
-			
-			Map<Long,String> ids = getExpiredRequests();
-			int numExpired = ids.size();
-			
-			if (numExpired == 0) {
-				return;
-			}
-			log.info("{}: {} expired requests retrieved from db", name, numExpired);
-			
-			log.debug("{}: Launch srmPutDone on expired requests ...", name);
-			executePutDone(ids);
+    private long inProgressRequestsExpirationTime;
 
-			log.debug("{}: Update db statuses ...", name);
-			int numTransited = expireRequests(new ArrayList<Long>(ids.keySet()));
-			log.info("{} - {}/{} expired ptp requests moved to "
-				+ "SRM_FILE_LIFETIME_EXPIRED", name, numTransited, numExpired);
+    public ExpiredPutRequestsAgent(long inProgressRequestsExpirationTime) {
 
-		} catch (Throwable e) {
+        this.inProgressRequestsExpirationTime = inProgressRequestsExpirationTime;
+        log.info("{} created.", NAME);
+    }
 
-			log.error("{}: {}", e.getClass(), e.getMessage(), e);
+    @Override
+    public synchronized void run() {
 
-		} finally {
-			
-			
-		}
-	}
+        log.debug("{} run.", NAME);
+        try {
 
+            transitExpiredLifetimeRequests();
+            transitExpiredInProgressRequests();
+
+        } catch (Exception e) {
+
+            log.error("{}: {}", e.getClass(), e.getMessage(), e);
+
+        }
+    }
+
+    private void transitExpiredLifetimeRequests() {
+
+        PtPChunkDAO dao = PtPChunkDAO.getInstance();
+        Map<Long, String> expiredRequests = dao.getExpiredSRM_SPACE_AVAILABLE();
+        log.debug("{} lifetime-expired requests found ... ", NAME, expiredRequests.size());
+
+        if (expiredRequests.isEmpty()) {
+            return;
+        }
+
+        expiredRequests.entrySet().forEach(e -> executePutDone(e.getKey(), e.getValue()));
+
+        int count = dao.transitExpiredSRM_SPACE_AVAILABLEtoSRM_FILE_LIFETIME_EXPIRED(
+                expiredRequests.keySet());
+        log.info("{} updated expired put requests - {} db rows affected", NAME, count);
+    }
+
+    private void executePutDone(Long id, String surl) {
+
+        try {
+
+            if (PutDoneCommand.executePutDone(TSURL.makeFromStringValidate(surl))) {
+                log.info("{} successfully executed a srmPutDone on surl {}", NAME, surl);
+            }
+
+        } catch (InvalidTSURLAttributesException | PutDoneCommandException e) {
+
+            log.error("{}. Unable to execute PutDone on request with id {} and surl {}: ", NAME, id,
+                    surl, e.getMessage(), e);
+        }
+    }
+
+    private void transitExpiredInProgressRequests() {
+
+        PtPChunkDAO dao = PtPChunkDAO.getInstance();
+        List<Long> expiredRequestsIds =
+                dao.getExpiredSRM_REQUEST_INPROGRESS(inProgressRequestsExpirationTime);
+        log.debug("{} expired in-progress requests found.", expiredRequestsIds.size());
+
+        if (expiredRequestsIds.isEmpty()) {
+            return;
+        }
+
+        int count = dao.transitExpiredSRM_REQUEST_INPROGRESStoSRM_FAILURE(expiredRequestsIds);
+        log.info("{} moved in-progress put requests to failure - {} db rows affected", NAME, count);
+    }
 }

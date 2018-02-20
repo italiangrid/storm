@@ -357,7 +357,7 @@ public class DNMatchingRule {
 
 	public String toString() {
 
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		result.append(" C=" + countryPatternString);
 		result.append(" O=" + organizationPatternString);
 		result.append(" OU=" + organizationalUnitPatternString);
@@ -368,7 +368,7 @@ public class DNMatchingRule {
 	
 	public String toShortSlashSeparatedString() {
 
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		if (!countryPatternString.equals(ADMIT_ALL)) {
 			result.append("/C=" + countryPatternString);
 		}

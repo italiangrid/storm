@@ -118,10 +118,12 @@ public abstract class TapeRecallDAO extends AbstractDAO {
 	 * Method called by a garbage collector that removes all tape recalls that are
 	 * not in QUEUED (1) or IN_PROGRESS (2) status
 	 * 
-	 * @return the number of removed requests
+	 * @param expirationTime seconds must pass to consider the request as expired
+	 * @param delete at most numMaxToPurge tasks
+	 * @return the amount of tasks deleted
 	 * @throws DataAccessException
 	 */
-	public abstract int purgeCompletedTasks(int numMaxToPurge)
+	public abstract int purgeCompletedTasks(long expirationTime, int numMaxToPurge)
 		throws DataAccessException;
 
 	/**

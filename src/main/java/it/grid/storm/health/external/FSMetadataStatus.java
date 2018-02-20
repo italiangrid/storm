@@ -87,7 +87,7 @@ public class FSMetadataStatus {
 	@Override
 	public String toString() {
 
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		result.append(" [#" + this.pulseNumberStr + " lifetime=" + this.lifetimeStr
 			+ "]");
 		Enumeration<String> sas = pathName.keys();

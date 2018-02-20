@@ -83,14 +83,14 @@ public class BoLChunkDAO {
 	 */
 	private Timer clock = null;
 	/**
-	 * timer task that will update the boolean signalling that a reconnection is
-	 * neede!
+	 * timer task that will update the boolean signaling that a reconnection is
+	 * needed!
 	 */
 	private TimerTask clockTask = null;
 	/** milliseconds that must pass before reconnecting to DB */
 	private final long period = Configuration.getInstance()
 		.getDBReconnectPeriod() * 1000;
-	/** initial delay in millseconds before starting timer */
+	/** initial delay in milliseconds before starting timer */
 	private final long delay = Configuration.getInstance().getDBReconnectDelay() * 1000;
 	/** boolean that tells whether reconnection is needed because of MySQL bug! */
 	private boolean reconnect = false;
@@ -1371,7 +1371,7 @@ public class BoLChunkDAO {
 	 */
 	private String makeWhereString(long[] rowids) {
 
-		StringBuffer sb = new StringBuffer("(");
+		StringBuilder sb = new StringBuilder("(");
 		int n = rowids.length;
 		for (int i = 0; i < n; i++) {
 			sb.append(rowids[i]);
@@ -1388,7 +1388,7 @@ public class BoLChunkDAO {
 	 */
 	private String makeSURLUniqueIDWhere(int[] surlUniqueIDs) {
 
-		StringBuffer sb = new StringBuffer("(");
+		StringBuilder sb = new StringBuilder("(");
 		for (int i = 0; i < surlUniqueIDs.length; i++) {
 			if (i > 0) {
 				sb.append(",");
@@ -1404,7 +1404,7 @@ public class BoLChunkDAO {
 	 */
 	private String makeSurlString(String[] surls) {
 
-		StringBuffer sb = new StringBuffer("(");
+		StringBuilder sb = new StringBuilder("(");
 		int n = surls.length;
 
 		for (int i = 0; i < n; i++) {
@@ -1444,19 +1444,10 @@ public class BoLChunkDAO {
 		try {
 			Class.forName(driver);
 			con = DriverManager.getConnection(url, name, password);
-			if (con == null) {
-				log.error("BoL CHUNK DAO! Exception in setUpConnection!"
-					+ " DriverManager could not create connection!");
-			} else {
-				logWarnings(con.getWarnings());
-				response = con.isValid(0);
-			}
-		} catch (ClassNotFoundException e) {
-			log.error("BoL CHUNK DAO! Exception in setUpConnection! {}", 
-				e.getMessage(), e);
-		} catch (SQLException e) {
-			log.error("BoL CHUNK DAO! Exception in setUpConenction! {}", 
-				e.getMessage(), e);
+			logWarnings(con.getWarnings());
+			response = con.isValid(0);
+		} catch (ClassNotFoundException | SQLException e) {
+			log.error("BoL CHUNK DAO! Exception in setUpConnection! {}", e.getMessage(), e);
 		}
 		return response;
 	}

@@ -37,7 +37,7 @@ import it.grid.storm.namespace.model.Protocol;
 
 public class FTPNode extends AbstractNode {
 
-	private static final String prefix = Protocol.GSIFTP.getProtocolPrefix();
+	private static final String PREFIX = Protocol.GSIFTP.getProtocolPrefix();
 
 	public FTPNode(String hostname, int port) {
 
@@ -49,10 +49,11 @@ public class FTPNode extends AbstractNode {
 		super(hostname, port, weight);
 	}
 
+	@Override
 	public String toString() {
 
-		StringBuffer sb = new StringBuffer();
-		sb.append(prefix);
+	    StringBuilder sb = new StringBuilder();
+		sb.append(PREFIX);
 		sb.append(hostname);
 		sb.append(":" + port);
 		return sb.toString();
@@ -75,7 +76,7 @@ public class FTPNode extends AbstractNode {
 
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((prefix == null) ? 0 : prefix.hashCode());
+		result = prime * result + ((PREFIX == null) ? 0 : PREFIX.hashCode());
 		return result;
 	}
 

@@ -76,7 +76,7 @@ public class TransportProtocol {
 
 	private String getURIRoot() {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		if (protocolID != -1)
 			sb.append("[id:" + this.protocolID + "] ");
 		sb.append(protocol.getSchema());
