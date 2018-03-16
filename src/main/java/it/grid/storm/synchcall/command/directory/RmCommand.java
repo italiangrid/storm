@@ -17,6 +17,11 @@
 
 package it.grid.storm.synchcall.command.directory;
 
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
@@ -46,11 +51,6 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.RmInputData;
 import it.grid.storm.synchcall.data.directory.RmOutputData;
-
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class RmException extends SRMCommandException {
 
@@ -177,11 +177,19 @@ public class RmCommand implements Command {
     checkUserAuthorization(stori, user);
     log.debug("srmRm authorized for {} for directory = {}", userToString(user),
       stori.getPFN());
-
+ 
+    SURLStatusManager manager = SURLStatusManagerFactory.newSURLStatusManager();
+    
     LocalFile localFile = stori.getLocalFile();
+    
     if (!localFile.exists()) {
+      // ongoing ptp or ptg for a file that does not exist do no make sense 
+      // anyway
+      manager.abortAllGetRequestsForSURL(null, surl, "File does not exist on disk.");
+      manager.abortAllPutRequestsForSURL(null, surl, "File does not exist on disk.");
       throw new RmException(TStatusCode.SRM_INVALID_PATH, "File does not exist");
     }
+    
     if (localFile.isDirectory()) {
       throw new RmException(TStatusCode.SRM_INVALID_PATH,
         "The specified file is a directory. Not removed");
@@ -190,16 +198,15 @@ public class RmCommand implements Command {
     // Get file size before it's removed
     long fileSize = localFile.getSize();
 
-    SURLStatusManager manager = SURLStatusManagerFactory.newSURLStatusManager();
-
-    manager.abortAllGetRequestsForSURL(user, surl, "File has been removed.");
-    manager.abortAllPutRequestsForSURL(user, surl, "File has been removed.");
-
     if (!localFile.delete()) {
       log.error("srmRm: File not removed!");
       throw new RmException(TStatusCode.SRM_AUTHORIZATION_FAILURE,
         "File not removed, permission denied.");
     }
+    
+    manager.abortAllGetRequestsForSURL(null, surl, "File has been removed.");
+    manager.abortAllPutRequestsForSURL(null, surl, "File has been removed.");
+    
     returnStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, "File removed");
 
     try {
