@@ -17,6 +17,16 @@
 
 package it.grid.storm.namespace.model;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
+
+import org.slf4j.Logger;
+
 import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.balancer.Node;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
@@ -31,6 +41,7 @@ import it.grid.storm.filesystem.InvalidSpaceAttributesException;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.MetricsFilesystemAdapter;
 import it.grid.storm.filesystem.MockSpaceSystem;
+import it.grid.storm.filesystem.RandomWaitFilesystemAdapter;
 import it.grid.storm.filesystem.ReservationException;
 import it.grid.storm.filesystem.Space;
 import it.grid.storm.filesystem.SpaceSystem;
@@ -58,16 +69,6 @@ import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TSpaceType;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-
-import org.slf4j.Logger;
 
 /**
  * <p> Title: </p>
@@ -140,7 +141,7 @@ public class VirtualFS implements VirtualFSInterface {
     } else {
       this.genericFS = makeFSInstance();
     }
-
+    fsWrapper = RandomWaitFilesystemAdapter.maybeWrapFilesystem(fsWrapper);
     this.fsWrapper = new MetricsFilesystemAdapter(
       new Filesystem(getFSDriverInstance()),
       StormMetricRegistry.INSTANCE.getRegistry());
@@ -417,6 +418,8 @@ public class VirtualFS implements VirtualFSInterface {
 
       FilesystemIF fs = new Filesystem(getFSDriverInstance());
 
+      fs = RandomWaitFilesystemAdapter.maybeWrapFilesystem(fs);
+      
       fsWrapper = new MetricsFilesystemAdapter(fs,
         StormMetricRegistry.INSTANCE.getRegistry());
 
