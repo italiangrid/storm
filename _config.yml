@@ -5,9 +5,7 @@ emptyArray: []
 kramdown:
   input: GFM
   hard_wrap: false
-gems:
-#  - jekyll-coffeescript
-#  - jekyll-paginate
+plugins:
   - jekyll-redirect-from
 
 baseurl: /storm

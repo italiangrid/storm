@@ -3,8 +3,8 @@
 > Keep-Alive: 
 > Connection: TE, Keep-Alive
 > TE: trailers
-> Host: omii006-vm03.cnaf.infn.it:9443
-> Destination: https://omii006-vm03.cnaf.infn.it:9443/test.vo/test2.txt
+> Host: omii006-vm03.cnaf.infn.it:8443
+> Destination: https://omii006-vm03.cnaf.infn.it:8443/test.vo/test2.txt
 > 
 < HTTP/1.1 201 Created
 < X-Content-Type-Options: nosniff
