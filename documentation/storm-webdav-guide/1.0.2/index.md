@@ -112,7 +112,7 @@ The following paragraphs will give an example for each WebDAV/HTTP method by usi
 
 All the requests have been done:
 
-* against our WebDAV test endpoint `https://omii006-vm03.cnaf.infn.it:9443/`
+* against our WebDAV test endpoint `https://omii006-vm03.cnaf.infn.it:8443/`
 * using `test0.p12` of our `igi-test-ca` credentials:
 
 ```bash

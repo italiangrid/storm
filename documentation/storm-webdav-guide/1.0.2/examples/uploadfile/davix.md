@@ -1,1 +1,1 @@
-$ davix-put -P Grid text.txt https://omii006-vm03.cnaf.infn.it:9443/test.vo/test.txt
+$ davix-put -P Grid text.txt https://omii006-vm03.cnaf.infn.it:8443/test.vo/test.txt
