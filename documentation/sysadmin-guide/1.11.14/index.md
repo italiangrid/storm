@@ -60,21 +60,28 @@ Services to be updated are:
 * storm-native-libs-gpfs (if installed)
 * storm-globus-gridftp-server
 * storm-xmlrpc-c
+* yaim-storm
 
 On Backend host update and restart the following services and libraries:
 
-	yum update storm-backend-server storm-native-libs storm-native-libs-gpfs storm-xmlrpc-c
+	yum update storm-backend-server storm-native-libs storm-native-libs-gpfs storm-xmlrpc-c yaim-storm
     service storm-backend-server restart
+
+or re-launch YAIM node configuration.
 
 On Frontend host, update and restart the service:
 
     yum update storm-frontend-server
     service storm-frontend-server restart
 
+or re-launch YAIM node configuration.
+
 On GridFTP host, update and restart:
 
     yum update storm-globus-gridftp-server
     service storm-globus-gridftp restart
+
+or re-launch YAIM node configuration.
 
 ### Upgrade from StoRM v1.11.12 <a name="upgrade12">&nbsp;</a>
 
