@@ -413,12 +413,12 @@ The *DAG repository* must be disabled. If needed, set to 0 the enabled property 
 
 #### StoRM Repositories <a name="stormrepos">&nbsp;</a>
 
-The latest certified [StoRM packages][prod_repo_url] can be found in the StoRM production repository for [SL6][prod_repo_sl6].
+The latest certified StoRM package can be found in the StoRM production repository for [SL6][stable-storm-repoview].
 Note that you should also have UMD repositories installed (as detailed above) for your setup to work as expected.
 
 To install the StoRM production repository files, run the following commands (as root):
 
-    wget http://italiangrid.github.io/storm/repo/storm_sl6.repo -O /etc/yum.repos.d/storm_sl6.repo
+    wget https://repo.cloud.cnaf.infn.it/repository/storm/stable/storm-stable-centos6.repo -O /etc/yum.repos.d/storm-stable-centos6.repo
 
 ### Install StoRM components <a name="components">&nbsp;</a>
 
@@ -1808,7 +1808,6 @@ You can found CDMI StoRM details about installation and configuration [here][ind
 
 
 [Scientific Linux]: http://www.scientificlinux.org
-[SL5]: http://linuxsoft.cern.ch/scientific/5x/
 [SL6]: http://linuxsoft.cern.ch/scientific/6x/
 [UMD-instructions]: http://repository.egi.eu/category/umd_releases/distribution/umd-4/
 [how-to-nis]: http://www.tldp.org/HOWTO/NIS-HOWTO/index.html
@@ -1823,6 +1822,8 @@ You can found CDMI StoRM details about installation and configuration [here][ind
 [used-space-example]: {{site.baseurl}}/documentation/how-to/how-to-initialize-storage-area-used-space/
 [info-provider-177]: {{site.baseurl}}/release-notes/storm-dynamic-info-provider/1.7.7/
 [releases]: {{site.baseurl}}/releases.html
+
+[stable-storm-repoview]: https://repo.cloud.cnaf.infn.it/repository/storm/stable/el6/x86_64/repoview/index.html
 
 [indigo-cdmi-spi]: https://github.com/indigo-dc/cdmi-spi
 [indigo-cdmi-server]: https://github.com/indigo-dc/cdmi

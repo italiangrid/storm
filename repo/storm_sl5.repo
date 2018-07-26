@@ -1,7 +1,0 @@
-[StoRM-Release-SL5]
-name=StoRM-Release-SL5
-baseurl=http://ci-01.cnaf.infn.it/download/storm/versions/storm-master-030717/sl5/x86_64/
-protect=1
-enabled=1
-priority=1
-gpgcheck=0
