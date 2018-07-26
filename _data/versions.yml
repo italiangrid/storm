@@ -1,13 +1,13 @@
 components:
   storm-backend-server:
       name: StoRM Backend
-      current: 1.11.13
-      previous: [1.11.12,1.11.11,1.11.10,1.11.9,1.11.8,1.11.7,1.11.6,1.11.5,1.11.4,1.11.3,1.11.2,1.11.1]
+      current: 1.11.14
+      previous: [1.11.13,1.11.12,1.11.11,1.11.10,1.11.9,1.11.8,1.11.7,1.11.6,1.11.5,1.11.4,1.11.3,1.11.2,1.11.1]
 
   storm-frontend-server:
       name: StoRM Frontend
-      current: 1.8.10
-      previous: [1.8.9,1.8.8,1.8.7,1.8.6,1.8.5,1.8.4,1.8.3]
+      current: 1.8.11
+      previous: [1.8.10,1.8.9,1.8.8,1.8.7,1.8.6,1.8.5,1.8.4,1.8.3]
 
   storm-webdav:
       name: StoRM WebDAV
@@ -21,8 +21,8 @@ components:
 
   yaim-storm:
       name: YAIM StoRM
-      current: 4.3.10
-      previous: [4.3.9,4.3.8,4.3.7,4.3.6,4.3.5,4.3.4,4.3.3,4.3.2]
+      current: 4.3.11
+      previous: [4.3.10,4.3.9,4.3.8,4.3.7,4.3.6,4.3.5,4.3.4,4.3.3,4.3.2]
 
   storm-dynamic-info-provider:
       name: StoRM Info Provider
@@ -31,8 +31,8 @@ components:
 
   storm-native-libs:
       name: StoRM Native Libs
-      current: 1.0.5
-      previous: [1.0.4,1.0.3,1.0.2,1.0.1]
+      current: 1.0.5-2
+      previous: [1.0.5,1.0.4,1.0.3,1.0.2,1.0.1]
 
   storm-srm-client:
       name: StoRM SRM Client
@@ -41,10 +41,15 @@ components:
 
   storm-gridftp-dsi:
       name: StoRM GridFTP
-      current: 1.2.0
-      previous: []
+      current: 1.2.1
+      previous: [1.2.0]
 
   cdmi-storm:
       name: CDMI StoRM
       current: 0.1.0
       previous: []
+
+  storm-xmlrpc-c:
+      name: StoRM XMLRPC-C
+      current: 1.39.12
+      previous: [1.33.0]

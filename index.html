@@ -6,7 +6,7 @@ title: StoRM Home
 <div class="row-fluid marketing">
 	<h2>Latest News</h2>
 
-	{% for post in site.posts limit:4 %}
+	{% for post in site.posts limit:2 %}
 	<div class="row-fluid marketing news-row">
 		<div class="span2 news-date">
 			<p class="text-left">{{ post.date | date_to_long_string }}</p>

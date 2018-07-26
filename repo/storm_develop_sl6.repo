@@ -1,7 +1,0 @@
-[StoRM-Develop-Centos6]
-name=StoRM-Develop-Centos6
-baseurl=https://ci.cloud.cnaf.infn.it/view/storm/job/pkg.storm/job/develop/lastSuccessfulBuild/artifact/repo/centos6/
-protect=1
-enabled=1
-priority=1
-gpgcheck=0

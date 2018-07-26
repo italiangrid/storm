@@ -1,7 +1,9 @@
 ---
 layout: toc
 title: StoRM Storage Resource Manager - System Administration Guide
-version: 1.11.13
+version: 1.11.14
+redirect_from:
+  - /documentation/sysadmin-guide/
 ---
 
 # StoRM System Administration Guide
@@ -10,7 +12,8 @@ version: {{ page.version }}
 
 **Table of contents**
 
-* [Upgrade to StoRM v1.11.13](#upgrading)
+* [Upgrade to StoRM v1.11.14](#upgrading)
+  * [Upgrade from StoRM v1.11.13](#upgrade13)
   * [Upgrade from StoRM v1.11.12](#upgrade12)
   * [Upgrade from StoRM v1.11.11](#upgrade11)
   * [Upgrade from versions earlier than v1.11.11](#upgradeold)
@@ -45,7 +48,40 @@ version: {{ page.version }}
 
 ------
 
-## Upgrade to StoRM v1.11.13 <a name="upgrading">&nbsp;</a>
+## Upgrade to StoRM v1.11.14 <a name="upgrading">&nbsp;</a>
+
+### Upgrade from StoRM v1.11.13 <a name="upgrade13">&nbsp;</a>
+
+Services to be updated are:
+
+* storm-backend-server
+* storm-frontend-server
+* storm-native-libs
+* storm-native-libs-gpfs (if installed)
+* storm-globus-gridftp-server
+* storm-xmlrpc-c
+* yaim-storm
+
+On Backend host update and restart the following services and libraries:
+
+	yum update storm-backend-server storm-native-libs storm-native-libs-gpfs storm-xmlrpc-c yaim-storm
+    service storm-backend-server restart
+
+or re-launch YAIM node configuration.
+
+On Frontend host, update and restart the service:
+
+    yum update storm-frontend-server
+    service storm-frontend-server restart
+
+or re-launch YAIM node configuration.
+
+On GridFTP host, update and restart:
+
+    yum update storm-globus-gridftp-server
+    service storm-globus-gridftp restart
+
+or re-launch YAIM node configuration.
 
 ### Upgrade from StoRM v1.11.12 <a name="upgrade12">&nbsp;</a>
 
@@ -384,12 +420,12 @@ The *DAG repository* must be disabled. If needed, set to 0 the enabled property 
 
 #### StoRM Repositories <a name="stormrepos">&nbsp;</a>
 
-The latest certified [StoRM packages][prod_repo_url] can be found in the StoRM production repository for [SL6][prod_repo_sl6].
+The latest certified StoRM package can be found in the StoRM production repository for [SL6][stable-storm-repoview].
 Note that you should also have UMD repositories installed (as detailed above) for your setup to work as expected.
 
 To install the StoRM production repository files, run the following commands (as root):
 
-    wget http://italiangrid.github.io/storm/repo/storm_sl6.repo -O /etc/yum.repos.d/storm_sl6.repo
+    wget https://repo.cloud.cnaf.infn.it/repository/storm/stable/storm-stable-centos6.repo -O /etc/yum.repos.d/storm-stable-centos6.repo
 
 ### Install StoRM components <a name="components">&nbsp;</a>
 
@@ -423,21 +459,85 @@ StoRM is currently configured by using the YAIM tool, that is a set of configura
 configuration files.
 If you want to go through the configuration, see the [advanced configuration](#advanced-configuration) guide.
 
-Optionally, as a *quick start*, you can follow these instructions to quickly configure StoRM.
+As a quick start, you can follow these instructions to quickly configure a standalone StoRM deployment.
 
-First of all, download and install the *pre-assembled configuration*:
+Create a single site configuration file `/etc/storm/siteinfo/storm.def` as follow:
 
-    yum install storm-pre-assembled-configuration
+```bash
+# The human-readable name of your site.
+SITE_NAME="sample-storm-deployment"
 
-and then edit */etc/storm/siteinfo/storm.def* with:
+# A valid BDII hostname.
+BDII_HOST="emitb-bdii-site.cern.ch"
 
-    STORM_BACKEND_HOST="<your full hostname>"
+# A space separated list of the IP addresses of the NTP servers.
+# Preferably set a local ntp server and a public one, e.g. pool.ntp.org)
+NTP_HOSTS_IP="77.242.176.254"
 
-Set also the JAVA_LOCATION to:
+# The path to the file containing the list of Linux users (pool accounts) to be created. This file must be created by the site administrator and contains a plain list of the users and their IDs. An example of this configuration file is given in /opt/glite/yaim/examples/users.conf file.
+USERS_CONF=/etc/storm/siteinfo/storm-users.conf
 
-    JAVA_LOCATION="/usr/lib/jvm/java"
+# The path to the file containing information on the mapping between VOMS groups and roles to local groups. An example of this configuration file is given in /opt/glite/yaim/examples/groups.conf file.
+GROUPS_CONF=/etc/storm/siteinfo/storm-groups.conf
 
-Then you can configure StoRM by launching YAIM with:
+# MySQL root password
+MYSQL_PASSWORD="storm"
+
+# Domain name (used by StoRM Info Provider)
+MY_DOMAIN="cnaf.infn.it"
+
+# A space separated list of supported VOs
+VOS="dteam"
+
+# The FQDN of Backend's host.
+STORM_BACKEND_HOST=`hostname -f`
+
+# A valid path of the installed java libraries.
+JAVA_LOCATION="/usr/lib/jvm/java"
+
+# The default root directory of the Storage Areas.
+STORM_DEFAULT_ROOT="/storage"
+
+# A valid password for database connection.
+STORM_DB_PWD=storm
+
+# Token used to communicate with Backend service.
+STORM_BE_XMLRPC_TOKEN=secretpassword
+
+# The list of the managed storage areas.
+STORM_STORAGEAREA_LIST=$VOS
+
+# For each storage area it's mandatory to set the relative maximum online size.
+STORM_DTEAM_ONLINE_SIZE=10
+
+# Enable HTTP Transfer Protocol
+STORM_INFO_HTTP_SUPPORT=true
+
+# Enable HTTPS Transfer Protocol
+STORM_INFO_HTTPS_SUPPORT=true
+
+# Old named variable used to indicate that there's a WebDAV endpoint running
+STORM_GRIDHTTPS_ENABLED=true
+```
+
+Example of `storm-users.conf` file:
+
+```
+71001:dteam001:7100:dteam:dteam::
+71002:dteam002:7100:dteam:dteam::
+71003:dteam003:7100:dteam:dteam::
+71004:dteam004:7100:dteam:dteam::
+[...]
+71999:dteam999:7100:dteam:dteam::
+```
+
+Example of `storm-groups.conf` file:
+
+```
+"/dteam"::::
+```
+
+Then you can run YAIM specifying the proper components profiles:
 
     /opt/glite/yaim/bin/yaim -c -s /etc/storm/siteinfo/storm.def \
     -n se_storm_backend \
@@ -1715,7 +1815,6 @@ You can found CDMI StoRM details about installation and configuration [here][ind
 
 
 [Scientific Linux]: http://www.scientificlinux.org
-[SL5]: http://linuxsoft.cern.ch/scientific/5x/
 [SL6]: http://linuxsoft.cern.ch/scientific/6x/
 [UMD-instructions]: http://repository.egi.eu/category/umd_releases/distribution/umd-4/
 [how-to-nis]: http://www.tldp.org/HOWTO/NIS-HOWTO/index.html
@@ -1730,6 +1829,8 @@ You can found CDMI StoRM details about installation and configuration [here][ind
 [used-space-example]: {{site.baseurl}}/documentation/how-to/how-to-initialize-storage-area-used-space/
 [info-provider-177]: {{site.baseurl}}/release-notes/storm-dynamic-info-provider/1.7.7/
 [releases]: {{site.baseurl}}/releases.html
+
+[stable-storm-repoview]: https://repo.cloud.cnaf.infn.it/repository/storm/stable/el6/x86_64/repoview/index.html
 
 [indigo-cdmi-spi]: https://github.com/indigo-dc/cdmi-spi
 [indigo-cdmi-server]: https://github.com/indigo-dc/cdmi

@@ -1,0 +1,7 @@
+[storm-nightly-centos6]
+name=storm-nightly-centos6
+baseurl=https://repo.cloud.cnaf.infn.it/repository/storm/nightly/el6/x86_64/
+protect=1
+enabled=1
+priority=1
+gpgcheck=0
