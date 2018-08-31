@@ -17,6 +17,10 @@
 
 package it.grid.storm.synchcall;
 
+import static it.grid.storm.filesystem.RandomWaitFilesystemAdapter.maybeWrapFilesystem;
+
+import org.slf4j.Logger;
+
 import it.grid.storm.filesystem.Filesystem;
 import it.grid.storm.filesystem.FilesystemIF;
 import it.grid.storm.filesystem.LocalFile;
@@ -26,8 +30,6 @@ import it.grid.storm.metrics.StormMetricRegistry;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
-
-import org.slf4j.Logger;
 
 /**
  * <p>
@@ -74,7 +76,10 @@ public class FileSystemUtility {
 		try {
 			fsDriver = (genericfs) (vfs.getFSDriver()).newInstance();
 			
-			FilesystemIF wrappedFs = new Filesystem(fsDriver); 
+			FilesystemIF wrappedFs = new Filesystem(fsDriver);
+			
+			wrappedFs = maybeWrapFilesystem(wrappedFs);
+			
 			fs = new MetricsFilesystemAdapter(wrappedFs, 
 			  StormMetricRegistry.INSTANCE.getRegistry());
 			
