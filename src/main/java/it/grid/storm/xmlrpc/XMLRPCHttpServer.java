@@ -32,132 +32,161 @@ import java.util.EnumSet;
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 
-import it.grid.storm.config.Configuration;
-import it.grid.storm.rest.JettyThread;
-
-import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.webserver.XmlRpcServlet;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.grid.storm.config.Configuration;
+import it.grid.storm.rest.JettyThread;
+
 public final class XMLRPCHttpServer {
 
-	/**
-	 * Logger
-	 */
-	private static final Logger log = LoggerFactory
-		.getLogger(XMLRPCHttpServer.class);
+  /**
+   * Logger
+   */
+  private static final Logger LOG = LoggerFactory.getLogger(XMLRPCHttpServer.class);
 
-	/**
-	 * The Jetty server hosting the Apache XML-RPC machinery
-	 */
-	private final Server server;
+  /**
+   * The Jetty server hosting the Apache XML-RPC machinery
+   */
+  private final Server server;
 
-	/**
-	 * True if a web server has been started
-	 */
-	private boolean running = false;
+  /**
+   * True if a web server has been started
+   */
+  private boolean running = false;
 
-	/**
-	 * @param port
-	 * @param maxThreadNum
-	 * @throws XmlRpcException
-	 */
-	public XMLRPCHttpServer(int port, int maxThreadNum)
-		throws StoRMXmlRpcException {
+  public static final int DEFAULT_MAX_THREAD_NUM = 256;
+  public static final int DEFAULT_MAX_QUEUE_SIZE = 1000;
 
-		server = buildWebServer(port, maxThreadNum);
-	};
+  /**
+   * @param port
+   * @param maxThreadNum
+   * @throws XmlRpcException
+   */
+  public XMLRPCHttpServer(int port, int maxThreadNum, int maxQueueSize)
+      throws StoRMXmlRpcException {
 
-	private Server buildWebServer(int port, int maxThreadNum)
-		throws StoRMXmlRpcException {
+    server = buildWebServer(port, maxThreadNum, maxQueueSize);
+  };
 
-		Server server = new Server(port);
 
-		XmlRpcServlet servlet = new XmlRpcServlet();
+  private void configureThreadPool(Server s, int maxThreadNum, int maxQueueSize) {
+    int threadNumber = maxThreadNum;
 
-		ServletContextHandler servletContextHandler = new ServletContextHandler();
-		servletContextHandler.addServlet(new ServletHolder(servlet), "/");
+    if (threadNumber <= 0) {
+      threadNumber = DEFAULT_MAX_THREAD_NUM;
+    }
 
-		Boolean isTokenEnabled = Configuration.getInstance().getXmlRpcTokenEnabled();
-		
-		if(isTokenEnabled) {
-		
-			log.info("Enabling security filter for XML-RPC requests");
+    int queueSize = maxQueueSize;
 
-			String token = Configuration.getInstance().getXmlRpcToken();
+    if (queueSize <= 0) {
+      queueSize = DEFAULT_MAX_QUEUE_SIZE;
+    }
 
-			if(token == null || token.isEmpty()) {
-				
-				log.error("XML-RPC requests token enabled, but token not found");
+    QueuedThreadPool queuedThreadPool = new QueuedThreadPool();
+    queuedThreadPool.setName("xmlrpc");
+    queuedThreadPool.setMaxThreads(threadNumber);
+    queuedThreadPool.setMaxQueued(queueSize);
 
-				throw new StoRMXmlRpcException("XML-RPC requests token enabled, but token not found");
-			}
-			
-			Filter filter = new XmlRpcTokenFilter(token);
-		
-			FilterHolder filterHolder = new FilterHolder(filter);
-		
-			servletContextHandler.addFilter(filterHolder, "/*", EnumSet.of(DispatcherType.REQUEST));
-		}
-			
-		server.setHandler(servletContextHandler);
+    s.setThreadPool(queuedThreadPool);
 
-		return server;
-	}
+    LOG.info("Configured XMLRPC server threadpool: maxThreads={}, maxQueueSize={}", threadNumber,
+        queueSize);
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see it.grid.storm.xmlrpc.XMLRPCServerInterface#createServer()
-	 */
-	public synchronized void start() {
 
-		if (!running) {
+  private Server buildWebServer(int port, int maxThreadNum, int maxQueueSize)
+      throws StoRMXmlRpcException {
 
-			log.info("Starting Jetty server hosting the XML-RPC machinery");
+    Server server = new Server(port);
+    configureThreadPool(server, maxThreadNum, maxQueueSize);
 
-			JettyThread thread = new JettyThread(server);
-			thread.start();
-			
-			running = true;
+    XmlRpcServlet servlet = new XmlRpcServlet();
 
-			log.info("Jetty server hosting the XML-RPM machinery is running");
-		}
+    ServletContextHandler servletContextHandler = new ServletContextHandler();
+    servletContextHandler.addServlet(new ServletHolder(servlet), "/");
 
-	}
+    Boolean isTokenEnabled = Configuration.getInstance().getXmlRpcTokenEnabled();
 
-	/**
-	 * @throws Exception 
-     * 
-     */
-	public synchronized void stop() {
+    if (isTokenEnabled) {
 
-		log.info("Stopping Jetty server hosting the XML-RPC machinery");
+      LOG.info("Enabling security filter for XML-RPC requests");
 
-		if (server != null) {
+      String token = Configuration.getInstance().getXmlRpcToken();
 
-			try {
-				
-				server.stop();
-			
-			} catch (Exception e) {
-				
-				log.info("Could not stop the Jetty server hosting the XML-RPC machinery");
-				
-				return;
-			}
-		
-		}
+      if (token == null || token.isEmpty()) {
 
-		running = false;
+        LOG.error("XML-RPC requests token enabled, but token not found");
 
-		log.info("Jetty server hosting the XML-RPM machinery is not running");
+        throw new StoRMXmlRpcException("XML-RPC requests token enabled, but token not found");
+      }
 
-	}
+      Filter filter = new XmlRpcTokenFilter(token);
+
+      FilterHolder filterHolder = new FilterHolder(filter);
+
+      servletContextHandler.addFilter(filterHolder, "/*", EnumSet.of(DispatcherType.REQUEST));
+    }
+
+    server.setHandler(servletContextHandler);
+
+    return server;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see it.grid.storm.xmlrpc.XMLRPCServerInterface#createServer()
+   */
+  public synchronized void start() {
+
+    if (!running) {
+
+      LOG.info("Starting Jetty server hosting the XML-RPC machinery");
+
+      JettyThread thread = new JettyThread(server);
+      thread.start();
+
+      running = true;
+
+      LOG.info("Jetty server hosting the XML-RPM machinery is running");
+    }
+
+  }
+
+  /**
+   * @throws Exception
+   * 
+   */
+  public synchronized void stop() {
+
+    LOG.info("Stopping Jetty server hosting the XML-RPC machinery");
+
+    if (server != null) {
+
+      try {
+
+        server.stop();
+
+      } catch (Exception e) {
+
+        LOG.info("Could not stop the Jetty server hosting the XML-RPC machinery");
+
+        return;
+      }
+
+    }
+
+    running = false;
+
+    LOG.info("Jetty server hosting the XML-RPM machinery is not running");
+
+  }
 
 }

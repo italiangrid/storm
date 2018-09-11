@@ -29,6 +29,8 @@ import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.grid.storm.xmlrpc.XMLRPCHttpServer;
+
 /**
  * Singleton holding all configuration values that any other object in the StoRM
  * backend reads from configuration files, databases, etc. Implements a
@@ -79,7 +81,8 @@ public class Configuration {
   private static final String SRMCLIENT_PUT_SLEEP_TIME_KEY = "asynch.srmclient.sleeptime";
   private static final String SRMCLIENT_PUT_DONE_SLEEP_TIME_KEY = "asynch.srmclient.putdone.sleeptime";
   private static final String SRMCLIENT_PUT_DONE_TIME_OUT_KEY = "asynch.srmclient.putdone.timeout";
-  private static final String MAX_XMLRPC_THREAD_KEY = "synchcall.xmlrpc.maxthread";
+  private static final String XMLRPC_MAX_THREAD_KEY = "synchcall.xmlrpc.maxthread";
+  private static final String XMLRPC_MAX_QUEUE_SIZE_KEY = "synchcall.xmlrpc.max_queue_size";
   private static final String LIST_OF_DEFAULT_SPACE_TOKEN_KEY = "storm.service.defaultSpaceTokens";
   private static final String GRIDFTP_TRANSFER_CLIENT_KEY = "asynch.gridftpclient";
   private static final String SRMCLIENT_KEY = "asynch.srmclient";
@@ -771,14 +774,24 @@ public class Configuration {
   /**
    * Get max number of xmlrpc threads into for the XMLRPC server.
    */
-  public int getMaxXMLRPCThread() {
+  public int getXMLRPCMaxThread() {
 
-    if (!cr.getConfiguration().containsKey(MAX_XMLRPC_THREAD_KEY)) {
+    if (!cr.getConfiguration().containsKey(XMLRPC_MAX_THREAD_KEY)) {
       // return default
-      return 100;
+      return XMLRPCHttpServer.DEFAULT_MAX_THREAD_NUM;
     } else {
       // load from external source
-      return cr.getConfiguration().getInt(MAX_XMLRPC_THREAD_KEY);
+      return cr.getConfiguration().getInt(XMLRPC_MAX_THREAD_KEY);
+    }
+  }
+  
+  public int getXMLRPCMaxQueueSize() {
+    if (!cr.getConfiguration().containsKey(XMLRPC_MAX_QUEUE_SIZE_KEY)) {
+      // return default
+      return XMLRPCHttpServer.DEFAULT_MAX_QUEUE_SIZE;
+    } else {
+      // load from external source
+      return cr.getConfiguration().getInt(XMLRPC_MAX_QUEUE_SIZE_KEY);
     }
   }
 
