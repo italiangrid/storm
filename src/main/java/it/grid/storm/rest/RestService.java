@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.jetty8.InstrumentedHandler;
+import com.codahale.metrics.servlets.MetricsServlet;
 
 import it.grid.storm.authz.remote.resource.AuthorizationResource;
 import it.grid.storm.authz.remote.resource.AuthorizationResourceCompat_1_0;
@@ -66,11 +67,11 @@ import it.grid.storm.tape.recalltable.resources.TasksResource;
 public class RestService {
 
   private static final Logger LOG = LoggerFactory.getLogger(RestService.class);
-  
+
   public static final int DEFAULT_PORT = 9998;
-  
+
   public static final int DEFAULT_MAX_THREADS = 100;
-  
+
   public static final int DEFAULT_MAX_QUEUE_SIZE = 1000;
 
   /**
@@ -91,6 +92,7 @@ public class RestService {
 
     return restServicePort;
   }
+
 
   /**
    * Configure the {@link Server}. Install the Jersey {@link ServletContainer} and configure it to
@@ -124,9 +126,13 @@ public class RestService {
 
     ServletContextHandler servletContextHandler =
         new ServletContextHandler(ServletContextHandler.SESSIONS);
-    servletContextHandler.setContextPath("/");
-    servletContextHandler.addServlet(holder, "/*");
 
+    servletContextHandler.setContextPath("/");
+
+    ServletHolder metrics = new ServletHolder(MetricsServlet.class);
+
+    servletContextHandler.addServlet(metrics, "/metrics");
+    servletContextHandler.addServlet(holder, "/*");
     if (Configuration.getInstance().getXmlRpcTokenEnabled()) {
 
       LOG.info("Enabling security filter for rest server requests");
@@ -144,28 +150,28 @@ public class RestService {
     }
 
     server = new Server();
-    
+
     NamedInstrumentedSelectChannelConnector connector = new NamedInstrumentedSelectChannelConnector(
         "rest-connector", getPort(), METRIC_REGISTRY.getRegistry());
-    
+
     server.addConnector(connector);
 
     // Configure thread pool
-    NamedInstrumentedThreadPool tp = new NamedInstrumentedThreadPool("rest", 
-        METRIC_REGISTRY.getRegistry());
-    
-    
+    NamedInstrumentedThreadPool tp =
+        new NamedInstrumentedThreadPool("rest", METRIC_REGISTRY.getRegistry());
+
+
     tp.setMaxThreads(Configuration.getInstance().getRestServicesMaxThreads());
     tp.setMaxQueued(Configuration.getInstance().getRestServicesMaxQueueSize());
     server.setThreadPool(tp);
-    
+
     LOG.info("RESTful services threadpool configured: maxThreads={}, maxQueueSize={}",
         Configuration.getInstance().getRestServicesMaxThreads(),
         Configuration.getInstance().getRestServicesMaxQueueSize());
-    
+
     InstrumentedHandler ih = new InstrumentedHandler(METRIC_REGISTRY.getRegistry(),
         servletContextHandler, "rest-handler");
-    
+
     server.setHandler(ih);
   }
 
@@ -180,7 +186,7 @@ public class RestService {
     JettyThread thread = new JettyThread(server);
     thread.start();
     LOG.info("StoRM RESTful services started.");
-    
+
   }
 
   /**
