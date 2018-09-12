@@ -129,7 +129,8 @@ public class RestService {
 
     servletContextHandler.setContextPath("/");
 
-    ServletHolder metrics = new ServletHolder(MetricsServlet.class);
+
+    ServletHolder metrics = new ServletHolder(new MetricsServlet(METRIC_REGISTRY.getRegistry()));
 
     servletContextHandler.addServlet(metrics, "/metrics");
     servletContextHandler.addServlet(holder, "/*");
