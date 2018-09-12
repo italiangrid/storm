@@ -29,6 +29,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.grid.storm.rest.RestService;
 import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 
 /**
@@ -154,6 +155,8 @@ public class Configuration {
   private static final String REFRESH_RATE_AUTHZDB_FILES_IN_SECONDS_KEY = "authzdb.refreshrate";
   private static final String RECALL_TABLE_TESTING_MODE_KEY = "tape.recalltable.service.test-mode";
   private static final String REST_SERVICES_PORT_KEY = "storm.rest.services.port";
+  private static final String REST_SERVICES_MAX_THREAD = "storm.rest.services.maxthread";
+  private static final String REST_SERVICES_MAX_QUEUE_SIZE = "storm.rest.services.max_queue_size";
   private static final String RETRY_VALUE_KEY_KEY = "tape.recalltable.service.param.retry-value";
   private static final String STATUS_KEY_KEY = "tape.recalltable.service.param.status";
   private static final String TASKOVER_KEY_KEY = "tape.recalltable.service.param.takeover";
@@ -2062,13 +2065,34 @@ public class Configuration {
 
     if (!cr.getConfiguration().containsKey(REST_SERVICES_PORT_KEY)) {
       // return default
-      return 9998;
+      return RestService.DEFAULT_PORT;
     } else {
       // load from external source
       return cr.getConfiguration().getInt(REST_SERVICES_PORT_KEY);
     }
   }
 
+  public int getRestServicesMaxThreads() {
+    if (!cr.getConfiguration().containsKey(REST_SERVICES_MAX_THREAD)) {
+      // return default
+      return RestService.DEFAULT_MAX_THREADS;
+    } else {
+      // load from external source
+      return cr.getConfiguration().getInt(REST_SERVICES_MAX_THREAD);
+    }
+  }
+  
+  public int getRestServicesMaxQueueSize() {
+    if (!cr.getConfiguration().containsKey(REST_SERVICES_MAX_QUEUE_SIZE)) {
+      // return default
+      return RestService.DEFAULT_MAX_QUEUE_SIZE;
+    } else {
+      // load from external source
+      return cr.getConfiguration().getInt(REST_SERVICES_MAX_QUEUE_SIZE);
+    }
+    
+  }
+  
   /**
    * Method used to retrieve the key string used to pass RETRY-VALUE parameter
    * to Recall Table service key="tape.recalltable.service.param.retry-value";
