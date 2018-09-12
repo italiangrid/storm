@@ -27,6 +27,8 @@
 
 package it.grid.storm.xmlrpc;
 
+import static it.grid.storm.metrics.StormMetricRegistry.METRIC_REGISTRY;
+
 import java.util.EnumSet;
 
 import javax.servlet.DispatcherType;
@@ -37,11 +39,14 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.codahale.metrics.jetty8.InstrumentedHandler;
+
 import it.grid.storm.config.Configuration;
+import it.grid.storm.metrics.NamedInstrumentedSelectChannelConnector;
+import it.grid.storm.metrics.NamedInstrumentedThreadPool;
 import it.grid.storm.rest.JettyThread;
 
 public final class XMLRPCHttpServer {
@@ -89,24 +94,27 @@ public final class XMLRPCHttpServer {
       queueSize = DEFAULT_MAX_QUEUE_SIZE;
     }
 
-    QueuedThreadPool queuedThreadPool = new QueuedThreadPool();
-    queuedThreadPool.setName("xmlrpc");
-    queuedThreadPool.setMaxThreads(threadNumber);
-    queuedThreadPool.setMaxQueued(queueSize);
+    NamedInstrumentedThreadPool tp =
+        new NamedInstrumentedThreadPool("xmlrpc", METRIC_REGISTRY.getRegistry());
 
-    s.setThreadPool(queuedThreadPool);
+    tp.setMaxThreads(threadNumber);
+    tp.setMaxQueued(queueSize);
+
+    s.setThreadPool(tp);
 
     LOG.info("Configured XMLRPC server threadpool: maxThreads={}, maxQueueSize={}", threadNumber,
         queueSize);
   }
 
 
-  private Server buildWebServer(int port, int maxThreadNum, int maxQueueSize)
-      throws StoRMXmlRpcException {
+  private void configureConnector(Server server, int port) {
+    NamedInstrumentedSelectChannelConnector connector = new NamedInstrumentedSelectChannelConnector(
+        "xmlrpc-connector", port, METRIC_REGISTRY.getRegistry());
 
-    Server server = new Server(port);
-    configureThreadPool(server, maxThreadNum, maxQueueSize);
+    server.addConnector(connector);
+  }
 
+  private void configureHandler(Server server) throws StoRMXmlRpcException {
     XmlRpcServlet servlet = new XmlRpcServlet();
 
     ServletContextHandler servletContextHandler = new ServletContextHandler();
@@ -134,7 +142,23 @@ public final class XMLRPCHttpServer {
       servletContextHandler.addFilter(filterHolder, "/*", EnumSet.of(DispatcherType.REQUEST));
     }
 
-    server.setHandler(servletContextHandler);
+    InstrumentedHandler ih = new InstrumentedHandler(METRIC_REGISTRY.getRegistry(),
+        servletContextHandler, "xmlrpc-handler");
+
+    server.setHandler(ih);
+
+  }
+
+  private Server buildWebServer(int port, int maxThreadNum, int maxQueueSize)
+      throws StoRMXmlRpcException {
+
+    Server server = new Server();
+    server.setSendDateHeader(false);
+    server.setSendServerVersion(false);
+
+    configureConnector(server, port);
+    configureThreadPool(server, maxThreadNum, maxQueueSize);
+    configureHandler(server);
 
     return server;
   }

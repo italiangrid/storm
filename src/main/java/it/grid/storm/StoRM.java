@@ -15,6 +15,7 @@
 
 package it.grid.storm;
 
+import static it.grid.storm.metrics.StormMetricRegistry.METRIC_REGISTRY;
 import static it.grid.storm.rest.RestService.startServer;
 import static it.grid.storm.rest.RestService.stop;
 
@@ -36,7 +37,6 @@ import it.grid.storm.check.SimpleCheckManager;
 import it.grid.storm.config.ConfigReader;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.health.HealthDirector;
-import it.grid.storm.metrics.StormMetricRegistry;
 import it.grid.storm.metrics.StormMetricsReporter;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.startup.Bootstrap;
@@ -145,11 +145,10 @@ public class StoRM {
 
   private void configureMetricsReporting() {
 
-    StormMetricRegistry.INSTANCE.getRegistry()
-      .timer(SimpleSynchcallDispatcher.SYNCH_CALL_TIMER_NAME);
+    METRIC_REGISTRY.getRegistry().timer(SimpleSynchcallDispatcher.SYNCH_CALL_TIMER_NAME);
 
     final StormMetricsReporter metricsReporter =
-        StormMetricsReporter.forRegistry(StormMetricRegistry.INSTANCE.getRegistry()).build();
+        StormMetricsReporter.forRegistry(METRIC_REGISTRY.getRegistry()).build();
 
     metricsReporter.start(1, TimeUnit.MINUTES);
 

@@ -20,6 +20,8 @@
  */
 package it.grid.storm.rest;
 
+import static it.grid.storm.metrics.StormMetricRegistry.METRIC_REGISTRY;
+
 import java.util.EnumSet;
 
 import javax.servlet.DispatcherType;
@@ -28,12 +30,13 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.jetty8.InstrumentedHandler;
 
 import it.grid.storm.authz.remote.resource.AuthorizationResource;
 import it.grid.storm.authz.remote.resource.AuthorizationResourceCompat_1_0;
@@ -41,6 +44,8 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.remote.resource.StormEAResource;
 import it.grid.storm.info.remote.resources.Ping;
 import it.grid.storm.info.remote.resources.SpaceStatusResource;
+import it.grid.storm.metrics.NamedInstrumentedSelectChannelConnector;
+import it.grid.storm.metrics.NamedInstrumentedThreadPool;
 import it.grid.storm.namespace.remote.resource.VirtualFSResource;
 import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_0;
 import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_1;
@@ -138,20 +143,30 @@ public class RestService {
           EnumSet.of(DispatcherType.REQUEST));
     }
 
-    server = new Server(RestService.getPort());
+    server = new Server();
+    
+    NamedInstrumentedSelectChannelConnector connector = new NamedInstrumentedSelectChannelConnector(
+        "rest-connector", getPort(), METRIC_REGISTRY.getRegistry());
+    
+    server.addConnector(connector);
 
     // Configure thread pool
-    QueuedThreadPool queuedThreadPool = new QueuedThreadPool();
-    queuedThreadPool.setName("rest");
-    queuedThreadPool.setMaxThreads(Configuration.getInstance().getRestServicesMaxThreads());
-    queuedThreadPool.setMaxQueued(Configuration.getInstance().getRestServicesMaxQueueSize());
-    server.setThreadPool(queuedThreadPool);
+    NamedInstrumentedThreadPool tp = new NamedInstrumentedThreadPool("rest", 
+        METRIC_REGISTRY.getRegistry());
+    
+    
+    tp.setMaxThreads(Configuration.getInstance().getRestServicesMaxThreads());
+    tp.setMaxQueued(Configuration.getInstance().getRestServicesMaxQueueSize());
+    server.setThreadPool(tp);
     
     LOG.info("RESTful services threadpool configured: maxThreads={}, maxQueueSize={}",
         Configuration.getInstance().getRestServicesMaxThreads(),
         Configuration.getInstance().getRestServicesMaxQueueSize());
     
-    server.setHandler(servletContextHandler);
+    InstrumentedHandler ih = new InstrumentedHandler(METRIC_REGISTRY.getRegistry(),
+        servletContextHandler, "rest-handler");
+    
+    server.setHandler(ih);
   }
 
   /**
