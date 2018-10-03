@@ -17,6 +17,8 @@
 
 package it.grid.storm.namespace.model;
 
+import static it.grid.storm.metrics.StormMetricRegistry.METRIC_REGISTRY;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
@@ -47,7 +49,6 @@ import it.grid.storm.filesystem.Space;
 import it.grid.storm.filesystem.SpaceSystem;
 import it.grid.storm.filesystem.swig.genericfs;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.metrics.StormMetricRegistry;
 import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.DefaultValuesInterface;
 import it.grid.storm.namespace.ExpiredSpaceTokenException;
@@ -144,7 +145,7 @@ public class VirtualFS implements VirtualFSInterface {
     fsWrapper = RandomWaitFilesystemAdapter.maybeWrapFilesystem(fsWrapper);
     this.fsWrapper = new MetricsFilesystemAdapter(
       new Filesystem(getFSDriverInstance()),
-      StormMetricRegistry.INSTANCE.getRegistry());
+      METRIC_REGISTRY.getRegistry());
   }
 
   public void setSpaceTokenDescription(String spaceTokenDescription) {
@@ -421,7 +422,7 @@ public class VirtualFS implements VirtualFSInterface {
       fs = RandomWaitFilesystemAdapter.maybeWrapFilesystem(fs);
       
       fsWrapper = new MetricsFilesystemAdapter(fs,
-        StormMetricRegistry.INSTANCE.getRegistry());
+        METRIC_REGISTRY.getRegistry());
 
     }
     return this.fsWrapper;

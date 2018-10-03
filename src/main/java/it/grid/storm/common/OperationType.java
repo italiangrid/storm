@@ -17,9 +17,9 @@
 
 package it.grid.storm.common;
 
-import com.codahale.metrics.Timer;
+import static it.grid.storm.metrics.StormMetricRegistry.METRIC_REGISTRY;
 
-import it.grid.storm.metrics.StormMetricRegistry;
+import com.codahale.metrics.Timer;
 
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008
@@ -59,7 +59,7 @@ public enum OperationType {
 
   private OperationType(String name) {
     this.opName = name;
-    timer = StormMetricRegistry.INSTANCE.getRegistry().timer(opName);
+    timer = METRIC_REGISTRY.getRegistry().timer(opName);
   }
 
   public String getOpName() {

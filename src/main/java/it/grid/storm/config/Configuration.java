@@ -29,6 +29,9 @@ import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.grid.storm.rest.RestService;
+import it.grid.storm.xmlrpc.XMLRPCHttpServer;
+
 /**
  * Singleton holding all configuration values that any other object in the StoRM
  * backend reads from configuration files, databases, etc. Implements a
@@ -79,7 +82,8 @@ public class Configuration {
   private static final String SRMCLIENT_PUT_SLEEP_TIME_KEY = "asynch.srmclient.sleeptime";
   private static final String SRMCLIENT_PUT_DONE_SLEEP_TIME_KEY = "asynch.srmclient.putdone.sleeptime";
   private static final String SRMCLIENT_PUT_DONE_TIME_OUT_KEY = "asynch.srmclient.putdone.timeout";
-  private static final String MAX_XMLRPC_THREAD_KEY = "synchcall.xmlrpc.maxthread";
+  private static final String XMLRPC_MAX_THREAD_KEY = "synchcall.xmlrpc.maxthread";
+  private static final String XMLRPC_MAX_QUEUE_SIZE_KEY = "synchcall.xmlrpc.max_queue_size";
   private static final String LIST_OF_DEFAULT_SPACE_TOKEN_KEY = "storm.service.defaultSpaceTokens";
   private static final String GRIDFTP_TRANSFER_CLIENT_KEY = "asynch.gridftpclient";
   private static final String SRMCLIENT_KEY = "asynch.srmclient";
@@ -151,6 +155,8 @@ public class Configuration {
   private static final String REFRESH_RATE_AUTHZDB_FILES_IN_SECONDS_KEY = "authzdb.refreshrate";
   private static final String RECALL_TABLE_TESTING_MODE_KEY = "tape.recalltable.service.test-mode";
   private static final String REST_SERVICES_PORT_KEY = "storm.rest.services.port";
+  private static final String REST_SERVICES_MAX_THREAD = "storm.rest.services.maxthread";
+  private static final String REST_SERVICES_MAX_QUEUE_SIZE = "storm.rest.services.max_queue_size";
   private static final String RETRY_VALUE_KEY_KEY = "tape.recalltable.service.param.retry-value";
   private static final String STATUS_KEY_KEY = "tape.recalltable.service.param.status";
   private static final String TASKOVER_KEY_KEY = "tape.recalltable.service.param.takeover";
@@ -771,14 +777,24 @@ public class Configuration {
   /**
    * Get max number of xmlrpc threads into for the XMLRPC server.
    */
-  public int getMaxXMLRPCThread() {
+  public int getXMLRPCMaxThread() {
 
-    if (!cr.getConfiguration().containsKey(MAX_XMLRPC_THREAD_KEY)) {
+    if (!cr.getConfiguration().containsKey(XMLRPC_MAX_THREAD_KEY)) {
       // return default
-      return 100;
+      return XMLRPCHttpServer.DEFAULT_MAX_THREAD_NUM;
     } else {
       // load from external source
-      return cr.getConfiguration().getInt(MAX_XMLRPC_THREAD_KEY);
+      return cr.getConfiguration().getInt(XMLRPC_MAX_THREAD_KEY);
+    }
+  }
+  
+  public int getXMLRPCMaxQueueSize() {
+    if (!cr.getConfiguration().containsKey(XMLRPC_MAX_QUEUE_SIZE_KEY)) {
+      // return default
+      return XMLRPCHttpServer.DEFAULT_MAX_QUEUE_SIZE;
+    } else {
+      // load from external source
+      return cr.getConfiguration().getInt(XMLRPC_MAX_QUEUE_SIZE_KEY);
     }
   }
 
@@ -2049,13 +2065,34 @@ public class Configuration {
 
     if (!cr.getConfiguration().containsKey(REST_SERVICES_PORT_KEY)) {
       // return default
-      return 9998;
+      return RestService.DEFAULT_PORT;
     } else {
       // load from external source
       return cr.getConfiguration().getInt(REST_SERVICES_PORT_KEY);
     }
   }
 
+  public int getRestServicesMaxThreads() {
+    if (!cr.getConfiguration().containsKey(REST_SERVICES_MAX_THREAD)) {
+      // return default
+      return RestService.DEFAULT_MAX_THREADS;
+    } else {
+      // load from external source
+      return cr.getConfiguration().getInt(REST_SERVICES_MAX_THREAD);
+    }
+  }
+  
+  public int getRestServicesMaxQueueSize() {
+    if (!cr.getConfiguration().containsKey(REST_SERVICES_MAX_QUEUE_SIZE)) {
+      // return default
+      return RestService.DEFAULT_MAX_QUEUE_SIZE;
+    } else {
+      // load from external source
+      return cr.getConfiguration().getInt(REST_SERVICES_MAX_QUEUE_SIZE);
+    }
+    
+  }
+  
   /**
    * Method used to retrieve the key string used to pass RETRY-VALUE parameter
    * to Recall Table service key="tape.recalltable.service.param.retry-value";
