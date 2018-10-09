@@ -1,5 +1,6 @@
 package it.grid.storm.tape.recalltable.resources;
 
+import static it.grid.storm.config.Configuration.CONFIG_FILE_PATH;
 import static it.grid.storm.tape.recalltable.resources.TaskInsertRequest.MAX_RETRY_ATTEMPTS;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -63,6 +64,10 @@ public class TaskResourceTest {
 
 	private TapeRecallCatalog RECALL_CATALOG = getTapeRecallCatalogInsertSuccess(groupTaskID);
 	private TapeRecallCatalog BROKEN_RECALL_CATALOG = getTapeRecallCatalogInsertError();
+
+    static {
+      System.setProperty(CONFIG_FILE_PATH, "storm.properties");
+    }
 
 	private TapeRecallCatalog getTapeRecallCatalogInsertSuccess(UUID groupTaskId) {
 

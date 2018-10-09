@@ -46,10 +46,10 @@ import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 
 public class Configuration {
 
-  static final String DEFAULT_STORM_CONFIG_FILE = "/etc/storm/backend-server/storm.properties";
-  static final String CONFIG_FILE_PATH = "storm.configuration.file";
-  static final String DEFAULT_STORM_CONFIG_REFRESH_RATE = "0";
-  static final String REFRESH_RATE = "storm.configuration.refresh";
+  public static final String DEFAULT_STORM_CONFIG_FILE = "/etc/storm/backend-server/storm.properties";
+  public static final String CONFIG_FILE_PATH = "storm.configuration.file";
+  public static final String DEFAULT_STORM_CONFIG_REFRESH_RATE = "0";
+  public static final String REFRESH_RATE = "storm.configuration.refresh";
 
   private static final Logger log = LoggerFactory.getLogger(Configuration.class);
 
