@@ -17,10 +17,8 @@
 
 package it.grid.storm.namespace.config;
 
-import it.grid.storm.config.Configuration;
 import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.ApproachableRule;
@@ -30,8 +28,9 @@ import it.grid.storm.namespace.util.userinfo.LocalGroups;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 
@@ -58,13 +57,13 @@ import org.slf4j.Logger;
 public class NamespaceCheck {
 
 	private final Logger log = NamespaceDirector.getLogger();
-	private final Hashtable<String, VirtualFSInterface> vfss;
-	private final Hashtable<String, MappingRule> maprules;
-	private final Hashtable<String, ApproachableRule> apprules;
+	private final Map<String, VirtualFSInterface> vfss;
+	private final Map<String, MappingRule> maprules;
+	private final Map<String, ApproachableRule> apprules;
 
-	public NamespaceCheck(Hashtable<String, VirtualFSInterface> vfss,
-		Hashtable<String, MappingRule> maprules,
-		Hashtable<String, ApproachableRule> apprules) {
+	public NamespaceCheck(Map<String, VirtualFSInterface> vfss,
+		Map<String, MappingRule> maprules,
+		Map<String, ApproachableRule> apprules) {
 
 		this.vfss = vfss;
 		this.maprules = maprules;
@@ -73,13 +72,11 @@ public class NamespaceCheck {
 
 	public boolean check() {
 
-		boolean totalResult = true;
 		boolean vfsCheck = checkVFS();
 		boolean mapRulesCheck = checkMapRules();
 		boolean appRules = checkAppRules();
-		boolean checkGroups = checkGroups(vfsCheck);
-		totalResult = vfsCheck && mapRulesCheck && appRules;
-		return totalResult;
+		checkGroups(vfsCheck);
+		return vfsCheck && mapRulesCheck && appRules;
 	}
 
 	private boolean checkGroups(boolean vfsCheckResult) {
@@ -92,7 +89,7 @@ public class NamespaceCheck {
 				.warn("Skip the check of the needed Local Group, because check of VFSs failed.");
 		} else {
 
-			ArrayList<VirtualFSInterface> vf = new ArrayList<VirtualFSInterface>(
+			ArrayList<VirtualFSInterface> vf = new ArrayList<>(
 				vfss.values());
 			for (VirtualFSInterface vfs : vf) {
 				
@@ -101,13 +98,12 @@ public class NamespaceCheck {
 				if (cap != null) {
 					DefaultACL defACL = cap.getDefaultACL();
 					if (defACL != null) {
-						ArrayList<ACLEntry> acl = new ArrayList<ACLEntry>(defACL.getACL());
+						ArrayList<ACLEntry> acl = new ArrayList<>(defACL.getACL());
 						if (!acl.isEmpty()) {
 							for (ACLEntry aclEntry : acl) {
 								if (!LocalGroups.getInstance().isGroupDefined(
 									aclEntry.getGroupName())) {
-									log.warn("!!!!! Local Group for ACL ('" + aclEntry
-										+ "') is not defined!");
+									log.warn("!!!!! Local Group for ACL ('{}') is not defined!", aclEntry);
 									result = false;
 								}
 							}
@@ -140,21 +136,19 @@ public class NamespaceCheck {
 			log.error("Anyone VFS is defined in namespace!");
 			return false;
 		} else {
-			ArrayList<VirtualFSInterface> rules = new ArrayList<VirtualFSInterface>(
-				vfss.values());
+			List<VirtualFSInterface> rules = new ArrayList<>(vfss.values());
 			Iterator<VirtualFSInterface> scan = rules.iterator();
 
 			while (scan.hasNext()) {
 				VirtualFSInterface vfs = scan.next();
 				
 					String aliasName = vfs.getAliasName();
-					log.debug("VFS named '" + aliasName + "' found.");
+					log.debug("VFS named '{}' found.", aliasName);
 					String root = vfs.getRootPath();
 					File file = new File(root);
 					boolean exists = file.exists();
 					if (!exists) {
-						log.error("ERROR in NAMESPACE: The VFS '" + aliasName
-							+ "' does not have a valid root :'" + root + "'");
+						log.error("ERROR in NAMESPACE: The VFS '{}' does not have a valid root :'{}'", aliasName, root);
 						result = false;
 					}
 			}
@@ -172,9 +166,8 @@ public class NamespaceCheck {
 			return false;
 		} else {
 			int nrOfMappingRules = maprules.size();
-			log.debug("Number of Mapping rules = " + nrOfMappingRules);
-			ArrayList<MappingRule> rules = new ArrayList<MappingRule>(
-				maprules.values());
+			log.debug("Number of Mapping rules = {}", nrOfMappingRules);
+			List<MappingRule> rules = new ArrayList<>(maprules.values());
 			Iterator<MappingRule> scan = rules.iterator();
 			MappingRule rule;
 			String mappedVFS;
@@ -182,11 +175,9 @@ public class NamespaceCheck {
 			while (scan.hasNext()) {
 				rule = scan.next();
 				mappedVFS = rule.getMappedFS().getAliasName();
-				// log.debug("Map rule "+rule.getRuleName()+" maps to VFS named = '"+mappedVFS+"'");
 				check = vfss.containsKey(mappedVFS);
 				if (!check) {
-					log.error("ERROR in NAMESPACE - MAP RULE '" + rule.getRuleName()
-						+ "' point a UNKNOWN VFS '" + mappedVFS + "'!");
+					log.error("ERROR in NAMESPACE - MAP RULE '{}' point a UNKNOWN VFS '{}'!", rule.getRuleName(), mappedVFS);
 					result = false;
 				}
 			}
@@ -202,20 +193,17 @@ public class NamespaceCheck {
 			return false;
 		} else {
 			int nrOfApproachableRules = apprules.size();
-			log.debug("Number of Approachable rules = " + nrOfApproachableRules);
-			ArrayList<ApproachableRule> rules = new ArrayList<ApproachableRule>(
-				apprules.values());
+			log.debug("Number of Approachable rules = {}", nrOfApproachableRules);
+			List<ApproachableRule> rules = new ArrayList<>(apprules.values());
 			Iterator<ApproachableRule> scan = rules.iterator();
 			boolean check = false;
 			while (scan.hasNext()) {
 				ApproachableRule rule = scan.next();
-				ArrayList<VirtualFSInterface> approachVFSs = new ArrayList<VirtualFSInterface>(
-					rule.getApproachableVFS());
+				List<VirtualFSInterface> approachVFSs = new ArrayList<>(rule.getApproachableVFS());
 				for (VirtualFSInterface aVfs : approachVFSs) {
 					check = vfss.containsKey(aVfs.getAliasName());
 					if (!check) {
-						log.error("ERROR in NAMESPACE - APP RULE '" + rule.getRuleName()
-							+ "' point a UNKNOWN VFS '" + aVfs + "'!");
+						log.error("ERROR in NAMESPACE - APP RULE '{}' point a UNKNOWN VFS '{}'!", rule.getRuleName(), aVfs);
 						result = false;
 					}
 				}

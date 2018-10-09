@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,12 +46,16 @@ import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 
 public class Configuration {
 
-  private static final Logger log = LoggerFactory
-    .getLogger(Configuration.class);
+  static final String DEFAULT_STORM_CONFIG_FILE = "/etc/storm/backend-server/storm.properties";
+  static final String CONFIG_FILE_PATH = "storm.configuration.file";
+  static final String DEFAULT_STORM_CONFIG_REFRESH_RATE = "0";
+  static final String REFRESH_RATE = "storm.configuration.refresh";
 
-  private ConfigReader cr = new ConfigReader(); // set an empty ConfigReader
+  private static final Logger log = LoggerFactory.getLogger(Configuration.class);
 
-  static Configuration instance = new Configuration();
+  private final ConfigReader cr;
+
+  private static Configuration instance;
 
   private static final String MANAGED_SURLS_KEY = "storm.service.SURL.endpoint";
   private static final String MANAGED_SURL_DEFAULT_PORTS_KEY = "storm.service.SURL.default-ports";
@@ -94,11 +99,9 @@ public class Configuration {
   private static final String BE_PERSISTENCE_DBMS_URL_2KEY = "" + DB_URL_2KEY;
   private static final String BE_PERSISTENCE_DB_NAME_KEY = "persistence.internal-db.db-name";
   private static final String BE_PERSISTENCEDB_USER_NAME_1KEY = "persistence.internal-db.username";
-  private static final String BE_PERSISTENCEDB_USER_NAME_2KEY = ""
-    + DB_USER_NAME_KEY;
+  private static final String BE_PERSISTENCEDB_USER_NAME_2KEY = "" + DB_USER_NAME_KEY;
   private static final String BE_PERSISTENCE_DB_PASSWORD_1KEY = "persistence.internal-db.passwd";
-  private static final String BE_PERSISTENCE_DB_PASSWORD_2KEY = ""
-    + DB_PASSWORD_KEY;
+  private static final String BE_PERSISTENCE_DB_PASSWORD_2KEY = "" + DB_PASSWORD_KEY;
   private static final String BE_PERSISTENCE_POOL_DB_KEY = "persistence.internal-db.connection-pool";
   private static final String BE_PERSISTENCE_POOL_DB_MAX_ACTIVE_KEY = "persistence.internal-db.connection-pool.maxActive";
   private static final String BE_PERSISTENCE_POOL_DB_MAX_WAIT_KEY = "persistence.internal-db.connection-pool.maxWait";
@@ -172,9 +175,28 @@ public class Configuration {
   private static final String XMLRPC_SECURITY_TOKEN_KEY = "synchcall.xmlrpc.security.token";
   private static final String PTG_SKIP_ACL_SETUP = "ptg.skip-acl-setup";
   private static final String HTTP_TURL_PREFIX = "http.turl_prefix";
+  private static final String NETWORKADDRESS_CACHE_TTL = "networkaddress.cache.ttl";
+  private static final String NETWORKADDRESS_CACHE_NEGATIVE_TTL = "networkaddress.cache.negative.ttl";
 
-  private Configuration() {
+  static {
+    try {
+      instance = new Configuration();
+    } catch (ConfigurationException e) {
+      log.error(e.getMessage(), e);
+      throw new ExceptionInInitializerError(e);
+    }
+  }
 
+  private Configuration() throws ConfigurationException {
+
+    String filePath = System.getProperty(CONFIG_FILE_PATH, DEFAULT_STORM_CONFIG_FILE);
+    String refreshRate = System.getProperty(REFRESH_RATE, DEFAULT_STORM_CONFIG_REFRESH_RATE);
+    try {
+      cr = new ConfigReader(filePath, Integer.parseInt(refreshRate));
+    } catch (NumberFormatException e) {
+      log.error(e.getMessage(), e);
+      throw new ConfigurationException(e.getMessage(), e);
+    }
   }
 
   /**
@@ -183,17 +205,6 @@ public class Configuration {
   public static Configuration getInstance() {
 
     return Configuration.instance;
-  }
-
-  /**
-   * Method used to set the config reader: if a null is supplied then a default
-   * empty ConfigReader is used instead.
-   */
-  public void setConfigReader(ConfigReader cr) {
-
-    if (cr != null) {
-      this.cr = cr;
-    }
   }
 
   /**
@@ -2244,14 +2255,7 @@ public class Configuration {
 
   public boolean getSanityCheckEnabled() {
 
-    if (!cr.getConfiguration().containsKey(SANITY_CHECK_ENABLED_KEY)) {
-      // return default
-      return true;
-    } else {
-      // load from external source
-      return new Boolean(cr.getConfiguration().getBoolean(
-        SANITY_CHECK_ENABLED_KEY));
-    }
+    return cr.getConfiguration().getBoolean(SANITY_CHECK_ENABLED_KEY, true);
   }
 
   public Boolean getXmlRpcTokenEnabled() {
@@ -2351,4 +2355,11 @@ public class Configuration {
     return cr.getConfiguration().getLong(EXPIRED_INPROGRESS_PTP_TIME_KEY, 2592000L);
   }
 
+  public int getNetworkAddressCacheTtl() {
+    return cr.getConfiguration().getInt(NETWORKADDRESS_CACHE_TTL, 0);
+  }
+
+  public int getNetworkAddressCacheNegativeTtl() {
+    return cr.getConfiguration().getInt(NETWORKADDRESS_CACHE_NEGATIVE_TTL, 0);
+  }
 }

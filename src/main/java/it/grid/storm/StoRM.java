@@ -18,6 +18,8 @@ package it.grid.storm;
 import static it.grid.storm.metrics.StormMetricRegistry.METRIC_REGISTRY;
 import static it.grid.storm.rest.RestService.startServer;
 import static it.grid.storm.rest.RestService.stop;
+import static java.lang.String.valueOf;
+import static java.security.Security.setProperty;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -34,11 +36,11 @@ import it.grid.storm.check.CheckManager;
 import it.grid.storm.check.CheckResponse;
 import it.grid.storm.check.CheckStatus;
 import it.grid.storm.check.SimpleCheckManager;
-import it.grid.storm.config.ConfigReader;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.health.HealthDirector;
 import it.grid.storm.metrics.StormMetricsReporter;
 import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
 import it.grid.storm.startup.Bootstrap;
 import it.grid.storm.startup.BootstrapException;
 import it.grid.storm.synchcall.SimpleSynchcallDispatcher;
@@ -60,9 +62,6 @@ public class StoRM {
   private XMLRPCHttpServer xmlrpcServer = null;
 
   private static final Logger log = LoggerFactory.getLogger(StoRM.class);
-
-  public static final String DEFAULT_CONFIGURATION_FILE_PATH =
-      "/etc/storm/backend-server/storm.properties";
 
   // Timer object in charge to call periodically the Space Garbage Collector
   private final Timer gc = new Timer();
@@ -92,11 +91,11 @@ public class StoRM {
    * fail! In any case, failure to read the configuration file causes StoRM to use hard-coded
    * default values.
    */
-  public StoRM(String configurationPathname, int refresh) {
-
-    loadConfiguration(configurationPathname, refresh);
+  public StoRM() {
 
     configureLogging();
+
+    configureSecurity();
 
     configureMetricsReporting();
 
@@ -123,24 +122,22 @@ public class StoRM {
 
   }
 
-  private void loadConfiguration(String configurationPathname, int refresh) {
-
-    if ((configurationPathname == null) || (configurationPathname.isEmpty())) {
-      configurationPathname = DEFAULT_CONFIGURATION_FILE_PATH;
-    }
-
-    log.info("Loading backend configuration from '{}'", configurationPathname);
-    log.info("Configuration refresh rate (in secs): {}", refresh);
-
-    Configuration.getInstance().setConfigReader(new ConfigReader(configurationPathname, refresh));
-
-  }
-
   private void configureLogging() {
 
     String configurationDir = Configuration.getInstance().configurationDir();
     String logFile = configurationDir + "logging.xml";
     Bootstrap.configureLogging(logFile);
+  }
+
+  private void configureSecurity() {
+
+    int cacheTtl = Configuration.getInstance().getNetworkAddressCacheTtl();
+    log.debug("Setting networkaddress.cache.ttl to {}", cacheTtl);
+    setProperty("networkaddress.cache.ttl", valueOf(cacheTtl));
+
+    int cacheNegativeTtl = Configuration.getInstance().getNetworkAddressCacheNegativeTtl();
+    log.debug("Setting networkaddress.cache.negative.ttl to {}", cacheNegativeTtl);
+    setProperty("networkaddress.cache.negative.ttl", valueOf(cacheNegativeTtl));
   }
 
   private void configureMetricsReporting() {
@@ -156,9 +153,7 @@ public class StoRM {
 
   private void loadNamespaceConfiguration() {
 
-    boolean verboseMode = false; // true generates verbose logging
-    boolean testingMode = false; // True if you wants testing namespace
-    NamespaceDirector.initializeDirector(verboseMode, testingMode);
+    NamespaceDirector.initializeDirector();
 
   }
 
@@ -230,6 +225,10 @@ public class StoRM {
    */
   public synchronized void startPicker() {
 
+    if (isPickerRunning) {
+      log.info("Picker is already running");
+      return;
+    }
     picker.startIt();
     isPickerRunning = true;
   }
@@ -239,6 +238,10 @@ public class StoRM {
    */
   public synchronized void stopPicker() {
 
+    if (!isPickerRunning) {
+      log.info("Picker is not running");
+      return;
+    }
     picker.stopIt();
     isPickerRunning = false;
   }
@@ -258,6 +261,10 @@ public class StoRM {
    */
   public synchronized void startXmlRpcServer() {
 
+    if (isXmlrpcServerRunning) {
+      log.info("XMLRPC server is already running");
+      return;
+    }
     xmlrpcServer.start();
     isXmlrpcServerRunning = true;
   }
@@ -266,6 +273,11 @@ public class StoRM {
    * Method used to stop xmlrpcServer.
    */
   public synchronized void stopXmlRpcServer() {
+
+    if (!isXmlrpcServerRunning) {
+      log.info("XMLRPC server is not running");
+      return;
+    }
 
     xmlrpcServer.stop();
     isXmlrpcServerRunning = false;
@@ -284,6 +296,11 @@ public class StoRM {
    */
   public synchronized void startRestServer() throws Exception {
 
+    if (isRestServerRunning) {
+      log.info("Rest Server is already running");
+      return;
+    }
+
     startServer();
     isRestServerRunning = true;
   }
@@ -293,17 +310,21 @@ public class StoRM {
    */
   public synchronized void stopRestServer() {
 
+    if (!isRestServerRunning) {
+      log.info("Rest Server is not running.");
+      return;
+    }
+
     try {
 
       stop();
+      isRestServerRunning = false;
 
     } catch (Exception e) {
 
-      log.error("Unable to stop internal HTTP Server listening for RESTFul " + "services: {}",
+      log.error("Unable to stop internal HTTP Server listening for RESTFul services: {}",
           e.getMessage(), e);
     }
-
-    isRestServerRunning = false;
   }
 
   /**
@@ -319,7 +340,12 @@ public class StoRM {
    */
   public synchronized void startSpaceGC() {
 
-    log.debug("Starting Space GC.");
+    if (isSpaceGCRunning) {
+      log.info("Space Garbage Collector is already running");
+      return;
+    }
+
+    log.info("Starting Space Garbage Collector ...");
     // Delay time before starting
     long delay = Configuration.getInstance().getCleaningInitialDelay() * 1000;
 
@@ -338,7 +364,7 @@ public class StoRM {
     };
     gc.scheduleAtFixedRate(cleaningTask, delay, period);
     isSpaceGCRunning = true;
-    log.debug("Space GC started.");
+    log.info("Space Garbage Collector started.");
   }
 
   /**
@@ -346,12 +372,17 @@ public class StoRM {
    */
   public synchronized void stopSpaceGC() {
 
-    log.debug("Stopping Space GC.");
+    if (!isSpaceGCRunning) {
+      log.info("Space Garbage Collector is not running.");
+      return;
+    }
+
+    log.info("Stopping Space Garbage Collector.");
     if (cleaningTask != null) {
       cleaningTask.cancel();
       gc.purge();
     }
-    log.debug("Space GC stopped.");
+    log.info("Space Garbage Collector stopped.");
     isSpaceGCRunning = false;
   }
 
@@ -373,6 +404,11 @@ public class StoRM {
    */
   public synchronized void startExpiredAgent() {
 
+    if (isExpiredAgentRunning) {
+      log.info("Expired Agent is already running.");
+      return;
+    }
+
     /* Delay time before starting cleaning thread! Set to 1 minute */
     final long delay = Configuration.getInstance().getTransitInitialDelay() * 1000L;
     /* Period of execution of cleaning! Set to 1 hour */
@@ -381,25 +417,56 @@ public class StoRM {
     final long inProgressExpirationTime =
         Configuration.getInstance().getInProgressPutRequestExpirationTime();
 
-    log.debug("Starting Expired Agent.");
+    log.info("Starting Expired Agent.");
     expiredAgent = new ExpiredPutRequestsAgent(inProgressExpirationTime);
     transiter.scheduleAtFixedRate(expiredAgent, delay, period);
     isExpiredAgentRunning = true;
-    log.debug("Expired Agent started.");
+    log.info("Expired Agent started.");
   }
 
   public synchronized void stopExpiredAgent() {
 
-    log.debug("Stopping Expired Agent.");
+    if (!isExpiredAgentRunning) {
+      log.info("Expired Agent is not running.");
+      return;
+    }
+
+    log.info("Stopping Expired Agent.");
     if (expiredAgent != null) {
       expiredAgent.cancel();
     }
-    log.debug("Expired Agent stopped.");
+    log.info("Expired Agent stopped.");
     isExpiredAgentRunning = false;
   }
 
   public synchronized boolean isExpiredAgentRunning() {
 
     return isExpiredAgentRunning;
+  }
+
+  public boolean startServices() {
+
+    try {
+      startPicker();
+      startXmlRpcServer();
+      startRestServer();
+      startSpaceGC();
+      startExpiredAgent();
+    } catch (Exception e) {
+      log.error(e.getMessage(), e);
+      return false;
+    }
+    return true;
+  }
+
+  public void stopServices() {
+
+    stopPicker();
+    stopXmlRpcServer();
+    stopRestServer();
+    stopSpaceGC();
+    stopExpiredAgent();
+
+    GPFSQuotaManager.INSTANCE.shutdown();
   }
 }

@@ -40,9 +40,6 @@ STORM_BE_USER=storm
 # options for the JVM running the StoRM BE server
 STORM_BE_JVM_OPTS='-server -Xms512m -Xmx512m'
 
-# port for the command server (FIXME: should read from conf. file)
-#export STORM_COMMAND_PORT=4444
-
 # LCMAPS config file
 #export LCMAPS_DB_FILE="$STORM_BE_CONFIGDIR/lcmaps.db"
 

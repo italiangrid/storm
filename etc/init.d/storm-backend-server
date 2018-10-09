@@ -105,24 +105,6 @@ do
   fi
 done
 
-# retrieve architecture BITs
-platform=`uname -m`
-case $platform in
-"i686")
-	ARCH=""
-	#echo "32-bit OS"
-	;;
-"x86_64")
-	ARCH="64"
-	#echo "64-bit OS"
-	;;
-*)
-	echo "Unknown platform"
-	# Don't install any packages
-	;;
-esac
-
-
 # some Java parameters
 if [ -z $JAVA_HOME ]; then
     if [ ! -z $JAVA_LOCATION ]; then
@@ -145,7 +127,7 @@ setenv_if_not_set STORM_BE_JAR "${STORM_BE_JARDIR}/${prog}.jar"
 
 
 #######################
-## make Java classpath without Native Lib
+## make Java classpath
 #######################
 
 classpath="${STORM_BE_JARDIR}/*"
@@ -153,8 +135,8 @@ classpath="${STORM_BE_JARDIR}/*"
 # log4j looks for its config file in the classpath...
 classpath="$classpath:$STORM_BE_CONFIGDIR"
 
-setenv_if_not_set STORM_BE_LIBDIR "/usr/lib$ARCH/"
-export LD_LIBRARY_PATH="/usr/lib$ARCH/modules":$STORM_BE_LIBDIR:$LD_LIBRARY_PATH
+setenv_if_not_set STORM_BE_LIBDIR "/usr/lib64/"
+export LD_LIBRARY_PATH="/usr/lib64/modules":$STORM_BE_LIBDIR:$LD_LIBRARY_PATH
 
 # LCMAPS config file
 setenv_if_not_set LCMAPS_DB_FILE "$STORM_BE_CONFIGDIR/lcmaps.db"
@@ -283,8 +265,8 @@ stop () {
 
 start () {
 
-  local system_opts="-Djava.library.path='$STORM_BE_LIBDIR' -Djna.library.path='$LD_LIBRARY_PATH' -Daxis.client.connect.timeout=30000 -Djava.protocol.handler.pkgs=org.globus.net.protocol -Dnetworkaddress.cache.negative.ttl=0 -Dnetworkaddress.cache.ttl=0 -Dstorm.log.dir='$STORM_BE_LOGDIR' -Dstorm.user='$STORM_BE_USER' -Dsun.net.client.defaultConnectTimeout=30000 -Dsun.net.client.defaultReadTimeout=30000"
-  local startcmd="nohup java ${STORM_BE_JVM_OPTS} -cp '$classpath' ${STORM_DEBUG_OPTION} ${STORM_JMX_OPTION} ${system_opts} it.grid.storm.Main '$STORM_BE_CONFIG_FILE' '$STORM_BE_CONFIG_REFRESH' 1>$STORM_BE_LOGDIR/storm-backend.stdout 2>$STORM_BE_LOGDIR/storm-backend.stderr &"
+  local system_opts="-Djava.library.path='$STORM_BE_LIBDIR' -Djna.library.path='$LD_LIBRARY_PATH' -Dstorm.configuration.file='$STORM_BE_CONFIG_FILE' -Dstorm.configuration.refresh='$STORM_BE_CONFIG_REFRESH'"
+  local startcmd="nohup java ${STORM_BE_JVM_OPTS} -cp '$classpath' ${STORM_DEBUG_OPTION} ${STORM_JMX_OPTION} ${system_opts} it.grid.storm.Main 1>$STORM_BE_LOGDIR/storm-backend.stdout 2>$STORM_BE_LOGDIR/storm-backend.stderr &"
   echo -n $"Starting ${prog}: "
 
   _current_status
