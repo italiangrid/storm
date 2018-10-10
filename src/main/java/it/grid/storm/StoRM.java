@@ -226,7 +226,7 @@ public class StoRM {
   public synchronized void startPicker() {
 
     if (isPickerRunning) {
-      log.info("Picker is already running");
+      log.debug("Picker is already running");
       return;
     }
     picker.startIt();
@@ -239,7 +239,7 @@ public class StoRM {
   public synchronized void stopPicker() {
 
     if (!isPickerRunning) {
-      log.info("Picker is not running");
+      log.debug("Picker is not running");
       return;
     }
     picker.stopIt();
@@ -262,7 +262,7 @@ public class StoRM {
   public synchronized void startXmlRpcServer() {
 
     if (isXmlrpcServerRunning) {
-      log.info("XMLRPC server is already running");
+      log.debug("XMLRPC server is already running");
       return;
     }
     xmlrpcServer.start();
@@ -275,7 +275,7 @@ public class StoRM {
   public synchronized void stopXmlRpcServer() {
 
     if (!isXmlrpcServerRunning) {
-      log.info("XMLRPC server is not running");
+      log.debug("XMLRPC server is not running");
       return;
     }
 
@@ -297,7 +297,7 @@ public class StoRM {
   public synchronized void startRestServer() throws Exception {
 
     if (isRestServerRunning) {
-      log.info("Rest Server is already running");
+      log.debug("Rest Server is already running");
       return;
     }
 
@@ -311,7 +311,7 @@ public class StoRM {
   public synchronized void stopRestServer() {
 
     if (!isRestServerRunning) {
-      log.info("Rest Server is not running.");
+      log.debug("Rest Server is not running.");
       return;
     }
 
@@ -341,11 +341,11 @@ public class StoRM {
   public synchronized void startSpaceGC() {
 
     if (isSpaceGCRunning) {
-      log.info("Space Garbage Collector is already running");
+      log.debug("Space Garbage Collector is already running");
       return;
     }
 
-    log.info("Starting Space Garbage Collector ...");
+    log.debug("Starting Space Garbage Collector ...");
     // Delay time before starting
     long delay = Configuration.getInstance().getCleaningInitialDelay() * 1000;
 
@@ -364,7 +364,7 @@ public class StoRM {
     };
     gc.scheduleAtFixedRate(cleaningTask, delay, period);
     isSpaceGCRunning = true;
-    log.info("Space Garbage Collector started.");
+    log.debug("Space Garbage Collector started.");
   }
 
   /**
@@ -373,16 +373,16 @@ public class StoRM {
   public synchronized void stopSpaceGC() {
 
     if (!isSpaceGCRunning) {
-      log.info("Space Garbage Collector is not running.");
+      log.debug("Space Garbage Collector is not running.");
       return;
     }
 
-    log.info("Stopping Space Garbage Collector.");
+    log.debug("Stopping Space Garbage Collector.");
     if (cleaningTask != null) {
       cleaningTask.cancel();
       gc.purge();
     }
-    log.info("Space Garbage Collector stopped.");
+    log.debug("Space Garbage Collector stopped.");
     isSpaceGCRunning = false;
   }
 
@@ -405,7 +405,7 @@ public class StoRM {
   public synchronized void startExpiredAgent() {
 
     if (isExpiredAgentRunning) {
-      log.info("Expired Agent is already running.");
+      log.debug("Expired Agent is already running.");
       return;
     }
 
@@ -417,25 +417,25 @@ public class StoRM {
     final long inProgressExpirationTime =
         Configuration.getInstance().getInProgressPutRequestExpirationTime();
 
-    log.info("Starting Expired Agent.");
+    log.debug("Starting Expired Agent.");
     expiredAgent = new ExpiredPutRequestsAgent(inProgressExpirationTime);
     transiter.scheduleAtFixedRate(expiredAgent, delay, period);
     isExpiredAgentRunning = true;
-    log.info("Expired Agent started.");
+    log.debug("Expired Agent started.");
   }
 
   public synchronized void stopExpiredAgent() {
 
     if (!isExpiredAgentRunning) {
-      log.info("Expired Agent is not running.");
+      log.debug("Expired Agent is not running.");
       return;
     }
 
-    log.info("Stopping Expired Agent.");
+    log.debug("Stopping Expired Agent.");
     if (expiredAgent != null) {
       expiredAgent.cancel();
     }
-    log.info("Expired Agent stopped.");
+    log.debug("Expired Agent stopped.");
     isExpiredAgentRunning = false;
   }
 
