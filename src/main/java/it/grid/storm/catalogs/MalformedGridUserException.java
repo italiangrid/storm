@@ -18,8 +18,8 @@
 package it.grid.storm.catalogs;
 
 /**
- * This class represents an Exception thrown when the RequestSummaryCatalog
- * cannot create a VomsGridUser with the available data.
+ * This class represents an Exception thrown when the RequestSummaryCatalog cannot create a
+ * VomsGridUser with the available data.
  * 
  * @author EGRID - ICTP Trieste
  * @date June, 2005
@@ -27,10 +27,9 @@ package it.grid.storm.catalogs;
  */
 public class MalformedGridUserException extends Exception {
 
-	private static final long serialVersionUID = 5607710323595609428L;
+  private static final long serialVersionUID = 5607710323595609428L;
 
-	public String toString() {
-
-		return "MalformedGridUserException";
-	}
+  public MalformedGridUserException(String message) {
+    super(message);
+  }
 }

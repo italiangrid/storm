@@ -82,16 +82,10 @@ public class Configuration {
   private static final String PICKING_INITIAL_DELAY_KEY = "asynch.PickingInitialDelay";
   private static final String PICKING_TIME_INTERVAL_KEY = "asynch.PickingTimeInterval";
   private static final String PICKING_MAX_BATCH_SIZE_KEY = "asynch.PickingMaxBatchSize";
-  private static final String SRMCLIENT_PUT_TOTAL_RETRY_TIME_KEY = "asynch.srmclient.retrytime";
-  private static final String SRMCLIENT_PUT_TIME_OUT_KEY = "asynch.srmclient.timeout";
-  private static final String SRMCLIENT_PUT_SLEEP_TIME_KEY = "asynch.srmclient.sleeptime";
-  private static final String SRMCLIENT_PUT_DONE_SLEEP_TIME_KEY = "asynch.srmclient.putdone.sleeptime";
-  private static final String SRMCLIENT_PUT_DONE_TIME_OUT_KEY = "asynch.srmclient.putdone.timeout";
   private static final String XMLRPC_MAX_THREAD_KEY = "synchcall.xmlrpc.maxthread";
   private static final String XMLRPC_MAX_QUEUE_SIZE_KEY = "synchcall.xmlrpc.max_queue_size";
   private static final String LIST_OF_DEFAULT_SPACE_TOKEN_KEY = "storm.service.defaultSpaceTokens";
   private static final String GRIDFTP_TRANSFER_CLIENT_KEY = "asynch.gridftpclient";
-  private static final String SRMCLIENT_KEY = "asynch.srmclient";
   private static final String COMMAND_SERVER_BINDING_PORT_KEY = "storm.commandserver.port";
   private static final String SERIAL_SCHEDULER_KEY = "scheduler.serial";
   private static final String BE_PERSISTENCE_DB_VENDOR_KEY = "persistence.internal-db.dbms-vendor";
@@ -131,7 +125,6 @@ public class Configuration {
   private static final String NAMESPACE_AUTOMATIC_RELOADING_KEY = "namespace.automatic-config-reload";
   private static final String GRIDFTP_TIME_OUT_KEY = "asynch.srmcopy.gridftp.timeout";
   private static final String SRM22CLIENT_PIN_LIFE_TIME_KEY = "SRM22Client.PinLifeTime";
-  private static final String PROXY_HOME_KEY = "proxy.home";
   private static final String AUTOMATIC_DIRECTORY_CREATION_KEY = "directory.automatic-creation";
   private static final String DEFAULT_OVERWRITE_MODE_KEY = "default.overwrite";
   private static final String DEFAULT_FILE_STORAGE_TYPE_KEY = "default.storagetype";
@@ -688,104 +681,6 @@ public class Configuration {
   }
 
   /**
-   * Method used by CopyChunk when making a remote srmPrepareToPut (Push Mode).
-   * It needs it to estalish the totalRetryTime in seconds to supply to the
-   * internal SRMClient. The parameter is passed to the prepareToPut
-   * functionality. If no value is found in the configuration medium, then the
-   * default value is returned instead. key="asynch.srmclient.retrytime";
-   * default value=60;
-   */
-  public long getSRMClientPutTotalRetryTime() {
-
-    if (!cr.getConfiguration().containsKey(SRMCLIENT_PUT_TOTAL_RETRY_TIME_KEY)) {
-      // return default
-      return 60;
-    } else {
-      // load from external source
-      return cr.getConfiguration().getLong(SRMCLIENT_PUT_TOTAL_RETRY_TIME_KEY);
-    }
-  }
-
-  /**
-   * Method used by CopyChunk when making a remote srmPrepareToPut (Push Mode).
-   * The CopyChunk will periodically invoke the statusOfPutRequest functionality
-   * of the internal SRMClient, for at most the time out interval in seconds
-   * returned by this method. If no value is found in the configuration medium,
-   * then the default value is returned instead. key="asynch.srmclient.timeout";
-   * default value=180;
-   */
-  public long getSRMClientPutTimeOut() {
-
-    if (!cr.getConfiguration().containsKey(SRMCLIENT_PUT_TIME_OUT_KEY)) {
-      // return default
-      return 180;
-    } else {
-      // load from external source
-      return cr.getConfiguration().getLong(SRMCLIENT_PUT_TIME_OUT_KEY);
-    }
-  }
-
-  /**
-   * Method used by CopyChunk when making a remote srmPrepareToPut (Push Mode).
-   * The CopyChunk will wait the amount of time in seconds returned by this
-   * method, before invoking again the statusOfPutRequest functionality of the
-   * internal SRMClient. That is, it tells the polling interval. If no value is
-   * found in the configuration medium, then the default value is returned
-   * instead. key="asynch.srmclient.sleeptime"; default value=5;
-   */
-  public long getSRMClientPutSleepTime() {
-
-    if (!cr.getConfiguration().containsKey(SRMCLIENT_PUT_SLEEP_TIME_KEY)) {
-      // return default
-      return 5;
-    } else {
-      // load from external source
-      return cr.getConfiguration().getLong(SRMCLIENT_PUT_SLEEP_TIME_KEY);
-    }
-  }
-
-  /**
-   * Method used by CopyChunk when making the FileTransfer and finally invoking
-   * a remote srmPutDone. The CopyChunk will wait the amount of time in seconds
-   * returned by this method, before invoking again the srmPutDone functionality
-   * of the internal SRMClient. That is, it tells the time interval between
-   * successive invocations: they are necessary when the returned status is
-   * SRM_INTERNAL_ERROR which denotes a transient error situation. If no value
-   * is found in the configuration medium, then the default value is returned
-   * instead. key="asynch.srmclient.putdone.sleeptime"; default value=2;
-   */
-  public long getSRMClientPutDoneSleepTime() {
-
-    if (!cr.getConfiguration().containsKey(SRMCLIENT_PUT_DONE_SLEEP_TIME_KEY)) {
-      // return default
-      return 1;
-    } else {
-      // load from external source
-      return cr.getConfiguration().getLong(SRMCLIENT_PUT_DONE_SLEEP_TIME_KEY);
-    }
-  }
-
-  /**
-   * Method used by CopyChunk when making the FileTransfer and finally invoking
-   * a remote srmPutDone. The CopyChunk may have to periodically invoke
-   * srmPutDone functionality of the internal SRMClient if the web service
-   * returns SRM_INTERNAL_ERROR; in that case invocations will be attempted for
-   * at most the time out interval in seconds returned by this method. If no
-   * value is found in the configuration medium, then the default value is
-   * returned instead. key="asynch.srmclient.putdone.timeout"; default value=60;
-   */
-  public long getSRMClientPutDoneTimeOut() {
-
-    if (!cr.getConfiguration().containsKey(SRMCLIENT_PUT_DONE_TIME_OUT_KEY)) {
-      // return default
-      return 60;
-    } else {
-      // load from external source
-      return cr.getConfiguration().getLong(SRMCLIENT_PUT_DONE_TIME_OUT_KEY);
-    }
-  }
-
-  /**
    * Get max number of xmlrpc threads into for the XMLRPC server.
    */
   public int getXMLRPCMaxThread() {
@@ -847,25 +742,6 @@ public class Configuration {
     } else {
       // load from external source
       return cr.getConfiguration().getString(GRIDFTP_TRANSFER_CLIENT_KEY);
-    }
-  }
-
-  /**
-   * Method used by Factory invoked in CopyChunk subclasses, to instantiate an
-   * SRMClient. The String returned specifies the name of the class to
-   * instantiate; for now, there are two classes: NaiveSRMClient and
-   * StubSRMClient. If no value is found in the configuration medium, then the
-   * default value is returned instead. key="asynch.srmclient"; default
-   * value="it.grid.storm.asynch.SRM22Client";
-   */
-  public String getSRMClient() {
-
-    if (!cr.getConfiguration().containsKey(SRMCLIENT_KEY)) {
-      // return default
-      return "it.grid.storm.asynch.SRM22Client";
-    } else {
-      // load from external source
-      return cr.getConfiguration().getString(SRMCLIENT_KEY);
     }
   }
 
@@ -1634,23 +1510,6 @@ public class Configuration {
     } else {
       // load from external source
       return cr.getConfiguration().getInt(SRM22CLIENT_PIN_LIFE_TIME_KEY);
-    }
-  }
-
-  /**
-   * Method used by RequestCredentialsDAO to establish the directory that holds
-   * the proxy file. If no value is found in the configuration medium, then the
-   * default one is used instead. key="proxy.home"; default
-   * value="/opt/storm/var/proxies"
-   */
-  public String getProxyHome() {
-
-    if (!cr.getConfiguration().containsKey(PROXY_HOME_KEY)) {
-      // return default
-      return "/opt/storm/var/proxies";
-    } else {
-      // load from external source
-      return cr.getConfiguration().getString(PROXY_HOME_KEY);
     }
   }
 

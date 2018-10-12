@@ -31,12 +31,6 @@ import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -169,8 +163,7 @@ public class RequestSummaryCatalog {
 		GridUserInterface auxgu;
 
 		try {
-			auxgu = loadVomsGridUser(to.clientDN(), to.vomsAttributes(),
-				to.requestToken());
+			auxgu = loadVomsGridUser(to.clientDN(), to.vomsAttributes());
 		} catch (MalformedGridUserException e) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("VomsGridUser could not be created from DN String ");
@@ -233,122 +226,29 @@ public class RequestSummaryCatalog {
 	 * persistence and to load any available Proxy. For the moment the VOMS
 	 * attributes present in persistence are NOT loaded!
 	 */
-	// private VomsGridUser loadVomsGridUser(String dn, String rtoken) throws
-	// MalformedGridUserException {
-	private GridUserInterface loadVomsGridUser(String dn, String fqans_string,
-		String rtoken) throws MalformedGridUserException {
+	private GridUserInterface loadVomsGridUser(String dn, String fqansString) throws MalformedGridUserException {
 
-		log.debug("REQUEST SUMMARY CATALOG! Received request to create VomsGridUser "
-			+ "for {} {}", dn, rtoken);
-		// set up proxy from file, if it exists!
-		String proxyString = null;
-		FQAN[] fqans_vector = null;
+		log.debug("load VomsGridUser for dn='{}' and fqansString='{}'", dn, fqansString);
+
+		if (dn == null) {
+		    throw new MalformedGridUserException("Invalid null DN");
+		}
+		if (fqansString == null || fqansString.isEmpty()) {
+		  return GridUserManager.makeGridUser(dn);
+		}
+
+		FQAN[] fqans = new FQAN[fqansString.split("#").length];
+		int i = 0;
+		for (String fqan: fqansString.split("#")) {
+		  fqans[i++] = new FQAN(fqan);
+		}
 		try {
-			File proxyFile = new File(config.getProxyHome()
-				+ File.separator + rtoken);
-			if (proxyFile.exists()) {
-				ByteArrayOutputStream out;
-				InputStream in;
-				int c;
-				out = new ByteArrayOutputStream();
-				in = new FileInputStream(proxyFile);
-				while ((c = in.read()) != -1) {
-					out.write(c);
-				}
-				in.close();
-				out.close();
-				proxyString = new String(out.toByteArray());
-				log.debug("REQUEST SUMMARY CATALOG: Loaded proxy file {} for "
-					+ "request {}", proxyFile.getAbsolutePath(), rtoken);
-				log.debug("REQUEST SUMMARY CATALOG: proxy content is {}", proxyString);
-			} else {
-				log.debug("REQUEST SUMMARY CATALOG: No proxy file {} found for request", 
-					proxyFile.getAbsolutePath(), rtoken);
-			}
-		} catch (FileNotFoundException e) {
-			// This should not happen given the existence test just performed!
-			log.error("REQUEST SUMMARY CATALOG! The file containing the proxy was "
-				+ "deleted just before reading its content! No proxy has been loaded!", e);
-		} catch (IOException e) {
-			// Some generic IO error occured!
-			log.error("REQUEST SUMMARY CATALOG! The file containing the proxy could "
-				+ "not be read! No proxy has been loaded! {}", e.getMessage(), e);
-		} catch (Exception e) {
-			// An unexpected error occured: I am including this generic catch
-			// because the underlaying filesystem has ACLs, and I do not know
-			// how exactly Java behaves!
-			log.error("REQUEST SUMMARY CATALOG! There was an unexpected error while "
-				+ "attempting to read the file containing the proxy! No proxy has been "
-				+ "loaded!");
-			log.error(e.getMessage(), e);
+			return GridUserManager.makeVOMSGridUser(dn, fqans);
+		} catch (IllegalArgumentException e) {
+			log.error("Unexpected error on voms grid user creation. "
+				+ "IllegalArgumentException: {}", e.getMessage(), e);
+			throw new MalformedGridUserException(e.getMessage());
 		}
-
-		/**
-		 * This code is only for the 1.3.18. This is a workaround to get FQANs using
-		 * the proxy field on request_queue. From the DB is retrieved a single FQAN
-		 * string containing all FQAN separeted by the "#" char.
-		 */
-
-		if (fqans_string != "") {
-			String[] fqans_string_array = fqans_string.split("#");
-			if (fqans_string_array.length != 0) {
-				fqans_vector = new FQAN[fqans_string_array.length];
-				for (int i = 0; i < fqans_string_array.length; i++) {
-					fqans_vector[i] = new FQAN(fqans_string_array[i]);
-				}
-			}
-		} else {
-			// Set FQAN string to null
-			fqans_string = null;
-		}
-
-		log.debug("REQUEST SUMMARY CATALOG! Received request to create VomsGridUser "
-			+ "for {} {} {}", dn, fqans_string, proxyString);
-		if ((dn != null) && (fqans_vector != null) && (fqans_vector.length > 0)
-			&& (proxyString != null)) {
-			// all credentials available!
-			log.debug("REQUEST SUMMARY CATALOG! DN, VOMS Attributes, and Proxy "
-				+ "certificate found for request {}", rtoken);
-			GridUserInterface gridUser = null;
-			try {
-				gridUser = GridUserManager.makeVOMSGridUser(dn, proxyString,
-					fqans_vector);
-			} catch (IllegalArgumentException e) {
-				log.error("Unexpected error on voms grid user creation. "
-					+ "IllegalArgumentException: {}", e.getMessage(), e);
-			}
-			return gridUser;
-		} else if ((dn != null)
-			&& (fqans_vector != null && fqans_vector.length > 0)
-			&& (proxyString == null)) {
-			// voms credentials without proxy
-			log.debug("REQUEST SUMMARY CATALOG! DN and VOMS Attributes found for "
-				+ "request {}", rtoken);
-			GridUserInterface gridUser = null;
-			try {
-				gridUser = GridUserManager.makeVOMSGridUser(dn, fqans_vector);
-			} catch (IllegalArgumentException e) {
-				log.error("Unexpected error on voms grid user creation. "
-					+ "IllegalArgumentException: {}", e.getMessage(), e);
-			}
-			return gridUser;
-		} else if ((dn != null) && (fqans_string == null) && (proxyString != null)) {
-			// NON-voms credentials with proxy
-			log.debug("REQUEST SUMMARY CATALOG! DN and Proxy found for request {}", rtoken);
-			return GridUserManager.makeGridUser(dn, proxyString);
-		} else if ((dn != null) && (fqans_string == null) && (proxyString == null)) {
-			// NON-voms credentials without proxy
-			log.debug("REQUEST SUMMARY CATALOG! DN only found for request {}", rtoken);
-			return GridUserManager.makeGridUser(dn);
-		} else {
-			// unmanageble combination!
-			log.warn("REQUEST SUMMARY CATALOG! Catalog retrieved invalid credentials "
-				+ "data for request {}", rtoken);
-			log.warn("REQUEST SUMMARY CATALOG! proxy={}\n dn={}\n attributes={}", 
-				proxyString, dn, fqans_string);
-			throw new MalformedGridUserException();
-		}
-
 	}
 
 	/**
