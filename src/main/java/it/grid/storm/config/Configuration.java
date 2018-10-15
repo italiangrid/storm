@@ -156,7 +156,6 @@ public class Configuration {
   private static final String RETRY_VALUE_KEY_KEY = "tape.recalltable.service.param.retry-value";
   private static final String STATUS_KEY_KEY = "tape.recalltable.service.param.status";
   private static final String TASKOVER_KEY_KEY = "tape.recalltable.service.param.takeover";
-  private static final String GRIDHTTPS_ENABLED_KEY = "gridhttps.enabled";
   private static final String STORM_PROPERTIES_VERSION_KEY = "storm.properties.version";
   private static final String TAPE_SUPPORT_ENABLED_KEY = "tape.support.enabled";
   private static final String SYNCHRONOUS_QUOTA_CHECK_ENABLED_KEY = "info.quota-check.enabled";
@@ -2005,22 +2004,6 @@ public class Configuration {
     } else {
       // load from external source
       return cr.getConfiguration().getString(TASKOVER_KEY_KEY);
-    }
-  }
-
-  /**
-   * This is the FLAG to support or not the http(s) protocol. Default is false.
-   * 
-   * @return
-   */
-  public boolean getGridhttpsEnabled() {
-
-    if (!cr.getConfiguration().containsKey(GRIDHTTPS_ENABLED_KEY)) {
-      // return default
-      return false;
-    } else {
-      // load from external source
-      return cr.getConfiguration().getBoolean(GRIDHTTPS_ENABLED_KEY);
     }
   }
 
