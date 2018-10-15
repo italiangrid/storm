@@ -116,7 +116,6 @@ fi
   
 JAVA=$JAVA_HOME/bin/java
 
-# LCMAPS modules library
 setenv_if_not_set STORM_BE_CONFIG_FILE "/etc/storm/backend-server/storm.properties"
 setenv_if_not_set STORM_BE_CONFIG_REFRESH 0
 setenv_if_not_set STORM_BE_CONFIGDIR "`dirname $STORM_BE_CONFIG_FILE`"
@@ -124,14 +123,20 @@ setenv_if_not_set STORM_BE_LOGDIR "/var/log/storm"
 setenv_if_not_set STORM_BE_USER "storm"
 setenv_if_not_set STORM_BE_JARDIR "/usr/share/java/${prog}"
 setenv_if_not_set STORM_BE_JAR "${STORM_BE_JARDIR}/${prog}.jar"
+setenv_if_not_set STORM_BE_SUSPEND "n"
+setenv_if_not_set STORM_BE_DEBUG_PORT "1044"
+setenv_if_not_set STORM_BE_JVM_OPTS "-server -Xms512m -Xmx512m"
 
+if [ ! -z "${STORM_BE_DEBUG}" ]; then
+  setenv_if_not_set STORM_BE_DEBUG_OPTS "-Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=${STORM_BE_DEBUG_PORT},suspend=${STORM_BE_SUSPEND}"
+fi
 
-#######################
-## make Java classpath
-#######################
+if [ ! -z "${STORM_BE_JMX}" ]; then
+  setenv_if_not_set STORM_BE_JMX_OPTS "-Dcom.sun.management.jmxremote.port=8501 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false";
+fi
 
+# Java classpath
 classpath="${STORM_BE_JARDIR}/*"
-
 # log4j looks for its config file in the classpath...
 classpath="$classpath:$STORM_BE_CONFIGDIR"
 
@@ -265,8 +270,9 @@ stop () {
 
 start () {
 
+  local jvm_options="${STORM_BE_JVM_OPTS} ${STORM_BE_DEBUG_OPTS} ${STORM_BE_JMX_OPTS}"
   local system_opts="-Djava.library.path='$STORM_BE_LIBDIR' -Djna.library.path='$LD_LIBRARY_PATH' -Dstorm.configuration.file='$STORM_BE_CONFIG_FILE' -Dstorm.configuration.refresh='$STORM_BE_CONFIG_REFRESH'"
-  local startcmd="nohup java ${STORM_BE_JVM_OPTS} -cp '$classpath' ${STORM_DEBUG_OPTION} ${STORM_JMX_OPTION} ${system_opts} it.grid.storm.Main 1>$STORM_BE_LOGDIR/storm-backend.stdout 2>$STORM_BE_LOGDIR/storm-backend.stderr &"
+  local startcmd="nohup java ${jvm_options} -cp '$classpath' ${system_opts} it.grid.storm.Main 1>$STORM_BE_LOGDIR/storm-backend.stdout 2>$STORM_BE_LOGDIR/storm-backend.stderr &"
   echo -n $"Starting ${prog}: "
 
   _current_status
