@@ -76,16 +76,6 @@ storm.service.request-db.host =
 storm.service.request-db.username =   
 storm.service.request-db.passwd =  
 
-
-# ===========================
-# Gridhttps plugin parameters
-# ===========================
-
-# If the GridHTTPS is enabled StoRM provides access to files via http and https protocol
-gridhttps.enabled=false
-#The complete classname of the class implementing the http(s) plugin interface 
-gridhttps.plugin.classname=it.grid.storm.httpsHTTPSPluginInterfaceStub
-
 #############################################
 ############  PROFILE PARAMETERS ############
 #############################################
