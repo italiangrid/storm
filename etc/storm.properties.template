@@ -195,8 +195,8 @@ synchcall.directoryManager.maxLsEntry=2000
 # REST Services parameter
 # ============================
 storm.rest.services.port=
-storm.rest.services.maxthreads=
-storm.rest.services.max_queue_size=
+storm.rest.services.maxthreads=100
+storm.rest.services.max_queue_size=1000
 
 # ============================
 # XMLRPC Server parameter
