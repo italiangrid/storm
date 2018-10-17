@@ -89,8 +89,7 @@ public class NamespaceCheck {
 				.warn("Skip the check of the needed Local Group, because check of VFSs failed.");
 		} else {
 
-			ArrayList<VirtualFSInterface> vf = new ArrayList<>(
-				vfss.values());
+			List<VirtualFSInterface> vf = new ArrayList<>(vfss.values());
 			for (VirtualFSInterface vfs : vf) {
 				
 				// Check the presence of Default ACL
@@ -98,7 +97,7 @@ public class NamespaceCheck {
 				if (cap != null) {
 					DefaultACL defACL = cap.getDefaultACL();
 					if (defACL != null) {
-						ArrayList<ACLEntry> acl = new ArrayList<>(defACL.getACL());
+						List<ACLEntry> acl = new ArrayList<>(defACL.getACL());
 						if (!acl.isEmpty()) {
 							for (ACLEntry aclEntry : acl) {
 								if (!LocalGroups.getInstance().isGroupDefined(
@@ -141,7 +140,7 @@ public class NamespaceCheck {
 
 			while (scan.hasNext()) {
 				VirtualFSInterface vfs = scan.next();
-				
+
 					String aliasName = vfs.getAliasName();
 					log.debug("VFS named '{}' found.", aliasName);
 					String root = vfs.getRootPath();
