@@ -3,36 +3,34 @@ layout: default
 title: StoRM releases
 ---
 
-# StoRM releases
+## StoRM
 
-The current release is [StoRM v.{{site.latest_release}}][latest_release_notes].
+{% include download/current-release.html %}
+
+### Components
 
 {% include download/components-list.html %}
 
-Information about previous releases can be found [here](releases.html) or on the [EMI website](http://www.eu-emi.eu).
+### Repositories <a name="stable-releases">&nbsp;</a>
 
-### Stable releases <a name="stable-releases">&nbsp;</a>
+{% include download/repositories.html %}
 
 Latest StoRM packages released can be found in the [StoRM stable SL6 repository][stable-repoview].
 
 To install StoRM stable repository:
 
-- clean all old StoRM repository files:
-
 ```
-rm -rf /etc/yum.repos.d/storm_*.repo
+wget -q https://repo.cloud.cnaf.infn.it/repository/storm/stable/storm-stable-centos6.repo -O /etc/yum.repos.d/storm-stable-centos6.repo
 ```
 
-- download stable repository [.repo][stable-repo-file] file:
-
-```
-wget https://repo.cloud.cnaf.infn.it/repository/storm/stable/storm-stable-centos6.repo -O /etc/yum.repos.d/storm-stable-centos6.repo
-```
-
-Note that you should also have UMD repositories installed for your setup 
+Note that you should also have UMD repositories installed for your setup
 to work as expected.
 
 Read and follow [UMD repositories installation instructions][umd-install-guide].
+
+**Important**: Don't forget to install/overwrite this repository if you are
+upgrading from a version earlier than v1.11.14. The main StoRM repository has
+been recently migrated.
 
 ---
 
@@ -51,7 +49,7 @@ wget https://repo.cloud.cnaf.infn.it/repository/storm/beta/storm-beta-centos6.re
 ### Nightly builds
 
 Development packages are built regularly on our continuous integration infrastructure.
-The nigthly built packages can be found in the [StoRM nightly SL6 repository][nightly-repoview].
+The nightly built packages can be found in the [StoRM nightly SL6 repository][nightly-repoview].
 
 Download nightly repository [.repo][nightly-repo-file] file as follow:
 
@@ -76,8 +74,6 @@ The StoRM source is available on [Github](https://github.com) in the following r
 - [StoRM GridFTP](https://github.com/italiangrid/storm-gridftp-dsi)
 - [CDMI StoRM](https://github.com/italiangrid/cdmi-storm)
 
-
-[latest_release_notes]: {{site.baseurl}}{{site.releasenotes_path}}/StoRM-v{{site.latest_release}}.html
 
 [stable-repo]: https://repo.cloud.cnaf.infn.it/#browse/browse:storm:stable
 [stable-repoview]: https://repo.cloud.cnaf.infn.it/repository/storm/stable/el6/x86_64/repoview/index.html

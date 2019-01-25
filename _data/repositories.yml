@@ -1,0 +1,15 @@
+stable:
+  name: "Stable"
+  description: "The repository of the released versions."
+  url: https://repo.cloud.cnaf.infn.it/repository/storm/stable/el6/x86_64/repoview/index.html
+  repofile: https://repo.cloud.cnaf.infn.it/repository/storm/stable/storm-stable-centos6.repo
+beta:
+  name: "Beta"
+  description: "The repository of the pre-released versions."
+  url: https://repo.cloud.cnaf.infn.it/repository/storm/beta/el6/x86_64/repoview/index.html
+  repofile: https://repo.cloud.cnaf.infn.it/repository/storm/beta/storm-beta-centos6.repo
+nightly:
+  name: "Nightly"
+  description: "The repository of the latest pre-released components built every night."
+  url: https://repo.cloud.cnaf.infn.it/repository/storm/nightly/el6/x86_64/repoview/index.html
+  repofile: https://repo.cloud.cnaf.infn.it/repository/storm/nightly/storm-nightly-centos6.repo
