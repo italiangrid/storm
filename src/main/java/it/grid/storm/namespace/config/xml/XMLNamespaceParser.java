@@ -56,16 +56,13 @@ import it.grid.storm.util.GPFSSizeHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -99,9 +96,9 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 	private final Logger log = NamespaceDirector.getLogger();
 
 	private String version;
-	private Hashtable<String, VirtualFSInterface> vfss;
-	private Hashtable<String, MappingRule> maprules;
-	private Hashtable<String, ApproachableRule> apprules;
+	private Map<String, VirtualFSInterface> vfss;
+	private Map<String, MappingRule> maprules;
+	private Map<String, ApproachableRule> apprules;
 
 	private XMLParserUtil parserUtil;
 	private final XMLConfiguration configuration;
@@ -109,18 +106,13 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 
 	private final Lock refreshing = new ReentrantLock();
 
-	// For debug purpose only
-	private final boolean internalLog;
-	private final boolean testingMode;
-
 	/**
 	 * Constructor
 	 * 
 	 * @param loader
 	 *          NamespaceLoader
 	 */
-	public XMLNamespaceParser(NamespaceLoader loader, boolean verboseLogging,
-		boolean testingMode) {
+	public XMLNamespaceParser(NamespaceLoader loader) {
 
 		configuration = (XMLConfiguration) loader.getConfiguration();
 		if (loader instanceof XMLNamespaceLoader) {
@@ -129,25 +121,19 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 		} else {
 			log.error("XMLParser initialized with a non-XML Loader");
 		}
-		// this.internalLog = verboseLogging;
-		// TOREMOVE
-		internalLog = true;
-
-		this.testingMode = testingMode;
 
 		parserUtil = new XMLParserUtil(configuration);
 
-		for (Iterator iter = parserUtil.getKeys(); iter.hasNext();) {
-			Object item = iter.next();
-			verboseLog(item.toString());
+		for (Iterator<?> iter = parserUtil.getKeys(); iter.hasNext();) {
+			log.debug("current item: {}", iter.next());
 		}
 
-		vfss = new Hashtable<String, VirtualFSInterface>();
-		maprules = new Hashtable<String, MappingRule>();
-		apprules = new Hashtable<String, ApproachableRule>();
+		vfss = new HashMap<>();
+		maprules = new HashMap<>();
+		apprules = new HashMap<>();
 
 		boolean validNamespaceConfiguration = refreshCachedData();
-		if (!(validNamespaceConfiguration)) {
+		if (!validNamespaceConfiguration) {
 			log.error(" ???????????????????????????????????? ");
 			log.error(" ????  NAMESPACE does not VALID  ???? ");
 			log.error(" ???????????????????????????????????? ");
@@ -179,7 +165,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 
 	public void update(Observable observed, Object arg) {
 
-		log.debug(arg + " Refreshing Namespace Memory Cache .. ");
+		log.debug("{} Refreshing Namespace Memory Cache .. ", arg);
 
 		XMLNamespaceLoader loader = (XMLNamespaceLoader) observed;
 		parserUtil = new XMLParserUtil(loader.getConfiguration());
@@ -208,17 +194,16 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 			configuration.clearTree("approachable-rules");
 			try {
 				configuration.load();
-				log
-					.debug(" ... reading and parsing the namespace configuration from file!");
+				log.debug(" ... reading and parsing the namespace configuration from file!");
 			} catch (ConfigurationException ex) {
-				ex.printStackTrace();
+			    log.error(ex.getMessage(), ex);
 			}
 			log.debug("REFRESHING CACHE..");
 			// Save the cache content
 			log.debug("  ..save the cache content before semantic check");
-			Hashtable<String, VirtualFSInterface> vfssSAVED = vfss;
-			Hashtable<String, MappingRule> maprulesSAVED = maprules;
-			Hashtable<String, ApproachableRule> apprulesSAVED = apprules;
+			Map<String, VirtualFSInterface> vfssSAVED = vfss;
+			Map<String, MappingRule> maprulesSAVED = maprules;
+			Map<String, ApproachableRule> apprulesSAVED = apprules;
 			// Refresh the cache content with new values
 
 			log.debug("  ..refresh the cache");
@@ -246,13 +231,6 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 			refreshing.unlock();
 		}
 		return result;
-	}
-
-	private void verboseLog(String msg) {
-
-		if (internalLog) {
-			log.debug(msg);
-		}
 	}
 
 	private void refreshCache() {
@@ -399,18 +377,17 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 		log
 			.debug("Updating Space Catalog with Storage Area defined within NAMESPACE");
 		VirtualFS vfs = null;
-		Enumeration<VirtualFSInterface> scan = vfss.elements();
-		while (scan.hasMoreElements()) {
+		Iterator<VirtualFSInterface> scan = vfss.values().iterator();
+		while (scan.hasNext()) {
 
-			vfs = (VirtualFS) scan.nextElement();
+			vfs = (VirtualFS) scan.next();
 			String vfsAliasName = vfs.getAliasName();
-			verboseLog(" Considering VFS : " + vfsAliasName);
+			log.debug(" Considering VFS : {}", vfsAliasName);
 			String aliasName = vfs.getSpaceTokenDescription();
 			if (aliasName == null) {
 				// Found a VFS without the optional element Space Token Description
-				log.debug("XMLNamespaceParser.UpdateSA() : Found a VFS ('"
-					+ vfsAliasName
-					+ "') without space-token-description. Skipping the Update of SA");
+				log.debug("XMLNamespaceParser.UpdateSA() : Found a VFS ('{}') without space-token-description. "
+				    + "Skipping the Update of SA", vfsAliasName);
 			} else {
 				TSizeInBytes onlineSize = vfs.getProperties().getTotalOnlineSize();
 				String spaceFileName = vfs.getRootPath();
@@ -418,9 +395,8 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 					spaceFileName);
 				vfs.setSpaceToken(spaceToken);
 
-				verboseLog(" Updating SA ('" + aliasName + "'), token:'" + spaceToken
-					+ "', onlineSize:'" + onlineSize + "', spaceFileName:'"
-					+ spaceFileName);
+				log.debug(" Updating SA ('{}'), token:'{}', onlineSize:'{}', spaceFileName:'{}'", 
+				    aliasName, spaceToken, onlineSize, spaceFileName);
 			}
 
 		}
@@ -433,7 +409,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 	private void retrieveVersion() throws NamespaceException {
 
 		version = parserUtil.getNamespaceVersion();
-		verboseLog(" ====  NAMESPACE VERSION : '" + version + "'  ====");
+		log.debug(" ====  NAMESPACE VERSION : '{}'  ====", version);
 	}
 
 	// ******************* VIRTUAL FS ***************************
@@ -443,65 +419,60 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 		int nrOfVFS = 0;
 
 		nrOfVFS = parserUtil.getNumberOfFS();
-		// For each VFS within configuration build VFS class istance
+		// For each VFS within configuration build VFS class instance
 		VirtualFS vfs;
 		String spaceTokenDescription = null;
-		StorageClassType storageClass = StorageClassType.UNKNOWN;
+		StorageClassType storageClass;
 		String root = null;
 		String name;
 		String fsType;
-		Class driver;
+		Class<?> driver;
 		String storageAreaAuthz;
 		PropertyInterface prop;
 		CapabilityInterface cap;
 		DefaultValuesInterface defValues;
-		SAAuthzType saAuthzType = SAAuthzType.UNKNOWN;
+		SAAuthzType saAuthzType;
 
 		for (int i = 0; i < nrOfVFS; i++) {
 			// Building VFS
-			vfs = new VirtualFS(testingMode);
+			vfs = new VirtualFS();
 
 			name = parserUtil.getFSName(i);
 			vfs.setAliasName(name);
-			verboseLog("VFS(" + i + ").name = '" + name + "'");
+			log.debug("VFS({}).name = '{}'", i, name);
 
 			fsType = parserUtil.getFSType(name);
 			vfs.setFSType(fsType);
-			verboseLog("VFS(" + name + ").fs_type = '" + fsType + "'");
+			log.debug("VFS({}).fs_type = '{}'", name, fsType);
 
 			spaceTokenDescription = parserUtil.getFSSpaceTokenDescription(name);
 			vfs.setSpaceTokenDescription(spaceTokenDescription);
-			verboseLog("VFS(" + name + ").space-token-description = '"
-				+ spaceTokenDescription + "'");
+			log.debug("VFS({}).space-token-description = '{}'", name, spaceTokenDescription);
 
 			storageClass = StorageClassType.getStorageClassType(parserUtil
 				.getStorageClass(name));
 			vfs.setStorageClassType(storageClass);
-			verboseLog("VFS(" + name + ").storage-class = '" + storageClass + "'");
+			log.debug("VFS({}).storage-class = '{}'", name, storageClass);
 
 			root = parserUtil.getFSRoot(name);
 			vfs.setRoot(root);
-			verboseLog("VFS(" + name + ").root = '" + root + "'");
+			log.debug("VFS({}).root = '{}'", name, root);
 
 			driver = Class.forName(parserUtil.getFSDriver(name));
 			vfs.setFSDriver(driver);
-			verboseLog("VFS(" + name + ").fsDriver [CLASS Name] = '"
-				+ driver.getName() + "'");
+			log.debug("VFS({}).fsDriver [CLASS Name] = '{}'", name, driver.getName());
 
 			driver = Class.forName(parserUtil.getSpaceDriver(name));
 			vfs.setSpaceSystemDriver(driver);
-			verboseLog("VFS(" + name + ").spaceDriver [CLASS Name] = '"
-				+ driver.getName() + "'");
+			log.debug("VFS({}).spaceDriver [CLASS Name] = '{}'", name, driver.getName());
 
 			saAuthzType = parserUtil.getStorageAreaAuthzType(name);
 			vfs.setSAAuthzType(saAuthzType);
-			verboseLog("VFS(" + name + ").storage-area-authz.TYPE = '" + saAuthzType
-				+ "'");
+			log.debug("VFS({}).storage-area-authz.TYPE = '{}'", name, saAuthzType);
 
 			storageAreaAuthz = parserUtil.getStorageAreaAuthz(name, saAuthzType);
 			vfs.setSAAuthzSource(storageAreaAuthz);
-			verboseLog("VFS(" + name + ").storage-area-authz = '" + storageAreaAuthz
-				+ "'");
+			log.debug("VFS({}).storage-area-authz = '{}'", name, storageAreaAuthz);
 
 			prop = buildProperties(name);
 			vfs.setProperties(prop);
@@ -528,35 +499,29 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 
 		String accessLatency = parserUtil.getAccessLatencyType(fsName);
 		prop.setAccessLatency(accessLatency);
-		verboseLog("VFS(" + fsName + ").Properties.AccessLatency = '"
-			+ accessLatency + "'");
+		log.debug("VFS({}).Properties.AccessLatency = '{}'", fsName, accessLatency);
 
 		String expirationMode = parserUtil.getExpirationModeType(fsName);
 		prop.setExpirationMode(expirationMode);
-		verboseLog("VFS(" + fsName + ").Properties.ExpirationMode = '"
-			+ expirationMode + "'");
+		log.debug("VFS({}).Properties.ExpirationMode = '{}'", fsName, expirationMode);
 
 		String retentionPolicy = parserUtil.getRetentionPolicyType(fsName);
 		prop.setRetentionPolicy(retentionPolicy);
-		verboseLog("VFS(" + fsName + ").Properties.RetentionPolicy = '"
-			+ retentionPolicy + "'");
+		log.debug("VFS({}).Properties.RetentionPolicy = '{}'", fsName, retentionPolicy);
 
 		String unitType = parserUtil.getNearlineSpaceUnitType(fsName);
 		long nearLineSize = parserUtil.getNearlineSpaceSize(fsName);
 		prop.setTotalNearlineSize(unitType, nearLineSize);
-		verboseLog("VFS(" + fsName + ").Properties.NearlineSpaceSize = '"
-			+ nearLineSize + " " + unitType + "'");
+		log.debug("VFS({}).Properties.NearlineSpaceSize = '{} {}'", fsName, nearLineSize, unitType);
 
 		unitType = parserUtil.getOnlineSpaceUnitType(fsName);
 		long onlineSize = parserUtil.getOnlineSpaceSize(fsName);
 		prop.setTotalOnlineSize(unitType, onlineSize);
-		verboseLog("VFS(" + fsName + ").Properties.OnlineSpaceSize = '"
-			+ onlineSize + " " + unitType + "'");
+		log.debug("VFS({}).Properties.OnlineSpaceSize = '{} {}'", fsName, onlineSize, unitType);
 
 		boolean hasLimitedSize = parserUtil.getOnlineSpaceLimitedSize(fsName);
 		prop.setLimitedSize(hasLimitedSize);
-		verboseLog("VFS(" + fsName + ").Properties.OnlineSpaceLimitedSize = '"
-			+ hasLimitedSize + "'");
+		log.debug("VFS({}).Properties.OnlineSpaceLimitedSize = '{}'", fsName, hasLimitedSize);
 
 		return prop;
 	}
@@ -567,27 +532,17 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 		throws NamespaceException {
 
 		/**
-		 * String[] fileType = parserUtil.getFileType(fsName); for (int j = 0; j <
-		 * fileType.length; j++) { verboseLog("VFS(" + fsName +
-		 * ").Capabilities.file.types(" + j + ") = '" + fileType[j] + "'"); }
-		 * String[] spaceType = parserUtil.getSpaceType(fsName); for (int j = 0; j <
-		 * spaceType.length; j++) { verboseLog("VFS(" + fsName +
-		 * ").Capabilities.space.types(" + j + ") = '" + spaceType[j] + "'"); }
-		 **/
-
-		/**
 		 * ACL MODE ELEMENT
 		 */
 		String aclMode = parserUtil.getACLMode(fsName);
 		Capability cap = new Capability(aclMode);
-		verboseLog("VFS(" + fsName + ").Capabilities.aclMode = '" + aclMode + "'");
+		log.debug("VFS({}).Capabilities.aclMode = '{}'", fsName, aclMode);
 
 		/**
 		 * DEFAULT ACL
 		 */
 		boolean defaultACLDefined = parserUtil.getDefaultACLDefined(fsName);
-		verboseLog("VFS(" + fsName + ").Capabilities.defaultACL [Defined?] ="
-			+ defaultACLDefined);
+		log.debug("VFS({}).Capabilities.defaultACL [Defined?] = {}", fsName, defaultACLDefined);
 		if (defaultACLDefined) {
 			int nrACLEntries = parserUtil.getNumberOfACL(fsName);
 			String groupName = null;
@@ -600,12 +555,10 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 					aclEntry = new ACLEntry(groupName, filePermString);
 					cap.addACLEntry(aclEntry);
 				} catch (PermissionException permEx) {
-					log
-						.error("Namespace XML Parser -- ERROR -- : " + permEx.getMessage());
+					log.error("Namespace XML Parser -- ERROR -- : {}", permEx.getMessage());
 				}
 			}
-			verboseLog("VFS(" + fsName + ").Capabilities.defaultACL = "
-				+ cap.getDefaultACL());
+			log.debug("VFS({}).Capabilities.defaultACL = {}", fsName, cap.getDefaultACL());
 		}
 
 		/**
@@ -646,8 +599,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 		}
 		cap.setQuota(quota);
 
-		verboseLog("VFS(" + fsName + ").Capabilities.quota = '" + quota + "'");
-		log.debug("VFS(" + fsName + ").Capabilities.quota = '" + quota + "'");
+		log.debug("VFS({}).Capabilities.quota = '{}'", fsName, quota);
 
 		/**
 		 * TRANSFER PROTOCOL
@@ -662,11 +614,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 		String schema;
 		String name;
 		for (int protCounter = 0; protCounter < nrProtocols; protCounter++) {
-			protocolIndex = parserUtil.getProtId(fsName, protCounter); // 1.4.0
-																																	// (Return -1
-																																	// if ID is
-																																	// not
-																																	// present)
+			protocolIndex = parserUtil.getProtId(fsName, protCounter);
 			name = parserUtil.getProtName(fsName, protCounter);
 			schema = parserUtil.getProtSchema(fsName, protCounter);
 			protocol = Protocol.getProtocol(schema);
@@ -690,8 +638,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 			}
 			transportProt = new TransportProtocol(protocol, service);
 			transportProt.setProtocolID(protocolIndex); // 1.4.0
-			verboseLog("VFS(" + fsName + ").Capabilities.protocol(" + protCounter
-				+ ") = '" + transportProt + "'");
+			log.debug("VFS({}).Capabilities.protocol({}) = '{}'", fsName, protCounter, transportProt);
 			cap.addTransportProtocolByScheme(protocol, transportProt);
 			cap.addTransportProtocol(transportProt);
 			if (protocolIndex != -1) {
@@ -708,28 +655,15 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 
 			for (int poolCounter = 0; poolCounter < nrPools; poolCounter++) {
 				BalancingStrategyType balanceStrategy = BalancingStrategyType
-					.getByValue(parserUtil.getBalancerStrategy(fsName, poolCounter)); // 1.4.0
-																																						// (Return
-																																						// -1
-																																						// if
-																																						// ID
-																																						// is
-																																						// not
-																																						// present)
-				ArrayList<PoolMember> poolMembers = new ArrayList<PoolMember>();
+					.getByValue(parserUtil.getBalancerStrategy(fsName, poolCounter));
+				ArrayList<PoolMember> poolMembers = new ArrayList<>();
 				int nrMembers = parserUtil.getNumberOfPoolMembers(fsName, poolCounter);
 				for (int i = 0; i < nrMembers; i++) {
 					int protIndex = parserUtil.getMemberID(fsName, poolCounter, i);
-					TransportProtocol tProtMember = cap.getProtocolByID(protIndex); // search
-																																					// for
-																																					// the
-																																					// member
-																																					// with
-																																					// specified
-																																					// ID
-					if (tProtMember != null) { // member found!
+					TransportProtocol tProtMember = cap.getProtocolByID(protIndex);
+					if (tProtMember != null) {
 						PoolMember poolMember;
-						if (balanceStrategy.requireWeight()) { // Check for the weight
+						if (balanceStrategy.requireWeight()) {
 							int memberWeight = parserUtil.getMemberWeight(fsName,
 								poolCounter, i);
 							poolMember = new PoolMember(protIndex, tProtMember, memberWeight);
@@ -738,23 +672,21 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 						}
 						poolMembers.add(poolMember);
 					} else { // member pointed out doesn't exist!!
-						log.error("POOL Building: Protocol with index " + protIndex
-							+ " does not exists in the VFS :" + fsName);
-						throw new NamespaceException("POOL Building: Protocol with index "
-							+ protIndex + " does not exists in the VFS :" + fsName);
+					    String errorMessage = String.format("POOL Building: Protocol with index %d does not exists in the VFS : %s", protIndex, fsName);
+						log.error(errorMessage);
+						throw new NamespaceException(errorMessage);
 					}
 				}
 				Protocol pooProtocol = poolMembers.get(0).getMemberProtocol()
 					.getProtocol();
 				verifyPoolIsValid(poolMembers);
-				log.debug("Defined pool for protocol " + pooProtocol.toString()
-					+ " with size " + poolMembers.size());
+				log.debug("Defined pool for protocol {} with size {}", pooProtocol, poolMembers.size());
 				cap.addProtocolPoolBySchema(pooProtocol, new ProtocolPool(
 					balanceStrategy, poolMembers));
-				log.debug("PROTOCOL POOL: " + cap.getPoolByScheme(pooProtocol));
+				log.debug("PROTOCOL POOL: {}", cap.getPoolByScheme(pooProtocol));
 			}
 		} else {
-			log.debug("Pool is not defined in VFS " + fsName);
+			log.debug("Pool is not defined in VFS {}", fsName);
 		}
 
 		return cap;
@@ -790,8 +722,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 			setSpaceDef(fsName, def);
 			setFileDef(fsName, def);
 		} else { // Produce Default Values with default values :o !
-			verboseLog("VFS(" + fsName
-				+ ").DefaultValues is ABSENT.  Using DEFAULT values.");
+			log.debug("VFS({}).DefaultValues is ABSENT.  Using DEFAULT values.", fsName);
 		}
 		return def;
 	}
@@ -800,17 +731,13 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 		throws NamespaceException {
 
 		String spaceType = parserUtil.getDefaultSpaceType(fsName);
-		verboseLog("VFS(" + fsName + ").DefaultValues.space.type = '" + spaceType
-			+ "'");
+		log.debug("VFS({}).DefaultValues.space.type = '{}'", fsName, spaceType);
 		long lifeTime = parserUtil.getDefaultSpaceLifeTime(fsName);
-		verboseLog("VFS(" + fsName + ").DefaultValues.space.lifeTime = '"
-			+ lifeTime + "'");
+		log.debug("VFS({}).DefaultValues.space.lifeTime = ''", fsName, lifeTime);
 		long guarSize = parserUtil.getDefaultSpaceGuarSize(fsName);
-		verboseLog("VFS(" + fsName + ").DefaultValues.space.guarSize = '"
-			+ guarSize + "'");
+		log.debug("VFS({}).DefaultValues.space.guarSize = '{}'", fsName, guarSize);
 		long totSize = parserUtil.getDefaultSpaceTotSize(fsName);
-		verboseLog("VFS(" + fsName + ").DefaultValues.space.totSize = '" + totSize
-			+ "'");
+		log.debug("VFS({}).DefaultValues.space.totSize = '{}'", fsName, totSize);
 		def.setSpaceDefaults(spaceType, lifeTime, guarSize, totSize);
 	}
 
@@ -818,11 +745,9 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 		throws NamespaceException {
 
 		String fileType = parserUtil.getDefaultFileType(fsName);
-		verboseLog("VFS(" + fsName + ").DefaultValues.file.type = '" + fileType
-			+ "'");
+		log.debug("VFS({}).DefaultValues.file.type = '{}'", fsName, fileType);
 		long lifeTime = parserUtil.getDefaultFileLifeTime(fsName);
-		verboseLog("VFS(" + fsName + ").DefaultValues.file.lifeTime = '" + lifeTime
-			+ "'");
+		log.debug("VFS({}).DefaultValues.file.lifeTime = '{}'", fsName, lifeTime);
 		def.setFileDefaults(fileType, lifeTime);
 	}
 
@@ -831,7 +756,9 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 	private void buildMapRules() throws NamespaceException {
 
 		int numOfMapRules = parserUtil.getNumberOfMappingRule();
-		String ruleName, stfnRoot, mappedFS;
+		String ruleName;
+		String stfnRoot;
+		String mappedFS;
 		MappingRule mapRule;
 
 		for (int i = 0; i < numOfMapRules; i++) {
@@ -839,16 +766,14 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 			mappedFS = parserUtil.getMapRule_mappedFS(ruleName);
 			// Adding mapping rule to VFS within vfss;
 			if (vfss.containsKey(mappedFS)) {
-				verboseLog("VFS '" + mappedFS + "' pointed by RULE : '" + ruleName
-					+ "' exists.");
+				log.debug("VFS '{}' pointed by RULE : '{}' exists.", mappedFS, ruleName);
 				stfnRoot = parserUtil.getMapRule_StFNRoot(ruleName);
-				VirtualFSInterface vfs = (VirtualFSInterface) vfss.get(mappedFS);
-				mapRule = new MappingRule(ruleName, stfnRoot, vfs/* , mappedFS */);
+				VirtualFSInterface vfs = vfss.get(mappedFS);
+				mapRule = new MappingRule(ruleName, stfnRoot, vfs);
 				((VirtualFS) vfs).addMappingRule(mapRule);
 				maprules.put(ruleName, mapRule);
 			} else {
-				log.error("VFS '" + mappedFS + "' pointed by RULE : '" + ruleName
-					+ "' DOES NOT EXISTS.");
+				log.error("VFS '{}' pointed by RULE : '{}' DOES NOT EXISTS.", mappedFS, ruleName);
 			}
 		}
 	}
@@ -859,13 +784,20 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 
 		int numOfAppRules = parserUtil.getNumberOfApproachRule();
 
-		verboseLog("Number of APP Rule : " + numOfAppRules);
-		String ruleName, dn, vo_name, relPath, anonymousHttpReadString;
+		String ruleName;
+		String dn;
+		String vo_name;
+		String relPath;
+		String anonymousHttpReadString;
 		List<String> appFSList;
 		ApproachableRule appRule;
+
+		log.debug("Number of APP Rule : {}", numOfAppRules);
+
+
 		for (int i = 0; i < numOfAppRules; i++) {
 			ruleName = parserUtil.getApproachRuleName(i);
-			verboseLog(" APP rule nr:" + i + " is named : " + ruleName);
+			log.debug(" APP rule nr: {} is named : {}", i, ruleName);
 
 			dn = parserUtil.getAppRule_SubjectDN(ruleName);
 			vo_name = parserUtil.getAppRule_SubjectVO(ruleName);
@@ -886,14 +818,12 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 			appFSList = parserUtil.getAppRule_AppFS(ruleName);
 			for (String appFS : appFSList) {
 				if (vfss.containsKey(appFS)) {
-					verboseLog("VFS '" + appFS + "' pointed by RULE : '" + ruleName
-						+ "' exists.");
+					log.debug("VFS '{}' pointed by RULE : '{}' exists.", appFS, ruleName);
 					VirtualFSInterface vfs = vfss.get(appFS);
 					((VirtualFS) vfs).addApproachableRule(appRule);
 					appRule.addApproachableVFS(vfs);
 				} else {
-					log.error("VFS '" + appFS + "' pointed by RULE : '" + ruleName
-						+ "' DOES NOT EXISTS.");
+					log.error("VFS '{}' pointed by RULE : '{}' DOES NOT EXISTS.", appFS, ruleName);
 				}
 			}
 			apprules.put(ruleName, appRule);
@@ -912,7 +842,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 	public List<String> getAllVFS_Roots() {
 
 		Collection<VirtualFSInterface> elem = vfss.values();
-		Vector<String> roots = new Vector<String>(vfss.size());
+		List<String> roots = new ArrayList<>(vfss.size());
 		Iterator<VirtualFSInterface> scan = elem.iterator();
 		while (scan.hasNext()) {
 			String root = null;
@@ -924,7 +854,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 
 	public Map<String, VirtualFSInterface> getMapVFS_Root() {
 
-		Hashtable<String, VirtualFSInterface> result = new Hashtable<String, VirtualFSInterface>();
+		Map<String, VirtualFSInterface> result = new HashMap<>();
 		Collection<VirtualFSInterface> elem = vfss.values();
 		Iterator<VirtualFSInterface> scan = elem.iterator();
 		while (scan.hasNext()) {
@@ -939,7 +869,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 	public List<String> getAllMappingRule_StFNRoots() {
 
 		Collection<MappingRule> elem = maprules.values();
-		Vector<String> roots = new Vector<String>(maprules.size());
+		List<String> roots = new ArrayList<>(maprules.size());
 		Iterator<MappingRule> scan = elem.iterator();
 		String root = null;
 		while (scan.hasNext()) {
@@ -951,7 +881,7 @@ public class XMLNamespaceParser implements NamespaceParser, Observer {
 
 	public Map<String, String> getMappingRuleMAP() {
 
-		HashMap<String, String> map = new HashMap<String, String>();
+		Map<String, String> map = new HashMap<>();
 		Collection<MappingRule> elem = maprules.values();
 		Iterator<MappingRule> scan = elem.iterator();
 		String root = null;

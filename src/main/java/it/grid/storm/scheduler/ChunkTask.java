@@ -18,7 +18,6 @@
 package it.grid.storm.scheduler;
 
 import it.grid.storm.asynch.BoL;
-import it.grid.storm.asynch.Copy;
 import it.grid.storm.asynch.PtG;
 import it.grid.storm.asynch.PtP;
 import it.grid.storm.asynch.Request;
@@ -182,9 +181,6 @@ public class ChunkTask extends Task {
 		}
 		if (todo instanceof PtG) {
 			return OperationType.PTG;
-		}
-		if (todo instanceof Copy) {
-			return OperationType.COPY;
 		}
 		if (todo instanceof BoL) {
 			return OperationType.BOL;

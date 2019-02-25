@@ -384,7 +384,7 @@ public class PtP implements Delegable, Chooser, Request {
       requestData.changeStatusSRM_NOT_SUPPORTED("Unable to build TURL with "
         + "specified transfer protocols!");
       failure = true;
-      log.error("ERROR in PtPChunk! No valid transfer protocol found.");
+      log.error("ERROR in PtPChunk! No valid transfer protocol found. {}", e.getMessage(), e);
       return;
     } catch (TURLBuildingException e) {
       requestData.changeStatusSRM_FAILURE("Unable to build the TURL for the "

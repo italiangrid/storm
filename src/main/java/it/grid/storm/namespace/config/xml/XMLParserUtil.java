@@ -452,7 +452,7 @@ public class XMLParserUtil implements XMLConst {
 			XMLConst.APP_VO_NAME));
 	}
 
-	public List getAppRule_AppFS(String nameOfAppRule) throws NamespaceException {
+	public List<String> getAppRule_AppFS(String nameOfAppRule) throws NamespaceException {
 
 		int numOfAppRule = retrieveNumberByName(nameOfAppRule,
 			XMLConst.APP_RULE_BY_NAME);

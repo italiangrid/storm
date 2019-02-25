@@ -112,12 +112,6 @@ public class VirtualFS implements VirtualFSInterface {
 
   // For debug purpose only
   public long creationTime = System.currentTimeMillis();
-  public boolean testingMode = false;
-
-  public VirtualFS(boolean testingMode) {
-
-    this.testingMode = testingMode;
-  }
 
   /*****************************************************************************
    * BUILDING METHODs
@@ -137,11 +131,8 @@ public class VirtualFS implements VirtualFSInterface {
   public void setFSDriver(Class fsDriver) throws NamespaceException {
 
     this.fsDriver = fsDriver;
-    if (testingMode) {
-      this.genericFS = null;
-    } else {
-      this.genericFS = makeFSInstance();
-    }
+    this.genericFS = makeFSInstance();
+
     fsWrapper = RandomWaitFilesystemAdapter.maybeWrapFilesystem(fsWrapper);
     this.fsWrapper = new MetricsFilesystemAdapter(
       new Filesystem(getFSDriverInstance()),
@@ -327,7 +318,7 @@ public class VirtualFS implements VirtualFSInterface {
 
   public genericfs getFSDriverInstance() throws NamespaceException {
 
-    if ((this.genericFS == null) && (!testingMode)) {
+    if (this.genericFS == null) {
       this.genericFS = makeFSInstance();
     }
     return this.genericFS;
@@ -435,7 +426,7 @@ public class VirtualFS implements VirtualFSInterface {
 
   public SpaceSystem getSpaceSystemDriverInstance() throws NamespaceException {
 
-    if ((this.spaceSystem == null) && (!testingMode)) {
+    if (this.spaceSystem == null) {
       this.spaceSystem = makeSpaceSystemInstance();
     }
     return this.spaceSystem;
