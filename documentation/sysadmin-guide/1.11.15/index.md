@@ -63,7 +63,7 @@ Services to be updated are:
 
 Relaunch YAIM after the update.
 
-#### Troubleshooting for update failures <a name="important1">&nbsp;</a>
+#### Important (1): Troubleshooting for update failures <a name="important1">&nbsp;</a>
 
 StoRM Backend will be restarted during update cause very
 significant changes had been done on its startup scripts. If the service
@@ -83,7 +83,30 @@ and then start it:
 /sbin/service storm-backend-server start
 ```
 
-#### Publish multiple WebDAV endpoints <a name="important2">&nbsp;</a>
+#### Important (2): Fix WebDAV local aliases after upgrade <a name="important2">&nbsp;</a>
+
+StoRM WebDAV v1.1.0 introduces the support to Third-Party-Copy. After the
+service update, admins MUST declare all the hostnames that has to be recognized
+as 'local' when a _Destination_ header is specified.
+
+As better explained into [this guide][tpc-guide], a list of
+`STORM_WEBDAV_HOSTNAME_{N}` variables must be set into
+`/etc/sysconfig/storm-webdav`.
+
+If you have a single WebDAV endpoint, with `storm.example` as FQDN for example,
+append the following line to `/etc/sysconfig/storm-webdav`:
+
+```bash
+STORM_WEBDAV_HOSTNAME_0="storm.example"
+```
+
+Then restart the service:
+
+```
+service storm-webdav restart
+```
+
+#### Important (3): Publish multiple WebDAV endpoints <a name="important3">&nbsp;</a>
 
 If you have a WebDAV endpoint published it's recommended to
 migrate to the new YAIM variable `STORM_WEBDAV_POOL_LIST`. Old configuration
@@ -123,7 +146,7 @@ STORM_WEBDAV_POOL_LIST=http://storm-webdav.example.org:8085,https://storm-webdav
 ```
 
 and then remove `STORM_GRIDHTTPS_ENABLED`, `STORM_GRIDHTTPS_PUBLIC_HOST` and
-also `STORM_GRIDHTTPS_HTTP_PORT` and `STORM_GRIDHTTPS_HTTPS_PORT`, if defined.
+also `STORM_GRIDHTTPS_HTTP_PORT` and `STORM_GRIDHTTPS_HTTPS_PORT`.
 
 Then re-launch YAIM.
 
@@ -785,8 +808,11 @@ You can edit the optional variables summarized in [Table 5](#Table5).
 
 ### StoRM WebDAV variables <a name="webdavyaimvars">&nbsp;</a>
 
-The StoRM WebDAV service replaces the StoRM GridHTTPS service.
-To learn how to configure it refer to the [StoRM WebDAV service installation and configuration guide][webdav-guide].
+Follow [StoRM WebDAV service installation and configuration][webdav-guide] guide
+to properly configure the service.
+
+Read also [StoRM WebDAV support for Third Party Copy transfers][tpc-guide] guide
+to properly configure the support for Third Party Copy transfers.
 
 ### Launching YAIM <a name="launchingyaim">&nbsp;</a>
 
@@ -1711,6 +1737,7 @@ You can found CDMI StoRM details about installation and configuration [here][ind
 [X509_SA_conf_example]: {{site.baseurl}}/documentation/how-to/storage-area-configuration-examples/1.11.3/index.html#sa-anonymous-rw-x509
 [LDAPconfiguration]: {{site.baseurl}}/documentation/how-to/how-to-share-users-openldap/1.11.4/
 [webdav-guide]: storm-webdav-guide.html
+[tpc-guide]: tpc.html
 [dip-guide]: storm-info-provider.html
 [storm-gridhttps-guide]: storm-gridhttps-guide.html
 [used-space-example]: {{site.baseurl}}/documentation/how-to/how-to-initialize-storage-area-used-space/
