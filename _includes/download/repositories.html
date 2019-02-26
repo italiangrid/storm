@@ -1,7 +1,9 @@
 <!-- StoRM repositories -->
+{% for platform in site.data.repositories %}
+<h4>{{platform[0]}}</h4>
 <table>
   <tbody>
-{% for repo in site.data.repositories %}
+  {% for repo in platform[1] %}
     <tr>
       <td>
         <b>{{repo[1].name}}</b>
@@ -12,6 +14,7 @@
         <a class="pull-right" style="margin-left: 5px" href="{{repo[1].repofile}}"><i class="icon-download-alt"></i> .repo </a>
       </td>
     </tr>
-{% endfor %}
+  {% endfor %}
   </tbody>
 </table>
+{% endfor %}

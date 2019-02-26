@@ -1,7 +1,7 @@
 ---
 layout: default
 title: StoRM Info Provider v.1.8.1 release notes
-release_date: "03.12.2018"
+release_date: "26.02.2019"
 rfcs:
   - id: STOR-1037
     title: The published WebDAV endpoint ends with /webdav which is obsolete and broken without an ending slash
@@ -40,7 +40,7 @@ but deprecated.
 
 {% include list-rfcs.liquid %}
 
-#### Enhancements
+### Enhancements
 
 {% include list-features.liquid %}
 

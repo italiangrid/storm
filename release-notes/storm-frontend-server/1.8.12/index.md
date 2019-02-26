@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM Frontend v.1.8.12 release notes"
-release_date: "03.12.2018"
+release_date: "26.02.2019"
 rfcs:
   - id: STOR-1025
     title: Configurable size limit for the request queue
@@ -18,14 +18,17 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.15][release-notes].
 
 ### Description
 
-This release fixes the configuration of the limits of the requests queue.
-It also clears code from stuff related to deprecated YAIM variables.
+This release:
 
-#### Bug fixes
+* avoids an indefinitely growth of the threads queue size due to the the
+incoming requests to Frontend and the consequent block of the acceptor thread;
+* clears old code and stuff related to deprecated variables.
+
+### Bug fixes
 
 {% include list-rfcs.liquid %}
 
-#### Enhancements
+### Enhancements
 
 {% include list-features.liquid %}
 

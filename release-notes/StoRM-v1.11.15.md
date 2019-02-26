@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM v.1.11.15 - release notes"
-release_date: "03.12.2018"
+release_date: "26.02.2019"
 rfcs:
   - id: STOR-1019
     title: Fix namespace configuration syntax error
@@ -54,19 +54,19 @@ Supported platforms: <span class="label label-success">CentOS 6</span>
 
 #### Description
 
-This release provides fixes to some outstanding bugs and improvements.
+This release:
 
-* When Frontend's requests queue is full, the acceptor thread blocks, to
-avoid queue size to grow indefinitely; on Backend side, the `maxThread` setting
-wasn't honored as expected and it has been fixed.
-* Backend service startup has been improved.
-* The info-provider service now allows to specify multiple WebDAV endpoints by
-using the new YAIM variable `STORM_WEBDAV_POOL_LIST`, as a comma separated list.
-The old strategy used to publish the StoRM WebDAV endpoint is still supported
-but deprecated.
-* It fixes minor issues on YAIM and storm-info-provider.
-* Code and stuff related to deprecated variables has been removed from YAIM,
-Backend and Frontend.
+* avoids an indefinitely growth of the threads queue size due to the the
+incoming requests to Frontend and the consequent block of the acceptor thread;
+* fixes the `maxThread` Backend setting which wasn't honored as expected;
+* improves Backend's startup thanks to a refactoring of the init scripts;
+* allows to specify multiple WebDAV endpoints to be published through the info
+provider, by using a new YAIM variable `STORM_WEBDAV_POOL_LIST`
+(read more [here][webdav-pool-list]);
+* fixes minor issues on YAIM and storm-info-provider;
+* implements basic support for Third-Party-Copy in the StoRM WebDAV service;
+* clears old code and stuff related to deprecated variables from YAIM, Backend
+and Frontend.
 
 #### Released components
 
@@ -94,7 +94,8 @@ In case of a clean installation, follow the instructions in the [System Administ
 
 ##### Upgrade StoRM repository
 
-Starting from StoRM v1.11.14 we migrated StoRM production repository. We also created a beta and a nightly yum repository too.
+Starting from StoRM v1.11.14 the production repository has been migrated.
+In addiction, beta and nightly yum repositories have been created.
 
 Read how to install/upgrade StoRM repositories into the [Downloads][downloads-page] section.
 
@@ -114,3 +115,5 @@ UMD-3 repositories are currently EOL so **we encourage to use UMD-4**. Read the 
 [upgrade-from-12]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15/#upgrade12
 [upgrade-from-11]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15/#upgrade11
 [upgrade-from-old]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15/#upgradeold
+
+[webdav-pool-list]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15#important2

@@ -63,12 +63,14 @@ Services to be updated are:
 
 Relaunch YAIM after the update.
 
-**Important** (1): StoRM Backend will be restarted during update cause very
-significant changes had been done on its startup scripts. If the restart, for
-some reason, should fail, you have to manually kill `storm-backend-server`
+#### Troubleshooting for update failures <a name="important1">&nbsp;</a>
+
+StoRM Backend will be restarted during update cause very
+significant changes had been done on its startup scripts. If the service
+restart, for some reason, fails, you have to manually kill `storm-backend-server`
 process:
 
-```
+```shell
 # get the process-ids:
 pslist=$( ps -ef | grep java | grep storm-backend-server | awk '{print $2}' | tr '\n' ' ' | sed -e s/\ $// )
 # kill all:
@@ -77,11 +79,13 @@ kill -9 $pslist
 
 and then start it:
 
-```
+```shell
 /sbin/service storm-backend-server start
 ```
 
-**Important** (2): If you have a WebDAV endpoint published it's recommended to
+#### Publish multiple WebDAV endpoints <a name="important2">&nbsp;</a>
+
+If you have a WebDAV endpoint published it's recommended to
 migrate to the new YAIM variable `STORM_WEBDAV_POOL_LIST`. Old configuration
 variables are still supported within StoRM v1.11.15, but the upcoming versions
 won't support them.
@@ -94,14 +98,14 @@ For example, if:
 
 you should have set:
 
-```
+```bash
 STORM_GRIDHTTPS_ENABLED=true
 STORM_GRIDHTTPS_PUBLIC_HOST=storm-webdav.example.org
 ```
 
 If you changed the default ports you should also have values for:
 
-```
+```bash
 STORM_GRIDHTTPS_HTTP_PORT=...
 STORM_GRIDHTTPS_HTTPS_PORT=...
 ```

@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM WebDAV v. 1.1.0 release notes"
-release_date: "03.12.2018"
+release_date: "26.02.2019"
 features:
   - id: STOR-1018
     title: Support for third-party copy in StoRM WebDAV service
@@ -13,7 +13,7 @@ Released on **{{ page.release_date }}** as an update of [StoRM v. 1.11.15][relea
 
 ### Description
 
-This release adds the support to Third-Party-Copy.
+This release implements basic support for Third-Party-Copy.
 
 Useful links:
 

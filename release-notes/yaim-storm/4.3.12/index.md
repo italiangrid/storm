@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "YAIM StoRM v.4.3.12 release notes"
-release_date: "03.12.2018"
+release_date: "26.02.2019"
 rfcs:
   - id: STOR-1019
     title: Fix namespace configuration syntax error
@@ -24,18 +24,19 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.15][release-notes].
 
 This release:
 
-- allows to specify multiple WebDAV endpoints by using the new YAIM variable
-`STORM_WEBDAV_POOL_LIST`, as a comma separated list. The old strategy used to
+* allows to specify multiple WebDAV endpoints by using the new YAIM variable
+`STORM_WEBDAV_POOL_LIST`, as a comma separated list
+(read more [here][webdav-pool-list]). The old strategy used to
 publish the StoRM WebDAV endpoint is still supported but deprecated;
-- exits in case StoRM Backend daemon fails on start-up;
-- removes stuff related to deprecated variables;
-- fixes some configuration syntax errors.
+* exits with error in case StoRM Backend daemon fails on start-up;
+* removes stuff related to deprecated variables;
+* fixes some configuration syntax errors.
 
 ### Bug fixes
 
 {% include list-rfcs.liquid %}
 
-#### Enhancements
+### Enhancements
 
 {% include list-features.liquid %}
 
@@ -53,3 +54,5 @@ the [Documentation][storm-documentation] section.
 [release-notes]: {{site.baseurl}}/release-notes/StoRM-v1.11.15.html
 [storm-documentation]: {{site.baseurl}}/documentation.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15
+
+[webdav-pool-list]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15#important2

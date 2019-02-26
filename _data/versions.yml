@@ -53,7 +53,7 @@ components:
       name: StoRM SRM Client
       current: 1.6.1
       previous: [1.6.0]
-      platforms: [centos6]
+      platforms: [centos6, centos7]
       released: false
       repo: https://github.com/italiangrid/storm-client
 

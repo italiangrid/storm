@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM BackEnd v. 1.11.15 release notes"
-release_date: "03.12.2018"
+release_date: "26.02.2019"
 rfcs:
   - id: STOR-1026
     title: Backend does not honor XMLRPC maxThreads settings
@@ -18,17 +18,19 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.15][release-notes].
 
 ### Description
 
-This release mainly improves the service start-up with a significative refactor
-of scripts and code. During the update the service will be restarted. This
-release also fixes the configuration of the thread limit, set by `maxThreads`
-property and removes a lot of unused code and stuff related to deprecated YAIM
-variables.
+This release:
+
+* fixes the `maxThread` Backend setting which wasn't honored as expected;
+* improves Backend's startup thanks to a refactoring of the init scripts
+(read more [here][upgrading-trouble] about troubleshooting);
+* clears old code and stuff related to deprecated variables.
+
 
 ### Bug fixes
 
 {% include list-rfcs.liquid %}
 
-#### Enhancements
+### Enhancements
 
 {% include list-features.liquid %}
 
@@ -43,3 +45,5 @@ StoRM services in the [System Administration Guide][storm-sysadmin-guide].
 [release-notes]: {{site.baseurl}}/release-notes/StoRM-v1.11.15.html
 [upgrading]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15/#upgrading
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15
+
+[upgrading-trouble]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15#important1
