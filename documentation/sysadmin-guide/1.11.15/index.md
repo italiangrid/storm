@@ -44,7 +44,7 @@ version: {{ page.version }}
 
 ------
 
-## Upgrade to StoRM v1.11.15 <a name="upgrading">&nbsp;</a>
+## Upgrade from StoRM v1.11.14 <a name="upgrading">&nbsp;</a>
 
 The services that needs to be updated are:
 
@@ -64,6 +64,8 @@ previous limitation of one. Please read the [StoRM Info Provider release notes u
 to properly upgrade your configuration.
 
 After the update and configuration upgrade, relaunch YAIM.
+
+## Upgrade from earlier versions <a name="upgrading-earlier">&nbsp;</a>
 
 If you are upgrading from StoRM v1.11.13 or earlier versions please follow
 [these instructions][upgrade-13] before.
