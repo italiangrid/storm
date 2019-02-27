@@ -13,11 +13,6 @@ version: {{ page.version }}
 **Table of contents**
 
 * [Upgrade to StoRM v1.11.15](#upgrading)
-  * [Upgrade from StoRM v1.11.14](#upgrade14)
-  * [Upgrade from StoRM v1.11.13](#upgrade13)
-  * [Upgrade from StoRM v1.11.12](#upgrade12)
-  * [Upgrade from StoRM v1.11.11](#upgrade11)
-  * [Upgrade from versions earlier than v1.11.11](#upgradeold)
 * [Installation Prerequisites](#prerequisites)
   * [Platform](#platform)
   * [Requirements](#requirements)
@@ -51,9 +46,7 @@ version: {{ page.version }}
 
 ## Upgrade to StoRM v1.11.15 <a name="upgrading">&nbsp;</a>
 
-### Upgrade from StoRM v1.11.14 <a name="upgrade14">&nbsp;</a>
-
-Services to be updated are:
+The services that needs to be updated are:
 
 * `storm-backend-server`
 * `storm-dynamic-info-provider`
@@ -61,193 +54,19 @@ Services to be updated are:
 * `storm-webdav`
 * `yaim-storm`
 
-Relaunch YAIM after the update.
+**Important** - StoRM WebDAV v1.1.0 introduces the support to Third-Party-Copy and needs to be
+configured well. Please read and follow the [StoRM WebDAV release notes upgrade instructions][upgrade-webdav]
+to properly configure the service.
 
-#### Important (1): Troubleshooting for update failures <a name="important1">&nbsp;</a>
+**Important** - StoRM Info Provider v1.8.1 introduces a new YAIM variable `STORM_WEBDAV_POOL_LIST`
+that can be used to specify a list of WebDAV endpoints, in order to avoid the
+previous limitation of one. Please read the [StoRM Info Provider release notes upgrade instructions][upgrade-info-provider]
+to properly upgrade your configuration.
 
-StoRM Backend will be restarted during update cause very
-significant changes had been done on its startup scripts. If the service
-restart, for some reason, fails, you have to manually kill `storm-backend-server`
-process:
+After the update and configuration upgrade, relaunch YAIM.
 
-```shell
-# get the process-ids:
-pslist=$( ps -ef | grep java | grep storm-backend-server | awk '{print $2}' | tr '\n' ' ' | sed -e s/\ $// )
-# kill all:
-kill -9 $pslist
-```
-
-and then start it:
-
-```shell
-/sbin/service storm-backend-server start
-```
-
-#### Important (2): Fix WebDAV local aliases after upgrade <a name="important2">&nbsp;</a>
-
-StoRM WebDAV v1.1.0 introduces the support to Third-Party-Copy. After the
-service update, admins MUST declare all the hostnames that has to be recognized
-as 'local' when a _Destination_ header is specified.
-
-As better explained into [this guide][tpc-guide], a list of
-`STORM_WEBDAV_HOSTNAME_{N}` variables must be set into
-`/etc/sysconfig/storm-webdav`.
-
-If you have a single WebDAV endpoint, with `storm.example` as FQDN for example,
-append the following line to `/etc/sysconfig/storm-webdav`:
-
-```bash
-STORM_WEBDAV_HOSTNAME_0="storm.example"
-```
-
-Then restart the service:
-
-```
-service storm-webdav restart
-```
-
-#### Important (3): Publish multiple WebDAV endpoints <a name="important3">&nbsp;</a>
-
-If you have a WebDAV endpoint published it's recommended to
-migrate to the new YAIM variable `STORM_WEBDAV_POOL_LIST`. Old configuration
-variables are still supported within StoRM v1.11.15, but the upcoming versions
-won't support them.
-
-For example, if:
-
-- your WebDAV endpoint's hostname is `storm-webdav.example.org`
-- it's detached from Backend's hostname
-- you kept default http and https ports
-
-you should have set:
-
-```bash
-STORM_GRIDHTTPS_ENABLED=true
-STORM_GRIDHTTPS_PUBLIC_HOST=storm-webdav.example.org
-```
-
-If you changed the default ports you should also have values for:
-
-```bash
-STORM_GRIDHTTPS_HTTP_PORT=...
-STORM_GRIDHTTPS_HTTPS_PORT=...
-```
-
-Your published endpoints will be:
-
-- `http://storm-webdav.example.org:8085`
-- `https://storm-webdav.example.org:8443`
-
-Then you can copy this endpoints and paste them into the following YAIM
-variable:
-
-```
-STORM_WEBDAV_POOL_LIST=http://storm-webdav.example.org:8085,https://storm-webdav.example.org:8443
-```
-
-and then remove `STORM_GRIDHTTPS_ENABLED`, `STORM_GRIDHTTPS_PUBLIC_HOST` and
-also `STORM_GRIDHTTPS_HTTP_PORT` and `STORM_GRIDHTTPS_HTTPS_PORT`.
-
-Then re-launch YAIM.
-
-This migration/upgrade allows site administrators to publish a well defined list
-of DAV endpoints, in order to overcome the previous limitations.
-
-### Upgrade from StoRM v1.11.13 or v1.11.12 <a name="upgrade13">&nbsp;</a><a name="upgrade12">&nbsp;</a>
-
-Services to be updated are:
-
-* storm-backend-server
-* storm-dynamic-info-provider
-* storm-frontend-server
-* storm-webdav
-* storm-native-libs
-* storm-native-libs-gpfs (if installed)
-* storm-globus-gridftp-server
-* storm-xmlrpc-c
-* yaim-storm
-
-Update all and then reconfigure StoRM nodes with YAIM.
-Example with configuration file `/etc/storm/siteinfo/storm.def`:
-
-    $ /opt/glite/yaim/bin/yaim -c -s /etc/storm/siteinfo/storm.def -n se_storm_backend
-
-Read more [here](#launchingyaim) about YAIM.
-
-### Upgrade from StoRM v1.11.11 <a name="upgrade11">&nbsp;</a>
-
-If you are upgrading StoRM from v1.11.11 check the following instructions.
-
-#### 1. Update the involved packages
-
-Services to be updated are:
-
-* storm-backend-server
-* storm-dynamic-info-provider
-* storm-frontend-server
-* storm-webdav
-* storm-native-libs
-* storm-native-libs-gpfs (if installed)
-* storm-globus-gridftp-server
-* storm-globus-gridftp-server
-* yaim-storm
-
-Example:
-
-    $ yum update storm-backend-server storm-dynamic-info-provider storm-frontend-server storm-webdav storm-native-libs storm-globus-gridftp-server storm-native-libs-gpfs storm-globus-gridftp-server yaim-storm
-
-##### 2. Update the namespace schema (if necessary)
-
-You could have a `namespace-1.5.0.xsd.rpmnew` file on disk. In case, update your
-schema as follow:
-
-    $ cd /etc/storm/backend-server
-    $ mv namespace-1.5.0.xsd namespace-1.5.0.xsd.rpmold
-    $ mv namespace-1.5.0.xsd.rpmnew namespace-1.5.0.xsd
-
-##### 3. Remove `storm-gridhttps-plugin`
-
-It's a component that is no more used and with old java dependencies that
-**MUST** be removed:
-
-    $ yum remove storm-gridhttps-plugin
-
-##### 4. Remove old Java versions
-
-Since this version, the `storm-backend-server`, `storm-webdav` and
-`storm-native-libs` rpms explicitly **REQUIRES JAVA 8**.
-
-`java -version` will tell which is the active version on your system:
-
-    $ java -version
-    openjdk version "1.8.0_131"
-    OpenJDK Runtime Environment (build 1.8.0_131-b11)
-    OpenJDK 64-Bit Server VM (build 25.131-b11, mixed mode)
-
-Remove old java versions installed on your system with the following command:
-
-    $ yum remove java-1.6.0-openjdk java-1.7.0-openjdk java-1.7.0-openjdk-devel
-
-If you have a more complex deployment and you can't remove them, you can try to
-configure the active JRE using update-alternatives:
-
-    $ update-alternatives --config java
-
-##### 5. Relaunch YAIM configuration
-
-Example with configuration file `/etc/storm/siteinfo/storm.def`:
-
-    $ /opt/glite/yaim/bin/yaim -c -s /etc/storm/siteinfo/storm.def \
-      -n se_storm_backend \
-      -n se_storm_frontend \
-      -n se_storm_gridftp \
-      -n se_storm_webdav
-
-Read more [here](#launchingyaim) about YAIM.
-
-### Upgrade from versions earlier than v1.11.11 <a name="upgradeold">&nbsp;</a>
-
-Go to [releases page][releases] and read the upgrading instructions from the release notes.
+If you are upgrading from StoRM v1.11.13 or earlier versions please follow
+[these instructions][upgrade-13] before.
 
 ## Installation Prerequisites <a name="prerequisites">&nbsp;</a>
 
@@ -1739,9 +1558,12 @@ You can found CDMI StoRM details about installation and configuration [here][ind
 [webdav-guide]: storm-webdav-guide.html
 [tpc-guide]: tpc.html
 [dip-guide]: storm-info-provider.html
-[storm-gridhttps-guide]: storm-gridhttps-guide.html
 [used-space-example]: {{site.baseurl}}/documentation/how-to/how-to-initialize-storage-area-used-space/
 [releases]: {{site.baseurl}}/releases.html
+
+[upgrade-webdav]: {{site.baseurl}}/release-notes/storm-webdav/1.1.0/
+[upgrade-info-provider]: {{site.baseurl}}/release-notes/storm-dynamic-info-provider/1.8.1/
+[upgrade-13]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.14/#upgrading
 
 [stable-storm-repoview]: https://repo.cloud.cnaf.infn.it/repository/storm/stable/el6/x86_64/repoview/index.html
 

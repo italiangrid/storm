@@ -13,35 +13,28 @@ title: StoRM releases
 
 ### Repositories <a name="stable-releases">&nbsp;</a>
 
+> <span class="label label-success">README</span> You **must** have **UMD repositories** installed for your setup to work as
+expected. Read and follow [UMD repositories installation instructions][umd-install-guide].
+
 > <span class="label label-success">README</span> Since
 [StoRM v1.11.14]({{site.baseurl}}/release-notes/StoRM-v1.11.14.html)
-the **stable repository has been migrated** and beta and nightly repositories have
-been added. You should clear the old StoRM stable `.repo` file. Don't forget to
-disable beta and nightly repositories if you want to install them.
+the package repository **has been migrated** to _**repo.cloud.cnaf.infn.it**_.
+Be sure to upgrade your repository configuration.
 
 All the StoRM components are certified to work on RHEL 6 platforms.
-Some components have also been built for RHEL 7.
+Some components have also been released for RHEL 7.
 
 [<i class="icon-search"></i> Browse all StoRM's repositories][storm-repo-index].
 
 {% include download/repositories.html %}
 
-> <span class="label label-success">README</span> You should also have UMD repositories installed for your setup to work as
-expected. Read and follow [UMD repositories installation instructions][umd-install-guide].
 
 #### Install Repositories
 
+Install StoRM RHEL6 package repository as follow:
+
 ```shell
-# Install StoRM RHEL6 stable repository
 yum-config-manager --add-repo https://repo.cloud.cnaf.infn.it/repository/storm/stable/storm-stable-centos6.repo
-
-# Install StoRM RHEL6 beta repository and disable it
-yum-config-manager --add-repo https://repo.cloud.cnaf.infn.it/repository/storm/beta/storm-beta-centos6.repo
-yum-config-manager --disable storm-beta-centos6
-
-# Install StoRM RHEL6 nightly repository and disable it
-yum-config-manager --add-repo https://repo.cloud.cnaf.infn.it/repository/storm/nightly/storm-nightly-centos6.repo
-yum-config-manager --disable storm-nightly-centos6
 ```
 
 ### Source code

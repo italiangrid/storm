@@ -50,15 +50,27 @@ Update package:
 
     yum update storm-dynamic-info-provider
 
-Re-configure info provider:
+To publish a WebDAV endpoint use `STORM_WEBDAV_POOL_LIST` variable instead of
+the deprecated variables:
 
-    /usr/libexec/storm-info-provider configure
+- STORM_GRIDHTTPS_ENABLED
+- STORM_GRIDHTTPS_PUBLIC_HOST
+- STORM_GRIDHTTPS_HTTP_PORT
+- STORM_GRIDHTTPS_HTTPS_PORT
 
-Restart BDII service:
+All the webdav endpoints must be declared as a comma-separated list:
 
-    service bdii restart
+```
+STORM_WEBDAV_POOL_LIST=http://storm-webdav.example.org:8085,https://storm-webdav.example.org:8443
+```
 
-Alternatively, you can simply update the package and run YAIM.
+Then re-launch YAIM.
+
+The deprecated variables can still be used within StoRM 1.11.15 but they won't be
+supported by next releases.
+
+This migration/upgrade allows site administrators to publish a well defined list
+of DAV endpoints, in order to overcome the previous limitations.
 
 You can find information about upgrade, clean installation and configuration of
 StoRM services in the [System Administration Guide][storm-sysadmin-guide].

@@ -59,8 +59,7 @@ This release:
 * avoids an indefinitely growth of the threads queue size due to the the
 incoming requests to Frontend and the consequent block of the acceptor thread;
 * fixes the `maxThread` Backend setting which wasn't honored as expected;
-* improves Backend's startup thanks to a refactoring of the init scripts
-(read more [here][upgrading-trouble] about troubleshooting);
+* improves Backend's startup thanks to a refactoring of the init scripts;
 * allows to specify multiple WebDAV endpoints to be published through the info
 provider, by using a new YAIM variable `STORM_WEBDAV_POOL_LIST`
 (read more [here][webdav-pool-list]);
@@ -119,6 +118,5 @@ UMD-3 repositories are currently EOL so **we encourage to use UMD-4**. Read the 
 [upgrade-from-11]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15/#upgrade11
 [upgrade-from-old]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15/#upgradeold
 
-[upgrading-trouble]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15#important1
 [webdav-tpc-aliases]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15#important2
 [webdav-pool-list]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15#important3
