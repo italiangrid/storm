@@ -13,18 +13,17 @@ Released on **{{ page.release_date }}** as an update of [StoRM v. 1.11.15][relea
 
 ### Description
 
-This release implements basic support for Third-Party-Copy, which needs to be
-properly configured in order to make service working after the update
-(read more [here][webdav-tpc-aliases]).
+This release introduces:
 
-Read both [StoRM WebDAV service installation and configuration guide][dav-guide] and
-[Third-Party-Copy guide][tpc-guide] for more info.
+- support for third-party copy transfers implemented by extending the semantic
+  of the WebDAV copy method;
+- support for token-based authentication and authorization, by introducing an
+  internal OAuth authorization server that can be used to issue tokens to
+  client authenticated with VOMS credentials
+- support for OpenID connect authentication and authorization on storage areas
 
-Other useful links:
-
-- [LCGDM HTTP/WebDAV Third Party Copy extension](https://svnweb.cern.ch/trac/lcgdm/wiki/Dpm/WebDAV/Extensions#ThirdPartyCopies)
-- [LCG twiki on HTTP/WebDAV Third-Party-Copy](https://twiki.cern.ch/twiki/bin/view/LCG/HttpTpc)
-- [HTTP/WebDAV Third-Party-Copy Technical Details](https://twiki.cern.ch/twiki/bin/view/LCG/HttpTpcTechnical)
+More information can be found in the [StoRM WebDAV service installation and
+configuration guide][dav-guide] and [here][tpc-guide].
 
 ### Enhancements
 
@@ -32,39 +31,90 @@ Other useful links:
 
 ### Installation and configuration
 
-Update package:
+Update the StoRM WebDAV package:
 
     yum update storm-webdav
 
-After the service update, admins MUST declare all the hostnames that has to be
-recognized as 'local' when a _Destination_ header is specified.
-As better explained into [this guide][tpc-guide], a list of
-`STORM_WEBDAV_HOSTNAME_{N}` variables must be set into
-`/etc/sysconfig/storm-webdav`.
+#### Template configuration files update
 
-If you have a single WebDAV endpoint, with `storm.example` as FQDN for example,
-append the following line to `/etc/sysconfig/storm-webdav`:
+StoRM WebDAV 1.1.0 introduces changes in the template configuration file:
 
-```bash
+
+    /etc/sysconfig/storm-webdav
+
+and in the configuration files for the logging facilities:
+
+
+    /etc/storm/webdav/logback.xml
+    /etc/storm/webdav/logback-access.xml
+
+The new files provided by the updated packages must be used, which will
+show up as .rpmnew files (when there are local changes to the configuration),
+i.e.:
+
+
+    /etc/sysconfig/storm-webdav.rpmnew
+    /etc/storm/webdav/logback.xml.rpmnew
+    /etc/storm/webdav/logback-access.xml.rpmnew
+
+We recommend that you backup your current configuration file:
+
+  cp /etc/sysconfig/storm-webdav /etc/syconfig/storm-webav.bkp
+
+And port the changes in such file to the new template:
+
+  cp /etc/sysconfig/storm-webdav.rpmnew /etc/syconfig/storm-webav
+
+#### Hostname configuration
+
+Support for third-party transfers is implemented by supporting a COPY method
+request where the Source or Destination header points to a remote resource.
+In order to tell apart remote resources from local ones, StoRM webdav must be
+configured accordingly.
+
+This is done via the `STORM_WEBDAV_HOSTNAME_0`, `STORM_WEBDAV_HOSTNAME_1`, …,
+environment variables in `/etc/sysconfig/storm-wedav`, which allow to define
+for which hostnames (and aliases) the service is serving requests.
+
+Example:
+
+```
 STORM_WEBDAV_HOSTNAME_0="storm.example"
+STORM_WEBDAV_HOSTNAME_1="alias.for.storm.example"
 ```
 
-Then restart the service:
+#### OAuth authorization service configuration
+
+To support delegation without proxy certificates, StoRM WebDAV introduces
+token-based authorization via a local OAuth authorization server that can issue
+authorization tokens to clients authenticated with VOMS proxies.
+
+Instructions on how to configure properly the authorization server are given in
+[this document][tpc-guide]. The default configuration should work out of the
+box for non-replicated deployments, but be sure to 
+
+- change the secret used to sign the tokens, i.e. provide a sensible value
+  (longer than 32 characters) for the `STORM_WEBDAV_AUTHZ_SERVER_SECRET`
+  variable 
+- set `STORM_WEBDAV_REQUIRE_CLIENT_CERT=false` so that client certificate
+  authentication is no longer required
+  
+in `/etc/sysconfig/storm-webdav`.
+
+Once the above actions have been performed, you can restart the service with
+the following command:
 
 ```
 service storm-webdav restart
 ```
 
-Alternatively, you can re-run YAIM after the fix.
-
-Check the the [StoRM WebDAV installation and configuration guide][storm-webdav-guide]
-for detailed installation and configuration information.
-
-For the other StoRM services, check the the [System Administration Guide][storm-sysadmin-guide].
+Check the the [StoRM WebDAV installation and configuration
+guide][storm-webdav-guide] for detailed installation and configuration
+information.
 
 [release-notes]: {{site.baseurl}}/release-notes/StoRM-v1.11.15.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15
 [dav-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15/storm-webdav-guide.html
 [tpc-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15/tpc.html
-
+[tpc-technical]: https://twiki.cern.ch/twiki/bin/view/LCG/HttpTpcTechnical
 [webdav-tpc-aliases]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15#important2
