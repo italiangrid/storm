@@ -1,3 +1,3 @@
 #!/bin/bash
 
-bundle exec jekyll serve --baseurl ''
+bundle exec jekyll serve --baseurl '' --safe

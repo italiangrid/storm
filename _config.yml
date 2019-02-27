@@ -5,6 +5,10 @@ emptyArray: []
 kramdown:
   input: GFM
   hard_wrap: false
+
+whitelist:
+  - jekyll-redirect-from
+
 plugins:
   - jekyll-redirect-from
 
