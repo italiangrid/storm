@@ -6,13 +6,14 @@
           <button id="release-button" type="button" class="btn btn-mini pull-right"
             data-toggle="collapse" data-target=".collapse">Show older releases</button>
       </th>
+      <th class="col-md-2">Platforms</th>
     </tr>
   </thead>
   <tbody>
 {% for component in site.data.versions.components %}
   <tr>
-  <td> {{component[1].name }} </td>
-  <td>
+    <td> <a href="{{component[1].repo}}">{{component[1].name}}</a> </td>
+    <td>
       <ul class="unstyled" style="margin: 0 0;">
         <li>
           <a href="{{site.baseurl}}{{site.releasenotes_path}}/{{component[0]}}/{{component[1].current}}">{{component[1].current}}</a>
@@ -22,8 +23,13 @@
           <li class="collapse"><a href="{{site.baseurl}}{{site.releasenotes_path}}/{{component[0]}}/{{version}}">{{version}}</a></li>
         {% endfor %}
     {% endif %}
-     </ul>
-  </td>
+      </ul>
+    </td>
+    <td class="col-md-2">
+      {% for platform in component[1].platforms %}
+      <span class="label {% if platform == 'centos6' %} label-success {% else %} label-info {% endif %}">{{platform}}</span>
+      {% endfor %}
+    </td>
   </tr>
 {% endfor %}
   </tbody>

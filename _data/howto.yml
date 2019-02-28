@@ -6,6 +6,12 @@
     - name: "1.11.2"
       relative-link: "/documentation/how-to/basic-storm-standalone-configuration/1.11.2/"
 
+- title: "Manually kill StoRM backend process(es)"
+  relative-link: "/documentation/how-to/kill-backend/"
+  description: "Example of how to manually kill StoRM backend process"
+  last-update: "27/02/2019"
+  older-versions: []
+
 - title: "Enable StoRM GridHTTPs component"
   relative-link: "/documentation/how-to/basic-storm-standalone-configuration/1.11.7/"
   description: "Example of a minimal standalone deployment of StoRM."

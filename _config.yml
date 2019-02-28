@@ -5,21 +5,26 @@ emptyArray: []
 kramdown:
   input: GFM
   hard_wrap: false
+
+whitelist:
+  - jekyll-redirect-from
+
 plugins:
   - jekyll-redirect-from
 
 baseurl: /storm
 future: true
 
-issue_base_url: "https://issues.infn.it/browse/"
+issue_base_url: "https://issues.infn.it/jira/browse/"
 website_base_url: "http://italiangrid.github.io/storm"
 repo_base_url: "https://github.com/italiangrid"
 
 howto_path: "/documentation/how-to"
 releasenotes_path: "/release-notes"
 
-latest_release: 1.11.14
+latest_release: 1.11.15
+latest_release_date: 28/02/2019
 
-sysadmin_guide_version: 1.11.14
+sysadmin_guide_version: 1.11.15
 functional_description_version: 1.11.2
 webdav_guide_version: 1.0.2

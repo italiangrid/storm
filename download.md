@@ -3,63 +3,39 @@ layout: default
 title: StoRM releases
 ---
 
-# StoRM releases
+## StoRM
 
-The current release is [StoRM v.{{site.latest_release}}][latest_release_notes].
+{% include download/current-release.html %}
+
+### Components
 
 {% include download/components-list.html %}
 
-Information about previous releases can be found [here](releases.html) or on the [EMI website](http://www.eu-emi.eu).
+### Repositories <a name="stable-releases">&nbsp;</a>
 
-### Stable releases <a name="stable-releases">&nbsp;</a>
+> <span class="label label-success">README</span> You **must** have **UMD repositories** installed for your setup to work as
+expected. Read and follow [UMD repositories installation instructions][umd-install-guide].
 
-Latest StoRM packages released can be found in the [StoRM stable SL6 repository][stable-repoview].
+> <span class="label label-success">README</span> Since
+[StoRM v1.11.14]({{site.baseurl}}/release-notes/StoRM-v1.11.14.html)
+the package repository **has been migrated** to _**repo.cloud.cnaf.infn.it**_.
+Be sure to upgrade your repository configuration.
 
-To install StoRM stable repository:
+All the StoRM components are certified to work on RHEL 6 platforms.
+Some components have also been released for RHEL 7.
 
-- clean all old StoRM repository files:
+[<i class="icon-search"></i> Browse all StoRM's repositories][storm-repo-index].
 
+{% include download/repositories.html %}
+
+
+#### Install Repositories
+
+Install StoRM RHEL6 package repository as follow:
+
+```shell
+yum-config-manager --add-repo https://repo.cloud.cnaf.infn.it/repository/storm/stable/storm-stable-centos6.repo
 ```
-rm -rf /etc/yum.repos.d/storm_*.repo
-```
-
-- download stable repository [.repo][stable-repo-file] file:
-
-```
-wget https://repo.cloud.cnaf.infn.it/repository/storm/stable/storm-stable-centos6.repo -O /etc/yum.repos.d/storm-stable-centos6.repo
-```
-
-Note that you should also have UMD repositories installed for your setup 
-to work as expected.
-
-Read and follow [UMD repositories installation instructions][umd-install-guide].
-
----
-
-### Preview releases
-
-Packages ready to be tested but not officially released can be found in the [StoRM beta SL6 repository][beta-repoview].
-
-Download beta repository [.repo][beta-repo-file] file as follow:
-
-```
-wget https://repo.cloud.cnaf.infn.it/repository/storm/beta/storm-beta-centos6.repo -O /etc/yum.repos.d/storm-beta-centos6.repo
-```
-
----
-
-### Nightly builds
-
-Development packages are built regularly on our continuous integration infrastructure.
-The nigthly built packages can be found in the [StoRM nightly SL6 repository][nightly-repoview].
-
-Download nightly repository [.repo][nightly-repo-file] file as follow:
-
-```
-wget https://repo.cloud.cnaf.infn.it/repository/storm/nightly/storm-nightly-centos6.repo -O /etc/yum.repos.d/storm-nightly-centos6.repo
-```
-
----
 
 ### Source code
 
@@ -76,8 +52,7 @@ The StoRM source is available on [Github](https://github.com) in the following r
 - [StoRM GridFTP](https://github.com/italiangrid/storm-gridftp-dsi)
 - [CDMI StoRM](https://github.com/italiangrid/cdmi-storm)
 
-
-[latest_release_notes]: {{site.baseurl}}{{site.releasenotes_path}}/StoRM-v{{site.latest_release}}.html
+[storm-repo-index]: https://repo.cloud.cnaf.infn.it/repository/storm/index.html
 
 [stable-repo]: https://repo.cloud.cnaf.infn.it/#browse/browse:storm:stable
 [stable-repoview]: https://repo.cloud.cnaf.infn.it/repository/storm/stable/el6/x86_64/repoview/index.html

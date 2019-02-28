@@ -1,7 +1,9 @@
 ---
 layout: toc
 title: StoRM Storage Resource Manager - System Administration Guide
-version: 1.11.14
+version: 1.11.15
+redirect_from:
+  - /documentation/sysadmin-guide/
 ---
 
 # StoRM System Administration Guide
@@ -10,11 +12,7 @@ version: {{ page.version }}
 
 **Table of contents**
 
-* [Upgrade to StoRM v1.11.14](#upgrading)
-  * [Upgrade from StoRM v1.11.13](#upgrade13)
-  * [Upgrade from StoRM v1.11.12](#upgrade12)
-  * [Upgrade from StoRM v1.11.11](#upgrade11)
-  * [Upgrade from versions earlier than v1.11.11](#upgradeold)
+* [Upgrade from StoRM v1.11.14](#upgrading)
 * [Installation Prerequisites](#prerequisites)
   * [Platform](#platform)
   * [Requirements](#requirements)
@@ -46,127 +44,53 @@ version: {{ page.version }}
 
 ------
 
-## Upgrade to StoRM v1.11.14 <a name="upgrading">&nbsp;</a>
+## Upgrade from StoRM v1.11.14 <a name="upgrading">&nbsp;</a>
 
-### Upgrade from StoRM v1.11.13 <a name="upgrade13">&nbsp;</a>
+The services that needs to be updated are:
 
-Services to be updated are:
+* `storm-backend-server`
+* `storm-dynamic-info-provider`
+* `storm-frontend-server`
+* `storm-webdav`
+* `yaim-storm`
 
-* storm-backend-server
-* storm-frontend-server
-* storm-native-libs
-* storm-native-libs-gpfs (if installed)
-* storm-globus-gridftp-server
-* storm-xmlrpc-c
-* yaim-storm
+#### Update packages
 
-On Backend host update and restart the following services and libraries:
+ ```bash
+yum update storm-backend-server storm-dynamic-info-provider storm-frontend-server storm-webdav yaim-storm
+```
 
-	yum update storm-backend-server storm-native-libs storm-native-libs-gpfs storm-xmlrpc-c yaim-storm
-    service storm-backend-server restart
+Split this command properly if you have a distributed deployment.
 
-or re-launch YAIM node configuration.
+#### Update configuration
 
-On Frontend host, update and restart the service:
+- StoRM WebDAV [v1.1.0][upgrade-webdav] introduces the support to
+Third-Party-Copy and needs to be configured well. Please read and follow the
+[StoRM WebDAV release notes upgrade instructions][upgrade-webdav] to properly
+configure the service.
 
-    yum update storm-frontend-server
-    service storm-frontend-server restart
+- StoRM Info Provider [v1.8.1][upgrade-info-provider] introduces
+a new YAIM variable `STORM_WEBDAV_POOL_LIST` that can be used to specify a list
+of WebDAV endpoints, in order to avoid the previous limitation of one. Please
+read the [StoRM Info Provider release notes upgrade instructions][upgrade-info-provider]
+to properly upgrade your configuration.
 
-or re-launch YAIM node configuration.
+#### Run YAIM
 
-On GridFTP host, update and restart:
+Run YAIM specifying the proper components profiles:
 
-    yum update storm-globus-gridftp-server
-    service storm-globus-gridftp restart
+```bash
+/opt/glite/yaim/bin/yaim -c -s /etc/storm/siteinfo/storm.def \
+    -n se_storm_backend \
+    -n se_storm_frontend \
+    -n se_storm_gridftp \
+    -n se_storm_webdav
+```
 
-or re-launch YAIM node configuration.
+## Upgrade from earlier versions <a name="upgrading-earlier">&nbsp;</a>
 
-### Upgrade from StoRM v1.11.12 <a name="upgrade12">&nbsp;</a>
-
-Services to be updated are:
-
-* storm-backend-server
-* storm-dynamic-info-provider
-* yaim-storm
-
-Run update:
-
-    $ yum update storm-backend-server yaim-storm storm-dynamic-info-provider
-
-and reconfigure StoRM Backend node with YAIM.
-Example with configuration file `/etc/storm/siteinfo/storm.def`:
-
-    $ /opt/glite/yaim/bin/yaim -c -s /etc/storm/siteinfo/storm.def -n se_storm_backend
-
-Read more [here](#launchingyaim) about YAIM.
-
-### Upgrade from StoRM v1.11.11 <a name="upgrade11">&nbsp;</a>
-
-Follow the instructions below when you are upgrading StoRM from v1.11.11.
-
-#### 1. Update the involved packages
-
-Services to be updated are:
-
-* storm-backend-server
-* storm-dynamic-info-provider
-* storm-native-libs
-* storm-frontend-server
-* storm-webdav
-* yaim-storm
-
-Example:
-
-    $ yum update storm-backend-server storm-dynamic-info-provider storm-frontend-server storm-webdav storm-native-libs yaim-storm
-
-##### 2. Update the namespace schema
-
-You should have a `.rpmnew` file on disk:
-
-    $ cd /etc/storm/backend-server
-    $ mv namespace-1.5.0.xsd namespace-1.5.0.xsd.rpmold
-    $ mv namespace-1.5.0.xsd.rpmnew namespace-1.5.0.xsd
-
-##### 3. Remove `storm-gridhttps-plugin`
-
-It's a component that is no more used and with old java dependencies that **MUST** be removed:
-
-    $ yum remove storm-gridhttps-plugin
-
-##### 4. Remove old Java versions
-
-Since this version, the `storm-backend-server`, `storm-webdav` and `storm-native-libs` rpms explicitly **REQUIRES JAVA 8**.
-
-`java -version` will tell which is the active version on your system:
-
-    $ java -version
-    openjdk version "1.8.0_131"
-    OpenJDK Runtime Environment (build 1.8.0_131-b11)
-    OpenJDK 64-Bit Server VM (build 25.131-b11, mixed mode)
-
-Remove old java versions installed on your system with the following command:
-
-    $ yum remove java-1.6.0-openjdk java-1.7.0-openjdk java-1.7.0-openjdk-devel
-
-If you have a more complex deployment and you can't remove them, you can try to configure the active JRE using update-alternatives:
-
-    $ update-alternatives --config java
-
-##### 5. Relaunch YAIM configuration
-
-Example with configuration file `/etc/storm/siteinfo/storm.def`:
-
-    $ /opt/glite/yaim/bin/yaim -c -s /etc/storm/siteinfo/storm.def \
-      -n se_storm_backend \
-      -n se_storm_frontend \
-      -n se_storm_gridftp \
-      -n se_storm_webdav
-
-Read more [here](#launchingyaim) about YAIM.
-
-### Upgrade from versions earlier than v1.11.11 <a name="upgradeold">&nbsp;</a>
-
-Go to [releases page][releases] and read the upgrading instructions from the release notes.
+If you are upgrading from StoRM v1.11.13 or earlier versions please follow
+[these instructions][upgrade-13] before.
 
 ## Installation Prerequisites <a name="prerequisites">&nbsp;</a>
 
@@ -375,7 +299,7 @@ StoRM depends on EPEL 6 repositories.
 
 Install them as follows:
 
-    yum localinstall http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+    yum localinstall https://dl.fedoraproject.org/pub/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm
 
 #### UMD Repositories <a name="umdrepos">&nbsp;</a>
 
@@ -514,8 +438,8 @@ STORM_INFO_HTTP_SUPPORT=true
 # Enable HTTPS Transfer Protocol
 STORM_INFO_HTTPS_SUPPORT=true
 
-# Old named variable used to indicate that there's a WebDAV endpoint running
-STORM_GRIDHTTPS_ENABLED=true
+# Publish the following WebDAV endpoints
+STORM_WEBDAV_POOL_LIST=https://$STORM_BACKEND_HOST:8443,http://$STORM_BACKEND_HOST:8085
 ```
 
 Example of `storm-users.conf` file:
@@ -603,7 +527,6 @@ if you like the default set or if you want to change those settings.
 |`STORM_FRONTEND_OVERWRITE`           |This parameter tells YAIM to overwrite storm-frondend.conf configuration file.<br/>Optional variable. Available values: true, false. Default value: **true**
 |`STORM_FRONTEND_PORT`                |StoRM Frontend service port. Optional variable. Default value: **8444**
 |`STORM_PEPC_RESOURCEID`              |Argus StoRM resource identifier. Optional variable. Default value: **storm**
-|`STORM_PROXY_HOME`                   |Directory used to exchange proxies.<br/>Optional variable. Default value: **/etc/storm/tmp**
 |`STORM_USER`                         |Service user.<br/>Optional variable. Default value: **storm**
 
 {% assign label_title="Table 2" %}
@@ -646,16 +569,13 @@ and check the other variables to evaluate if you like the default set or if you 
 |`STORM_FSTYPE`                     |File System Type (default value for all Storage Areas). Note: you may change the settings for each `SA` acting on `STORM_[SA]_FSTYPE` variable.<br/>Optional variable. Available values: posixfs, gpfs and test. Default value: **posixfs**
 |`STORM_GRIDFTP_POOL_LIST`          |GridFTP servers pool list (default value for all Storage Areas). Note: you may change the settings for each `SA` acting on `STORM_[SA]_GRIDFTP_POOL_LIST` variable.<br/>ATTENTION: this variable define a list of pair values space-separated: host weight, e.g.: `STORM_GRIDFTP_POOL_LIST="host1 weight1, host2 weight2, host3 weight3"` Weight has 0-100 range; if not specified, weight will be 100.<br/>Mandatory variable. Default value: **STORM_BACKEND_HOST**
 |`STORM_GRIDFTP_POOL_STRATEGY`      |Load balancing strategy for GridFTP server pool (default value for all Storage Areas). Note: you may change the settings for each `SA` acting on `STORM_[SA]_GRIDFTP_POOL_STRATEGY` variable.<br/>Optional variable. Available values: round-robin, smart-rr, random, weight. Default value: **round-robin**
-|`STORM_GRIDHTTPS_PUBLIC_HOST`      |StoRM GridHTTPs service public host. It's used by StoRM Info Provider to publish the WebDAV endpoint into the Resource BDII.<br/>Optional variable, **mandatory if the administrator wants to publish a WebDAV endpoint**. Default value: **STORM_BACKEND_HOST**
 |`STORM_INFO_FILE_SUPPORT`          |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip.<br/>Optional variable. Available values: true, false. Default value: **true**
 |`STORM_INFO_GRIDFTP_SUPPORT`       |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip.<br/>Optional variable. Available values: true, false. Default value: **true**
 |`STORM_INFO_RFIO_SUPPORT`          |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip. <br/>Optional variable. Available values: true, false. Default value: **false**
 |`STORM_INFO_ROOT_SUPPORT`          |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip.<br/>Optional variable. Available values: true, false. Default value: **false**
 |`STORM_INFO_HTTP_SUPPORT`          |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip.<br/>Optional variable. Available values: true, false. Default value: **false**
 |`STORM_INFO_HTTPS_SUPPORT`         |If set to false, the following variables prevent the corresponding protocol to be published by the StoRM gip.<br/>Optional variable. Available values: true, false. Default value: **false**
-|`STORM_INFO_OVERWRITE`             |This parameter tells YAIM to overwrite static-file-StoRM.ldif configuration file.<br/>Optional variable. Available values: true, false. Default value: **true**
 |`STORM_NAMESPACE_OVERWRITE`        |This parameter tells YAIM to overwrite namespace.xml configuration file. Optional variable. Available values: true, false. Default value: **true**
-|`STORM_PROXY_HOME`                 |Directory used to exchange proxies.<br/>Optional variable. Default value: **/etc/storm/tmp**
 |`STORM_RFIO_HOST`                  |Rfio server (default value for all Storage Areas). Note: you may change the settings for each `SA` acting on `STORM_[SA]_RFIO_HOST` variable.<br/>Optional variable. Default value: **STORM_BACKEND_HOST**
 |`STORM_ROOT_HOST`                  |Root server (default value for all Storage Areas). Note: you may change the settings for each `SA` acting on `STORM_[SA]_ROOT_HOST` variable.<br/>Optional variable. Default value: **STORM_BACKEND_HOST**
 |`STORM_SERVICE_SURL_DEF_PORTS`     |Comma-separated list of managed SURL's default ports used to check SURL validity.<br/>Optional variable. Default value: **8444**
@@ -731,8 +651,11 @@ You can edit the optional variables summarized in [Table 5](#Table5).
 
 ### StoRM WebDAV variables <a name="webdavyaimvars">&nbsp;</a>
 
-The StoRM WebDAV service replaces the StoRM GridHTTPS service.
-To learn how to configure it refer to the [StoRM WebDAV service installation and configuration guide][webdav-guide].
+Follow [StoRM WebDAV service installation and configuration][webdav-guide] guide
+to properly configure the service.
+
+Read also [StoRM WebDAV support for Third Party Copy transfers][tpc-guide] guide
+to properly configure the support for Third Party Copy transfers.
 
 ### Launching YAIM <a name="launchingyaim">&nbsp;</a>
 
@@ -1614,175 +1537,9 @@ After restarting the service, all LCMAPS calls will be logged to the new file.
 
 ## Information service <a name="informationservice">&nbsp;</a>
 
-The WLCG Information System is used to discover services and get status information about WLCG resources.
-The **BDII** (Berkeley Database Information Index) is a Perl/BDB 'glue' used to manage LDAP updates.
-See [Grid Information System](http://gridinfo.web.cern.ch/) page for more details.
-
-### StoRM Info Provider <a name="storminfoprovider">&nbsp;</a>
-
-StoRM Info Provider is the StoRM component that manages how and what information are published on the BDII.
-By default, the BDII uses three directories to obtain information sources:
-
-* **ldif**: static LDIF files should be placed in this directory;
-* **provider**: here information providers are placed and run once at BDII startup;
-* **plugin**: scripts periodically run to update information.
-
-These directories are located by default into `/var/lib/bdii/gip`.
-
-#### Configuration <a name="ipconfiguration">&nbsp;</a>
-
-StoRM DIP has not a configuration file, its behavior and outputs depend on the site configuration which is processed by yaim-storm and stored into */etc/storm/info-provider/storm-yaim-variables.conf*.
-
-However, from [StoRM DIP v1.7.7][info-provider-177] a new YAIM variable has been introduced: `STORM_GRIDHTTPS_PUBLIC_HOST`.
-
-Similar to the meaning of `STORM_FRONTEND_PUBLIC_HOST`, it represents the FQDN of the hostname where a webdav endpoint is installed, or the public FQDN name of the webdav endpoint hostname in case there's a DNS load balancing, for example.
-
-StoRM DIP will publish `STORM_GRIDHTTPS_PUBLIC_HOST` as a WebDAV endpoint only if `STORM_GRIDHTTPS_ENABLED` is true.
-
-#### Usage <a name="ipusage">&nbsp;</a>
-
-    /usr/libexec/storm-info-provider -h
-
-    usage: storm-info-provider [-h] [-v LOG_LEVEL] [-o LOG_FILENAME]
-                           {configure,get-static-ldif,get-update-ldif} ...
-
-Options:
-
-* `-v`: `LOG_LEVEL` can be 10 (DEBUG), 20 (INFO - default), 30 (WARNING) and 40 (ERROR)
-* `-o`: all the log messages are printed on stderr by default but they can be redirected to an external `LOG_FILENAME` by specifying this option
-
-Example of usage with `configure`:
-
-    /usr/libexec/storm-info-provider configure -h
-
-    usage: storm-info-provider configure [-h] [-f FILEPATH]
-                                     [-g {glue13,glue2,all}]
-    optional arguments:
-      -h, --help            show this help message and exit
-      -f FILEPATH
-      -g {glue13,glue2,all}
-
-
-Options:
-
-* `-f`: the path of the file which contains all the StoRM related YAIM variables with their key-value pairs (default is `/etc/storm/info-provider/storm-yaim-variables.conf` which is the file created by yaim-storm)
-* `-g`: GLUE version selector (default: _all_)
-
-During configuration, yaim-storm creates `storm-yaim-variables.conf` and runs the StoRM Dynamic Info Provider script as follow:
-
-    /usr/libexec/storm-info-provider -v LOG_LEVEL configure -g all -f /etc/storm/info-provider/storm-yaim-variables.conf
-
-Example of output with `LOG_LEVEL=20`:
-
-    /usr/libexec/storm-info-provider configure
-
-    2014-09-04 10:40:34,271 root        : INFO Successfully created /etc/storm/info-provider/glite-info-glue13-service-storm.conf !
-    2014-09-04 10:40:34,271 root        : INFO Successfully created /var/lib/bdii/gip/provider/storm-glue13-provider !
-    2014-09-04 10:40:34,272 root        : INFO Successfully created /var/lib/bdii/gip/plugin/storm-glue13-plugin !
-    2014-09-04 10:40:34,321 root        : INFO Successfully created /var/lib/bdii/gip/ldif/storm-glue13-static.ldif !
-    2014-09-04 10:40:34,322 root        : INFO Successfully created /etc/storm/info-provider/glite-info-glue2-service-storm.conf !
-    2014-09-04 10:40:34,322 root        : INFO Successfully created /etc/storm/info-provider/glite-info-glue2-service-storm-endpoint-srm.conf !
-    2014-09-04 10:40:34,322 root        : INFO Successfully created /var/lib/bdii/gip/provider/storm-glue2-provider !
-    2014-09-04 10:40:34,323 root        : INFO Successfully created /var/lib/bdii/gip/plugin/storm-glue2-plugin !
-    2014-09-04 10:40:34,365 root        : INFO Successfully created /var/lib/bdii/gip/ldif/storm-glue2-static.ldif !
-    2014-09-04 10:40:34,365 root        : INFO Received configure - It took 0.04 sec
-
-Example of usage with `get-static-ldif`:
-
-    /usr/libexec/storm-info-provider get-static-ldif -h
-
-    usage: storm-info-provider get-static-ldif [-h] [-f FILEPATH]
-                                               [-g {glue13,glue2}]
-    optional arguments:
-      -h, --help         show this help message and exit
-      -f FILEPATH
-      -g {glue13,glue2}
-
-Options:
-
-* `-f`: the path of the file which contains all the StoRM related YAIM variables with their key-value pairs (default is `/etc/storm/info-provider/storm-yaim-variables.conf` which is the file created by yaim-storm)
-* `-g`: GLUE version selector (default: _glue2_)
-
-Example of a filtered output to obtain only the `dn` of the generated entries:
-
-    /usr/libexec/storm-info-provider get-static-ldif -g glue13 2>/dev/null | grep dn
-
-    dn: GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
-    dn: GlueSALocalID=tape:custodial:nearline,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
-    dn: GlueVOInfoLocalID=testers.eu-emi.eu,GlueSALocalID=tape:custodial:nearline,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
-    dn: GlueSALocalID=igi:replica:online,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
-    dn: GlueSALocalID=noauth:replica:online,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
-    dn: GlueSALocalID=nested:replica:online,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
-    dn: GlueVOInfoLocalID=testers.eu-emi.eu,GlueSALocalID=nested:replica:online,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
-    dn: GlueSALocalID=dteam:replica:online,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
-    dn: GlueVOInfoLocalID=dteam,GlueSALocalID=dteam:replica:online,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
-    dn: GlueSALocalID=testerseuemieu:replica:online,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
-    dn: GlueVOInfoLocalID=testers.eu-emi.eu,GlueSALocalID=testerseuemieu:replica:online,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
-    dn: GlueSEControlProtocolLocalID=srm_v2.2,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
-    dn: GlueSEAccessProtocolLocalID=file,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
-    dn: GlueSEAccessProtocolLocalID=gsiftp,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
-    dn: GlueSEAccessProtocolLocalID=xroot,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
-    dn: GlueSEAccessProtocolLocalID=http,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
-    dn: GlueSEAccessProtocolLocalID=https,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
-    dn: GlueSEAccessProtocolLocalID=webdav,GlueSEUniqueID=cloud-vm45.cloud.cnaf.infn.it,mds-vo-name=resource,o=grid
-
-The action `get-static-ldif` is not used by the installed scripts. However its functionality is internally used by the `configure` action to generate the static ldif files.
-
-Example of usage with `get-update-ldif`:
-
-    /usr/libexec/storm-info-provider get-update-ldif -h
-    usage: storm-info-provider get-static-ldif [-h] [-f FILEPATH]
-                                               [-g {glue13,glue2}]
-    optional arguments:
-      -h, --help         show this help message and exit
-      -f FILEPATH
-      -g {glue13,glue2}
-
-Options:
-
-* `-f`: the path of the file which contains all the StoRM related YAIM variables with their key-value pairs (default is `/etc/storm/info-provider/storm-yaim-variables.conf` which is the file created by yaim-storm)
-* `-g`: GLUE version selector (default: _glue2_)
-
-The plugin files created during `configure` phase runs StoRM DIP `get-update-ldif`.
-If StoRM service is down, an error is logged and user obtains the LDIF output useful to update the serving-state value of the endpoints.
-
-Example of a filtered output to obtain only the `dn` of the generated entries:
-
-    /usr/libexec/storm-info-provider get-update-ldif -g glue2 2>/dev/null | grep dn
-
-    dn: GLUE2EndpointID=cloud-vm45.cloud.cnaf.infn.it/storage/endpoint/SRM,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    dn: GLUE2EndpointID=cloud-vm45.cloud.cnaf.infn.it/storage/endpoint/HTTP,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    dn: GLUE2EndpointID=cloud-vm45.cloud.cnaf.infn.it/storage/endpoint/HTTPS,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    dn: GLUE2StorageServiceCapacityID=cloud-vm45.cloud.cnaf.infn.it/storage/capacity/online,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    dn: GLUE2StorageServiceCapacityID=cloud-vm45.cloud.cnaf.infn.it/storage/capacity/nearline,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    dn: GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/tape,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    dn: GLUE2StorageShareCapacityID=cloud-vm45.cloud.cnaf.infn.it/storage/share/tape/capacity/online,GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/tape,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    dn: GLUE2StorageShareCapacityID=cloud-vm45.cloud.cnaf.infn.it/storage/share/tape/capacity/nearline,GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/tape,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    dn: GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/igi,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    dn: GLUE2StorageShareCapacityID=cloud-vm45.cloud.cnaf.infn.it/storage/share/igi/capacity/online,GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/igi,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    dn: GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/noauth,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    dn: GLUE2StorageShareCapacityID=cloud-vm45.cloud.cnaf.infn.it/storage/share/noauth/capacity/online,GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/noauth,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    dn: GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/nested,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    dn: GLUE2StorageShareCapacityID=cloud-vm45.cloud.cnaf.infn.it/storage/share/nested/capacity/online,GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/nested,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    dn: GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/dteam,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    dn: GLUE2StorageShareCapacityID=cloud-vm45.cloud.cnaf.infn.it/storage/share/dteam/capacity/online,GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/dteam,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    dn: GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/testerseuemieu,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    dn: GLUE2StorageShareCapacityID=cloud-vm45.cloud.cnaf.infn.it/storage/share/testerseuemieu/capacity/online,GLUE2ShareID=cloud-vm45.cloud.cnaf.infn.it/storage/share/testerseuemieu,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-
-Example of the output generated when StoRM service is down:
-
-    service storm-backend-server stop
-
-    Stopping storm-backend-server                              [  OK  ]
-
-    /usr/libexec/storm-info-provider get-update-ldif -g glue2 2>/dev/null
-
-    dn: GLUE2EndpointID=cloud-vm45.cloud.cnaf.infn.it/storage/endpoint/SRM,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    GLUE2EndpointServingState: closed
-    dn: GLUE2EndpointID=cloud-vm45.cloud.cnaf.infn.it/storage/endpoint/HTTP,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    GLUE2EndpointServingState: closed
-    dn: GLUE2EndpointID=cloud-vm45.cloud.cnaf.infn.it/storage/endpoint/HTTPS,GLUE2ServiceID=cloud-vm45.cloud.cnaf.infn.it/storage,GLUE2GroupID=resource,o=glue
-    GLUE2EndpointServingState: closed
+StoRM Info Provider is the StoRM component that manages how and what
+information are published on the BDII service.
+To learn how to configure it refer to the [StoRM Info Provider administrator guide][dip-guide].
 
 ## CDMI StoRM <a name="cdmistorm">&nbsp;</a>
 
@@ -1823,10 +1580,14 @@ You can found CDMI StoRM details about installation and configuration [here][ind
 [X509_SA_conf_example]: {{site.baseurl}}/documentation/how-to/storage-area-configuration-examples/1.11.3/index.html#sa-anonymous-rw-x509
 [LDAPconfiguration]: {{site.baseurl}}/documentation/how-to/how-to-share-users-openldap/1.11.4/
 [webdav-guide]: storm-webdav-guide.html
-[storm-gridhttps-guide]: storm-gridhttps-guide.html
+[tpc-guide]: tpc.html
+[dip-guide]: storm-info-provider.html
 [used-space-example]: {{site.baseurl}}/documentation/how-to/how-to-initialize-storage-area-used-space/
-[info-provider-177]: {{site.baseurl}}/release-notes/storm-dynamic-info-provider/1.7.7/
 [releases]: {{site.baseurl}}/releases.html
+
+[upgrade-webdav]: {{site.baseurl}}/release-notes/storm-webdav/1.1.0/
+[upgrade-info-provider]: {{site.baseurl}}/release-notes/storm-dynamic-info-provider/1.8.1/
+[upgrade-13]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.14/#upgrading
 
 [stable-storm-repoview]: https://repo.cloud.cnaf.infn.it/repository/storm/stable/el6/x86_64/repoview/index.html
 
