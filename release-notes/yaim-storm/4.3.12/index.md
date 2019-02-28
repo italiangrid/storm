@@ -28,8 +28,7 @@ This release:
 `STORM_WEBDAV_POOL_LIST`, as a comma separated list
 (read more [here][webdav-pool-list]). The old strategy used to
 publish the StoRM WebDAV endpoint is still supported but deprecated;
-* exits with error in case StoRM Backend daemon fails on start-up;
-* removes stuff related to deprecated variables;
+* exits with error in case StoRM backend daemon fails on start-up;
 * fixes some configuration syntax errors.
 
 ### Bug fixes

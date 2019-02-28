@@ -22,8 +22,9 @@ This release introduces:
   client authenticated with VOMS credentials
 - support for OpenID connect authentication and authorization on storage areas
 
-More information can be found in the [StoRM WebDAV service installation and
-configuration guide][dav-guide] and [here][tpc-guide].
+More information can be found in the [StoRM WebDAV service installation and configuration][dav-guide]
+guide and in the [StoRM WebDAV support for Third Party Copy transfers][tpc-guide]
+guide.
 
 ### Enhancements
 
@@ -108,13 +109,11 @@ the following command:
 service storm-webdav restart
 ```
 
-Check the the [StoRM WebDAV installation and configuration
-guide][storm-webdav-guide] for detailed installation and configuration
-information.
+Check the the [StoRM WebDAV installation and configuration guide][dav-guide]
+for detailed installation and configuration information.
 
 [release-notes]: {{site.baseurl}}/release-notes/StoRM-v1.11.15.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15
 [dav-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15/storm-webdav-guide.html
 [tpc-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15/tpc.html
 [tpc-technical]: https://twiki.cern.ch/twiki/bin/view/LCG/HttpTpcTechnical
-[webdav-tpc-aliases]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15#important2

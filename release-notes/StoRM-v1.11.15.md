@@ -56,19 +56,15 @@ Supported platforms: <span class="label label-success">CentOS 6</span>
 
 This release:
 
-* avoids an indefinitely growth of the threads queue size due to the the
-incoming requests to Frontend and the consequent block of the acceptor thread;
-* fixes the `maxThread` Backend setting which wasn't honored as expected;
-* improves Backend's startup thanks to a refactoring of the init scripts;
+* implements proper limits for the incoming requests of frontend;
+* fixes the `synchcall.xmlrpc.maxthread` setting for XMLRPC requests;
+* improves backend's startup logic thanks to a refactoring of the init scripts;
 * allows to specify multiple WebDAV endpoints to be published through the info
 provider, by using a new YAIM variable `STORM_WEBDAV_POOL_LIST`
 (read more [here][webdav-pool-list]);
 * fixes minor issues on YAIM and storm-info-provider;
 * implements basic support for Third-Party-Copy in the StoRM WebDAV service
-which needs to be properly configured in order to make service working after the
-update (read more [here][webdav-tpc-aliases]);
-* clears old code and stuff related to deprecated variables from YAIM, Backend
-and Frontend.
+(read more [here][webdav-tpc-aliases]);
 
 #### Released components
 

@@ -12,7 +12,7 @@ version: {{ page.version }}
 
 **Table of contents**
 
-* [Upgrade to StoRM v1.11.15](#upgrading)
+* [Upgrade from StoRM v1.11.14](#upgrading)
 * [Installation Prerequisites](#prerequisites)
   * [Platform](#platform)
   * [Requirements](#requirements)
@@ -54,16 +54,38 @@ The services that needs to be updated are:
 * `storm-webdav`
 * `yaim-storm`
 
-**Important** - StoRM WebDAV v1.1.0 introduces the support to Third-Party-Copy and needs to be
-configured well. Please read and follow the [StoRM WebDAV release notes upgrade instructions][upgrade-webdav]
-to properly configure the service.
+#### Update packages
 
-**Important** - StoRM Info Provider v1.8.1 introduces a new YAIM variable `STORM_WEBDAV_POOL_LIST`
-that can be used to specify a list of WebDAV endpoints, in order to avoid the
-previous limitation of one. Please read the [StoRM Info Provider release notes upgrade instructions][upgrade-info-provider]
+ ```bash
+yum update storm-backend-server storm-dynamic-info-provider storm-frontend-server storm-webdav yaim-storm
+```
+
+Split this command properly if you have a distributed deployment.
+
+#### Update configuration
+
+- StoRM WebDAV [v1.1.0][upgrade-webdav] introduces the support to
+Third-Party-Copy and needs to be configured well. Please read and follow the
+[StoRM WebDAV release notes upgrade instructions][upgrade-webdav] to properly
+configure the service.
+
+- StoRM Info Provider [v1.8.1][upgrade-info-provider] introduces
+a new YAIM variable `STORM_WEBDAV_POOL_LIST` that can be used to specify a list
+of WebDAV endpoints, in order to avoid the previous limitation of one. Please
+read the [StoRM Info Provider release notes upgrade instructions][upgrade-info-provider]
 to properly upgrade your configuration.
 
-After the update and configuration upgrade, relaunch YAIM.
+#### Run YAIM
+
+Run YAIM specifying the proper components profiles:
+
+```bash
+/opt/glite/yaim/bin/yaim -c -s /etc/storm/siteinfo/storm.def \
+    -n se_storm_backend \
+    -n se_storm_frontend \
+    -n se_storm_gridftp \
+    -n se_storm_webdav
+```
 
 ## Upgrade from earlier versions <a name="upgrading-earlier">&nbsp;</a>
 
@@ -277,7 +299,7 @@ StoRM depends on EPEL 6 repositories.
 
 Install them as follows:
 
-    yum localinstall http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+    yum localinstall https://dl.fedoraproject.org/pub/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm
 
 #### UMD Repositories <a name="umdrepos">&nbsp;</a>
 
@@ -416,8 +438,8 @@ STORM_INFO_HTTP_SUPPORT=true
 # Enable HTTPS Transfer Protocol
 STORM_INFO_HTTPS_SUPPORT=true
 
-# Old named variable used to indicate that there's a WebDAV endpoint running
-STORM_GRIDHTTPS_ENABLED=true
+# Publish the following WebDAV endpoints
+STORM_WEBDAV_POOL_LIST=https://$STORM_BACKEND_HOST:8443,http://$STORM_BACKEND_HOST:8085
 ```
 
 Example of `storm-users.conf` file:

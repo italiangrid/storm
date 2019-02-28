@@ -20,11 +20,9 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.15][release-notes].
 
 This release:
 
-* fixes the `maxThread` Backend setting which wasn't honored as expected;
-* improves Backend's startup thanks to a refactoring of the init scripts
+* fixes the `synchcall.xmlrpc.maxthread` setting for XMLRPC requests;
+* improves backend's startup logic thanks to a refactoring of the init scripts
 (read more [here][upgrading-trouble] about troubleshooting);
-* clears old code and stuff related to deprecated variables.
-
 
 ### Bug fixes
 
@@ -36,8 +34,20 @@ This release:
 
 ### Installation and configuration
 
-Read carefully the following [instructions][upgrading] before updating,
-especially if you're updating from StoRM v1.11.11 or earlier versions.
+> If you're updating from StoRM v1.11.11 or earlier versions read carefully the
+[upgrading instructions][upgrading] before.
+
+Update package:
+
+    yum update storm-backend-server
+
+During the update of `storm-backend-server` package the service is stopped
+and restarted because the init script is replaced by the newest. Check
+if service is up:
+
+    service storm-backend-server status
+
+In case you need to kill the service read [here][upgrading-trouble].
 
 You can find information about upgrade, clean installation and configuration of
 StoRM services in the [System Administration Guide][storm-sysadmin-guide].
@@ -46,4 +56,4 @@ StoRM services in the [System Administration Guide][storm-sysadmin-guide].
 [upgrading]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15/#upgrading
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15
 
-[upgrading-trouble]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15#important1
+[upgrading-trouble]: {{site.baseurl}}/documentation/how-to/kill-backend

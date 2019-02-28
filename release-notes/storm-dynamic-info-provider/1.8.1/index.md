@@ -20,7 +20,7 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.15][release-notes].
 
 ### Description
 
-This release fixes JSON report file as follow:
+This release fixes the JSON storage report generation as follow:
 
 1. The root of the JSON is an object with only one key: `storageservice`. Its value is an object where everything else is put.
 2. The `endpoints` key has been renamed to `storageendpoints`.
@@ -29,7 +29,7 @@ This release fixes JSON report file as follow:
 5. The name of the shares matches the corresponding space token.
 
 Check the [How-To][how-to-json-report] documentation section to learn how to
-configure StoRM to share the JSON report.
+configure StoRM to share the JSON storage report.
 
 This release also allows to specify multiple WebDAV endpoints by using the new
 YAIM variable `STORM_WEBDAV_POOL_LIST`, as a comma separated list.
@@ -64,7 +64,7 @@ All the webdav endpoints must be declared as a comma-separated list:
 STORM_WEBDAV_POOL_LIST=http://storm-webdav.example.org:8085,https://storm-webdav.example.org:8443
 ```
 
-Then re-launch YAIM.
+Then run YAIM.
 
 The deprecated variables can still be used within StoRM 1.11.15 but they won't be
 supported by next releases.
