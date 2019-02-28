@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "YAIM StoRM v.4.3.12 release notes"
-release_date: "26.02.2019"
+release_date: "28.02.2019"
 rfcs:
   - id: STOR-1019
     title: Fix namespace configuration syntax error

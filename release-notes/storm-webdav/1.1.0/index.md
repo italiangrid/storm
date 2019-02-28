@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM WebDAV v. 1.1.0 release notes"
-release_date: "26.02.2019"
+release_date: "28.02.2019"
 features:
   - id: STOR-1018
     title: Support for third-party copy in StoRM WebDAV service
@@ -91,14 +91,14 @@ authorization tokens to clients authenticated with VOMS proxies.
 
 Instructions on how to configure properly the authorization server are given in
 [this document][tpc-guide]. The default configuration should work out of the
-box for non-replicated deployments, but be sure to 
+box for non-replicated deployments, but be sure to
 
 - change the secret used to sign the tokens, i.e. provide a sensible value
   (longer than 32 characters) for the `STORM_WEBDAV_AUTHZ_SERVER_SECRET`
-  variable 
+  variable
 - set `STORM_WEBDAV_REQUIRE_CLIENT_CERT=false` so that client certificate
   authentication is no longer required
-  
+
 in `/etc/sysconfig/storm-webdav`.
 
 Once the above actions have been performed, you can restart the service with

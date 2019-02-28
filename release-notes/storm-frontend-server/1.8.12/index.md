@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM Frontend v.1.8.12 release notes"
-release_date: "26.02.2019"
+release_date: "28.02.2019"
 rfcs:
   - id: STOR-1025
     title: Configurable size limit for the request queue
