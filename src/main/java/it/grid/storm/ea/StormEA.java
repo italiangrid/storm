@@ -52,7 +52,7 @@ public class StormEA {
 
 	public static Map<String, String> getChecksums(String filename) {
 
-		HashMap<String, String> result = new HashMap<String, String>();
+		Map<String, String> result = new HashMap<>();
 
 		for (ChecksumAlgorithm checksumAlgorithm : ChecksumAlgorithm.values()) {
 
@@ -167,9 +167,9 @@ public class StormEA {
 		Format formatter = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
 
 		if (existingPinValueInSEC >= expirationDateInSEC) {
-			log.debug("The file '" + fileName
-					+ "' is already Pinned and the pre-existing PinLifeTime is greater than the new one. Nothing is changed in EA. Expiration: "
-					+ formatter.format(new Date(existingPinValueInSEC * 1000)));
+			log.debug("The file '{}' is already Pinned and the pre-existing PinLifeTime is greater "
+			    + "than the new one. Nothing is changed in EA. Expiration: {}",
+			    fileName, formatter.format(new Date(existingPinValueInSEC * 1000)));
 			return;
 		}
 
@@ -189,7 +189,7 @@ public class StormEA {
 			}
 
 		} catch (ExtendedAttributesException e) {
-			log.warn("Cannot set pinned EA to file: " + fileName);
+			log.warn("Cannot set pinned EA to file: {}", fileName, e);
 		}
 	}
 
@@ -199,7 +199,7 @@ public class StormEA {
 			ea.setXAttr(fileName, EA_PREMIGRATE, null);
 
 		} catch (ExtendedAttributesException e) {
-			log.warn("Cannot set pre-migrate EA to file: " + fileName);
+			log.warn("Cannot set pre-migrate EA to file: {}", fileName, e);
 		}
 	}
 
@@ -226,7 +226,7 @@ public class StormEA {
 			ea.setXAttr(fileName, EA_TEST_ONLINE, String.valueOf(status));
 
 		} catch (ExtendedAttributesException e) {
-			log.warn("Cannot set test-online EA to file: " + fileName);
+			log.warn("Cannot set test-online EA to file: {}", fileName, e);
 		}
 	}
 }

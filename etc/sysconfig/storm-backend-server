@@ -37,11 +37,25 @@ STORM_BE_USER=storm
 # BUG: maybe code reads this from storm.properties, not from here...
 #STORM_BE_TMPDIR="$STORM_HOME/var/tmp"
 
+# StoRM Backend server debug option. Uncomment this (and restart the service)
+# if you want to attach a java debugger to the running server process
+# STORM_BE_DEBUG="y"
+
+# JVM debug port. Used together with STORM_BE_DEBUG to specify on which
+# port the JVM should listen for incoming debugger.
+# STORM_BE_DEBUG_PORT=1044
+
+# JVM debug suspend option. Uncomment this to block the process JVM until a remote
+# debugger connects to the debugging port specified with the STORM_BE_DEBUG_PORT
+# option
+# STORM_BE_DEBUG_SUSPEND="y"
+
+# StoRM Backend server jmx option. Uncomment this (and restart the service)
+# if you want to attach a java jmx monitor to the running server process
+# STORM_BE_JMX="y"
+
 # options for the JVM running the StoRM BE server
 STORM_BE_JVM_OPTS='-server -Xms512m -Xmx512m'
-
-# port for the command server (FIXME: should read from conf. file)
-#export STORM_COMMAND_PORT=4444
 
 # LCMAPS config file
 #export LCMAPS_DB_FILE="$STORM_BE_CONFIGDIR/lcmaps.db"

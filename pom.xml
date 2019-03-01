@@ -5,7 +5,7 @@
   <name>StoRM Backend server</name>
   <groupId>org.italiangrid.storm</groupId>
   <artifactId>storm-backend-server</artifactId>
-  <version>1.11.14</version>
+  <version>1.11.15</version>
 
   <properties>
 
@@ -21,12 +21,9 @@
     <commonsDbcpVersion>1.2.1</commonsDbcpVersion>
     <commonsIoVersion>2.0.1</commonsIoVersion>
     <ini4jVersion>0.5.2</ini4jVersion>
-    <axisVersion>1.4</axisVersion>
-    <axisSchemaVersion>1.3</axisSchemaVersion>
     <xmlrpcVersion>3.0</xmlrpcVersion>
     <jaxrpcVersion>1.1</jaxrpcVersion>
     <jsonVersion>20080701</jsonVersion>
-    <cogGlobusVersion>1.4</cogGlobusVersion>
     <junitVersion>4.8.1</junitVersion>
     <commonsCliVersion>1.0</commonsCliVersion>
     <commonsDiscoveryVersion>0.2</commonsDiscoveryVersion>
@@ -264,6 +261,28 @@
     </dependency>
 
     <dependency>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-jetty8</artifactId>
+      <version>${metrics.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-servlets</artifactId>
+      <version>${metrics.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-core</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>${guavaVersion}</version>
@@ -279,12 +298,12 @@
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
       <version>${commonsConfigurationVersion}</version>
-        <exclusions>
-            <exclusion>
-                <groupId>javax.servlet</groupId>
-                <artifactId>servlet-api</artifactId>
-            </exclusion>
-        </exclusions>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -373,25 +392,14 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.axis</groupId>
-      <artifactId>axis</artifactId>
-      <version>${axisVersion}</version>
-    </dependency>
-    <dependency>
-      <groupId>axis</groupId>
-      <artifactId>axis-schema</artifactId>
-      <version>${axisSchemaVersion}</version>
-    </dependency>
-
-    <dependency>
       <groupId>org.apache.xmlrpc</groupId>
       <artifactId>xmlrpc-server</artifactId>
       <version>${xmlrpcVersion}</version>
       <exclusions>
-          <exclusion>
-              <groupId>javax.servlet</groupId>
-              <artifactId>servlet-api</artifactId>
-          </exclusion>
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -404,64 +412,6 @@
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
       <version>${jsonVersion}</version>
-    </dependency>
-
-    <!-- not on Maven Central, we have it on our own repository, you can install
-      it from official releases http://dev.globus.org/wiki/CoG_JGlobus_1.4. The artifacts
-      not prefix with cog are dependencies. As all of them are very old, and not supported,
-      we have installed the versions distributed with CoG, with the CoG version and groupID -->
-    <dependency>
-      <groupId>org.globus</groupId>
-      <artifactId>cog-axis</artifactId>
-      <version>${cogGlobusVersion}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.globus</groupId>
-      <artifactId>cog-jglobus</artifactId>
-      <version>${cogGlobusVersion}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.globus</groupId>
-      <artifactId>cog-jobmanager</artifactId>
-      <version>${cogGlobusVersion}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.globus</groupId>
-      <artifactId>cog-url</artifactId>
-      <version>${cogGlobusVersion}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.globus</groupId>
-      <artifactId>cryptix-asn1</artifactId>
-      <version>${cogGlobusVersion}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.globus</groupId>
-      <artifactId>cryptix32</artifactId>
-      <version>${cogGlobusVersion}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.globus</groupId>
-      <artifactId>puretls</artifactId>
-      <version>${cogGlobusVersion}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.globus</groupId>
-      <artifactId>jgss</artifactId>
-      <version>${cogGlobusVersion}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.globus</groupId>
-      <artifactId>jce-jdk13-131</artifactId>
-      <version>${cogGlobusVersion}</version>
-    </dependency>
-
-    <!-- not on Maven Central, we have it on our own repository, taken form the lib
-      directory of the old src code repository https://github.com/italiangrid/storm/commits/BE_1.11/lib/srm22client.jar -->
-    <dependency>
-      <groupId>srm22client</groupId>
-      <artifactId>srm22client</artifactId>
-      <version>0</version>
     </dependency>
 
     <dependency>

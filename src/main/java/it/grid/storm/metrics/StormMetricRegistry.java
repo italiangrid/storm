@@ -9,7 +9,7 @@ import com.codahale.metrics.MetricRegistry;
  */
 public enum StormMetricRegistry {
 
-  INSTANCE;
+  METRIC_REGISTRY;
 
   private StormMetricRegistry() {
     registry = new MetricRegistry();

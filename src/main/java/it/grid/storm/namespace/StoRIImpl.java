@@ -49,6 +49,8 @@ import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TTURL;
 
+import static org.apache.commons.lang.StringUtils.join;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -447,18 +449,15 @@ public class StoRIImpl implements StoRI {
 			// Within the request there are some protocol preferences
 			// Calculate the intersection between Desired Protocols and Available
 			// Protocols
-			ArrayList<Protocol> desiredP = new ArrayList<Protocol>(
-				desiredProtocols.getDesiredProtocols());
-
-			ArrayList<Protocol> availableP = new ArrayList<Protocol>(
-				this.capability.getAllManagedProtocols());
-
+			List<Protocol> desiredP = new ArrayList<>(desiredProtocols.getDesiredProtocols());
+			List<Protocol> availableP = new ArrayList<>(capability.getAllManagedProtocols());
 			desiredP.retainAll(availableP);
 
 			if (desiredP.isEmpty()) {
-				log
-					.error("stori:No match with Protocol Preferences and Protocol Managed!");
-				throw new InvalidGetTURLProtocolException(desiredProtocols);
+				String msg = String.format("None of [%s] protocols matches the available "
+				    + "protocols [%s]", join(desiredP, ','), join(availableP, ','));
+				log.error(msg);
+				throw new InvalidGetTURLProtocolException(msg);
 
 			} else {
 

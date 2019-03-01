@@ -1,6 +1,6 @@
 package it.grid.storm.ea;
 
-import it.grid.storm.metrics.StormMetricRegistry;
+import static it.grid.storm.metrics.StormMetricRegistry.METRIC_REGISTRY;
 
 public class ExtendedAttributesFactory {
 
@@ -9,7 +9,7 @@ public class ExtendedAttributesFactory {
     ExtendedAttributes eaImpl = new ExtendedAttributesSwigImpl();
     
     return new MetricsEAAdapter(eaImpl,
-      StormMetricRegistry.INSTANCE.getRegistry());
+      METRIC_REGISTRY.getRegistry());
   }
 
 }

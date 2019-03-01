@@ -1,34 +1,32 @@
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#    storm.properties   
-#      version 1.0
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+###########################
+#    storm.properties
+###########################
 #
 #   This file contains properties that govern the operation of StoRM. 
-#   The file is read at startup of the service. 
+#   The file is read at startup of the service.
 #   Your changes will be applied when the service will be restarted.
 #
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+############################
 
 ############################
 ###  SERVICE PARAMETERS  ###
 ############################
-## 
-##  NOTE: 
+##
+##  NOTE:
 ##        The SERVICE PARAMETERS are managed also by YAIM. 
 ##        So, if you install and configure the service with YAIM, please 
 ##        remember that the parameters tagged as YAIM will be overwrite at every  
 ##        reconfiguration done with YAIM, so if you want change some parameters 
 ##        you should use the YAIM configuration files:
 ##           <siteinfo_dir>/services/ig-se_storm_backend  (or equivalent)
-## 
+##
 
 # ============================
 # StoRM Service DNS
-# ============================ 
+# ============================
 # hostname with which the service is published
 #   <!! managed by YAIM; please read the above NOTE !!>
-storm.service.FE-public.hostname =   
+storm.service.FE-public.hostname =
 
 
 # ============================
@@ -77,16 +75,6 @@ storm.service.SURL.default-ports =
 storm.service.request-db.host =  
 storm.service.request-db.username =   
 storm.service.request-db.passwd =  
-
-
-# ===========================
-# Gridhttps plugin parameters
-# ===========================
-
-# If the GridHTTPS is enabled StoRM provides access to files via http and https protocol
-gridhttps.enabled=false
-#The complete classname of the class implementing the http(s) plugin interface 
-gridhttps.plugin.classname=it.grid.storm.httpsHTTPSPluginInterfaceStub
 
 #############################################
 ############  PROFILE PARAMETERS ############
@@ -194,13 +182,16 @@ synchcall.directoryManager.maxLsEntry=2000
 # ============================
 # REST Services parameter
 # ============================
-storm.rest.services.port=
+storm.rest.services.port=9998
+storm.rest.services.maxthreads=100
+storm.rest.services.max_queue_size=1000
 
 # ============================
 # XMLRPC Server parameter
 # ============================
 synchcall.xmlrpc.unsecureServerPort=8080
-synchcall.xmlrpc.maxthread=100
+synchcall.xmlrpc.maxthread=256
+synchcall.xmlrpc.max_queue_size=1000
 synchcall.xmlrpc.security.enabled=true
 synchcall.xmlrpc.security.token=
 
@@ -273,3 +264,21 @@ transit.delay = 10
 
 # Skip ACL setup for PtG requests
 ptg.skip-acl-setup = false
+
+# The caching policy for successful name lookups from the name service.
+# The value is specified as integer to indicate the number of seconds to cache the successful lookup.
+# A value of -1 indicates "cache forever". The default behavior is to cache forever when a security
+# manager is installed, and to cache for an implementation specific period of time, when a security
+# manager is not installed.
+#
+# Default value: 0
+#
+#networkaddress.cache.ttl=0
+
+# The caching policy for un-successful name lookups from the name service.
+# The value is specified as integer to indicate the number of seconds to cache the failure for un-successful lookups.
+# A value of 0 indicates "never cache". A value of -1 indicates "cache forever".
+#
+# Default value: 0
+#
+#networkaddress.cache.negative.ttl=0

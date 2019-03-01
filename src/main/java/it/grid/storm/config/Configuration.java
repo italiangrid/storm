@@ -25,9 +25,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.grid.storm.rest.RestService;
+import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 
 /**
  * Singleton holding all configuration values that any other object in the StoRM
@@ -42,12 +46,16 @@ import org.slf4j.LoggerFactory;
 
 public class Configuration {
 
-  private static final Logger log = LoggerFactory
-    .getLogger(Configuration.class);
+  public static final String DEFAULT_STORM_CONFIG_FILE = "/etc/storm/backend-server/storm.properties";
+  public static final String CONFIG_FILE_PATH = "storm.configuration.file";
+  public static final String DEFAULT_STORM_CONFIG_REFRESH_RATE = "0";
+  public static final String REFRESH_RATE = "storm.configuration.refresh";
 
-  private ConfigReader cr = new ConfigReader(); // set an empty ConfigReader
+  private static final Logger log = LoggerFactory.getLogger(Configuration.class);
 
-  static Configuration instance = new Configuration();
+  private final ConfigReader cr;
+
+  private static Configuration instance;
 
   private static final String MANAGED_SURLS_KEY = "storm.service.SURL.endpoint";
   private static final String MANAGED_SURL_DEFAULT_PORTS_KEY = "storm.service.SURL.default-ports";
@@ -74,15 +82,10 @@ public class Configuration {
   private static final String PICKING_INITIAL_DELAY_KEY = "asynch.PickingInitialDelay";
   private static final String PICKING_TIME_INTERVAL_KEY = "asynch.PickingTimeInterval";
   private static final String PICKING_MAX_BATCH_SIZE_KEY = "asynch.PickingMaxBatchSize";
-  private static final String SRMCLIENT_PUT_TOTAL_RETRY_TIME_KEY = "asynch.srmclient.retrytime";
-  private static final String SRMCLIENT_PUT_TIME_OUT_KEY = "asynch.srmclient.timeout";
-  private static final String SRMCLIENT_PUT_SLEEP_TIME_KEY = "asynch.srmclient.sleeptime";
-  private static final String SRMCLIENT_PUT_DONE_SLEEP_TIME_KEY = "asynch.srmclient.putdone.sleeptime";
-  private static final String SRMCLIENT_PUT_DONE_TIME_OUT_KEY = "asynch.srmclient.putdone.timeout";
-  private static final String MAX_XMLRPC_THREAD_KEY = "synchcall.xmlrpc.maxthread";
+  private static final String XMLRPC_MAX_THREAD_KEY = "synchcall.xmlrpc.maxthread";
+  private static final String XMLRPC_MAX_QUEUE_SIZE_KEY = "synchcall.xmlrpc.max_queue_size";
   private static final String LIST_OF_DEFAULT_SPACE_TOKEN_KEY = "storm.service.defaultSpaceTokens";
   private static final String GRIDFTP_TRANSFER_CLIENT_KEY = "asynch.gridftpclient";
-  private static final String SRMCLIENT_KEY = "asynch.srmclient";
   private static final String COMMAND_SERVER_BINDING_PORT_KEY = "storm.commandserver.port";
   private static final String SERIAL_SCHEDULER_KEY = "scheduler.serial";
   private static final String BE_PERSISTENCE_DB_VENDOR_KEY = "persistence.internal-db.dbms-vendor";
@@ -90,11 +93,9 @@ public class Configuration {
   private static final String BE_PERSISTENCE_DBMS_URL_2KEY = "" + DB_URL_2KEY;
   private static final String BE_PERSISTENCE_DB_NAME_KEY = "persistence.internal-db.db-name";
   private static final String BE_PERSISTENCEDB_USER_NAME_1KEY = "persistence.internal-db.username";
-  private static final String BE_PERSISTENCEDB_USER_NAME_2KEY = ""
-    + DB_USER_NAME_KEY;
+  private static final String BE_PERSISTENCEDB_USER_NAME_2KEY = "" + DB_USER_NAME_KEY;
   private static final String BE_PERSISTENCE_DB_PASSWORD_1KEY = "persistence.internal-db.passwd";
-  private static final String BE_PERSISTENCE_DB_PASSWORD_2KEY = ""
-    + DB_PASSWORD_KEY;
+  private static final String BE_PERSISTENCE_DB_PASSWORD_2KEY = "" + DB_PASSWORD_KEY;
   private static final String BE_PERSISTENCE_POOL_DB_KEY = "persistence.internal-db.connection-pool";
   private static final String BE_PERSISTENCE_POOL_DB_MAX_ACTIVE_KEY = "persistence.internal-db.connection-pool.maxActive";
   private static final String BE_PERSISTENCE_POOL_DB_MAX_WAIT_KEY = "persistence.internal-db.connection-pool.maxWait";
@@ -124,7 +125,6 @@ public class Configuration {
   private static final String NAMESPACE_AUTOMATIC_RELOADING_KEY = "namespace.automatic-config-reload";
   private static final String GRIDFTP_TIME_OUT_KEY = "asynch.srmcopy.gridftp.timeout";
   private static final String SRM22CLIENT_PIN_LIFE_TIME_KEY = "SRM22Client.PinLifeTime";
-  private static final String PROXY_HOME_KEY = "proxy.home";
   private static final String AUTOMATIC_DIRECTORY_CREATION_KEY = "directory.automatic-creation";
   private static final String DEFAULT_OVERWRITE_MODE_KEY = "default.overwrite";
   private static final String DEFAULT_FILE_STORAGE_TYPE_KEY = "default.storagetype";
@@ -151,10 +151,11 @@ public class Configuration {
   private static final String REFRESH_RATE_AUTHZDB_FILES_IN_SECONDS_KEY = "authzdb.refreshrate";
   private static final String RECALL_TABLE_TESTING_MODE_KEY = "tape.recalltable.service.test-mode";
   private static final String REST_SERVICES_PORT_KEY = "storm.rest.services.port";
+  private static final String REST_SERVICES_MAX_THREAD = "storm.rest.services.maxthread";
+  private static final String REST_SERVICES_MAX_QUEUE_SIZE = "storm.rest.services.max_queue_size";
   private static final String RETRY_VALUE_KEY_KEY = "tape.recalltable.service.param.retry-value";
   private static final String STATUS_KEY_KEY = "tape.recalltable.service.param.status";
   private static final String TASKOVER_KEY_KEY = "tape.recalltable.service.param.takeover";
-  private static final String GRIDHTTPS_ENABLED_KEY = "gridhttps.enabled";
   private static final String STORM_PROPERTIES_VERSION_KEY = "storm.properties.version";
   private static final String TAPE_SUPPORT_ENABLED_KEY = "tape.support.enabled";
   private static final String SYNCHRONOUS_QUOTA_CHECK_ENABLED_KEY = "info.quota-check.enabled";
@@ -166,9 +167,28 @@ public class Configuration {
   private static final String XMLRPC_SECURITY_TOKEN_KEY = "synchcall.xmlrpc.security.token";
   private static final String PTG_SKIP_ACL_SETUP = "ptg.skip-acl-setup";
   private static final String HTTP_TURL_PREFIX = "http.turl_prefix";
+  private static final String NETWORKADDRESS_CACHE_TTL = "networkaddress.cache.ttl";
+  private static final String NETWORKADDRESS_CACHE_NEGATIVE_TTL = "networkaddress.cache.negative.ttl";
 
-  private Configuration() {
+  static {
+    try {
+      instance = new Configuration();
+    } catch (ConfigurationException e) {
+      log.error(e.getMessage(), e);
+      throw new ExceptionInInitializerError(e);
+    }
+  }
 
+  private Configuration() throws ConfigurationException {
+
+    String filePath = System.getProperty(CONFIG_FILE_PATH, DEFAULT_STORM_CONFIG_FILE);
+    String refreshRate = System.getProperty(REFRESH_RATE, DEFAULT_STORM_CONFIG_REFRESH_RATE);
+    try {
+      cr = new ConfigReader(filePath, Integer.parseInt(refreshRate));
+    } catch (NumberFormatException e) {
+      log.error(e.getMessage(), e);
+      throw new ConfigurationException(e.getMessage(), e);
+    }
   }
 
   /**
@@ -177,17 +197,6 @@ public class Configuration {
   public static Configuration getInstance() {
 
     return Configuration.instance;
-  }
-
-  /**
-   * Method used to set the config reader: if a null is supplied then a default
-   * empty ConfigReader is used instead.
-   */
-  public void setConfigReader(ConfigReader cr) {
-
-    if (cr != null) {
-      this.cr = cr;
-    }
   }
 
   /**
@@ -671,114 +680,26 @@ public class Configuration {
   }
 
   /**
-   * Method used by CopyChunk when making a remote srmPrepareToPut (Push Mode).
-   * It needs it to estalish the totalRetryTime in seconds to supply to the
-   * internal SRMClient. The parameter is passed to the prepareToPut
-   * functionality. If no value is found in the configuration medium, then the
-   * default value is returned instead. key="asynch.srmclient.retrytime";
-   * default value=60;
-   */
-  public long getSRMClientPutTotalRetryTime() {
-
-    if (!cr.getConfiguration().containsKey(SRMCLIENT_PUT_TOTAL_RETRY_TIME_KEY)) {
-      // return default
-      return 60;
-    } else {
-      // load from external source
-      return cr.getConfiguration().getLong(SRMCLIENT_PUT_TOTAL_RETRY_TIME_KEY);
-    }
-  }
-
-  /**
-   * Method used by CopyChunk when making a remote srmPrepareToPut (Push Mode).
-   * The CopyChunk will periodically invoke the statusOfPutRequest functionality
-   * of the internal SRMClient, for at most the time out interval in seconds
-   * returned by this method. If no value is found in the configuration medium,
-   * then the default value is returned instead. key="asynch.srmclient.timeout";
-   * default value=180;
-   */
-  public long getSRMClientPutTimeOut() {
-
-    if (!cr.getConfiguration().containsKey(SRMCLIENT_PUT_TIME_OUT_KEY)) {
-      // return default
-      return 180;
-    } else {
-      // load from external source
-      return cr.getConfiguration().getLong(SRMCLIENT_PUT_TIME_OUT_KEY);
-    }
-  }
-
-  /**
-   * Method used by CopyChunk when making a remote srmPrepareToPut (Push Mode).
-   * The CopyChunk will wait the amount of time in seconds returned by this
-   * method, before invoking again the statusOfPutRequest functionality of the
-   * internal SRMClient. That is, it tells the polling interval. If no value is
-   * found in the configuration medium, then the default value is returned
-   * instead. key="asynch.srmclient.sleeptime"; default value=5;
-   */
-  public long getSRMClientPutSleepTime() {
-
-    if (!cr.getConfiguration().containsKey(SRMCLIENT_PUT_SLEEP_TIME_KEY)) {
-      // return default
-      return 5;
-    } else {
-      // load from external source
-      return cr.getConfiguration().getLong(SRMCLIENT_PUT_SLEEP_TIME_KEY);
-    }
-  }
-
-  /**
-   * Method used by CopyChunk when making the FileTransfer and finally invoking
-   * a remote srmPutDone. The CopyChunk will wait the amount of time in seconds
-   * returned by this method, before invoking again the srmPutDone functionality
-   * of the internal SRMClient. That is, it tells the time interval between
-   * successive invocations: they are necessary when the returned status is
-   * SRM_INTERNAL_ERROR which denotes a transient error situation. If no value
-   * is found in the configuration medium, then the default value is returned
-   * instead. key="asynch.srmclient.putdone.sleeptime"; default value=2;
-   */
-  public long getSRMClientPutDoneSleepTime() {
-
-    if (!cr.getConfiguration().containsKey(SRMCLIENT_PUT_DONE_SLEEP_TIME_KEY)) {
-      // return default
-      return 1;
-    } else {
-      // load from external source
-      return cr.getConfiguration().getLong(SRMCLIENT_PUT_DONE_SLEEP_TIME_KEY);
-    }
-  }
-
-  /**
-   * Method used by CopyChunk when making the FileTransfer and finally invoking
-   * a remote srmPutDone. The CopyChunk may have to periodically invoke
-   * srmPutDone functionality of the internal SRMClient if the web service
-   * returns SRM_INTERNAL_ERROR; in that case invocations will be attempted for
-   * at most the time out interval in seconds returned by this method. If no
-   * value is found in the configuration medium, then the default value is
-   * returned instead. key="asynch.srmclient.putdone.timeout"; default value=60;
-   */
-  public long getSRMClientPutDoneTimeOut() {
-
-    if (!cr.getConfiguration().containsKey(SRMCLIENT_PUT_DONE_TIME_OUT_KEY)) {
-      // return default
-      return 60;
-    } else {
-      // load from external source
-      return cr.getConfiguration().getLong(SRMCLIENT_PUT_DONE_TIME_OUT_KEY);
-    }
-  }
-
-  /**
    * Get max number of xmlrpc threads into for the XMLRPC server.
    */
-  public int getMaxXMLRPCThread() {
+  public int getXMLRPCMaxThread() {
 
-    if (!cr.getConfiguration().containsKey(MAX_XMLRPC_THREAD_KEY)) {
+    if (!cr.getConfiguration().containsKey(XMLRPC_MAX_THREAD_KEY)) {
       // return default
-      return 100;
+      return XMLRPCHttpServer.DEFAULT_MAX_THREAD_NUM;
     } else {
       // load from external source
-      return cr.getConfiguration().getInt(MAX_XMLRPC_THREAD_KEY);
+      return cr.getConfiguration().getInt(XMLRPC_MAX_THREAD_KEY);
+    }
+  }
+  
+  public int getXMLRPCMaxQueueSize() {
+    if (!cr.getConfiguration().containsKey(XMLRPC_MAX_QUEUE_SIZE_KEY)) {
+      // return default
+      return XMLRPCHttpServer.DEFAULT_MAX_QUEUE_SIZE;
+    } else {
+      // load from external source
+      return cr.getConfiguration().getInt(XMLRPC_MAX_QUEUE_SIZE_KEY);
     }
   }
 
@@ -820,25 +741,6 @@ public class Configuration {
     } else {
       // load from external source
       return cr.getConfiguration().getString(GRIDFTP_TRANSFER_CLIENT_KEY);
-    }
-  }
-
-  /**
-   * Method used by Factory invoked in CopyChunk subclasses, to instantiate an
-   * SRMClient. The String returned specifies the name of the class to
-   * instantiate; for now, there are two classes: NaiveSRMClient and
-   * StubSRMClient. If no value is found in the configuration medium, then the
-   * default value is returned instead. key="asynch.srmclient"; default
-   * value="it.grid.storm.asynch.SRM22Client";
-   */
-  public String getSRMClient() {
-
-    if (!cr.getConfiguration().containsKey(SRMCLIENT_KEY)) {
-      // return default
-      return "it.grid.storm.asynch.SRM22Client";
-    } else {
-      // load from external source
-      return cr.getConfiguration().getString(SRMCLIENT_KEY);
     }
   }
 
@@ -1611,23 +1513,6 @@ public class Configuration {
   }
 
   /**
-   * Method used by RequestCredentialsDAO to establish the directory that holds
-   * the proxy file. If no value is found in the configuration medium, then the
-   * default one is used instead. key="proxy.home"; default
-   * value="/opt/storm/var/proxies"
-   */
-  public String getProxyHome() {
-
-    if (!cr.getConfiguration().containsKey(PROXY_HOME_KEY)) {
-      // return default
-      return "/opt/storm/var/proxies";
-    } else {
-      // load from external source
-      return cr.getConfiguration().getString(PROXY_HOME_KEY);
-    }
-  }
-
-  /**
    * Method used by PtPChunk to find out if missing local directories should be
    * created automatically or not. SRM 2.2 specification forbids automatic
    * creation. If no value is found in the configuration medium, then the
@@ -2049,13 +1934,34 @@ public class Configuration {
 
     if (!cr.getConfiguration().containsKey(REST_SERVICES_PORT_KEY)) {
       // return default
-      return 9998;
+      return RestService.DEFAULT_PORT;
     } else {
       // load from external source
       return cr.getConfiguration().getInt(REST_SERVICES_PORT_KEY);
     }
   }
 
+  public int getRestServicesMaxThreads() {
+    if (!cr.getConfiguration().containsKey(REST_SERVICES_MAX_THREAD)) {
+      // return default
+      return RestService.DEFAULT_MAX_THREADS;
+    } else {
+      // load from external source
+      return cr.getConfiguration().getInt(REST_SERVICES_MAX_THREAD);
+    }
+  }
+  
+  public int getRestServicesMaxQueueSize() {
+    if (!cr.getConfiguration().containsKey(REST_SERVICES_MAX_QUEUE_SIZE)) {
+      // return default
+      return RestService.DEFAULT_MAX_QUEUE_SIZE;
+    } else {
+      // load from external source
+      return cr.getConfiguration().getInt(REST_SERVICES_MAX_QUEUE_SIZE);
+    }
+    
+  }
+  
   /**
    * Method used to retrieve the key string used to pass RETRY-VALUE parameter
    * to Recall Table service key="tape.recalltable.service.param.retry-value";
@@ -2098,22 +2004,6 @@ public class Configuration {
     } else {
       // load from external source
       return cr.getConfiguration().getString(TASKOVER_KEY_KEY);
-    }
-  }
-
-  /**
-   * This is the FLAG to support or not the http(s) protocol. Default is false.
-   * 
-   * @return
-   */
-  public boolean getGridhttpsEnabled() {
-
-    if (!cr.getConfiguration().containsKey(GRIDHTTPS_ENABLED_KEY)) {
-      // return default
-      return false;
-    } else {
-      // load from external source
-      return cr.getConfiguration().getBoolean(GRIDHTTPS_ENABLED_KEY);
     }
   }
 
@@ -2207,14 +2097,7 @@ public class Configuration {
 
   public boolean getSanityCheckEnabled() {
 
-    if (!cr.getConfiguration().containsKey(SANITY_CHECK_ENABLED_KEY)) {
-      // return default
-      return true;
-    } else {
-      // load from external source
-      return new Boolean(cr.getConfiguration().getBoolean(
-        SANITY_CHECK_ENABLED_KEY));
-    }
+    return cr.getConfiguration().getBoolean(SANITY_CHECK_ENABLED_KEY, true);
   }
 
   public Boolean getXmlRpcTokenEnabled() {
@@ -2314,4 +2197,11 @@ public class Configuration {
     return cr.getConfiguration().getLong(EXPIRED_INPROGRESS_PTP_TIME_KEY, 2592000L);
   }
 
+  public int getNetworkAddressCacheTtl() {
+    return cr.getConfiguration().getInt(NETWORKADDRESS_CACHE_TTL, 0);
+  }
+
+  public int getNetworkAddressCacheNegativeTtl() {
+    return cr.getConfiguration().getInt(NETWORKADDRESS_CACHE_NEGATIVE_TTL, 0);
+  }
 }
