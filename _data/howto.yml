@@ -12,6 +12,12 @@
   last-update: "27/02/2019"
   older-versions: []
 
+- title: "How-to configure StoRM Frontend to bind over IPv6"
+  relative-link: "/documentation/how-to/ipv6/"
+  description: "Example of how to configure StoRM Frontend to bind over IPv6"
+  last-update: "27/02/2019"
+  older-versions: []
+
 - title: "Enable StoRM GridHTTPs component"
   relative-link: "/documentation/how-to/basic-storm-standalone-configuration/1.11.7/"
   description: "Example of a minimal standalone deployment of StoRM."
