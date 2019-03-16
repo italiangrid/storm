@@ -36,13 +36,32 @@ incoming requests to Frontend and the consequent block of the acceptor thread;
 
 Update package:
 
-    yum update storm-frontend-server
+```
+yum update storm-frontend-server
+```
 
-Restart service:
+and run YAIM (**mandatory**).
 
-    service storm-frontend-server restart
+**Important**: StoRM Frontend 1.8.12 introduces changes in the main
+configuration file:
 
-Alternatively, you can simply update the package and run YAIM.
+```
+/etc/storm/frontend-server/storm-frontend-server.conf
+```
+
+The useless parameters:
+
+```
+# Proxy information
+proxy.dir = ...
+proxy.user = ...
+```
+
+have been deprecated and no more supported. Frontend won't start if these
+variables are not deleted. Latest YAIM version automatically fix it.
+
+If your configuration file is for some reason managed by puppet or other
+tools, update your server configuration.
 
 You can find information about upgrade, clean installation and configuration of
 StoRM services in the [System Administration Guide][storm-sysadmin-guide].

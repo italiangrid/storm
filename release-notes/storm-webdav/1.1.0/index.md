@@ -40,31 +40,38 @@ Update the StoRM WebDAV package:
 
 StoRM WebDAV 1.1.0 introduces changes in the template configuration file:
 
-
-    /etc/sysconfig/storm-webdav
+```
+/etc/sysconfig/storm-webdav
+```
 
 and in the configuration files for the logging facilities:
 
-
-    /etc/storm/webdav/logback.xml
-    /etc/storm/webdav/logback-access.xml
+```
+/etc/storm/webdav/logback.xml
+/etc/storm/webdav/logback-access.xml
+```
 
 The new files provided by the updated packages must be used, which will
 show up as .rpmnew files (when there are local changes to the configuration),
 i.e.:
 
-
-    /etc/sysconfig/storm-webdav.rpmnew
-    /etc/storm/webdav/logback.xml.rpmnew
-    /etc/storm/webdav/logback-access.xml.rpmnew
+```
+/etc/sysconfig/storm-webdav.rpmnew
+/etc/storm/webdav/logback.xml.rpmnew
+/etc/storm/webdav/logback-access.xml.rpmnew
+```
 
 We recommend that you backup your current configuration file:
 
-  cp /etc/sysconfig/storm-webdav /etc/syconfig/storm-webav.bkp
+```
+cp /etc/sysconfig/storm-webdav /etc/syconfig/storm-webdav.bkp
+```
 
 And port the changes in such file to the new template:
 
-  cp /etc/sysconfig/storm-webdav.rpmnew /etc/syconfig/storm-webav
+```
+cp /etc/sysconfig/storm-webdav.rpmnew /etc/syconfig/storm-webdav
+```
 
 #### Hostname configuration
 
