@@ -75,6 +75,15 @@ of WebDAV endpoints, in order to avoid the previous limitation of one. Please
 read the [StoRM Info Provider release notes upgrade instructions][upgrade-info-provider]
 to properly upgrade your configuration.
 
+- StoRM Backend [v1.11.15][upgrade-be] introduces changes to the logging
+configuration file `logging.xml`. Check your `/etc/storm/backend-server`
+directory if you have a `logging.xml.rpmnew` file. Read more [here][upgrade-be].
+
+- StoRM Frontend [v1.8.12][upgrade-fe] introduces changes to the service
+configuration file `storm-frontend-server.conf` which YAIM should automatically
+update. If something goes wrong check the [release notes configuration section][upgrade-fe]
+to manually fix it.
+
 #### Run YAIM
 
 Run YAIM specifying the proper components profiles:
@@ -1588,6 +1597,8 @@ You can found CDMI StoRM details about installation and configuration [here][ind
 [upgrade-webdav]: {{site.baseurl}}/release-notes/storm-webdav/1.1.0/
 [upgrade-info-provider]: {{site.baseurl}}/release-notes/storm-dynamic-info-provider/1.8.1/
 [upgrade-13]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.14/#upgrading
+[upgrade-be]: {{site.baseurl}}/release-notes/storm-backend-server/1.11.15/
+[upgrade-fe]: {{site.baseurl}}/release-notes/storm-frontend-server/1.8.12/
 
 [stable-storm-repoview]: https://repo.cloud.cnaf.infn.it/repository/storm/stable/el6/x86_64/repoview/index.html
 

@@ -34,20 +34,48 @@ This release:
 
 ### Installation and configuration
 
-> If you're updating from StoRM v1.11.11 or earlier versions read carefully the
-[upgrading instructions][upgrading] before.
-
 Update package:
 
-    yum update storm-backend-server
+```
+yum update storm-backend-server
+```
 
 During the update of `storm-backend-server` package the service is stopped
 and restarted because the init script is replaced by the newest. Check
 if service is up:
 
-    service storm-backend-server status
+```
+service storm-backend-server status
+```
 
 In case you need to kill the service read [here][upgrading-trouble].
+
+**Important**: StoRM Backend v1.11.15 introduces changes in the configuration file for the
+logging facilities:
+
+```
+/etc/storm/backend-server/logging.xml
+```
+
+The new file provided by the updated packages must be used, which will
+show up as `.rpmnew` file (when there are local changes to the configuration),
+i.e.:
+
+```
+/etc/storm/backend-server/logging.xml.rpmnew
+```
+
+We recommend that you backup your current configuration file:
+
+```
+cp /etc/storm/backend-server/logging.xml /etc/storm/backend-server/logging.xml.bkp
+```
+
+And port the changes in such file to the new template:
+
+```
+cp /etc/storm/backend-server/logging.xml.rpmnew /etc/storm/backend-server/logging.xml
+```
 
 You can find information about upgrade, clean installation and configuration of
 StoRM services in the [System Administration Guide][storm-sysadmin-guide].
