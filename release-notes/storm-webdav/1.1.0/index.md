@@ -119,8 +119,43 @@ service storm-webdav restart
 Check the the [StoRM WebDAV installation and configuration guide][dav-guide]
 for detailed installation and configuration information.
 
+### Known issues
+
+The following issues have been discovered, introduced with initial support for 
+OAuth/OpenID Connect authentication and authorization:
+
+- [StoRM WebDAV default configuration should not depend on iam-test.indigo-datacloud.eu][STOR-1095]
+- [Unreachable OpenID Connect provider causes StoRM WebDAV startup failure][STOR-1096]
+
+The main consequence of the issues above is that the StoRM WebDAV service would
+not start in case `iam-test.indigo-datacloud.eu` is not reachable for some
+reason.
+
+To workaround this problem, include the following Java property setting:
+
+```
+-Doauth.issuers
+```
+
+in the value of the STORM_WEBDAV_JVM_OPTS envirornment variable in the StoRM
+WebDAV sysconfig file:
+
+```
+/etc/syconfig/storm-webdav
+```
+
+Example:
+
+```
+STORM_WEBDAV_JVM_OPTS="-Xms256m -Xmx512m -Djava.io.tmpdir=/var/lib/storm-webdav/work -Doauth.issuers"
+```
+
+And restart the service.
+
 [release-notes]: {{site.baseurl}}/release-notes/StoRM-v1.11.15.html
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15
 [dav-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15/storm-webdav-guide.html
 [tpc-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15/tpc.html
 [tpc-technical]: https://twiki.cern.ch/twiki/bin/view/LCG/HttpTpcTechnical
+[STOR-1095]: https://issues.infn.it/jira/browse/STOR-1095
+[STOR-1096]: https://issues.infn.it/jira/browse/STOR-1096
