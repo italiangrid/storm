@@ -140,7 +140,7 @@ To generate a VO mapfile for the `cms` VO, you could run the following command
 ### Storage area configuration
 
 StoRM WebDAV service configuration lives in the directory `/etc/storm/webdav`.
-See the README.md in that dir for more help.
+See the [README.md][webdav-sad] in that dir for more help.
 
 ## Service operation
 
@@ -239,3 +239,4 @@ By default a storage area named `sa` is accessible at the URL
 
 [doma-tpc]: https://twiki.cern.ch/twiki/bin/view/LCG/HttpTpcTechnical
 [download-page]: {{site.baseurl}}/download.html
+[webdav-sad]: https://github.com/italiangrid/storm-webdav/tree/master/etc/storm-webdav/sa.d

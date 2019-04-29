@@ -640,7 +640,7 @@ You can edit the optional variables summarized in [Table 5](#Table5).
 |`STORM_[SA]_GRIDFTP_POOL_LIST`       |See `STORM_GRIDFTP_POOL_LIST` definition. Optional variable. Default value: **STORM_GRIDFTP_POOL_LIST**
 |`STORM_[SA]_GRIDFTP_POOL_STRATEGY`   |See `STORM_GRIDFTP_POOL_STRATEGY` definition. Optional variable. Default value: **STORM_GRIDFTP_POOL_STRATEGY**
 |`STORM_[SA]_ONLINE_SIZE`             |Total size assigned to the Storage Area Expressed in GB. Must be an integer value. **Mandatory**.
-|`STORM_[SA]_USED_ONLINE_SIZE`        |Storage space currently used in the Storage Area expressed in Bytes. Must be an integer value. Used by YAIM to populate used-space.ini file.
+|`STORM_[SA]_ORGS`                    |Comma separated list of the supported authorization servers used by StoRM WebDAV with bearer tokens. No default value.
 |`STORM_[SA]_QUOTA`                   |Enables the quota management for the Storage Area and it works only on GPFS filesystem. Optional variable. Available values: true, false. Default value: **false**
 |`STORM_[SA]_QUOTA_DEVICE`            |GPFS device on which the quota is enabled. It is mandatory if `STORM_[SA]_QUOTA` variable is set. No default value.
 |`STORM_[SA]_QUOTA_USER`              |GPFS quota scope. Only one of the following three will be used (the first one with the highest priority in this order: USER, then GROUP, then FILESET). Optional variable. No default value.
@@ -652,6 +652,7 @@ You can edit the optional variables summarized in [Table 5](#Table5).
 |`STORM_[SA]_SIZE_LIMIT`              |See `STORM_SIZE_LIMIT` definition. Default value: **STORM_SIZE_LIMIT**
 |`STORM_[SA]_STORAGECLASS`            |See `STORM_STORAGECLASS` definition. Available values: `T0D1`, `T1D0`, `T1D1`, null. No default value.
 |`STORM_[SA]_TOKEN`                   |Storage Area token, e.g: `LHCb_RAW`, `INFNGRID_DISK`. No default value.
+|`STORM_[SA]_USED_ONLINE_SIZE`        |Storage space currently used in the Storage Area expressed in Bytes. Must be an integer value. Used by YAIM to populate used-space.ini file.
 
 {% assign label_title="Table 4" %}
 {% assign label_id="Table4" %}
