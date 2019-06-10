@@ -7,11 +7,23 @@ title: StoRM releases
 
 The following is the list of last StoRM releases, with the released components list and a link to the release notes.
 
-## StoRM v.1.11.15
+## StoRM v.1.11.16
 
-<span class="label" style="margin-top: -20px;">28.02.2019</span> <span class="label label-info" style="margin-top: -20px;">current</span>
+<span class="label" style="margin-top: -20px;">15.06.2019</span> <span class="label label-info" style="margin-top: -20px;">current</span>
 
 This is the latest release for StoRM, available on StoRM repositories.
+
+| Component            | Version    
+|:---------------------|:-----------
+|StoRM Backend         |[1.11.16]({{site.baseurl}}/release-notes/storm-backend-server/1.11.16/)
+|StoRM GridFTP DSI     |[1.2.2]({{site.baseurl}}/release-notes/storm-gridftp-dsi/1.2.2/)
+|StoRM WebDAV          |[1.2.0]({{site.baseurl}}/release-notes/storm-webdav/1.2.0/)
+
+See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.16.html).
+
+## StoRM v.1.11.15
+
+<span class="label" style="margin-top: -20px;">28.02.2019</span>
 
 | Component            | Version    
 |:---------------------|:-----------
@@ -26,8 +38,6 @@ See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.
 ## StoRM v.1.11.14
 
 <span class="label" style="margin-top: -20px;">25.07.2018</span>
-
-This is the latest release for StoRM, available on StoRM repositories.
 
 | Component            | Version    
 |:---------------------|:-----------

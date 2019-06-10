@@ -1,8 +1,8 @@
 components:
   storm-backend-server:
       name: StoRM Backend
-      current: 1.11.15
-      previous: [1.11.14,1.11.13,1.11.12,1.11.11,1.11.10,1.11.9,1.11.8,1.11.7,1.11.6,1.11.5,1.11.4,1.11.3,1.11.2,1.11.1]
+      current: 1.11.16
+      previous: [1.11.15,1.11.14,1.11.13,1.11.12,1.11.11,1.11.10,1.11.9,1.11.8,1.11.7,1.11.6,1.11.5,1.11.4,1.11.3,1.11.2,1.11.1]
       platforms: [centos6]
       repo: https://github.com/italiangrid/storm
 
@@ -15,8 +15,8 @@ components:
 
   storm-webdav:
       name: StoRM WebDAV
-      current: 1.1.0
-      previous: [1.0.5,1.0.4,1.0.3-2,1.0.3,1.0.2]
+      current: 1.2.0
+      previous: [1.1.0,1.0.5,1.0.4,1.0.3-2,1.0.3,1.0.2]
       platforms: [centos6]
       repo: https://github.com/italiangrid/storm-webdav
 
@@ -50,8 +50,8 @@ components:
 
   storm-gridftp-dsi:
       name: StoRM GridFTP
-      current: 1.2.1
-      previous: [1.2.0]
+      current: 1.2.2
+      previous: [1.2.1,1.2.0]
       platforms: [centos6]
       repo: https://github.com/italiangrid/storm-gridftp-dsi
 

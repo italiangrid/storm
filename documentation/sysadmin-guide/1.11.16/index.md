@@ -1,7 +1,9 @@
 ---
 layout: toc
 title: StoRM Storage Resource Manager - System Administration Guide
-version: 1.11.15
+version: 1.11.16
+redirect_from:
+  - /documentation/sysadmin-guide/
 ---
 
 # StoRM System Administration Guide
@@ -10,7 +12,7 @@ version: {{ page.version }}
 
 **Table of contents**
 
-* [Upgrade from StoRM v1.11.14](#upgrading)
+* [Upgrade from StoRM v1.11.15](#upgrading)
 * [Installation Prerequisites](#prerequisites)
   * [Platform](#platform)
   * [Requirements](#requirements)
@@ -42,62 +44,27 @@ version: {{ page.version }}
 
 ------
 
-## Upgrade from StoRM v1.11.14 <a name="upgrading">&nbsp;</a>
+## Upgrade from StoRM v1.11.15 <a name="upgrading">&nbsp;</a>
 
 The services that needs to be updated are:
 
 * `storm-backend-server`
-* `storm-dynamic-info-provider`
-* `storm-frontend-server`
 * `storm-webdav`
-* `yaim-storm`
+* `storm-globus-gridftp-server`
 
 #### Update packages
 
  ```bash
-yum update storm-backend-server storm-dynamic-info-provider storm-frontend-server storm-webdav yaim-storm
+yum update storm-backend-server storm-webdav storm-globus-gridftp-server
 ```
 
 Split this command properly if you have a distributed deployment.
-
-#### Update configuration
-
-- StoRM WebDAV [v1.1.0][upgrade-webdav] introduces the support to
-Third-Party-Copy and needs to be configured well. Please read and follow the
-[StoRM WebDAV release notes upgrade instructions][upgrade-webdav] to properly
-configure the service.
-
-- StoRM Info Provider [v1.8.1][upgrade-info-provider] introduces
-a new YAIM variable `STORM_WEBDAV_POOL_LIST` that can be used to specify a list
-of WebDAV endpoints, in order to avoid the previous limitation of one. Please
-read the [StoRM Info Provider release notes upgrade instructions][upgrade-info-provider]
-to properly upgrade your configuration.
-
-- StoRM Backend [v1.11.15][upgrade-be] introduces changes to the logging
-configuration file `logging.xml`. Check your `/etc/storm/backend-server`
-directory if you have a `logging.xml.rpmnew` file. Read more [here][upgrade-be].
-
-- StoRM Frontend [v1.8.12][upgrade-fe] introduces changes to the service
-configuration file `storm-frontend-server.conf` which YAIM should automatically
-update. If something goes wrong check the [release notes configuration section][upgrade-fe]
-to manually fix it.
-
-#### Run YAIM
-
-Run YAIM specifying the proper components profiles:
-
-```bash
-/opt/glite/yaim/bin/yaim -c -s /etc/storm/siteinfo/storm.def \
-    -n se_storm_backend \
-    -n se_storm_frontend \
-    -n se_storm_gridftp \
-    -n se_storm_webdav
-```
+Then, run YAIM.
 
 ## Upgrade from earlier versions <a name="upgrading-earlier">&nbsp;</a>
 
-If you are upgrading from StoRM v1.11.13 or earlier versions please follow
-[these instructions][upgrade-13] before.
+If you are upgrading from StoRM v1.11.14 or earlier versions please follow
+[these instructions][upgrade-14] before.
 
 ## Installation Prerequisites <a name="prerequisites">&nbsp;</a>
 
@@ -1595,7 +1562,7 @@ You can found CDMI StoRM details about installation and configuration [here][ind
 
 [upgrade-webdav]: {{site.baseurl}}/release-notes/storm-webdav/1.1.0/
 [upgrade-info-provider]: {{site.baseurl}}/release-notes/storm-dynamic-info-provider/1.8.1/
-[upgrade-13]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.14/#upgrading
+[upgrade-14]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15/#upgrading
 [upgrade-be]: {{site.baseurl}}/release-notes/storm-backend-server/1.11.15/
 [upgrade-fe]: {{site.baseurl}}/release-notes/storm-frontend-server/1.8.12/
 
