@@ -2,7 +2,7 @@ pipeline {
 
   agent {
     kubernetes {
-      label "${env.JOB_NAME}-${env.BUILD_NUMBER}"
+      label "storm-backend-server_{env.JOB_BASE_NAME}-${env.BUILD_NUMBER}"
       cloud 'Kube mwdevel'
       defaultContainer 'jnlp'
       inheritFrom 'ci-template'
