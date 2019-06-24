@@ -1,10 +1,11 @@
-def podLabel = 'storm-backend-server_' + JOB_BASE_NAME.replaceAll('%2F','').replaceAll("[^a-zA-Z0-9]+","") + '-' + BUILD_NUMBER
+@Library('sd')_
+def kubeLabel = getKubeLabel()
 
 pipeline {
 
   agent {
     kubernetes {
-      label "${podLabel}"
+      label "${kubeLabel}"
       cloud 'Kube mwdevel'
       defaultContainer 'jnlp'
       inheritFrom 'ci-template'
