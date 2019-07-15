@@ -186,34 +186,34 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 		if (!response) {
 			log.debug("SrmMkdir: Request failed!");
 			if (file.exists()) {
-				log.debug("srmMkdir: {} exists", file);
+				log.debug("srmMkdir: {} exists", file.getPath());
 				if (file.isDirectory()) {
-					log.debug("srmMkdir: {} is a directory", file);
-					throw srmDuplicationError(format("Path %s exists and it's a directory.", file));
+					log.debug("srmMkdir: {} is a directory", file.getPath());
+					throw srmDuplicationError("Path exists and it's a directory.");
 				}
 				log.debug("srmMkdir: {} is a file", file);
-				throw srmInvalidPath(format("Path %s exists and it's a file.", file));
+				throw srmInvalidPath("Path exists and it's a file.");
 			}
-			log.debug("srmMkdir: {} doesn't exist", file);
+			log.debug("srmMkdir: {} doesn't exist", file.getPath());
 			LocalFile parent = file.getParentFile();
 			if (parent == null) {
-				log.debug("srmMkdir: null Parent directory. Is {} a root directory?", file);
+				log.debug("srmMkdir: null Parent directory. Is {} a root directory?", file.getPath());
 				throw srmInternalError("Unexpected null parent directory");
 			}
-			log.debug("srmMkdir: Parent directory is {}", parent);
+			log.debug("srmMkdir: Parent directory is {}", parent.getPath());
 			if (!parent.exists()) {
-				log.debug("srmMkdir: Parent directory {} doesn't exist.", parent);
+				log.debug("srmMkdir: Parent directory {} doesn't exist.", parent.getPath());
 				throw srmInvalidPath("Parent directory doesn't exist. Recursive directory creation Not Allowed");
 			}
-			log.debug("srmMkdir: Parent directory {} exists.", parent);
+			log.debug("srmMkdir: Parent directory {} exists.", parent.getPath());
 			if (!parent.isDirectory()) {
-				log.debug("srmMkdir: Parent directory {} is not a directory.", parent);
+				log.debug("srmMkdir: Parent directory {} is not a directory.", parent.getPath());
 				throw srmInvalidPath("Parent directory is not a directory.");
 			}
 			throw srmInternalError("Parent directory exists but some other unexpected error occoured.");
 		}
 
-		log.debug("SrmMkdir: Request success!");
+		log.debug("SrmMkdir: Request successful!");
 		return;
 	}
 
