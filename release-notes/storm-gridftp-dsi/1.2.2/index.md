@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM GridFTP server v.1.2.2 release notes"
-release_date: "15.06.2019"
+release_date: "26.07.2019"
 features:
   - id: STOR-1094
     title: Support for the CKSUM GridFTP command
