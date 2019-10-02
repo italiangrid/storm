@@ -22,9 +22,9 @@ repo_base_url: "https://github.com/italiangrid"
 howto_path: "/documentation/how-to"
 releasenotes_path: "/release-notes"
 
-latest_release: 1.11.15
-latest_release_date: 28/02/2019
+latest_release: 1.11.16
+latest_release_date: 15/06/2019
 
-sysadmin_guide_version: 1.11.15
+sysadmin_guide_version: 1.11.16
 functional_description_version: 1.11.2
 webdav_guide_version: 1.0.2
