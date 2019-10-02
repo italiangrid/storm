@@ -1,9 +1,8 @@
 ---
 layout: default
 title: "StoRM BackEnd v. 1.11.16 release notes"
-release_date: "26.07.2019"
+release_date: "02.10.2019"
 rfcs:
-features:
   - id: STOR-1099
     title: Improve error description when srmMkdir path contains non existing intermediate directories
 ---
@@ -17,9 +16,9 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.16][release-notes].
 This release fixes the error description retrieved when srmMkdir fails with a path that doesn't contain
 some intermediate directory.
 
-### Enhancements
+### Bug fixes
 
-{% include list-features.liquid %}
+{% include list-rfcs.liquid %}
 
 ### Installation and configuration
 

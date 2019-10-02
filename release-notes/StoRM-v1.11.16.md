@@ -1,12 +1,14 @@
 ---
 layout: default
 title: "StoRM v.1.11.16 - release notes"
-release_date: "26.07.2019"
+release_date: "02.10.2019"
 rfcs:
   - id: STOR-1095
     title: StoRM WebDAV default configuration should not depend on iam-test.indigo-datacloud.eu
   - id: STOR-1096
     title: Unreachable OpenID Connect provider causes StoRM WebDAV startup failure
+  - id: STOR-1099
+    title: Improve error description when srmMkdir path contains non existing intermediate directories
 features:
   - id: STOR-1094
     title: Support for the CKSUM GridFTP command
@@ -14,8 +16,6 @@ features:
     title: Introduce Conscrypt JSSE provider support
   - id: STOR-1098
     title: Update spring boot to 2.1.4.RELEASE
-  - id: STOR-1099
-    title: Improve error description when srmMkdir path contains non existing intermediate directories
 components:
   - name: StoRM Backend
     package: storm-backend-server

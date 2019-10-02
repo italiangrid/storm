@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM WebDAV v. 1.2.0 release notes"
-release_date: "26.07.2019"
+release_date: "02.10.2019"
 rfcs:
   - id: STOR-1095
     title: StoRM WebDAV default configuration should not depend on iam-test.indigo-datacloud.eu
