@@ -5,6 +5,8 @@ release_date: "28.02.2019"
 rfcs:
   - id: STOR-1019
     title: Fix namespace configuration syntax error
+  - id: STOR-1021
+    title: Request queue length monitoring in the FE
   - id: STOR-1025
     title: Configurable size limit for the request queue
   - id: STOR-1026
