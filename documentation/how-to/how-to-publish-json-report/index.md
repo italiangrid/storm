@@ -15,31 +15,23 @@ The following is an example of how make the storage site report in JSON readble 
 
 ## Configure a storage area <a name="configure">&nbsp;</a>
 
-The aim is allowing all the users to access - through a WebDAV endpoint - the JSON report.
+The aim is allowing all the users to access - through a WebDAV endpoint - the JSON storage report.
 
-In the following example, a dedicated storage area has been added and configured to be readable-only by all the users.
+In the following example, a dedicated storage area named `info` has been added and configured to be readable-only by all the users.
 
-Add `info` storage area to the storage area list:
+Configure `info` storage area as follow:
 
 ```
+# Add `info` storage area to the storage area list:
 STORM_STORAGEAREA_LIST = "${STORM_STORAGEAREA_LIST} info"
-```
 
-Set mandatory online size value (e.g. 1GB):
-
-```
+# Set mandatory online size value (e.g. 1GB):
 STORM_INFO_ONLINE_SIZE = 1
-```
 
-Then, allow info storage area to be accessed from all the users of one (or more) VOs:
-
-```
+# Allow info storage area to be accessed from all the users of one (or more) VOs:
 STORM_INFO_VONAME = "test.vo test.vo.2"
-```
 
-Allow authenticated users ot access through WebDAV the content of `info`:
-
-```
+# Allow authenticated users ot access through WebDAV the content of `info`:
 STORM_INFO_AUTHENTICATED_HTTP_READ = true
 ```
 
@@ -55,6 +47,8 @@ $ vim /etc/storm/backend-server/path-authz.db
   @ALL@     /info                    WFDMN            deny
   @ALL@     /                        WRFDLMN          permit
 ```
+
+Run YAIM to apply configuration.
 
 ## Periodically reload report <a name="reload-report">&nbsp;</a>
 
@@ -114,97 +108,135 @@ Output:
 
 ```
 {
-    "capabilities": [
-        "data.management.transfer", 
-        "data.management.storage"
-    ], 
-    "endpoints": [
-        {
-            "assignedshares": [
-                "all"
-            ], 
-            "capabilities": [
-                "data.management.transfer", 
-                "data.management.storage"
-            ], 
-            "endpointurl": "httpg://omii006-vm03.cnaf.infn.it:8444/srm/managerv2", 
-            "interfacetype": "srm", 
-            "interfaceversion": "2.2", 
-            "name": "INFO-FS_srm", 
-            "qualitylevel": "pre-production"
-        }, 
-        {
-            "assignedshares": [
-                "all"
-            ], 
-            "capabilities": [
-                "data.management.transfer", 
-                "data.management.storage"
-            ], 
-            "endpointurl": "http://omii006-vm03.cnaf.infn.it:8085/webdav", 
-            "interfacetype": "DAV", 
-            "interfaceversion": "1.1", 
-            "name": "INFO-FS_http", 
-            "qualitylevel": "pre-production"
-        }, 
-        {
-            "assignedshares": [
-                "all"
-            ], 
-            "capabilities": [
-                "data.management.transfer", 
-                "data.management.storage"
-            ], 
-            "endpointurl": "https://omii006-vm03.cnaf.infn.it:8443/webdav", 
-            "interfacetype": "DAV", 
-            "interfaceversion": "1.1", 
-            "name": "INFO-FS_https", 
-            "qualitylevel": "pre-production"
-        }
-    ], 
-    "implementation": "storm", 
-    "implementationversion": "1.11.13", 
-    "latestupdate": 1518169441, 
-    "name": "storm-testbed", 
-    "qualitylevel": "pre-production", 
-    "shares": [ 
-        {
-            "accesslatency": "online", 
-            "assignedendpoints": [
-                "all"
-            ], 
-            "name": "TESTVO-FS", 
-            "path": [
-                "/test.vo"
-            ], 
-            "retentionpolicy": "replica", 
-            "servingstate": "open", 
-            "timestamp": 1518169441, 
-            "totalsize": 12000000000, 
-            "usedsize": 54648129, 
-            "vos": [
-                "test.vo"
-            ]
-        }, 
-        {
-            "accesslatency": "online", 
-            "assignedendpoints": [
-                "all"
-            ], 
-            "name": "INFO-FS", 
-            "path": [
-                "/info"
-            ], 
-            "retentionpolicy": "replica", 
-            "servingstate": "open", 
-            "timestamp": 1518169441, 
-            "totalsize": 1000000000, 
-            "usedsize": 4096, 
-            "vos": [
-                "test.vo test.vo.2"
-            ]
-        },
-        ...
-    ]
+    "storageservice": {
+        "capabilities": [
+            "data.management.transfer", 
+            "data.management.storage"
+        ], 
+        "implementation": "storm", 
+        "implementationversion": "1.11.16", 
+        "latestupdate": 1571388242, 
+        "name": "storm-testbed", 
+        "qualitylevel": "pre-production", 
+        "storageendpoints": [
+            {
+                "assignedshares": [
+                    "all"
+                ], 
+                "capabilities": [
+                    "data.management.transfer", 
+                    "data.management.storage"
+                ], 
+                "endpointurl": "httpg://omii006-vm03.cnaf.infn.it:8444/srm/managerv2", 
+                "interfacetype": "srm", 
+                "interfaceversion": "2.2", 
+                "name": "SRM_0", 
+                "qualitylevel": "pre-production"
+            }, 
+            {
+                "assignedshares": [
+                    "all"
+                ], 
+                "capabilities": [
+                    "data.management.transfer", 
+                    "data.management.storage"
+                ], 
+                "endpointurl": "http://omii006-vm03.cnaf.infn.it:8085", 
+                "interfacetype": "DAV", 
+                "interfaceversion": "1.1", 
+                "name": "HTTP_0", 
+                "qualitylevel": "pre-production"
+            }, 
+            {
+                "assignedshares": [
+                    "all"
+                ], 
+                "capabilities": [
+                    "data.management.transfer", 
+                    "data.management.storage"
+                ], 
+                "endpointurl": "https://omii006-vm03.cnaf.infn.it:8443", 
+                "interfacetype": "DAV", 
+                "interfaceversion": "1.1", 
+                "name": "HTTPS_0", 
+                "qualitylevel": "pre-production"
+            }
+        ], 
+        "storageshares": [
+            {
+                "accesslatency": "online", 
+                "assignedendpoints": [
+                    "all"
+                ], 
+                "name": "INFO_TOKEN", 
+                "path": [
+                    "/info"
+                ], 
+                "retentionpolicy": "replica", 
+                "servingstate": "open", 
+                "timestamp": 1571388242, 
+                "totalsize": 1000000000, 
+                "usedsize": 5824, 
+                "vos": [
+                    "test.vo", 
+                    "test.vo.2"
+                ]
+            },
+            {
+                "accesslatency": "nearline", 
+                "assignedendpoints": [
+                    "all"
+                ], 
+                "name": "TAPE_TOKEN", 
+                "path": [
+                    "/tape"
+                ], 
+                "retentionpolicy": "custodial", 
+                "servingstate": "open", 
+                "timestamp": 1571388242, 
+                "totalsize": 14000000000, 
+                "usedsize": 464525, 
+                "vos": [
+                    "test.vo.2"
+                ]
+            },
+            {
+                "accesslatency": "online", 
+                "assignedendpoints": [
+                    "all"
+                ], 
+                "name": "TESTVO_TOKEN", 
+                "path": [
+                    "/test.vo"
+                ], 
+                "retentionpolicy": "replica", 
+                "servingstate": "open", 
+                "timestamp": 1571388242, 
+                "totalsize": 24000000000, 
+                "usedsize": 1315148151, 
+                "vos": [
+                    "test.vo"
+                ]
+            }, 
+            {
+                "accesslatency": "online", 
+                "assignedendpoints": [
+                    "all"
+                ], 
+                "name": "OAUTHAUTHZ_TOKEN", 
+                "path": [
+                    "/oauth-authz"
+                ], 
+                "retentionpolicy": "replica", 
+                "servingstate": "open", 
+                "timestamp": 1571388242, 
+                "totalsize": 4000000000, 
+                "usedsize": 4096, 
+                "vos": [
+                    "test.vo"
+                ]
+            }
+        ]
+    }
 }
 ```
