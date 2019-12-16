@@ -36,7 +36,7 @@ Released on **{{ page.release_date }}**.
 
 #### Description
 
-This release mainly introduces CentOS 7 as a supported platform for both StoRM WebDAV and StoRM GridFTP.
+This release introduces the support for CentOS 7 for StoRM WebDAV and StoRM GridFTP.
 
 #### Released components
 
@@ -52,25 +52,16 @@ This release mainly introduces CentOS 7 as a supported platform for both StoRM W
 
 #### Installation
 
-In case of a clean installation, follow the instructions in the [System Administration Guide][storm-sysadmin-guide].
-
-##### Upgrade
-
-- [Upgrade from StoRM v1.11.16][upgrade-from-16]
-- [Upgrade from earlier versions][upgrade-from-15]
+You can find information about upgrade, clean installation and configuration of
+StoRM services in the [System Administration Guide][storm-sysadmin-guide].
 
 ##### Upgrade StoRM repository
 
-Starting from StoRM v1.11.14 the production repository has been migrated.
-In addiction, beta and nightly yum repositories have been created.
-
-Read how to install/upgrade StoRM repositories into the [Downloads][downloads-page] section.
+Starting from StoRM v1.11.14 the StoRM package repository has been migrated.
+Read how to install/upgrade StoRM packages in the [Downloads][downloads-page] section.
 
 [downloads-page]: {{site.baseurl}}/download.html#stable-releases
 
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide
 [upgrade-from-16]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.17/#upgrading
 [upgrade-from-15]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.17/#upgrading-earlier
-
-[webdav-tpc-aliases]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.17#important2
-[webdav-pool-list]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.17#important3

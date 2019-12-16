@@ -21,6 +21,12 @@ This release introduces the support for SystemD and CentOS 7 as a supported plat
 
 ### Installation and configuration
 
+Update package:
+
+    yum update storm-globus-gridftp-server
+
+and run YAIM.
+
 You can find information about upgrade, clean installation and configuration of
 StoRM services in the [System Administration Guide][storm-sysadmin-guide].
 

@@ -13,7 +13,7 @@ Released on **{{ page.release_date }}** with [StoRM v. 1.11.17][release-notes].
 
 ### Description
 
-This release fixes a minor bug about the returned status code when storm backend is not running.
+This release fixes a minor issue on the init script.
 
 ### Bug fixes
 

@@ -25,7 +25,8 @@ Update the StoRM WebDAV package:
 
     yum update storm-webdav
 
-### Known issues
+and run YAIM.
+
 
 
 [release-notes]: {{site.baseurl}}/release-notes/StoRM-v1.11.17.html
