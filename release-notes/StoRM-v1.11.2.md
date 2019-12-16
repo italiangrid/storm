@@ -39,21 +39,36 @@ features:
     - id: STOR-322
       title: StoRM GridHTTPs server doesn't need to request a TURL from the BE during transfer requests
 components:
-    - name: StoRM Backend
-      package: storm-backend-server
-      version: 1.11.2
-    - name: StoRM Frontend
-      package: storm-frontend-server
-      version: 1.8.3
-    - name: StoRM GridHTTPs
-      package: storm-gridhttps-server
-      version: 2.0.2
-    - name: StoRM native libs
-      package: storm-native-libs
-      version: 1.0.2
-    - name: YAIM StoRM
-      package: yaim-storm
-      version: 4.3.3
+  - name: StoRM Backend
+    package: storm-backend-server
+    version: 1.11.2
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM Frontend
+    package: storm-frontend-server
+    version: 1.8.3
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM GridHTTPs
+    package: storm-gridhttps-server
+    version: 2.0.2
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM native libs
+    package: storm-native-libs
+    version: 1.0.2
+    platforms:
+      - centos5
+      - centos6
+  - name: YAIM StoRM
+    package: yaim-storm
+    version: 4.3.3
+    platforms:
+      - centos5
+      - centos6
 ---
 
 ## StoRM v. 1.11.2

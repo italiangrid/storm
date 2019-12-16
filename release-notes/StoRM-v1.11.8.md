@@ -18,15 +18,24 @@ rfcs:
 - id: STOR-780
   title: StoRM Info Provider 'configure' fails with 'too many values to unpack'
 components:
-    - name: StoRM Backend
-      package: storm-backend-server
-      version: 1.11.8
-    - name: StoRM Frontend
-      package: storm-frontend-server
-      version: 1.8.8
-    - name: StoRM Info Provider
-      package: storm-dynamic-info-provider
-      version: 1.7.8
+  - name: StoRM Backend
+    package: storm-backend-server
+    version: 1.11.8
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM Frontend
+    package: storm-frontend-server
+    version: 1.8.8
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM Info Provider
+    package: storm-dynamic-info-provider
+    version: 1.7.8
+    platforms:
+      - centos5
+      - centos6
 ---
 
 ## StoRM v. 1.11.8

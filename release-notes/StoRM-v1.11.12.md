@@ -24,21 +24,33 @@ components:
   - name: StoRM Backend
     package: storm-backend-server
     version: 1.11.12
+    platforms:
+      - centos6
   - name: StoRM Frontend
     package: storm-frontend-server
     version: 1.8.10
+    platforms:
+      - centos6
   - name: StoRM WebDAV
     package: storm-webdav
     version: 1.0.5
+    platforms:
+      - centos6
   - name: YAIM StoRM
     package: yaim-storm
     version: 4.3.9
+    platforms:
+      - centos6
   - name: StoRM Native Libs
     package: storm-native-libs
     version: 1.0.5
+    platforms:
+      - centos6
   - name: CDMI StoRM
     package: cdmi-storm
     version: 0.1.0
+    platforms:
+      - centos7
 ---
 
 ## StoRM v. 1.11.12

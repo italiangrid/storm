@@ -49,18 +49,30 @@ features:
 - id: STOR-560
   title: PtG ACL setup should be configurable
 components:
-    - name: StoRM Backend
-      package: storm-backend-server
-      version: 1.11.4
-    - name: StoRM Frontend
-      package: storm-frontend-server
-      version: 1.8.5
-    - name: StoRM GridHTTPs
-      package: storm-gridhttps-server
-      version: 3.0.1
-    - name: YAIM StoRM
-      package: yaim-storm
-      version: 4.3.5
+  - name: StoRM Backend
+    package: storm-backend-server
+    version: 1.11.4
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM Frontend
+    package: storm-frontend-server
+    version: 1.8.5
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM GridHTTPs
+    package: storm-gridhttps-server
+    version: 3.0.1
+    platforms:
+      - centos5
+      - centos6
+  - name: YAIM StoRM
+    package: yaim-storm
+    version: 4.3.5
+    platforms:
+      - centos5
+      - centos6
 ---
 
 ## StoRM v. 1.11.4

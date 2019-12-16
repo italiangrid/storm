@@ -1,7 +1,9 @@
 ---
 layout: toc
 title: StoRM Storage Resource Manager - System Administration Guide
-version: 1.11.16
+version: 1.11.17
+redirect_from:
+  - /documentation/sysadmin-guide/
 ---
 
 # StoRM System Administration Guide
@@ -10,7 +12,7 @@ version: {{ page.version }}
 
 **Table of contents**
 
-* [Upgrade from StoRM v1.11.15](#upgrading)
+* [Upgrade from StoRM v1.11.16](#upgrading)
 * [Installation Prerequisites](#prerequisites)
   * [Platform](#platform)
   * [Requirements](#requirements)
@@ -42,7 +44,7 @@ version: {{ page.version }}
 
 ------
 
-## Upgrade from StoRM v1.11.15 <a name="upgrading">&nbsp;</a>
+## Upgrade from StoRM v1.11.16 <a name="upgrading">&nbsp;</a>
 
 The services that needs to be updated are:
 
@@ -61,8 +63,8 @@ Then, run YAIM.
 
 ## Upgrade from earlier versions <a name="upgrading-earlier">&nbsp;</a>
 
-If you are upgrading from StoRM v1.11.14 or earlier versions please follow
-[these instructions][upgrade-14] before.
+If you are upgrading from StoRM v1.11.15 or earlier versions please follow
+[these instructions][upgrade-15] before.
 
 ## Installation Prerequisites <a name="prerequisites">&nbsp;</a>
 
@@ -1556,11 +1558,7 @@ You can found CDMI StoRM details about installation and configuration [here][ind
 [used-space-example]: {{site.baseurl}}/documentation/how-to/how-to-initialize-storage-area-used-space/
 [releases]: {{site.baseurl}}/releases.html
 
-[upgrade-webdav]: {{site.baseurl}}/release-notes/storm-webdav/1.1.0/
-[upgrade-info-provider]: {{site.baseurl}}/release-notes/storm-dynamic-info-provider/1.8.1/
-[upgrade-14]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15/#upgrading
-[upgrade-be]: {{site.baseurl}}/release-notes/storm-backend-server/1.11.15/
-[upgrade-fe]: {{site.baseurl}}/release-notes/storm-frontend-server/1.8.12/
+[upgrade-15]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.16/#upgrading
 
 [stable-storm-repoview]: https://repo.cloud.cnaf.infn.it/repository/storm/stable/el6/x86_64/repoview/index.html
 

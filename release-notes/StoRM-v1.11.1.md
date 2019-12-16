@@ -21,21 +21,36 @@ features:
     - id: STOR-230
       title: Improve PROPFIND performance.
 components:
-    - name: StoRM Backend
-      package: storm-backend-server
-      version: 1.11.1
-    - name: StoRM native libs
-      package: storm-native-libs
-      version: 1.0.1
-    - name: StoRM GridHTTPs
-      package: storm-gridhttps-server
-      version: 2.0.1
-    - name: YAIM StoRM
-      package: yaim-storm
-      version: 4.3.2
-    - name: StoRM dynamic info
-      package: storm-dynamic-info-provider
-      version: 1.7.6
+  - name: StoRM Backend
+    package: storm-backend-server
+    version: 1.11.1
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM native libs
+    package: storm-native-libs
+    version: 1.0.1
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM GridHTTPs
+    package: storm-gridhttps-server
+    version: 2.0.1
+    platforms:
+      - centos5
+      - centos6
+  - name: YAIM StoRM
+    package: yaim-storm
+    version: 4.3.2
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM dynamic info
+    package: storm-dynamic-info-provider
+    version: 1.7.6
+    platforms:
+      - centos5
+      - centos6
 ---
 
 ## StoRM v. 1.11.1

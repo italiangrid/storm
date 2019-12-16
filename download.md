@@ -37,6 +37,12 @@ Install StoRM RHEL6 package repository as follow:
 yum-config-manager --add-repo https://repo.cloud.cnaf.infn.it/repository/storm/stable/storm-stable-centos6.repo
 ```
 
+Install StoRM RHEL7 package repository as follow:
+
+```shell
+yum-config-manager --add-repo https://repo.cloud.cnaf.infn.it/repository/storm/stable/storm-stable-centos7.repo
+```
+
 ### Source code
 
 The StoRM source is available on [Github](https://github.com) in the following repositories:

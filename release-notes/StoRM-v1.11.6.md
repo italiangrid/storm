@@ -7,9 +7,12 @@ rfcs:
   title: SRM Release Files fails in some cases
 
 components:
-    - name: StoRM Backend
-      package: storm-backend-server
-      version: 1.11.6
+  - name: StoRM Backend
+    package: storm-backend-server
+    version: 1.11.6
+    platforms:
+      - centos5
+      - centos6
 ---
 
 ## StoRM v. 1.11.6

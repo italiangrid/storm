@@ -21,18 +21,30 @@ rfcs:
   title: Slow status update queries impact on mysql performance on multiple srmRm requests
 
 components:
-    - name: StoRM Backend
-      package: storm-backend-server
-      version: 1.11.7
-    - name: StoRM Frontend
-      package: storm-frontend-server
-      version: 1.8.7
-    - name: StoRM WebDAV
-      package: storm-webdav
-      version: 1.0.2
-    - name: YAIM StoRM
-      package: yaim-storm
-      version: 4.3.7
+  - name: StoRM Backend
+    package: storm-backend-server
+    version: 1.11.7
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM Frontend
+    package: storm-frontend-server
+    version: 1.8.7
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM WebDAV
+    package: storm-webdav
+    version: 1.0.2
+    platforms:
+      - centos5
+      - centos6
+  - name: YAIM StoRM
+    package: yaim-storm
+    version: 4.3.7
+    platforms:
+      - centos5
+      - centos6
 ---
 
 ## StoRM v. 1.11.7

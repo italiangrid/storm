@@ -22,24 +22,42 @@ rfcs:
 - id: STOR-818
   title: StoRM Frontend shutdown should be faster
 components:
-    - name: StoRM Backend
-      package: storm-backend-server
-      version: 1.11.9
-    - name: StoRM Frontend
-      package: storm-frontend-server
-      version: 1.8.9
-    - name: StoRM WebDAV
-      package: storm-webdav
-      version: 1.0.3-2
-    - name: StoRM Info Provider
-      package: storm-dynamic-info-provider
-      version: 1.7.8-2
-    - name: YAIM StoRM
-      package: yaim-storm
-      version: 4.3.8
-    - name: StoRM Native Libs
-      package: storm-native-libs
-      version: 1.0.4
+  - name: StoRM Backend
+    package: storm-backend-server
+    version: 1.11.9
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM Frontend
+    package: storm-frontend-server
+    version: 1.8.9
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM WebDAV
+    package: storm-webdav
+    version: 1.0.3-2
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM Info Provider
+    package: storm-dynamic-info-provider
+    version: 1.7.8-2
+    platforms:
+      - centos5
+      - centos6
+  - name: YAIM StoRM
+    package: yaim-storm
+    version: 4.3.8
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM Native Libs
+    package: storm-native-libs
+    version: 1.0.4
+    platforms:
+      - centos5
+      - centos6
 ---
 
 ## StoRM v. 1.11.9
