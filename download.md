@@ -72,4 +72,4 @@ The StoRM source is available on [Github](https://github.com) in the following r
 [nightly-repoview]: https://repo.cloud.cnaf.infn.it/repository/storm/nightly/el6/x86_64/repoview/index.html
 [nightly-repo-file]: https://repo.cloud.cnaf.infn.it/repository/storm/nightly/storm-nightly-centos6.repo
 
-[umd-install-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.14/#umdrepos
+[umd-install-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.17/#umdrepos
