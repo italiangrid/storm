@@ -14,6 +14,9 @@ components:
   - name: StoRM Backend
     package: storm-backend-server
     version: 1.11.11
+    platforms:
+      - centos5
+      - centos6
 ---
 
 ## StoRM v. 1.11.11

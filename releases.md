@@ -7,17 +7,31 @@ title: StoRM releases
 
 The following is the list of last StoRM releases, with the released components list and a link to the release notes.
 
-## StoRM v.1.11.16
+## StoRM v.1.11.17
 
-<span class="label" style="margin-top: -20px;">02.10.2019</span> <span class="label label-info" style="margin-top: -20px;">current</span>
+<span class="label" style="margin-top: -20px;">17.12.2019</span> <span class="label label-info" style="margin-top: -20px;">current</span>
 
 This is the latest release for StoRM, available on StoRM repositories.
 
-| Component            | Version    
-|:---------------------|:-----------
-|StoRM Backend         |[1.11.16]({{site.baseurl}}/release-notes/storm-backend-server/1.11.16/)
-|StoRM GridFTP DSI     |[1.2.2]({{site.baseurl}}/release-notes/storm-gridftp-dsi/1.2.2/)
-|StoRM WebDAV          |[1.2.0]({{site.baseurl}}/release-notes/storm-webdav/1.2.0/)
+| Component            | Version    | Platform
+|:---------------------|:-----------|:--------
+|StoRM Backend         |[1.11.17]({{site.baseurl}}/release-notes/storm-backend-server/1.11.17/) | <span class="label label-success ">centos6</span>
+|StoRM GridFTP DSI     |[1.2.3]({{site.baseurl}}/release-notes/storm-gridftp-dsi/1.2.3/) | <span class="label label-success ">centos6</span> <span class="label label-info ">centos7</span>
+|StoRM WebDAV          |[1.2.1]({{site.baseurl}}/release-notes/storm-webdav/1.2.1/) | <span class="label label-success ">centos6</span> <span class="label label-info ">centos7</span>
+
+See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.17.html).
+
+## StoRM v.1.11.16
+
+<span class="label" style="margin-top: -20px;">02.10.2019</span>
+
+This is the latest release for StoRM, available on StoRM repositories.
+
+| Component            | Version    | Platform
+|:---------------------|:-----------|:---------
+|StoRM Backend         |[1.11.16]({{site.baseurl}}/release-notes/storm-backend-server/1.11.16/) | <span class="label label-success ">centos6</span>
+|StoRM GridFTP DSI     |[1.2.2]({{site.baseurl}}/release-notes/storm-gridftp-dsi/1.2.2/) | <span class="label label-success ">centos6</span>
+|StoRM WebDAV          |[1.2.0]({{site.baseurl}}/release-notes/storm-webdav/1.2.0/) | <span class="label label-success ">centos6</span>
 
 See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.16.html).
 
@@ -25,13 +39,13 @@ See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.
 
 <span class="label" style="margin-top: -20px;">28.02.2019</span>
 
-| Component            | Version    
-|:---------------------|:-----------
-|StoRM Backend         |[1.11.15]({{site.baseurl}}/release-notes/storm-backend-server/1.11.15/)
-|StoRM Frontend        |[1.8.12]({{site.baseurl}}/release-notes/storm-frontend-server/1.8.12/)
-|StoRM Info Provider   |[1.8.1]({{site.baseurl}}/release-notes/yaim-storm/1.8.1/)|
-|StoRM WebDAV          |[1.1.0]({{site.baseurl}}/release-notes/storm-webdav/1.1.0/)
-|YAIM StoRM            |[4.3.12]({{site.baseurl}}/release-notes/yaim-storm/4.3.12/)
+| Component            | Version    | Platform
+|:---------------------|:-----------|:---------
+|StoRM Backend         |[1.11.15]({{site.baseurl}}/release-notes/storm-backend-server/1.11.15/) | <span class="label label-success ">centos6</span>
+|StoRM Frontend        |[1.8.12]({{site.baseurl}}/release-notes/storm-frontend-server/1.8.12/) | <span class="label label-success ">centos6</span>
+|StoRM Info Provider   |[1.8.1]({{site.baseurl}}/release-notes/yaim-storm/1.8.1/) | <span class="label label-success ">centos6</span>
+|StoRM WebDAV          |[1.1.0]({{site.baseurl}}/release-notes/storm-webdav/1.1.0/) | <span class="label label-success ">centos6</span>
+|YAIM StoRM            |[4.3.12]({{site.baseurl}}/release-notes/yaim-storm/4.3.12/) | <span class="label label-success ">centos6</span>
 
 See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.15.html).
 
@@ -39,14 +53,14 @@ See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.
 
 <span class="label" style="margin-top: -20px;">25.07.2018</span>
 
-| Component            | Version    
-|:---------------------|:-----------
-|StoRM Backend         |[1.11.14]({{site.baseurl}}/release-notes/storm-backend-server/1.11.14/)
-|StoRM Frontend        |[1.8.11]({{site.baseurl}}/release-notes/storm-frontend-server/1.8.11/)
-|StoRM Native Libs     |[1.0.5]({{site.baseurl}}/release-notes/storm-native-libs/1.0.5/)
-|StoRM GridFTP DSI     |[1.2.1]({{site.baseurl}}/release-notes/storm-gridftp-dsi/1.2.1/)
-|StoRM XMLRPC-C        |[1.39.12]({{site.baseurl}}/release-notes/storm-xmlrpc-c/1.39.12/)
-|YAIM StoRM            |[4.3.11]({{site.baseurl}}/release-notes/yaim-storm/4.3.11/)
+| Component            | Version    | Platform
+|:---------------------|:-----------|:---------
+|StoRM Backend         |[1.11.14]({{site.baseurl}}/release-notes/storm-backend-server/1.11.14/) | <span class="label label-success ">centos6</span>
+|StoRM Frontend        |[1.8.11]({{site.baseurl}}/release-notes/storm-frontend-server/1.8.11/) | <span class="label label-success ">centos6</span>
+|StoRM Native Libs     |[1.0.5]({{site.baseurl}}/release-notes/storm-native-libs/1.0.5/) | <span class="label label-success ">centos6</span>
+|StoRM GridFTP DSI     |[1.2.1]({{site.baseurl}}/release-notes/storm-gridftp-dsi/1.2.1/) | <span class="label label-success ">centos6</span>
+|StoRM XMLRPC-C        |[1.39.12]({{site.baseurl}}/release-notes/storm-xmlrpc-c/1.39.12/) | <span class="label label-success ">centos6</span>
+|YAIM StoRM            |[4.3.11]({{site.baseurl}}/release-notes/yaim-storm/4.3.11/) | <span class="label label-success ">centos6</span>
 
 See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.14.html).
 
@@ -54,11 +68,11 @@ See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.
 
 <span class="label" style="margin-top: -20px;">19.02.2018</span>
 
-| Component            | Version    
-|:---------------------|:-----------
-|StoRM Backend         |[1.11.13]({{site.baseurl}}/release-notes/storm-backend-server/1.11.13/)
-|YAIM StoRM            |[4.3.10]({{site.baseurl}}/release-notes/yaim-storm/4.3.10/)
-|StoRM Info Provider   |[1.8.0]({{site.baseurl}}/release-notes/yaim-storm/1.8.0/)|
+| Component            | Version    | Platform
+|:---------------------|:-----------|:---------
+|StoRM Backend         |[1.11.13]({{site.baseurl}}/release-notes/storm-backend-server/1.11.13/) | <span class="label label-success ">centos6</span>
+|YAIM StoRM            |[4.3.10]({{site.baseurl}}/release-notes/yaim-storm/4.3.10/) | <span class="label label-success ">centos6</span>
+|StoRM Info Provider   |[1.8.0]({{site.baseurl}}/release-notes/yaim-storm/1.8.0/) | <span class="label label-success ">centos6</span>
 
 See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.13.html).
 
@@ -66,14 +80,14 @@ See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.
 
 <span class="label" style="margin-top: -20px;">30.09.2017</span>
 
-| Component            | Version    
-|:---------------------|:-----------
-|StoRM Backend         |[1.11.12]({{site.baseurl}}/release-notes/storm-backend-server/1.11.12/)
-|StoRM Frontend        |[1.8.10]({{site.baseurl}}/release-notes/storm-frontend-server/1.8.10/)
-|StoRM WebDAV          |[1.0.5]({{site.baseurl}}/release-notes/storm-webdav/1.0.5/)
-|YAIM StoRM            |[4.3.9]({{site.baseurl}}/release-notes/yaim-storm/4.3.9/)
-|StoRM Native Libs     |[1.0.5]({{site.baseurl}}/release-notes/storm-native-libs/1.0.5/)
-|CDMI StoRM            |[0.1.0]({{site.baseurl}}/release-notes/cdmi-storm/0.1.0/)
+| Component            | Version    | Platform
+|:---------------------|:-----------|:---------
+|StoRM Backend         |[1.11.12]({{site.baseurl}}/release-notes/storm-backend-server/1.11.12/) | <span class="label label-success ">centos6</span>
+|StoRM Frontend        |[1.8.10]({{site.baseurl}}/release-notes/storm-frontend-server/1.8.10/) | <span class="label label-success ">centos6</span>
+|StoRM WebDAV          |[1.0.5]({{site.baseurl}}/release-notes/storm-webdav/1.0.5/) | <span class="label label-success ">centos6</span>
+|YAIM StoRM            |[4.3.9]({{site.baseurl}}/release-notes/yaim-storm/4.3.9/) | <span class="label label-success ">centos6</span>
+|StoRM Native Libs     |[1.0.5]({{site.baseurl}}/release-notes/storm-native-libs/1.0.5/) | <span class="label label-success ">centos6</span>
+|CDMI StoRM            |[0.1.0]({{site.baseurl}}/release-notes/cdmi-storm/0.1.0/) | <span class="label label-info ">centos7</span>
 
 See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.12.html).
 

@@ -20,21 +20,31 @@ components:
   - name: StoRM Backend
     package: storm-backend-server
     version: 1.11.14
+    platforms:
+      - centos6
   - name: StoRM Frontend
     package: storm-frontend-server
     version: 1.8.11
+    platforms:
+      - centos6
   - name: StoRM Native Libs
     package: storm-native-libs
     version: 1.0.5-2
+    platforms:
+      - centos6
   - name: StoRM GridFTP
     package: storm-globus-gridftp-server
     version: 1.2.1
+    platforms:
+      - centos6
   - name: StoRM XMLRPC-C
     package: storm-xmlrpc-c
     version: 1.39.12
   - name: YAIM StoRM
     package: yaim-storm
     version: 4.3.11
+    platforms:
+      - centos6
 ---
 
 ## StoRM v. 1.11.14

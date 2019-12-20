@@ -18,12 +18,18 @@ components:
   - name: StoRM Backend
     package: storm-backend-server
     version: 1.11.13
+    platforms:
+      - centos6
   - name: YAIM StoRM
     package: yaim-storm
     version: 4.3.10
+    platforms:
+      - centos6
   - name: StoRM Info Provider
     package: storm-dynamic-info-provider
     version: 1.8.0
+    platforms:
+      - centos6
 ---
 
 ## StoRM v. 1.11.13

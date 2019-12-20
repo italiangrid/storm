@@ -3,6 +3,7 @@
 		<tr>
 			<th>Component</th>
 			<th>Version</th>
+			<th>Platform</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -11,6 +12,19 @@
 			<td>{{component.name}}</td>
 			<td>
 				<a href="{{site.baseurl}}{{site.releasenotes_path}}/{{component.package}}/{{component.version}}/">{{component.version}}</a>
+			</td>
+			<td>
+			{% for platform in component.platforms %}
+			  {% if platform == "centos5" %}
+			  <span class="label label-warning ">centos5</span>
+			  {% endif %}
+			  {% if platform == "centos6" %}
+			  <span class="label label-success ">centos6</span>
+			  {% endif %}
+			  {% if platform == "centos7" %}
+			  <span class="label label-info ">centos7</span>
+			  {% endif %}
+	        {% endfor %}
 			</td>
 		</tr>
 	{% endfor %}

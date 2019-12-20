@@ -33,24 +33,42 @@ features:
 - id: STOR-692
   title: Clean Backend's log file from useless INFO messages
 components:
-    - name: StoRM Backend
-      package: storm-backend-server
-      version: 1.11.5
-    - name: StoRM Frontend
-      package: storm-frontend-server
-      version: 1.8.6
-    - name: StoRM GridHTTPs
-      package: storm-gridhttps-server
-      version: 3.0.2
-    - name: StoRM Dynamic Info Provider
-      package: storm-dynamic-info-provider
-      version: 1.7.7
-    - name: StoRM Native Libs
-      package: storm-native-libs
-      version: 1.0.3
-    - name: YAIM StoRM
-      package: yaim-storm
-      version: 4.3.6
+  - name: StoRM Backend
+    package: storm-backend-server
+    version: 1.11.5
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM Frontend
+    package: storm-frontend-server
+    version: 1.8.6
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM GridHTTPs
+    package: storm-gridhttps-server
+    version: 3.0.2
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM Dynamic Info Provider
+    package: storm-dynamic-info-provider
+    version: 1.7.7
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM Native Libs
+    package: storm-native-libs
+    version: 1.0.3
+    platforms:
+      - centos5
+      - centos6
+  - name: YAIM StoRM
+    package: yaim-storm
+    version: 4.3.6
+    platforms:
+      - centos5
+      - centos6
 ---
 
 ## StoRM v. 1.11.5

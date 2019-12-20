@@ -18,21 +18,36 @@ rfcs:
     - id: STOR-293
       title: During the start-up the file welcome.txt is not found
 components:
-    - name: StoRM Backend
-      package: storm-backend-server
-      version: 1.11.3
-    - name: StoRM Frontend
-      package: storm-frontend-server
-      version: 1.8.4
-    - name: StoRM GridHTTPs
-      package: storm-gridhttps-server
-      version: 3.0.0
-    - name: YAIM StoRM
-      package: yaim-storm
-      version: 4.3.4
-    - name: StoRM SRM client
-      package: storm-srm-client
-      version: 1.6.1
+  - name: StoRM Backend
+    package: storm-backend-server
+    version: 1.11.3
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM Frontend
+    package: storm-frontend-server
+    version: 1.8.4
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM GridHTTPs
+    package: storm-gridhttps-server
+    version: 3.0.0
+    platforms:
+      - centos5
+      - centos6
+  - name: YAIM StoRM
+    package: yaim-storm
+    version: 4.3.4
+    platforms:
+      - centos5
+      - centos6
+  - name: StoRM SRM client
+    package: storm-srm-client
+    version: 1.6.1
+    platforms:
+      - centos5
+      - centos6
 ---
 
 ## StoRM v. 1.11.3

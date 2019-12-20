@@ -20,12 +20,18 @@ components:
   - name: StoRM Backend
     package: storm-backend-server
     version: 1.11.16
+    platforms:
+      - centos6
   - name: StoRM WebDAV
     package: storm-webdav
     version: 1.2.0
+    platforms:
+      - centos6
   - name: StoRM GridFTP
     package: storm-gridftp-dsi
     version: 1.2.2
+    platforms:
+      - centos6
 ---
 
 ## StoRM v. 1.11.16

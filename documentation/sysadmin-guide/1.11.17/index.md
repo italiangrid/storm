@@ -1,7 +1,9 @@
 ---
 layout: toc
 title: StoRM Storage Resource Manager - System Administration Guide
-version: 1.11.16
+version: 1.11.17
+redirect_from:
+  - /documentation/sysadmin-guide/
 ---
 
 # StoRM System Administration Guide
@@ -10,7 +12,7 @@ version: {{ page.version }}
 
 **Table of contents**
 
-* [Upgrade from StoRM v1.11.15](#upgrading)
+* [Upgrade from StoRM v1.11.16](#upgrading)
 * [Installation Prerequisites](#prerequisites)
   * [Platform](#platform)
   * [Requirements](#requirements)
@@ -29,6 +31,9 @@ version: {{ page.version }}
   * [StoRM Frontend service](#stormfrontendservice)
   * [StoRM Backend service](#stormbackendservice)
   * [StoRM GridFTP service](#stormgridftpservice)
+* [Puppet Configuration](#puppetconfiguration)
+  * [StoRM WebDAV](#puppetwebdav)
+  * [StoRM GridFTP](#puppetgridftp)
 * [Logging](#logg)
   * [StoRM Frontend logging](#stormfrontendlogging)
   * [StoRM Backend logging](#stormbackendlogging)
@@ -42,7 +47,7 @@ version: {{ page.version }}
 
 ------
 
-## Upgrade from StoRM v1.11.15 <a name="upgrading">&nbsp;</a>
+## Upgrade from StoRM v1.11.16 <a name="upgrading">&nbsp;</a>
 
 The services that needs to be updated are:
 
@@ -61,8 +66,8 @@ Then, run YAIM.
 
 ## Upgrade from earlier versions <a name="upgrading-earlier">&nbsp;</a>
 
-If you are upgrading from StoRM v1.11.14 or earlier versions please follow
-[these instructions][upgrade-14] before.
+If you are upgrading from StoRM v1.11.15 or earlier versions please follow
+[these instructions][upgrade-15] before.
 
 ## Installation Prerequisites <a name="prerequisites">&nbsp;</a>
 
@@ -1274,6 +1279,99 @@ However, it's important to know that **the IPC channel must be kept firewalled f
 {% include open_note.liquid %}
 >**The IPC channel must be kept firewalled for any hosts outside the SE system**.
 
+## Puppet Configuration <a name="puppetconfiguration">&nbsp;</a>
+
+The [StoRM Puppet module](https://github.com/italiangrid/storm-puppet-module) allows administrators to 
+easily configure StoRM services. Currently, the supported services are:
+
+- StoRM WebDAV
+- StoRM Globus GridFTP server
+
+### StoRM WebDAV <a name="puppetwebdav">&nbsp;</a>
+
+The main StoRM WebDAV configuration parameters are:
+
+- `user_name`: the Unix user that runs storm-webdav service. Default: **storm**.
+- `storage_areas`: the list of `Storm::Webdav::StorageArea` elements (more info below).
+- `oauth_issuers`: the list of `Storm::Webdav::OAuthIssuer` elements that means the supported OAuth providers (more info below).
+- `hostnames`: the list of hostname and aliases supported for Third-Party-Copy.
+- `http_port` and `https_port`: the service ports. Default: **8085**, **8443**.
+- `storage_root_dir`: the path of the storage areas root directory. Default: **/storage**.
+
+Read more about StoRM WebDAV configuration parameters at the [online documentation](https://italiangrid.github.io/storm-puppet-module/puppet_classes/storm_3A_3Awebdav.html).
+
+The [`Storm::Webdav::StorageArea`](https://italiangrid.github.io/storm-puppet-module/puppet_data_type_aliases/Storm_3A_3AWebdav_3A_3AStorageArea.html) type :
+
+- `name`: The name of the storage area. Required.
+- `root_path`: The path of the storage area root directory. Required.
+- `access_points`: A list of logic path used to access storage area's root. Required.
+- `vos`: A list of one or more Virtual Organization names of the users allowed to read/write into the storage area. Required.
+- `orgs`: A list of one or more Organizations. Optional.
+- `authenticated_read_enabled`: A boolean value used to enable the read of the storage area content to authenticated users. Required.
+- `anonymous_read_enabled`: A boolean value used to enable anonymous read access to storage area content. Required.
+- `vo_map_enabled`: A boolean value used to enable the use of the VO gridmap files. Required.
+- `vo_map_grants_write_access`: A boolean value used to grant write access to the VO users read from grifmap file. Optional.
+
+The [`Storm::Webdav::OAuthIssuer`](https://italiangrid.github.io/storm-puppet-module/puppet_data_type_aliases/Storm_3A_3AWebdav_3A_3AOAuthIssuer.html) type:
+
+- `name`: the organization name. Required.
+- `issuer`: the issuer URL. Required.
+
+Example of usage:
+
+```puppet
+class { 'storm::webdav':
+  storage_root_dir => '/storage',
+  storage_areas => [
+    {
+      name                       => 'test.vo',
+      root_path                  => '/storage/test.vo',
+      access_points              => ['/test.vo'],
+      vos                        => ['test.vo', 'test.vo.2'],
+      authenticated_read_enabled => false,
+      anonymous_read_enabled     => false,
+      vo_map_enabled             => false,
+    },
+    {
+      name                       => 'test.vo.2',
+      root_path                  => '/storage/test.vo.2',
+      access_points              => ['/test.vo.2'],
+      vos                        => ['test.vo.2'],
+      authenticated_read_enabled => false,
+      anonymous_read_enabled     => false,
+      vo_map_enabled             => false,
+    },
+  ],
+  oauth_issuers => [
+    {
+      name   => 'indigo-dc',
+      issuer => 'https://iam-test.indigo-datacloud.eu/',
+    },
+  ],
+  hostnames => ['localhost', 'alias.for.localhost'],
+}
+```
+
+### StoRM GridFTP <a name="puppetgridftp">&nbsp;</a>
+
+The StoRM GridFTP configuration parameters are:
+
+- `port`: the port used by GridFTP server service. Default: **2811**.
+- `port_range`: the range of ports used by transfer sockets; format is 'MIN,MAX'. Default: **'20000,25000'**.
+- `connections_max`: the number of max allowed connections to server. Default: **2000**.
+
+Read more about StoRM GridFTP configuration parameters at the [online documentation](https://italiangrid.github.io/storm-puppet-module/puppet_classes/storm_3A_3Agridftp.html).
+
+Example of usage:
+
+```puppet
+class { 'storm::gridftp':
+  port            => 2811,
+  port_range      => '20000,25000',
+  connections_max => 2000,
+}
+```
+
 ## Logging <a name="logg">&nbsp;</a>
 
 This section is dedicated to all the log information provided by all the StoRM services. By default, all the log files are saved into `/var/log/storm` directory.
@@ -1556,11 +1654,7 @@ You can found CDMI StoRM details about installation and configuration [here][ind
 [used-space-example]: {{site.baseurl}}/documentation/how-to/how-to-initialize-storage-area-used-space/
 [releases]: {{site.baseurl}}/releases.html
 
-[upgrade-webdav]: {{site.baseurl}}/release-notes/storm-webdav/1.1.0/
-[upgrade-info-provider]: {{site.baseurl}}/release-notes/storm-dynamic-info-provider/1.8.1/
-[upgrade-14]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.15/#upgrading
-[upgrade-be]: {{site.baseurl}}/release-notes/storm-backend-server/1.11.15/
-[upgrade-fe]: {{site.baseurl}}/release-notes/storm-frontend-server/1.8.12/
+[upgrade-15]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.16/#upgrading
 
 [stable-storm-repoview]: https://repo.cloud.cnaf.infn.it/repository/storm/stable/el6/x86_64/repoview/index.html
 
