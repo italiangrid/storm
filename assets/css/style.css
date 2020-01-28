@@ -253,3 +253,9 @@ and make it centered */
 .tocify-extend-page {
 	display: none;
 }
+
+#footer table,
+#footer table td {
+  border: none;
+  color: lightgray;
+}
