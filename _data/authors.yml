@@ -20,3 +20,13 @@ enrico:
   email: enrico.vianello@cnaf.infn.it
   gravatar: 4f496230f3e42d606024e16c5f389611
   github: enricovianello
+
+francesco:
+  display_name: Francesco Giacomini
+  email: francesco.giacomini@cnaf.infn.it
+  github: giacomini
+
+elisabetta:
+  display_name: Elisabetta Ronchieri
+  email: elisabetta.ronchieri@cnaf.infn.it
+  github: joda70
