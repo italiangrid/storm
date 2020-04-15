@@ -1,41 +1,35 @@
 # /etc/sysconfig/storm-backend
 #
-#
-
-# root of all other StoRM-related directories
-# (individual portions may be overridden later)
-#export STORM_HOME=/opt/storm/backend
 
 # user that will own the StoRM BE process
 STORM_BE_USER=storm
 
 # library path, if you don't set this in /etc/ld.so.conf
-#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/globus/lib:/opt/glite/lib:/opt/glite/lib/modules
+# LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/globus/lib:/opt/glite/lib:/opt/glite/lib/modules
+
+# absolute path to configuration dir
+STORM_BE_CONFIGDIR="/etc/storm/backend-server"
 
 # absolute path to configuration file
-#export STORM_BE_CONFIG_FILE="$STORM_HOME/etc/storm.properties"
+STORM_BE_CONFIG_FILE="/etc/storm/backend-server/storm.properties"
 
 # how often to reload configuration file; set to 0 to disable 
 # automatic configuration file reloading.
-#export STORM_BE_CONFIG_REFRESH=0
+STORM_BE_CONFIG_REFRESH=0
 
 # where native code libraries are kept
-#export STORM_BE_LIBDIR="$STORM_HOME/lib/storm-backend"
+STORM_BE_LIBDIR="/usr/lib64/"
+
+# where the 3rd-party .jar files reside
+STORM_BE_JARDIR="/usr/share/java/storm-backend-server"
 
 # name of the StoRM backend classes bundle file
 # (If this is a relative path, $STORM_BE_LIBDIR
 #  will be prepended)
-#export STORM_BE_JAR="$STORM_BE_LIBDIR/${NAME}.jar"
-
-# where the 3rd-party .jar files reside
-#export STORM_BE_JARDIR="$STORM_BE_LIBDIR/jars"
+STORM_BE_JAR="$STORM_BE_JARDIR/storm-backend-server.jar"
 
 # where StoRM puts logfiles
-#export STORM_BE_LOGDIR="$STORM_HOME/var/log"
-
-# where StoRM writes temporary files for GPFS ACL tools
-# BUG: maybe code reads this from storm.properties, not from here...
-#STORM_BE_TMPDIR="$STORM_HOME/var/tmp"
+STORM_BE_LOGDIR="/var/log/storm"
 
 # StoRM Backend server debug option. Uncomment this (and restart the service)
 # if you want to attach a java debugger to the running server process
@@ -43,49 +37,34 @@ STORM_BE_USER=storm
 
 # JVM debug port. Used together with STORM_BE_DEBUG to specify on which
 # port the JVM should listen for incoming debugger.
-# STORM_BE_DEBUG_PORT=1044
+STORM_BE_DEBUG_PORT=1044
 
 # JVM debug suspend option. Uncomment this to block the process JVM until a remote
 # debugger connects to the debugging port specified with the STORM_BE_DEBUG_PORT
 # option
-# STORM_BE_DEBUG_SUSPEND="y"
+STORM_BE_DEBUG_SUSPEND="n"
+
+# options for the JVM running the StoRM BE server to use in case STORM_BE_DEBUG is "y"
+STORM_BE_DEBUG_OPTS "-Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=${STORM_BE_DEBUG_PORT},suspend=${STORM_BE_DEBUG_SUSPEND}"
 
 # StoRM Backend server jmx option. Uncomment this (and restart the service)
 # if you want to attach a java jmx monitor to the running server process
 # STORM_BE_JMX="y"
 
 # options for the JVM running the StoRM BE server
-STORM_BE_JVM_OPTS='-server -Xms512m -Xmx512m'
+STORM_BE_JMX_OPTS="-Dcom.sun.management.jmxremote.port=8501 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+
+# options for the JVM running the StoRM BE server
+STORM_BE_JVM_OPTS="-server -Xms512m -Xmx512m"
 
 # LCMAPS config file
-#export LCMAPS_DB_FILE="$STORM_BE_CONFIGDIR/lcmaps.db"
+LCMAPS_DB_FILE="$STORM_BE_CONFIGDIR/lcmaps.db"
 
 # LCMAPS user mapping policy (defined in $LCMAPS_DB_FILE)
-#export LCMAPS_POLICY_NAME=standard
+LCMAPS_POLICY_NAME=standard
 
 # LCMAPS log file
-#export LCMAPS_LOG_FILE="$STORM_BE_LOGDIR/lcmaps.log"
+LCMAPS_LOG_FILE="$STORM_BE_LOGDIR/lcmaps.log"
 
 # LCMAPS log verbosity: 0 minimum (default), 5 maximum
-#export LCMAPS_DEBUG_LEVEL=2
-
-# if ENABLE_SSL != yes, the following SSL_* options are ignored.
-#export ENABLE_SSL=yes
-
-# Path to the keystore containing trusted CA
-#export SSL_TRUST_STORE="/opt/storm/etc/ecar.ts"
-
-# password of the trusted keystore
-#export SSL_TRUST_STORE_PWD="truststore_pwd"
-
-# Path to the key store
-#export SSL_KEY_STORE="/opt/storm/etc/ecar.p12"
-
-# password of the keystore containing the private and
-# public key used by ecar.
-#export SSL_KEY_STORE_PWD="keystore_pwd"
-
-# Type of the keystore containing public and
-# private key used by ecar.
-#export SSL_KEY_STORE_TYPE=PKCS12
-
+LCMAPS_DEBUG_LEVEL=0
