@@ -183,13 +183,6 @@ if ! user_exists "$STORM_BE_USER"; then
     die 1 "User '$STORM_BE_USER' not found in system database; cannot run storm-backend-server process - please set environment variable STORM_BE_USER to a sane value."
 fi
 
-#TODO dont do this here, do it in yaim!
-if ! su "$STORM_BE_USER" -s /bin/sh -c "test -w '$STORM_BE_LOGDIR'"; then
-    chown -R $STORM_BE_USER:$STORM_BE_USER $STORM_BE_LOGDIR
-#    echo 1>&2 "Log files directory '$STORM_BE_LOGDIR' is not writable by user '$STORM_BE_USER' - StoRM might not be able to *create* log files."
-fi
-
-
 # _current_status():
 #  tests if the storm-webdav-server process is running.
 #  takes care of ensuring pid and lock files are in good shape

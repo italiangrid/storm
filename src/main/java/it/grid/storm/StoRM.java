@@ -21,9 +21,11 @@ import static it.grid.storm.rest.RestService.stop;
 import static java.lang.String.valueOf;
 import static java.security.Security.setProperty;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +40,11 @@ import it.grid.storm.check.CheckStatus;
 import it.grid.storm.check.SimpleCheckManager;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.health.HealthDirector;
+import it.grid.storm.info.du.DiskUsageService;
 import it.grid.storm.metrics.StormMetricsReporter;
 import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceInterface;
+import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
 import it.grid.storm.startup.Bootstrap;
 import it.grid.storm.startup.BootstrapException;
@@ -57,15 +62,14 @@ import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 
 public class StoRM {
 
-  private AdvancedPicker picker = null;
-
-  private XMLRPCHttpServer xmlrpcServer = null;
-
   private static final Logger log = LoggerFactory.getLogger(StoRM.class);
+
+  private AdvancedPicker picker;
+  private XMLRPCHttpServer xmlrpcServer;
 
   // Timer object in charge to call periodically the Space Garbage Collector
   private final Timer gc = new Timer();
-  private TimerTask cleaningTask = null;
+  private TimerTask cleaningTask;
   private boolean isSpaceGCRunning = false;
 
   /*
@@ -73,8 +77,11 @@ public class StoRM {
    * SRM_FILE_LIFETIME_EXPIRED and from SRM_REQUEST_INPROGRESS to SRM_FAILURE
    */
   private final Timer transiter = new Timer();
-  private TimerTask expiredAgent = null;
+  private TimerTask expiredAgent;
   private boolean isExpiredAgentRunning = false;
+
+  private boolean isDiskUsageServiceEnabled = false;
+  private DiskUsageService duService;
 
   private final ReservedSpaceCatalog spaceCatalog;
 
@@ -82,16 +89,17 @@ public class StoRM {
   private boolean isXmlrpcServerRunning = false;
   private boolean isRestServerRunning = false;
 
-  /**
-   * Public constructor that requires a String containing the complete pathname to the configuration
-   * file, as well as the desired refresh rate in seconds for changes in configuration. Beware that
-   * by pathname it is meant the complete path starting from root, including the name of the file
-   * itself! If pathname is empty or null, then an attempt will be made to read properties off
-   * /opt/storm/etc/storm.properties. BEWARE!!! For MS Windows installations this attempt _will_
-   * fail! In any case, failure to read the configuration file causes StoRM to use hard-coded
-   * default values.
-   */
+  private final Configuration config;
+
   public StoRM() {
+
+    config = Configuration.getInstance();
+    picker = new AdvancedPicker();
+    spaceCatalog = new ReservedSpaceCatalog();
+
+  }
+
+  public void init() throws BootstrapException {
 
     configureLogging();
 
@@ -101,22 +109,17 @@ public class StoRM {
 
     configureStoRMDataSource();
 
-    // Start space catalog
-    spaceCatalog = new ReservedSpaceCatalog();
-
     loadNamespaceConfiguration();
 
     HealthDirector.initializeDirector(false);
 
     loadPathAuthzDBConfiguration();
 
-    // Initialize Used Space
     Bootstrap.initializeUsedSpace();
 
-    // Start the "advanced" picker
-    picker = new AdvancedPicker();
-
     configureXMLRPCService();
+
+    configureDiskUsageService();
 
     performSanityChecks();
 
@@ -124,18 +127,18 @@ public class StoRM {
 
   private void configureLogging() {
 
-    String configurationDir = Configuration.getInstance().configurationDir();
+    String configurationDir = config.configurationDir();
     String logFile = configurationDir + "logging.xml";
     Bootstrap.configureLogging(logFile);
   }
 
   private void configureSecurity() {
 
-    int cacheTtl = Configuration.getInstance().getNetworkAddressCacheTtl();
+    int cacheTtl = config.getNetworkAddressCacheTtl();
     log.debug("Setting networkaddress.cache.ttl to {}", cacheTtl);
     setProperty("networkaddress.cache.ttl", valueOf(cacheTtl));
 
-    int cacheNegativeTtl = Configuration.getInstance().getNetworkAddressCacheNegativeTtl();
+    int cacheNegativeTtl = config.getNetworkAddressCacheNegativeTtl();
     log.debug("Setting networkaddress.cache.negative.ttl to {}", cacheNegativeTtl);
     setProperty("networkaddress.cache.negative.ttl", valueOf(cacheNegativeTtl));
   }
@@ -157,40 +160,30 @@ public class StoRM {
 
   }
 
-  private void loadPathAuthzDBConfiguration() {
+  private void loadPathAuthzDBConfiguration() throws BootstrapException {
 
-    String pathAuthzDBFileName = Configuration.getInstance().configurationDir() + "path-authz.db";
+    String pathAuthzDBFileName = config.configurationDir() + "path-authz.db";
 
-    try {
-      Bootstrap.initializePathAuthz(pathAuthzDBFileName);
-    } catch (BootstrapException e) {
-      log.error("Unable to initialize the Path Authorization manager. BootstrapException: "
-          + e.getMessage(), e);
-
-      throw new RuntimeException("Unable to initialize the Path Authorization manager", e);
-    }
+    Bootstrap.initializePathAuthz(pathAuthzDBFileName);
   }
 
-  private void configureXMLRPCService() {
+  private void configureXMLRPCService() throws BootstrapException {
 
     try {
 
-      xmlrpcServer = new XMLRPCHttpServer(Configuration.getInstance().getXmlRpcServerPort(),
-          Configuration.getInstance().getXMLRPCMaxThread(),
-          Configuration.getInstance().getXMLRPCMaxQueueSize());
+      xmlrpcServer = new XMLRPCHttpServer(config.getXmlRpcServerPort(), config.getXMLRPCMaxThread(),
+          config.getXMLRPCMaxQueueSize());
 
     } catch (StoRMXmlRpcException e) {
 
-      log.error(e.getMessage(), e);
-
-      throw new RuntimeException(e.getMessage(), e);
+      throw new BootstrapException(e.getMessage(), e);
     }
 
   }
 
-  private void performSanityChecks() {
+  private void performSanityChecks() throws BootstrapException {
 
-    if (Configuration.getInstance().getSanityCheckEnabled()) {
+    if (config.getSanityCheckEnabled()) {
 
       CheckManager checkManager = new SimpleCheckManager();
       checkManager.init();
@@ -201,7 +194,7 @@ public class StoRM {
       } else {
         if (checkResponse.getStatus().equals(CheckStatus.CRITICAL_FAILURE)) {
           log.error("Storm Check suite is failed for some critical checks!");
-          throw new RuntimeException(
+          throw new BootstrapException(
               "Storm Check suite is failed for some critical checks! Please check the log for more details");
         } else {
           log.warn(
@@ -347,11 +340,11 @@ public class StoRM {
 
     log.debug("Starting Space Garbage Collector ...");
     // Delay time before starting
-    long delay = Configuration.getInstance().getCleaningInitialDelay() * 1000;
+    long delay = config.getCleaningInitialDelay() * 1000;
 
     // cleaning thread! Set to 1 minute
     // Period of execution of cleaning
-    long period = Configuration.getInstance().getCleaningTimeInterval() * 1000;
+    long period = config.getCleaningTimeInterval() * 1000;
 
     // Set to 1 hour
     cleaningTask = new TimerTask() {
@@ -410,12 +403,11 @@ public class StoRM {
     }
 
     /* Delay time before starting cleaning thread! Set to 1 minute */
-    final long delay = Configuration.getInstance().getTransitInitialDelay() * 1000L;
+    final long delay = config.getTransitInitialDelay() * 1000L;
     /* Period of execution of cleaning! Set to 1 hour */
-    final long period = Configuration.getInstance().getTransitTimeInterval() * 1000L;
+    final long period = config.getTransitTimeInterval() * 1000L;
     /* Expiration time before starting move in-progress requests to failure */
-    final long inProgressExpirationTime =
-        Configuration.getInstance().getInProgressPutRequestExpirationTime();
+    final long inProgressExpirationTime = config.getInProgressPutRequestExpirationTime();
 
     log.debug("Starting Expired Agent.");
     expiredAgent = new ExpiredPutRequestsAgent(inProgressExpirationTime);
@@ -444,6 +436,61 @@ public class StoRM {
     return isExpiredAgentRunning;
   }
 
+  private void configureDiskUsageService() {
+
+    isDiskUsageServiceEnabled = config.getDiskUsageServiceEnabled();
+
+    NamespaceInterface namespace = NamespaceDirector.getNamespace();
+    List<VirtualFSInterface> toExclude = namespace.getVFSWithQuotaEnabled();
+    List<VirtualFSInterface> sas = namespace.getAllDefinedVFS()
+      .stream()
+      .filter(vfs -> !toExclude.contains(vfs))
+      .collect(Collectors.toList());
+
+    duService = new DiskUsageService(sas);
+  }
+
+  /**
+   * Starts the internal timer needed to periodically compute the disk usage for each storage area
+   * configured and update the relative value into storm database.
+   */
+  public synchronized void startDiskUsageService() {
+
+    if (isDiskUsageServiceEnabled) {
+
+      long delay = config.getDiskUsageServiceInitialDelay();
+      long period = config.getDiskUsageServiceTasksInterval();
+
+      log.info("Starting DiskUsage Service (delay: {}s, period: {}s)", delay, period);
+
+      duService.runScheduled(delay, period);
+
+      log.info("DiskUsage Service started.");
+
+    } else {
+
+      log.info("DiskUsage Service is disabled.");
+
+    }
+  }
+
+  public synchronized void stopDiskUsageService() {
+
+    if (isDiskUsageServiceEnabled) {
+
+      log.debug("Stopping DiskUsage Service.");
+
+      duService.stopScheduled();
+
+      log.debug("DiskUsage Service stopped.");
+
+    } else {
+
+      log.info("DiskUsage Service is not running.");
+
+    }
+  }
+
   public boolean startServices() {
 
     try {
@@ -452,6 +499,7 @@ public class StoRM {
       startRestServer();
       startSpaceGC();
       startExpiredAgent();
+      startDiskUsageService();
     } catch (Exception e) {
       log.error(e.getMessage(), e);
       return false;
@@ -466,6 +514,7 @@ public class StoRM {
     stopRestServer();
     stopSpaceGC();
     stopExpiredAgent();
+    stopDiskUsageService();
 
     GPFSQuotaManager.INSTANCE.shutdown();
   }

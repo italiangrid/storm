@@ -23,22 +23,27 @@ package it.grid.storm.persistence.exceptions;
 
 public class DataAccessException extends Exception {
 
-	public DataAccessException() {
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	}
+  public DataAccessException() {
 
-	public DataAccessException(String message) {
+  }
 
-		super(message);
-	}
+  public DataAccessException(String message) {
 
-	public DataAccessException(String message, Throwable cause) {
+    super(message);
+  }
 
-		super(message, cause);
-	}
+  public DataAccessException(String message, Throwable cause) {
 
-	public DataAccessException(Throwable cause) {
+    super(message, cause);
+  }
 
-		super(cause);
-	}
+  public DataAccessException(Throwable cause) {
+
+    super(cause);
+  }
 }

@@ -15,10 +15,9 @@
 
 package it.grid.storm.namespace.naming;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -34,6 +33,7 @@ import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.srm.types.TSURL;
+import jersey.repackaged.com.google.common.collect.Lists;
 
 public class NamespaceUtil {
 
@@ -64,7 +64,7 @@ public class NamespaceUtil {
 	 * @param path String
 	 * @return Collection
 	 */
-	public static Collection<String> getPathElement(String path) {
+	public static List<String> getPathElement(String path) {
 
 		return (new Path(path)).getPathElements();
 	}
@@ -103,15 +103,7 @@ public class NamespaceUtil {
 	 */
 	public static Collection<VirtualFSInterface> getResidentVFS(String mountPointPath) {
 
-		Collection<VirtualFSInterface> vfsSet = Collections.emptySet();
-		try {
-			vfsSet = NamespaceDirector.getNamespace().getAllDefinedVFS();
-		} catch (NamespaceException e) {
-			log.error(
-					"Unable to add NamespaceFSAssociationCheck, a NamespaceException occurred during vfsSet retriving : "
-							+ e.getMessage());
-			return vfsSet;
-		}
+		List<VirtualFSInterface> vfsSet = NamespaceDirector.getNamespace().getAllDefinedVFS();
 		for (VirtualFSInterface vfs : vfsSet) {
 			String vfsRootPath;
 			boolean enclosed;
@@ -162,7 +154,7 @@ public class NamespaceUtil {
 		if (length > 1) {
 			return path.getSubPath(length - 1).getPath() + NamingConst.SEPARATOR;
 		} else {
-			return ""; // Path.PATH_SEPARATOR;
+			return "";
 		}
 	}
 
@@ -173,7 +165,7 @@ public class NamespaceUtil {
 			int rootLength = rootPath.getLength();
 
 			Path absPath = new Path(absolute);
-			ArrayList<PathElement> elem = new ArrayList<PathElement>();
+			List<PathElement> elem = Lists.newArrayList();
 
 			for (int i = 0; i < absPath.getLength(); i++) {
 				// Why use length and not compare single element?
@@ -358,7 +350,7 @@ public class NamespaceUtil {
 	 */
 	private static class Path {
 
-		private ArrayList<PathElement> path;
+		private List<PathElement> path;
 		private static String PATH_SEPARATOR = "/";
 		public static final String[] EMPTY_STRING_ARRAY = {};
 		public boolean directory;
@@ -366,12 +358,12 @@ public class NamespaceUtil {
 
 		public Path() {
 
-			this.path = new ArrayList<PathElement>();
+			this.path = Lists.newArrayList();
 			this.directory = false;
 			this.absolutePath = true;
 		}
 
-		public Path(ArrayList<PathElement> path, boolean absolutePath) {
+		public Path(List<PathElement> path, boolean absolutePath) {
 
 			this.path = path;
 			this.directory = false;
@@ -395,7 +387,7 @@ public class NamespaceUtil {
 			String[] pathElements = factorizePath(path);
 			if (pathElements != null) {
 				// ...and build Path
-				this.path = new ArrayList<PathElement>(pathElements.length);
+				this.path = Lists.newArrayList();
 				for (String pathElement : pathElements) {
 					addPathElement(new PathElement(pathElement));
 				}
@@ -407,13 +399,12 @@ public class NamespaceUtil {
 			return toStringArray(path, PATH_SEPARATOR);
 		}
 
-		public Collection<String> getPathElements() {
+		public List<String> getPathElements() {
 
-			Collection<String> result = new ArrayList<String>(this.getLength());
+			List<String> result = Lists.newArrayList();
 			Iterator<PathElement> scan = path.iterator();
-			PathElement p;
 			while (scan.hasNext()) {
-				p = (PathElement) scan.next();
+			    PathElement p = scan.next();
 				result.add(p.toString());
 			}
 			return result;
@@ -451,7 +442,7 @@ public class NamespaceUtil {
 				buf.append(PATH_SEPARATOR);
 			}
 			for (Iterator<PathElement> iter = path.iterator(); iter.hasNext();) {
-				PathElement item = (PathElement) iter.next();
+				PathElement item = iter.next();
 				buf.append(item.getPathChunk());
 				if (iter.hasNext()) {
 					buf.append(PATH_SEPARATOR);
@@ -480,7 +471,7 @@ public class NamespaceUtil {
 		public PathElement getElementAt(int position) {
 
 			if (position < getLength()) {
-				return ((PathElement) this.path.get(position));
+				return this.path.get(position);
 			} else {
 				return null;
 			}

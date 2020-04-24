@@ -1309,8 +1309,11 @@ public class VirtualFS implements VirtualFSInterface {
 
     // Retrieve Storage Space from Persistence
     ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
-    // catalog.setFreeSize(spaceData);
-    catalog.updateStorageSpace(spaceData);
+    try {
+      catalog.updateStorageSpace(spaceData);
+    } catch (DataAccessException e) {
+      log.error(e.getMessage(), e);
+    }
   }
 
   public StoRI retrieveSpaceFileByPFN(PFN pfn, long totalSize)
@@ -1320,8 +1323,7 @@ public class VirtualFS implements VirtualFSInterface {
     StoRI stori = namespace.resolveStoRIbyPFN(pfn);
     stori.setStoRIType(StoRIType.SPACE);
     // Create the Space istance
-    log.debug("VFS: retrieveSpace, relative " + stori.getRelativePath() + "-"
-      + stori.toString());
+    log.debug("VFS: retrieveSpace, relative {}-{}", stori.getRelativePath(), stori);
     StoRI space = createSpace(stori.getRelativeStFN(), totalSize);
     // Assign this istance to StoRI created
     stori.setSpace(space.getSpace());

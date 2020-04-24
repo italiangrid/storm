@@ -175,8 +175,10 @@ public class ReservedSpaceCatalog {
 	 * input StorageSpaceData
 	 * 
 	 * @param ssd
+	 * 
+	 * @throws DataAccessException
 	 */
-	public void updateStorageSpace(StorageSpaceData ssd) {
+	public void updateStorageSpace(StorageSpaceData ssd) throws DataAccessException {
 
 		updateStorageSpace(ssd, null);
 	}
@@ -184,34 +186,20 @@ public class ReservedSpaceCatalog {
 	/**
 	 * @param ssd
 	 * @param updateTime
+	 * 
+	 * @throws DataAccessException
 	 */
-	public void updateStorageSpace(StorageSpaceData ssd, Date updateTime) {
+	public void updateStorageSpace(StorageSpaceData ssd, Date updateTime) throws DataAccessException {
 
-		try {
-			ssDAO = daoFactory.getStorageSpaceDAO();
-			log.debug("Storage Space DAO retrieved.");
-		} catch (DataAccessException daEx) {
-			log.error("Error while retrieving StorageSpaceDAO: {}", daEx.getMessage(), 
-				daEx);
-		}
+		ssDAO = daoFactory.getStorageSpaceDAO();
+		log.debug("Storage Space DAO retrieved.");
 
 		StorageSpaceTO ssTO = new StorageSpaceTO(ssd);
-		log.debug("Storage Space TO Created");
+		updateTime = updateTime == null ? new Date() : updateTime;
+		ssTO.setUpdateTime(updateTime);
 
-		if (updateTime == null) {
-			// The update time of the information is now
-			ssTO.setUpdateTime(new Date());
-		} else {
-			ssTO.setUpdateTime(updateTime);
-		}
-		try {
-			ssDAO.updateStorageSpace(ssTO);
-			log.debug("StorageSpaceTO updated in Persistence");
-		} catch (DataAccessException daEx) {
-			log.error(
-				"Error while inserting new row in StorageSpace", daEx);
-		}
-
+		ssDAO.updateStorageSpace(ssTO);
+		log.debug("StorageSpaceTO updated in Persistence");
 	}
 
 	/**
@@ -333,7 +321,7 @@ public class ReservedSpaceCatalog {
 	public List<StorageSpaceData> getStorageSpaceNotInitialized() {
 
 		log.debug("Retrieve Storage Space not initialized start ");
-		LinkedList<StorageSpaceData> result = new LinkedList<StorageSpaceData>();
+		List<StorageSpaceData> result = new LinkedList<>();
 		// Retrieve the Data Access Object from the factory
 		try {
 			ssDAO = daoFactory.getStorageSpaceDAO();

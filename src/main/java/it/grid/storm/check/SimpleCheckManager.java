@@ -11,20 +11,20 @@
 
 package it.grid.storm.check;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.check.sanity.filesystem.NamespaceFSAssociationCheck;
 import it.grid.storm.check.sanity.filesystem.NamespaceFSExtendedACLUsageCheck;
 import it.grid.storm.check.sanity.filesystem.NamespaceFSExtendedAttributeUsageCheck;
 import it.grid.storm.filesystem.MtabUtil;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jersey.repackaged.com.google.common.collect.Lists;
 
 /**
  * @author Michele Dibenedetto
@@ -37,7 +37,7 @@ public class SimpleCheckManager extends CheckManager {
 	/**
 	 * A list of checks to be executed
 	 */
-	private ArrayList<Check> checks = new ArrayList<Check>();
+	private List<Check> checks = Lists.newArrayList();
 
 	@Override
 	protected Logger getLogger() {
@@ -63,28 +63,20 @@ public class SimpleCheckManager extends CheckManager {
 	/**
      * 
      */
-	private Check getNamespaceFSAssociationCheck() throws IllegalStateException {
+	private Check getNamespaceFSAssociationCheck() {
 
 		Map<String, String> mountPoints;
 		// load mstab mount points and file system types
 		try {
 			mountPoints = MtabUtil.getFSMountPoints();
 		} catch (Exception e) {
-			log.error("Unable to get filesystem mount points. Exception: "
-				+ e.getMessage());
+			log.error("Unable to get filesystem mount points. Exception: {}", e.getMessage());
 			throw new IllegalStateException("Unable to get filesystem mount points");
 		}
-		log.debug("Retrieved MountPoints: " + printMapCoupples(mountPoints));
-		Collection<VirtualFSInterface> vfsSet;
-		try {
-			vfsSet = NamespaceDirector.getNamespace().getAllDefinedVFS();
-		} catch (NamespaceException e) {
-			// never thrown
-			log.error("Unexpected NamespaceException during vfsSet retriving "
-				+ e.getMessage() + " . Unable to add NamespaceFSAssociationCheck");
-			throw new IllegalStateException(
-				"Unexpected NamespaceException from getAllDefinedVFS");
+		if (log.isDebugEnabled()) {
+		  log.debug("Retrieved MountPoints: {}", printMapCoupples(mountPoints));
 		}
+		List<VirtualFSInterface> vfsSet = NamespaceDirector.getNamespace().getAllDefinedVFS();
 		return new NamespaceFSAssociationCheck(mountPoints, vfsSet);
 	}
 
