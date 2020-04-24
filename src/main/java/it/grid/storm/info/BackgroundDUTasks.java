@@ -16,7 +16,7 @@ import com.google.common.base.Preconditions;
 
 public class BackgroundDUTasks {
 
-	private Set<BgDUTask> tasks = new HashSet<BgDUTask>();
+	private Set<BgDUTask> tasks = new HashSet<>();
 
 	private static final AtomicInteger taskId = new AtomicInteger();
 
