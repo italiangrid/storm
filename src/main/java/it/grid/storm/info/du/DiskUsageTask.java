@@ -9,6 +9,7 @@ import com.google.common.base.Preconditions;
 
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.types.SizeUnit;
+import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.space.DUResult;
@@ -41,8 +42,9 @@ public class DiskUsageTask implements Runnable {
       DUResult result = duCommand.execute();
       log.debug("du-result: {}", result);
       updateUsedSpaceOnPersistence(spaceToken, result);
-      log.info("DiskUsageTask for {} successfully ended with used-size = {} bytes", spaceToken,
-          result.getSize());
+      long millisecs = result.getDurationTime() / 1000L;
+      log.info("DiskUsageTask for {} successfully ended in {}ms with used-size = {} bytes",
+          spaceToken, millisecs, result.getSize());
 
     } catch (IOException e) {
 
