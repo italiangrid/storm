@@ -42,9 +42,9 @@ public class DiskUsageTask implements Runnable {
       DUResult result = duCommand.execute();
       log.debug("du-result: {}", result);
       updateUsedSpaceOnPersistence(spaceToken, result);
-      long millisecs = result.getDurationTime() / 1000L;
+      long millisecs = result.getDurationTimeInMillisec();
       log.info("DiskUsageTask for {} successfully ended in {}ms with used-size = {} bytes",
-          spaceToken, millisecs, result.getSize());
+          spaceToken, millisecs, result.getSizeInBytes());
 
     } catch (IOException e) {
 
@@ -66,10 +66,10 @@ public class DiskUsageTask implements Runnable {
 
     try {
 
-      ssd.setUsedSpaceSize(TSizeInBytes.make(duResult.getSize(), SizeUnit.BYTES));
+      ssd.setUsedSpaceSize(TSizeInBytes.make(duResult.getSizeInBytes(), SizeUnit.BYTES));
       spaceCatalog.updateStorageSpace(ssd);
       log.debug("StorageSpace table updated for SA: '{}' with used size = {}", spaceToken,
-          duResult.getSize());
+          duResult.getSizeInBytes());
 
     } catch (InvalidTSizeAttributesException | DataAccessException e) {
 

@@ -26,8 +26,8 @@ public class DiskUsageUtilsTest {
     DUResult result = DiskUsageUtils.getResult(ABS_PATH, start, end, output);
     assertThat(result.getAbsRootPath(), equalTo(ABS_PATH));
     assertThat(result.getCmdResult().getCode(), equalTo(EMPTY_OUTPUT.getCode()));
-    assertThat(result.getDurationTime(), equalTo(end - start));
-    assertThat(result.getSize(), equalTo(0L));
+    assertThat(result.getDurationTimeInMillisec(), equalTo(end - start));
+    assertThat(result.getSizeInBytes(), equalTo(0L));
 
   }
 
@@ -42,8 +42,8 @@ public class DiskUsageUtilsTest {
     DUResult result = DiskUsageUtils.getResult(ABS_PATH, start, end, output);
     assertThat(result.getAbsRootPath(), equalTo(ABS_PATH));
     assertThat(result.getCmdResult().getCode(), equalTo(SUCCESS.getCode()));
-    assertThat(result.getDurationTime(), equalTo(end - start));
-    assertThat(result.getSize(), equalTo(474839632L));
+    assertThat(result.getDurationTimeInMillisec(), equalTo(end - start));
+    assertThat(result.getSizeInBytes(), equalTo(474839632L));
 
   }
 
@@ -58,7 +58,7 @@ public class DiskUsageUtilsTest {
     DUResult result = DiskUsageUtils.getResult(ABS_PATH, start, end, output);
     assertThat(result.getAbsRootPath(), equalTo(ABS_PATH));
     assertThat(result.getCmdResult().getCode(), equalTo(FAILURE.getCode()));
-    assertThat(result.getDurationTime(), equalTo(end - start));
+    assertThat(result.getDurationTimeInMillisec(), equalTo(end - start));
 
   }
 

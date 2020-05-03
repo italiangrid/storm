@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -26,7 +27,7 @@ public class DiskUsageExecCommand {
 
   public DUResult execute() throws IOException {
 
-    long start = System.nanoTime();
+    long start = ZonedDateTime.now().toInstant().toEpochMilli();
 
     List<String> command = Lists.newArrayList("du", "--bytes", "--summarize", absPath);
 
@@ -45,7 +46,7 @@ public class DiskUsageExecCommand {
       log.debug("DU output:\n{}", String.join("\n", output));
     }
 
-    long end = System.nanoTime();
+    long end = ZonedDateTime.now().toInstant().toEpochMilli();
 
     return DiskUsageUtils.getResult(absPath, start, end, output);
   }

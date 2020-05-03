@@ -4,9 +4,9 @@ import java.util.Date;
 
 public class DUResult {
 
-    private long size;
+    private long sizeInBytes;
     private String absRootPath;
-    private long durationTime;
+    private long durationTimeInMillisec;
     private Date startTime;
     private ExitCode cmdResult;
 
@@ -17,28 +17,28 @@ public class DUResult {
      * @param durationTime
      * @param cmdResult
      */
-    public DUResult(long size, String absRootPath, Date startTime, long durationTime,
+    public DUResult(long sizeInBytes, String absRootPath, Date startTime, long durationTimeInMillisec,
             ExitCode cmdResult) {
 
         super();
-        this.size = size;
+        this.sizeInBytes = sizeInBytes;
         this.absRootPath = absRootPath;
-        this.durationTime = durationTime;
+        this.durationTimeInMillisec = durationTimeInMillisec;
         this.startTime = startTime;
         this.cmdResult = cmdResult;
     }
 
     public DUResult(DUResult duResult) {
-        this(duResult.getSize(), duResult.getAbsRootPath(), duResult.getStartTime(),
-                duResult.getDurationTime(), duResult.getCmdResult());
+        this(duResult.getSizeInBytes(), duResult.getAbsRootPath(), duResult.getStartTime(),
+                duResult.getDurationTimeInMillisec(), duResult.getCmdResult());
     }
 
     /**
      * @return the size
      */
-    public final long getSize() {
+    public final long getSizeInBytes() {
 
-        return size;
+        return sizeInBytes;
     }
 
     /**
@@ -52,9 +52,9 @@ public class DUResult {
     /**
      * @return the durationTime
      */
-    public final long getDurationTime() {
+    public final long getDurationTimeInMillisec() {
 
-        return durationTime;
+        return durationTimeInMillisec;
     }
 
     /**
@@ -88,11 +88,11 @@ public class DUResult {
 
         StringBuilder builder = new StringBuilder();
         builder.append("DUResult [size=");
-        builder.append(size);
+        builder.append(sizeInBytes);
         builder.append(", absRootPath=");
         builder.append(absRootPath);
         builder.append(", durationTime=");
-        builder.append(durationTime);
+        builder.append(durationTimeInMillisec);
         builder.append(", startTime=");
         builder.append(startTime);
         builder.append(", cmdResult=");
