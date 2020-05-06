@@ -294,8 +294,10 @@ ptg.skip-acl-setup = false
 #
 # Enable/Disable the periodic run of the service
 storm.service.du.enabled=false
+# Enable/Disable parallel du execution
+storm.service.du.parallelTasks=false
 # Initial delay of service start in seconds. Default: 60s
-storm.service.du.delay=60
+storm.service.du.delaySecs=60
 # Interval of execution of the du in seconds. Default: 86400s (24h)
-storm.service.du.interval=86400
+storm.service.du.periodSecs=86400
 ß

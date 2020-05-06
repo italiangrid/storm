@@ -32,7 +32,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.grid.storm.rest.RestService;
+import it.grid.storm.rest.RestServer;
 import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 import jersey.repackaged.com.google.common.collect.Lists;
 
@@ -192,8 +192,9 @@ public class Configuration {
       "networkaddress.cache.negative.ttl";
 
   private static final String DISKUSAGE_SERVICE_ENABLED = "storm.service.du.enabled";
-  private static final String DISKUSAGE_SERVICE_INITIAL_DELAY = "storm.service.du.delay";
-  private static final String DISKUSAGE_SERVICE_TASKS_INTERVAL = "storm.service.du.interval";
+  private static final String DISKUSAGE_SERVICE_INITIAL_DELAY = "storm.service.du.delaySecs";
+  private static final String DISKUSAGE_SERVICE_TASKS_INTERVAL = "storm.service.du.periodSecs";
+  private static final String DISKUSAGE_SERVICE_TASKS_PARALLEL = "storm.service.du.parallelTasks";
 
   static {
     try {
@@ -1367,18 +1368,17 @@ public class Configuration {
    */
   public int getRestServicesPort() {
 
-    return cr.getConfiguration().getInt(REST_SERVICES_PORT_KEY, RestService.DEFAULT_PORT);
+    return cr.getConfiguration().getInt(REST_SERVICES_PORT_KEY, 9998);
   }
 
   public int getRestServicesMaxThreads() {
 
-    return cr.getConfiguration().getInt(REST_SERVICES_MAX_THREAD, RestService.DEFAULT_MAX_THREADS);
+    return cr.getConfiguration().getInt(REST_SERVICES_MAX_THREAD, RestServer.DEFAULT_MAX_THREAD_NUM);
   }
 
   public int getRestServicesMaxQueueSize() {
 
-    return cr.getConfiguration()
-      .getInt(REST_SERVICES_MAX_QUEUE_SIZE, RestService.DEFAULT_MAX_QUEUE_SIZE);
+    return cr.getConfiguration().getInt(REST_SERVICES_MAX_QUEUE_SIZE, RestServer.DEFAULT_MAX_QUEUE_SIZE);
   }
 
   /**
@@ -1574,5 +1574,10 @@ public class Configuration {
 
     // default: 604800 s => 1 week
     return cr.getConfiguration().getInt(DISKUSAGE_SERVICE_TASKS_INTERVAL, 604800);
+  }
+
+  public boolean getDiskUsageServiceTasksParallel() {
+
+    return cr.getConfiguration().getBoolean(DISKUSAGE_SERVICE_TASKS_PARALLEL, false);
   }
 }

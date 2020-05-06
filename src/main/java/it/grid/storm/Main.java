@@ -1,5 +1,7 @@
 package it.grid.storm;
 
+import static java.lang.System.exit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,22 +23,21 @@ public class Main {
       storm.init();
     } catch (BootstrapException e) {
       log.error(e.getMessage(), e);
-      return;
+      exit(1);
     }
 
     Runtime.getRuntime().addShutdownHook(new ShutdownHook(storm));
 
-    if (storm.startServices()) {
+    try {
 
+      storm.startServices();
       log.info("StoRM: Backend services successfully started.");
 
-    } else {
+    } catch (Exception e) {
 
-      log.error("StoRM: error starting storm services.");
-
+      log.error("StoRM: error starting storm services: {}", e.getMessage());
       storm.stopServices();
-
-      Runtime.getRuntime().exit(1);
+      exit(1);
     }
   }
 }

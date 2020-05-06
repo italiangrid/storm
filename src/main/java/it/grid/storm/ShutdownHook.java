@@ -27,11 +27,12 @@ public class ShutdownHook extends Thread {
       storm.stopRestServer();
       storm.stopSpaceGC();
       storm.stopExpiredAgent();
+      storm.stopDiskUsageService();
       GPFSQuotaManager.INSTANCE.shutdown();
 
       log.info("StoRM: Backend successfully stopped.");
 
-    } catch (Throwable e) {
+    } catch (Exception e) {
 
       log.error(e.getMessage(), e);
       log.error("StoRM: error stopping storm services.");

@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 import it.grid.storm.namespace.VirtualFSInterface;
@@ -22,15 +23,20 @@ public class DiskUsageService {
   private ScheduledExecutorService executor;
   private boolean running;
 
-  public DiskUsageService(List<VirtualFSInterface> vfss) {
+  public DiskUsageService(List<VirtualFSInterface> vfss, ScheduledExecutorService executor) {
 
-    monitoredSAs = Lists.newArrayList(vfss);
+    Preconditions.checkNotNull(vfss, "Invalid null list of Virtual FS");
+    Preconditions.checkNotNull(executor, "Invalid null scheduled executor service");
+
+    this.monitoredSAs = Lists.newArrayList(vfss);
+    this.executor = executor;
     this.running = false;
+
   }
 
-  public DiskUsageService() {
+  public DiskUsageService(List<VirtualFSInterface> vfss) {
 
-    this(Lists.newArrayList());
+    this(vfss, Executors.newSingleThreadScheduledExecutor());
   }
 
   public List<VirtualFSInterface> getMonitoredSAs() {
@@ -43,7 +49,7 @@ public class DiskUsageService {
     monitoredSAs.add(vfs);
   }
 
-  public int runScheduled(long delay, long period) {
+  public synchronized int runScheduled(long delay, long period) {
 
     if (running) {
       log.info("DiskUsage service is already running");
@@ -51,7 +57,6 @@ public class DiskUsageService {
     }
 
     log.debug("Starting DiskUsageService ...");
-    executor = Executors.newSingleThreadScheduledExecutor();
     monitoredSAs.forEach(vfs -> {
       DiskUsageTask task = new DiskUsageTask(vfs);
       log.debug("Schedule task {} with delay {}s and period {}s", task, delay, period);
@@ -62,7 +67,7 @@ public class DiskUsageService {
     return monitoredSAs.size();
   }
 
-  public void stopScheduled() {
+  public synchronized void stopScheduled() {
 
     if (!running) {
       log.info("DiskUsage service is not running");
@@ -78,7 +83,7 @@ public class DiskUsageService {
     return running;
   }
 
-  public static int runTasksOnce(List<VirtualFSInterface> vfss) {
+  public static synchronized int runTasksOnce(List<VirtualFSInterface> vfss) {
 
     log.debug("Starting DiskUsageService runTasksOnce ...");
     ExecutorService executor = Executors.newSingleThreadExecutor();

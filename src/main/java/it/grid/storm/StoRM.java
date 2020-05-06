@@ -16,14 +16,14 @@
 package it.grid.storm;
 
 import static it.grid.storm.metrics.StormMetricRegistry.METRIC_REGISTRY;
-import static it.grid.storm.rest.RestService.startServer;
-import static it.grid.storm.rest.RestService.stop;
 import static java.lang.String.valueOf;
 import static java.security.Security.setProperty;
 
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -45,6 +45,7 @@ import it.grid.storm.metrics.StormMetricsReporter;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.rest.RestServer;
 import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
 import it.grid.storm.startup.Bootstrap;
 import it.grid.storm.startup.BootstrapException;
@@ -87,7 +88,9 @@ public class StoRM {
 
   private boolean isPickerRunning = false;
   private boolean isXmlrpcServerRunning = false;
+
   private boolean isRestServerRunning = false;
+  private RestServer restServer;
 
   private final Configuration config;
 
@@ -118,6 +121,8 @@ public class StoRM {
     Bootstrap.initializeUsedSpace();
 
     configureXMLRPCService();
+
+    configureRestService();
 
     configureDiskUsageService();
 
@@ -276,12 +281,15 @@ public class StoRM {
     isXmlrpcServerRunning = false;
   }
 
-  /**
-   * @return
-   */
-  public synchronized boolean xmlRpcServerIsRunning() {
+  private void configureRestService() {
 
-    return isXmlrpcServerRunning;
+    int restServicePort = Configuration.getInstance().getRestServicesPort();
+    boolean isTokenEnabled = Configuration.getInstance().getXmlRpcTokenEnabled();
+    String token = Configuration.getInstance().getXmlRpcToken();
+    int maxThreads = Configuration.getInstance().getRestServicesMaxThreads();
+    int maxQueueSize = Configuration.getInstance().getRestServicesMaxQueueSize();
+
+    restServer = new RestServer(restServicePort, maxThreads, maxQueueSize, isTokenEnabled, token);
   }
 
   /**
@@ -294,7 +302,7 @@ public class StoRM {
       return;
     }
 
-    startServer();
+    restServer.start();
     isRestServerRunning = true;
   }
 
@@ -303,14 +311,14 @@ public class StoRM {
    */
   public synchronized void stopRestServer() {
 
-    if (!isRestServerRunning) {
+    if (isRestServerRunning) {
       log.debug("Rest Server is not running.");
       return;
     }
 
     try {
 
-      stop();
+      restServer.start();
       isRestServerRunning = false;
 
     } catch (Exception e) {
@@ -318,14 +326,6 @@ public class StoRM {
       log.error("Unable to stop internal HTTP Server listening for RESTFul services: {}",
           e.getMessage(), e);
     }
-  }
-
-  /**
-   * @return
-   */
-  public synchronized boolean restServerIsRunning() {
-
-    return isRestServerRunning;
   }
 
   /**
@@ -439,15 +439,21 @@ public class StoRM {
   private void configureDiskUsageService() {
 
     isDiskUsageServiceEnabled = config.getDiskUsageServiceEnabled();
+    boolean parallelTasks = config.getDiskUsageServiceTasksParallel();
+
 
     NamespaceInterface namespace = NamespaceDirector.getNamespace();
-    List<VirtualFSInterface> toExclude = namespace.getVFSWithQuotaEnabled();
+    List<VirtualFSInterface> quotaEnabledVfs = namespace.getVFSWithQuotaEnabled();
     List<VirtualFSInterface> sas = namespace.getAllDefinedVFS()
       .stream()
-      .filter(vfs -> !toExclude.contains(vfs))
+      .filter(vfs -> !quotaEnabledVfs.contains(vfs))
       .collect(Collectors.toList());
 
-    duService = new DiskUsageService(sas);
+    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    if (parallelTasks) {
+      executor = Executors.newScheduledThreadPool(sas.size());
+    }
+    duService = new DiskUsageService(sas, executor);
   }
 
   /**
@@ -491,20 +497,14 @@ public class StoRM {
     }
   }
 
-  public boolean startServices() {
+  public void startServices() throws Exception {
 
-    try {
-      startPicker();
-      startXmlRpcServer();
-      startRestServer();
-      startSpaceGC();
-      startExpiredAgent();
-      startDiskUsageService();
-    } catch (Exception e) {
-      log.error(e.getMessage(), e);
-      return false;
-    }
-    return true;
+    startPicker();
+    startXmlRpcServer();
+    startRestServer();
+    startSpaceGC();
+    startExpiredAgent();
+    startDiskUsageService();
   }
 
   public void stopServices() {
