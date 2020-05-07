@@ -23,7 +23,7 @@ public class DiskUsageService {
   private ScheduledExecutorService executor;
   private boolean running;
 
-  public DiskUsageService(List<VirtualFSInterface> vfss, ScheduledExecutorService executor) {
+  private DiskUsageService(List<VirtualFSInterface> vfss, ScheduledExecutorService executor) {
 
     Preconditions.checkNotNull(vfss, "Invalid null list of Virtual FS");
     Preconditions.checkNotNull(executor, "Invalid null scheduled executor service");
@@ -34,9 +34,30 @@ public class DiskUsageService {
 
   }
 
-  public DiskUsageService(List<VirtualFSInterface> vfss) {
+  public static DiskUsageService getSingleThreadScheduledService(List<VirtualFSInterface> vfss) {
 
-    this(vfss, Executors.newSingleThreadScheduledExecutor());
+    return new DiskUsageService(vfss, Executors.newSingleThreadScheduledExecutor());
+  }
+
+  public static DiskUsageService getSingleThreadScheduledService() {
+
+    return getSingleThreadScheduledService(Lists.newArrayList());
+  }
+
+  public static DiskUsageService getScheduledThreadPoolService(List<VirtualFSInterface> vfss,
+      int poolSize) {
+
+    return new DiskUsageService(vfss, Executors.newScheduledThreadPool(poolSize));
+  }
+
+  public static DiskUsageService getScheduledThreadPoolService(List<VirtualFSInterface> vfss) {
+
+    return new DiskUsageService(vfss, Executors.newScheduledThreadPool(vfss.size()));
+  }
+
+  public static DiskUsageService getScheduledThreadPoolService(int poolSize) {
+
+    return getScheduledThreadPoolService(Lists.newArrayList(), poolSize);
   }
 
   public List<VirtualFSInterface> getMonitoredSAs() {
@@ -49,7 +70,7 @@ public class DiskUsageService {
     monitoredSAs.add(vfs);
   }
 
-  public synchronized int runScheduled(long delay, long period) {
+  public synchronized int start(long delay, long period) {
 
     if (running) {
       log.info("DiskUsage service is already running");
@@ -67,7 +88,7 @@ public class DiskUsageService {
     return monitoredSAs.size();
   }
 
-  public synchronized void stopScheduled() {
+  public synchronized void stop() {
 
     if (!running) {
       log.info("DiskUsage service is not running");

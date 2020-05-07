@@ -9,9 +9,10 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.google.common.collect.Lists;
+
 import it.grid.storm.space.DUResult;
 import it.grid.storm.space.ExitStatus;
-import jersey.repackaged.com.google.common.collect.Lists;
 
 public class DiskUsageUtilsTest {
 

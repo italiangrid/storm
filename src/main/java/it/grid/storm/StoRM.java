@@ -22,8 +22,6 @@ import static java.security.Security.setProperty;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -439,8 +437,6 @@ public class StoRM {
   private void configureDiskUsageService() {
 
     isDiskUsageServiceEnabled = config.getDiskUsageServiceEnabled();
-    boolean parallelTasks = config.getDiskUsageServiceTasksParallel();
-
 
     NamespaceInterface namespace = NamespaceDirector.getNamespace();
     List<VirtualFSInterface> quotaEnabledVfs = namespace.getVFSWithQuotaEnabled();
@@ -449,11 +445,11 @@ public class StoRM {
       .filter(vfs -> !quotaEnabledVfs.contains(vfs))
       .collect(Collectors.toList());
 
-    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-    if (parallelTasks) {
-      executor = Executors.newScheduledThreadPool(sas.size());
+    if (config.getDiskUsageServiceTasksParallel()) {
+      duService = DiskUsageService.getScheduledThreadPoolService(sas);
+    } else {
+      duService = DiskUsageService.getSingleThreadScheduledService(sas);
     }
-    duService = new DiskUsageService(sas, executor);
   }
 
   /**
@@ -469,7 +465,7 @@ public class StoRM {
 
       log.info("Starting DiskUsage Service (delay: {}s, period: {}s)", delay, period);
 
-      duService.runScheduled(delay, period);
+      duService.start(delay, period);
 
       log.info("DiskUsage Service started.");
 
@@ -486,7 +482,7 @@ public class StoRM {
 
       log.debug("Stopping DiskUsage Service.");
 
-      duService.stopScheduled();
+      duService.stop();
 
       log.debug("DiskUsage Service stopped.");
 
