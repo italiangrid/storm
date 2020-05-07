@@ -26,17 +26,17 @@ package it.grid.storm.tape.recalltable;
  */
 public class TapeRecallException extends Exception {
 
-	/**
-     * 
-     */
-	private static final long serialVersionUID = -7422152723748929996L;
+  /**
+   * 
+   */
+  private static final long serialVersionUID = -7422152723748929996L;
 
-	/**
-	 * @param string
-	 */
-	public TapeRecallException(String msg) {
+  /**
+   * @param string
+   */
+  public TapeRecallException(String msg) {
 
-		super(msg);
-	}
+    super(msg);
+  }
 
 }
