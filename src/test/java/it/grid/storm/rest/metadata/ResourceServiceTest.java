@@ -16,13 +16,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.google.common.collect.Lists;
+
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
 import it.grid.storm.rest.metadata.service.ResourceService;
-import jersey.repackaged.com.google.common.collect.Lists;
 
 public class ResourceServiceTest {
 

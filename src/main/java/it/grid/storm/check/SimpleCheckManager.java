@@ -18,13 +18,14 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
+
 import it.grid.storm.check.sanity.filesystem.NamespaceFSAssociationCheck;
 import it.grid.storm.check.sanity.filesystem.NamespaceFSExtendedACLUsageCheck;
 import it.grid.storm.check.sanity.filesystem.NamespaceFSExtendedAttributeUsageCheck;
 import it.grid.storm.filesystem.MtabUtil;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.VirtualFSInterface;
-import jersey.repackaged.com.google.common.collect.Lists;
 
 /**
  * @author Michele Dibenedetto

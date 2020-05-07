@@ -11,12 +11,13 @@ import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Maps;
+
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.SAInfo;
 import it.grid.storm.namespace.remote.Constants;
-import jersey.repackaged.com.google.common.collect.Maps;
 
 /**
  * @author Michele Dibenedetto

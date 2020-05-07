@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import it.grid.storm.common.GUID;
 import it.grid.storm.common.types.PFN;
@@ -54,7 +55,6 @@ import it.grid.storm.namespace.naming.SURL;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TTURL;
-import jersey.repackaged.com.google.common.collect.Maps;
 
 public class Namespace implements NamespaceInterface {
 

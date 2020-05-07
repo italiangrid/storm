@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
 import it.grid.storm.griduser.VONameMatchingRule;
 import it.grid.storm.namespace.NamespaceDirector;
@@ -33,7 +34,6 @@ import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.srm.types.TSURL;
-import jersey.repackaged.com.google.common.collect.Lists;
 
 public class NamespaceUtil {
 

@@ -32,9 +32,10 @@ import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
+
 import it.grid.storm.rest.RestServer;
 import it.grid.storm.xmlrpc.XMLRPCHttpServer;
-import jersey.repackaged.com.google.common.collect.Lists;
 
 /**
  * Singleton holding all configuration values that any other object in the StoRM backend reads from
