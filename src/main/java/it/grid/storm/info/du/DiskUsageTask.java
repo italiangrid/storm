@@ -1,6 +1,7 @@
 package it.grid.storm.info.du;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,9 +42,9 @@ public class DiskUsageTask implements Runnable {
       DUResult result = duCommand.execute();
       log.debug("du-result: {}", result);
       updateUsedSpaceOnPersistence(spaceToken, result);
-      long duration = result.getDurationInMillis() / 1000L;
+      long seconds = TimeUnit.MILLISECONDS.toSeconds(result.getDurationInMillis());
       log.info("DiskUsageTask for {} successfully ended in {}s with used-size = {} bytes",
-          spaceToken, duration, result.getSizeInBytes());
+          spaceToken, seconds, result.getSizeInBytes());
 
     } catch (IOException e) {
 
