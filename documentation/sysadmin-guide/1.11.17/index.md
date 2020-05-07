@@ -1542,7 +1542,6 @@ Here is the list of current logged operations:
 | `synch`              | Synch operations summary
 | `synch.af`           | Synch srmAbortFiles operations
 | `synch.ar`           | Synch srmAbortRequest operations
-| `synch.bol`          | Synch srmBringOnLine operations
 | `synch.efl`          | Synch srmExtendFileLifetime operations
 | `synch.gsm`          | Synch srmGetSpaceMetadata operations
 | `synch.gst`          | Synch srmGetSpaceToken operations
@@ -1551,21 +1550,11 @@ Here is the list of current logged operations:
 | `synch.mv`           | Synch srmMv operations
 | `synch.pd`           | Synch srmPd operations
 | `synch.ping`         | Synch srmPing operations
-| `synch.ptg`          | Synch srmPtG operations
-| `synch.ptp`          | Synch srmPtP operations
 | `synch.rf`           | Synch srmRf operations
 | `synch.rm`           | Synch srmRm operations
 | `synch.rmDir`        | Synch srmRmDir operations
-| `synch.releaseSpace` | Synch srmReleaseSpace operations
-| `synch.reserveSpace` | Synch srmReserveSpace operations
-| `synch.sPtg`         | Synch srmStatusPrepareToGet operations
-| `synch.sPtp`         | Synch srmStatusPrepareToPut operations
 | `fs.aclOp`           | Acl set/unset on filesystem operations
 | `fs.fileAttributeOp` | File attribute set/unset on filesystem operations
-| `fs.fileChownOp`     | File ownership operations
-| `fs.fileOnDiskOp`    | Is file on disk operations
-| `fs.fileTruncateOp`  | File truncate operations
-| `fs.getFreeSpaceOp`  | Get free space operations
 | `ea`                 | Extended attributes operations
 
 
