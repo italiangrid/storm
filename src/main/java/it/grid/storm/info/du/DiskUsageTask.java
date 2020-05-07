@@ -41,9 +41,9 @@ public class DiskUsageTask implements Runnable {
       DUResult result = duCommand.execute();
       log.debug("du-result: {}", result);
       updateUsedSpaceOnPersistence(spaceToken, result);
-      long millisecs = result.getDurationInMillis();
-      log.info("DiskUsageTask for {} successfully ended in {}ms with used-size = {} bytes",
-          spaceToken, millisecs, result.getSizeInBytes());
+      long duration = result.getDurationInMillis() / 1000L;
+      log.info("DiskUsageTask for {} successfully ended in {}s with used-size = {} bytes",
+          spaceToken, duration, result.getSizeInBytes());
 
     } catch (IOException e) {
 
