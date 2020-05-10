@@ -19,13 +19,46 @@
 package it.grid.storm.tape.recalltable.resources;
 
 import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.RCLL;
+import static it.grid.storm.tape.recalltable.model.TapeRecallStatus.getRecallTaskStatus;
+import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.GenericEntity;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import it.grid.storm.config.Configuration;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
@@ -41,30 +74,7 @@ import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusLogic;
 import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusValidator;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 import it.grid.storm.tape.recalltable.model.TaskInsertRequestValidator;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.GenericEntity;
-import javax.ws.rs.core.Response;
+import jersey.repackaged.com.google.common.collect.Lists;
 
 /**
  * @author Riccardo Zappi
@@ -169,112 +179,94 @@ public class TaskResource {
   /**
    * Updates the status or retry value of a recall task. Called by GEMSS after a recall tasks is
    * finished.
-   * 
    */
   @PUT
   @Path("/{groupTaskId}")
   @Consumes("text/plain")
-  public void putNewTaskStatusOrRetryValue(@PathParam("groupTaskId") UUID groupTaskId,
-      InputStream input) throws TapeRecallException {
+  public Response putNewTaskStatusOrRetryValue(@PathParam("groupTaskId") UUID groupTaskId,
+      InputStream input) {
 
-    log.debug("Requested to change recall table value for taskId {}", groupTaskId);
+    log.debug("Requested to change recall table value for groupTaskId {}", groupTaskId);
 
-    String inputStr = buildInputString(input);
+    List<String> lines;
+    try {
+      lines = getAllLines(input);
+    } catch (IOException e) {
+      String message = format("Unable to read entity lines: %s", e.getMessage());
+      log.error(message, e);
+      return Response.ok(message, TEXT_PLAIN_TYPE).status(Status.INTERNAL_SERVER_ERROR).build();
+    }
 
-    log.debug("@PUT (input string) = '{}'", inputStr);
+    if (lines.isEmpty() || lines.size() > 1) {
 
-    // Retrieve Tasks corresponding to taskId
-    // - the relationship between groupTaskId and entries within the DB is
-    // one-to-many
+      String message = format("Invalid body '%s'", lines);
+      return Response.ok(message, TEXT_PLAIN_TYPE).status(Status.BAD_REQUEST).build();
+    }
 
-    String errorStr = null;
+    Optional<SimpleEntry<String, Integer>> keyValue = getKeyValue(lines.get(0));
+
+    if (!keyValue.isPresent()) {
+
+      String message = format("Invalid body '%s'", lines);
+      return Response.ok(message, TEXT_PLAIN_TYPE).status(Status.BAD_REQUEST).build();
+    }
 
     try {
 
       if (!recallCatalog.existsGroupTask(groupTaskId)) {
 
-        log.info(
-            "Received a tape recall status update but no Recall Group Task found with ID = '{}'",
-            groupTaskId);
-
-        throw new TapeRecallException("No Recall Group Task found with ID = '" + groupTaskId + "'");
+        String message = format("No Recall Group Task found with ID = '%s'", groupTaskId);
+        log.info(message);
+        return Response.ok(message, TEXT_PLAIN_TYPE).status(Status.NOT_FOUND).build();
       }
 
     } catch (DataAccessException e) {
 
-      log.error("Unable to retrieve Recall Group Task with ID = '{}' DataAccessException: {}",
-          groupTaskId, e.getMessage(), e);
-
-      throw new TapeRecallException("Unable to retrieve recall group task " + "with ID = '"
-          + groupTaskId + "' " + e.getMessage());
+      String message = format("Unable to retrieve Recall Group Task with ID = '%s' %s", groupTaskId,
+          e.getMessage());
+      log.error(message, e);
+      return Response.ok(message, TEXT_PLAIN_TYPE).status(Status.INTERNAL_SERVER_ERROR).build();
     }
 
-    String keyRetryValue = config.getRetryValueKey();
     String keyStatus = config.getStatusKey();
+    String key = keyValue.get().getKey();
+    Integer value = keyValue.get().getValue();
 
-    int eqIndex = inputStr.indexOf('=');
+    if (key.equalsIgnoreCase(keyStatus)) { // **** Set the Status
 
-    String value = null;
-    String key = null;
+      log.debug("Changing status of task {} to {}", groupTaskId, value);
 
-    if (eqIndex > 0) {
+      try {
 
-      value = inputStr.substring(eqIndex);
-      key = inputStr.substring(0, eqIndex);
+        TapeRecallStatus newStatus = getRecallTaskStatus(value);
+        recallCatalog.changeGroupTaskStatus(groupTaskId, newStatus, new Date());
 
-    } else {
+      } catch (DataAccessException e) {
 
-      errorStr = "Body '" + inputStr + "'is wrong";
-      throw new TapeRecallException(errorStr);
-    }
+        String message = format(
+            "Unable to change the status for group task id %s to status %s DataAccessException : %s",
+            groupTaskId, value, e.getMessage());
+        log.error(message, e);
+        return Response.ok(message, TEXT_PLAIN_TYPE).status(Status.INTERNAL_SERVER_ERROR).build();
+      }
 
-    int intValue;
+    } else { // inputMap.containsKey(keyRetryValue)) **** Set the Retry value
 
-    try {
+      log.debug("Changing retry attempt of task {} to {}", groupTaskId, value);
 
-      // trim out the '\n' end.
-      intValue = Integer.valueOf(value.substring(1, value.length() - 1));
+      try {
 
-    } catch (NumberFormatException e) {
+        recallCatalog.changeGroupTaskRetryValue(groupTaskId, value);
 
-      errorStr = "Unable to understand the number value = '" + value + "'";
-      throw new TapeRecallException(errorStr);
-    }
+      } catch (DataAccessException e) {
 
-    if (key.equals(keyRetryValue)) { // **** Set the Retry value
+        String message = format("Unable to takeover a task: %s", e.getMessage());
+        return Response.ok(message, TEXT_PLAIN_TYPE).status(Status.INTERNAL_SERVER_ERROR).build();
 
-      log.debug("Changing retry attempt of task {} to {}", groupTaskId, intValue);
-
-      recallCatalog.changeGroupTaskRetryValue(groupTaskId, intValue);
-
-    } else {
-
-      if (key.equals(keyStatus)) { // **** Set the Status
-        log.debug("Changing status of task {} to {}", groupTaskId, intValue);
-
-        try {
-
-          recallCatalog.changeGroupTaskStatus(groupTaskId,
-              TapeRecallStatus.getRecallTaskStatus(intValue), new Date());
-
-        } catch (DataAccessException e) {
-
-          log.error(
-              "Unable to change the status for group task id {} to status {} DataAccessException : {}",
-              groupTaskId, intValue, e.getMessage(), e);
-
-          throw new TapeRecallException(
-              "Unable to change the status for group task id " + groupTaskId + " to status "
-                  + intValue + " . DataAccessException : " + e.getMessage());
-        }
-
-      } else {
-
-        errorStr = "Unable to understand the key = '" + key + "' in @PUT request.";
-
-        throw new TapeRecallException(errorStr);
       }
     }
+
+    return Response.noContent().build();
   }
 
   /**
@@ -449,6 +441,48 @@ public class TaskResource {
     }
 
     return sb.toString();
+  }
+
+  private Optional<SimpleEntry<String, Integer>> getKeyValue(String line) {
+
+    Pattern pStatus = Pattern.compile(config.getStatusKey() + "=[0-9]+");
+    Pattern pAttempt = Pattern.compile(config.getRetryValueKey() + "=[0-9]+");
+
+    SimpleEntry<String, Integer> entry = null;
+
+    Matcher mStatus = pStatus.matcher(line);
+    Matcher mAttempt = pAttempt.matcher(line);
+
+    if (mStatus.matches() || mAttempt.matches()) {
+      String key = line.split("=")[0];
+      Integer value = Integer.valueOf(line.split("=")[1]);
+      entry = new SimpleEntry<String, Integer>(key, value);
+    } else {
+      log.warn("got invalid key-value data = {}", line);
+    }
+
+    return Optional.ofNullable(entry);
+  }
+
+
+  public List<String> getAllLines(InputStream input) throws IOException {
+
+    List<String> lines = Lists.newArrayList();
+    try (BufferedReader br = new BufferedReader(new InputStreamReader(input))) {
+      String line = null;
+      while ((line = br.readLine()) != null) {
+        lines.add(line);
+      }
+    } catch (IOException e) {
+      log.error(e.getMessage(), e);
+    } finally {
+      try {
+        input.close();
+      } catch (IOException e) {
+        log.error(e.getMessage(), e);
+      }
+    }
+    return lines;
   }
 
 }
