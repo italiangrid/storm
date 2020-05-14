@@ -18,7 +18,7 @@
 /**
  * 
  */
-package it.grid.storm.tape.recalltable;
+package it.grid.storm.tape.recalltable.model;
 
 /**
  * @author ritz

@@ -59,7 +59,7 @@ public class TapeRecallTOListMessageBodyWriter implements
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("{");
+		sb.append(TapeRecallBuilder.TASK_START);
 
 		for (TapeRecallTO t : tasks) {
 			
@@ -67,7 +67,7 @@ public class TapeRecallTOListMessageBodyWriter implements
 			sb.append(TapeRecallBuilder.ELEMENT_SEP);
 		}
 
-		sb.append("}");
+		sb.append(TapeRecallBuilder.TASK_END);
 
 		entityStream.write(sb.toString().getBytes());
 	}

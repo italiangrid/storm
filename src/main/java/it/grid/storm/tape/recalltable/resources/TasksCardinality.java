@@ -20,7 +20,7 @@ package it.grid.storm.tape.recalltable.resources;
 
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
-import it.grid.storm.tape.recalltable.TapeRecallException;
+import it.grid.storm.tape.recalltable.model.TapeRecallException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

@@ -22,23 +22,15 @@ import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.RCLL;
 import static it.grid.storm.tape.recalltable.model.TapeRecallStatus.getRecallTaskStatus;
 import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -51,7 +43,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +50,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import it.grid.storm.config.Configuration;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
@@ -69,12 +59,12 @@ import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
 import it.grid.storm.rest.metadata.service.ResourceService;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
-import it.grid.storm.tape.recalltable.TapeRecallException;
 import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusLogic;
 import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusValidator;
+import it.grid.storm.tape.recalltable.model.PutUpdateTaskValidator;
+import it.grid.storm.tape.recalltable.model.TapeRecallException;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 import it.grid.storm.tape.recalltable.model.TaskInsertRequestValidator;
-import jersey.repackaged.com.google.common.collect.Lists;
 
 /**
  * @author Riccardo Zappi
@@ -84,8 +74,6 @@ import jersey.repackaged.com.google.common.collect.Lists;
 public class TaskResource {
 
   private static final Logger log = LoggerFactory.getLogger(TaskResource.class);
-
-  private static Configuration config = Configuration.getInstance();
 
   private ResourceService service;
   private TapeRecallCatalog recallCatalog;
@@ -113,7 +101,7 @@ public class TaskResource {
    *         a 500 if something went wrong
    */
   @GET
-  public Response getTasks(@QueryParam("maxResults") Integer maxResults) {
+  public Response getTasksInProgress(@QueryParam("maxResults") Integer maxResults) {
 
     List<TapeRecallTO> tasks = recallCatalog.getAllInProgressTasks(maxResults);
 
@@ -145,16 +133,15 @@ public class TaskResource {
    */
   @PUT
   @Consumes("text/plain")
-  public Response putTaskStatus(InputStream input) {
+  public Response updateTaskStatusIfOnline(InputStream input) {
 
-    String inputString = buildInputString(input);
+    log.debug("PUT /recalltable/task ");
 
-    log.debug("putTaskStatus() - Input: {}", inputString);
-
-    PutTapeRecallStatusValidator validator = new PutTapeRecallStatusValidator(inputString);
+    PutTapeRecallStatusValidator validator = new PutTapeRecallStatusValidator(input);
 
     if (!validator.validate()) {
 
+      log.info("PUT /recalltable/task - {} - {}", validator.getResponse().getStatus(), validator.getResponse().getEntity());
       return validator.getResponse();
     }
 
@@ -183,33 +170,20 @@ public class TaskResource {
   @PUT
   @Path("/{groupTaskId}")
   @Consumes("text/plain")
-  public Response putNewTaskStatusOrRetryValue(@PathParam("groupTaskId") UUID groupTaskId,
+  public Response updateGroupTasks(@PathParam("groupTaskId") UUID groupTaskId,
       InputStream input) {
 
     log.debug("Requested to change recall table value for groupTaskId {}", groupTaskId);
 
-    List<String> lines;
-    try {
-      lines = getAllLines(input);
-    } catch (IOException e) {
-      String message = format("Unable to read entity lines: %s", e.getMessage());
-      log.error(message, e);
-      return Response.ok(message, TEXT_PLAIN_TYPE).status(Status.INTERNAL_SERVER_ERROR).build();
+    PutUpdateTaskValidator validator = new PutUpdateTaskValidator(input);
+
+    if (!validator.validate()) {
+
+      log.info("PUT /recalltable/task - {} - {}", validator.getResponse().getStatus(), validator.getResponse().getEntity());
+      return validator.getResponse();
     }
 
-    if (lines.isEmpty() || lines.size() > 1) {
-
-      String message = format("Invalid body '%s'", lines);
-      return Response.ok(message, TEXT_PLAIN_TYPE).status(Status.BAD_REQUEST).build();
-    }
-
-    Optional<SimpleEntry<String, Integer>> keyValue = getKeyValue(lines.get(0));
-
-    if (!keyValue.isPresent()) {
-
-      String message = format("Invalid body '%s'", lines);
-      return Response.ok(message, TEXT_PLAIN_TYPE).status(Status.BAD_REQUEST).build();
-    }
+    /* Business logic */
 
     try {
 
@@ -217,7 +191,7 @@ public class TaskResource {
 
         String message = format("No Recall Group Task found with ID = '%s'", groupTaskId);
         log.info(message);
-        return Response.ok(message, TEXT_PLAIN_TYPE).status(Status.NOT_FOUND).build();
+        return Response.status(NOT_FOUND).entity(message).build();
       }
 
     } catch (DataAccessException e) {
@@ -225,43 +199,39 @@ public class TaskResource {
       String message = format("Unable to retrieve Recall Group Task with ID = '%s' %s", groupTaskId,
           e.getMessage());
       log.error(message, e);
-      return Response.ok(message, TEXT_PLAIN_TYPE).status(Status.INTERNAL_SERVER_ERROR).build();
+      return Response.status(INTERNAL_SERVER_ERROR).entity(message).build();
     }
 
-    String keyStatus = config.getStatusKey();
-    String key = keyValue.get().getKey();
-    Integer value = keyValue.get().getValue();
+    if (validator.isStatusRequest()) { // **** Set the Status
 
-    if (key.equalsIgnoreCase(keyStatus)) { // **** Set the Status
-
-      log.debug("Changing status of task {} to {}", groupTaskId, value);
+      log.debug("Changing status of task {} to {}", groupTaskId, validator.getValue());
 
       try {
 
-        TapeRecallStatus newStatus = getRecallTaskStatus(value);
+        TapeRecallStatus newStatus = getRecallTaskStatus(validator.getValue());
         recallCatalog.changeGroupTaskStatus(groupTaskId, newStatus, new Date());
 
       } catch (DataAccessException e) {
 
         String message = format(
             "Unable to change the status for group task id %s to status %s DataAccessException : %s",
-            groupTaskId, value, e.getMessage());
+            groupTaskId, validator.getValue(), e.getMessage());
         log.error(message, e);
-        return Response.ok(message, TEXT_PLAIN_TYPE).status(Status.INTERNAL_SERVER_ERROR).build();
+        return Response.status(INTERNAL_SERVER_ERROR).entity(message).build();
       }
 
-    } else { // inputMap.containsKey(keyRetryValue)) **** Set the Retry value
+    } else { // **** Set the Retry value
 
-      log.debug("Changing retry attempt of task {} to {}", groupTaskId, value);
+      log.debug("Changing retry attempt of task {} to {}", groupTaskId, validator.getValue());
 
       try {
 
-        recallCatalog.changeGroupTaskRetryValue(groupTaskId, value);
+        recallCatalog.changeGroupTaskRetryValue(groupTaskId, validator.getValue());
 
       } catch (DataAccessException e) {
 
         String message = format("Unable to takeover a task: %s", e.getMessage());
-        return Response.ok(message, TEXT_PLAIN_TYPE).status(Status.INTERNAL_SERVER_ERROR).build();
+        return Response.status(INTERNAL_SERVER_ERROR).entity(message).build();
 
       }
     }
@@ -403,86 +373,6 @@ public class TaskResource {
     }
 
     return Response.ok(jsonString).build();
-  }
-
-  /**
-   * Utility method.
-   * 
-   */
-  private String buildInputString(InputStream input) {
-
-    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-
-    StringBuilder sb = new StringBuilder();
-
-    String line = null;
-
-    try {
-
-      while ((line = reader.readLine()) != null) {
-
-        sb.append(line + "\n");
-      }
-
-    } catch (IOException e) {
-
-      log.error(e.getMessage(), e);
-
-    } finally {
-
-      try {
-
-        input.close();
-
-      } catch (IOException e) {
-
-        log.error(e.getMessage(), e);
-      }
-    }
-
-    return sb.toString();
-  }
-
-  private Optional<SimpleEntry<String, Integer>> getKeyValue(String line) {
-
-    Pattern pStatus = Pattern.compile(config.getStatusKey() + "=[0-9]+");
-    Pattern pAttempt = Pattern.compile(config.getRetryValueKey() + "=[0-9]+");
-
-    SimpleEntry<String, Integer> entry = null;
-
-    Matcher mStatus = pStatus.matcher(line);
-    Matcher mAttempt = pAttempt.matcher(line);
-
-    if (mStatus.matches() || mAttempt.matches()) {
-      String key = line.split("=")[0];
-      Integer value = Integer.valueOf(line.split("=")[1]);
-      entry = new SimpleEntry<String, Integer>(key, value);
-    } else {
-      log.warn("got invalid key-value data = {}", line);
-    }
-
-    return Optional.ofNullable(entry);
-  }
-
-
-  public List<String> getAllLines(InputStream input) throws IOException {
-
-    List<String> lines = Lists.newArrayList();
-    try (BufferedReader br = new BufferedReader(new InputStreamReader(input))) {
-      String line = null;
-      while ((line = br.readLine()) != null) {
-        lines.add(line);
-      }
-    } catch (IOException e) {
-      log.error(e.getMessage(), e);
-    } finally {
-      try {
-        input.close();
-      } catch (IOException e) {
-        log.error(e.getMessage(), e);
-      }
-    }
-    return lines;
   }
 
 }

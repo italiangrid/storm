@@ -172,8 +172,6 @@ public class Configuration {
   private static final String REST_SERVICES_PORT_KEY = "storm.rest.services.port";
   private static final String REST_SERVICES_MAX_THREAD = "storm.rest.services.maxthread";
   private static final String REST_SERVICES_MAX_QUEUE_SIZE = "storm.rest.services.max_queue_size";
-  private static final String RETRY_VALUE_KEY_KEY = "tape.recalltable.service.param.retry-value";
-  private static final String STATUS_KEY_KEY = "tape.recalltable.service.param.status";
   private static final String TASKOVER_KEY_KEY = "tape.recalltable.service.param.takeover";
   private static final String STORM_PROPERTIES_VERSION_KEY = "storm.properties.version";
   private static final String TAPE_SUPPORT_ENABLED_KEY = "tape.support.enabled";
@@ -1387,24 +1385,6 @@ public class Configuration {
 
     return cr.getConfiguration()
       .getInt(REST_SERVICES_MAX_QUEUE_SIZE, RestService.DEFAULT_MAX_QUEUE_SIZE);
-  }
-
-  /**
-   * Method used to retrieve the key string used to pass RETRY-VALUE parameter to Recall Table
-   * service key="tape.recalltable.service.param.retry-value";
-   */
-  public String getRetryValueKey() {
-
-    return cr.getConfiguration().getString(RETRY_VALUE_KEY_KEY, "retry-value");
-  }
-
-  /**
-   * Method used to retrieve the key string used to pass RETRY-VALUE parameter to Recall Table
-   * service key="tape.recalltable.service.param.status";
-   */
-  public String getStatusKey() {
-
-    return cr.getConfiguration().getString(STATUS_KEY_KEY, "status");
   }
 
   /**

@@ -1,7 +1,10 @@
 package it.grid.storm.tape.recalltable.resources;
 
 import static it.grid.storm.config.Configuration.CONFIG_FILE_PATH;
+import static it.grid.storm.tape.recalltable.model.PutUpdateTaskValidator.INVALID_BODY;
+import static it.grid.storm.tape.recalltable.model.PutUpdateTaskValidator.NOT_INT_VALUE;
 import static it.grid.storm.tape.recalltable.resources.TaskInsertRequest.MAX_RETRY_ATTEMPTS;
+import static java.lang.String.format;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -47,6 +50,7 @@ import it.grid.storm.rest.metadata.service.ResourceService;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
+import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
 public class TaskResourceTest {
 
@@ -387,16 +391,44 @@ public class TaskResourceTest {
 
     TaskResource recallEndpoint =
         getTaskResource(getResourceService(STORI), getTapeRecallCatalogInProgressNotEmpty());
-    Response res = recallEndpoint.getTasks(10);
+    Response res = recallEndpoint.getTasksInProgress(10);
     assertThat(res.getStatus(), equalTo(OK.getStatusCode()));
   }
 
 
-  private TapeRecallCatalog getTapeRecallCatalogGroupTaskId(UUID groupTaskId,
-      boolean existsResponse) throws DataAccessException {
+  private TapeRecallCatalog getTapeRecallCatalogGroupTaskIdNotExists(UUID groupTaskId)
+      throws DataAccessException {
 
     TapeRecallCatalog catalog = Mockito.mock(TapeRecallCatalog.class);
-    Mockito.when(catalog.existsGroupTask(groupTaskId)).thenReturn(existsResponse);
+    Mockito.when(catalog.existsGroupTask(groupTaskId)).thenReturn(false);
+    Mockito
+      .when(catalog.changeGroupTaskStatus(Mockito.eq(groupTaskId),
+          Mockito.any(TapeRecallStatus.class), Mockito.any(Date.class)))
+      .thenThrow(new DataAccessException());
+    return catalog;
+  }
+
+  private TapeRecallCatalog getTapeRecallCatalogGroupTaskIdExistsAndUpdateIsOk(UUID groupTaskId)
+      throws DataAccessException {
+
+    TapeRecallCatalog catalog = Mockito.mock(TapeRecallCatalog.class);
+    Mockito.when(catalog.existsGroupTask(groupTaskId)).thenReturn(true);
+    Mockito
+      .when(catalog.changeGroupTaskStatus(Mockito.eq(groupTaskId),
+          Mockito.any(TapeRecallStatus.class), Mockito.any(Date.class)))
+      .thenReturn(true);
+    return catalog;
+  }
+
+  private TapeRecallCatalog getTapeRecallCatalogGroupTaskIdThrowExceptionOnUpdate(UUID groupTaskId)
+      throws DataAccessException {
+
+    TapeRecallCatalog catalog = Mockito.mock(TapeRecallCatalog.class);
+    Mockito.when(catalog.existsGroupTask(groupTaskId)).thenReturn(true);
+    Mockito
+      .when(catalog.changeGroupTaskStatus(Mockito.eq(groupTaskId),
+          Mockito.any(TapeRecallStatus.class), Mockito.any(Date.class)))
+      .thenThrow(new DataAccessException());
     return catalog;
   }
 
@@ -408,8 +440,8 @@ public class TaskResourceTest {
     InputStream stubInputStream = IOUtils.toInputStream(BODY);
     UUID groupTaskId = UUID.randomUUID();
     TaskResource recallEndpoint = getTaskResource(getResourceService(STORI),
-        getTapeRecallCatalogGroupTaskId(groupTaskId, true));
-    Response res = recallEndpoint.putNewTaskStatusOrRetryValue(groupTaskId, stubInputStream);
+        getTapeRecallCatalogGroupTaskIdExistsAndUpdateIsOk(groupTaskId));
+    Response res = recallEndpoint.updateGroupTasks(groupTaskId, stubInputStream);
     assertThat(res.getStatus(), equalTo(NO_CONTENT.getStatusCode()));
   }
 
@@ -421,8 +453,8 @@ public class TaskResourceTest {
     InputStream stubInputStream = IOUtils.toInputStream(BODY);
     UUID groupTaskId = UUID.randomUUID();
     TaskResource recallEndpoint = getTaskResource(getResourceService(STORI),
-        getTapeRecallCatalogGroupTaskId(groupTaskId, true));
-    Response res = recallEndpoint.putNewTaskStatusOrRetryValue(groupTaskId, stubInputStream);
+        getTapeRecallCatalogGroupTaskIdExistsAndUpdateIsOk(groupTaskId));
+    Response res = recallEndpoint.updateGroupTasks(groupTaskId, stubInputStream);
     assertThat(res.getStatus(), equalTo(NO_CONTENT.getStatusCode()));
   }
 
@@ -434,10 +466,11 @@ public class TaskResourceTest {
     InputStream stubInputStream = IOUtils.toInputStream(BODY);
     UUID groupTaskId = UUID.randomUUID();
     TaskResource recallEndpoint = getTaskResource(getResourceService(STORI),
-        getTapeRecallCatalogGroupTaskId(groupTaskId, false));
-    Response res = recallEndpoint.putNewTaskStatusOrRetryValue(groupTaskId, stubInputStream);
+        getTapeRecallCatalogGroupTaskIdNotExists(groupTaskId));
+    Response res = recallEndpoint.updateGroupTasks(groupTaskId, stubInputStream);
     assertThat(res.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-    assertThat(res.getEntity().toString(), equalTo("No Recall Group Task found with ID = '" + groupTaskId + "'"));
+    assertThat(res.getEntity().toString(),
+        equalTo("No Recall Group Task found with ID = '" + groupTaskId + "'"));
   }
 
   @Test
@@ -448,10 +481,10 @@ public class TaskResourceTest {
     InputStream stubInputStream = IOUtils.toInputStream(BODY);
     UUID groupTaskId = UUID.randomUUID();
     TaskResource recallEndpoint = getTaskResource(getResourceService(STORI),
-        getTapeRecallCatalogGroupTaskId(groupTaskId, true));
-    Response res = recallEndpoint.putNewTaskStatusOrRetryValue(groupTaskId, stubInputStream);
+        getTapeRecallCatalogGroupTaskIdExistsAndUpdateIsOk(groupTaskId));
+    Response res = recallEndpoint.updateGroupTasks(groupTaskId, stubInputStream);
     assertThat(res.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
-    assertThat(res.getEntity().toString(), equalTo("Invalid body '[" + BODY + "]'"));
+    assertThat(res.getEntity().toString(), equalTo(INVALID_BODY));
   }
 
   @Test
@@ -459,13 +492,14 @@ public class TaskResourceTest {
       throws NamespaceException, ResourceNotFoundException, DataAccessException {
 
     final String BODY = "status=queued";
+    final String EXPECTED_BODY = format(NOT_INT_VALUE, "queued");
     InputStream stubInputStream = IOUtils.toInputStream(BODY);
     UUID groupTaskId = UUID.randomUUID();
     TaskResource recallEndpoint = getTaskResource(getResourceService(STORI),
-        getTapeRecallCatalogGroupTaskId(groupTaskId, true));
-    Response res = recallEndpoint.putNewTaskStatusOrRetryValue(groupTaskId, stubInputStream);
+        getTapeRecallCatalogGroupTaskIdExistsAndUpdateIsOk(groupTaskId));
+    Response res = recallEndpoint.updateGroupTasks(groupTaskId, stubInputStream);
     assertThat(res.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
-    assertThat(res.getEntity().toString(), equalTo("Invalid body '[" + BODY + "]'"));
+    assertThat(res.getEntity().toString(), equalTo(EXPECTED_BODY));
   }
 
   @Test
@@ -473,14 +507,28 @@ public class TaskResourceTest {
       throws NamespaceException, ResourceNotFoundException, DataAccessException {
 
     final String BODY = "status=0\nretry-value=2";
-    final String BODYSTR = "status=0, retry-value=2";
     InputStream stubInputStream = IOUtils.toInputStream(BODY);
     UUID groupTaskId = UUID.randomUUID();
     TaskResource recallEndpoint = getTaskResource(getResourceService(STORI),
-        getTapeRecallCatalogGroupTaskId(groupTaskId, true));
-    Response res = recallEndpoint.putNewTaskStatusOrRetryValue(groupTaskId, stubInputStream);
+        getTapeRecallCatalogGroupTaskIdExistsAndUpdateIsOk(groupTaskId));
+    Response res = recallEndpoint.updateGroupTasks(groupTaskId, stubInputStream);
     assertThat(res.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
-    assertThat(res.getEntity().toString(), equalTo("Invalid body '[" + BODYSTR + "]'"));
+    assertThat(res.getEntity().toString(), equalTo("Expected one property. Found 2."));
+
+  }
+
+  @Test
+  public void testPUTTaskStatusExceptionOnUpdate()
+      throws NamespaceException, ResourceNotFoundException, DataAccessException {
+
+    final String BODY = "status=0";
+    InputStream stubInputStream = IOUtils.toInputStream(BODY);
+    UUID groupTaskId = UUID.randomUUID();
+    TaskResource recallEndpoint = getTaskResource(getResourceService(STORI),
+        getTapeRecallCatalogGroupTaskIdThrowExceptionOnUpdate(groupTaskId));
+    Response res = recallEndpoint.updateGroupTasks(groupTaskId, stubInputStream);
+    assertThat(res.getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
+    assertThat(res.getEntity().toString(), equalTo("Expected one property. Found 2."));
 
   }
 }
