@@ -420,15 +420,15 @@ public class TaskResourceTest {
     return catalog;
   }
 
-  private TapeRecallCatalog getTapeRecallCatalogGroupTaskIdThrowExceptionOnUpdate(UUID groupTaskId)
-      throws DataAccessException {
+  private TapeRecallCatalog getTapeRecallCatalogGroupTaskIdThrowExceptionOnUpdate(UUID groupTaskId,
+      String errorMessage) throws DataAccessException {
 
     TapeRecallCatalog catalog = Mockito.mock(TapeRecallCatalog.class);
     Mockito.when(catalog.existsGroupTask(groupTaskId)).thenReturn(true);
     Mockito
       .when(catalog.changeGroupTaskStatus(Mockito.eq(groupTaskId),
           Mockito.any(TapeRecallStatus.class), Mockito.any(Date.class)))
-      .thenThrow(new DataAccessException());
+      .thenThrow(new DataAccessException(errorMessage));
     return catalog;
   }
 
@@ -521,14 +521,19 @@ public class TaskResourceTest {
   public void testPUTTaskStatusExceptionOnUpdate()
       throws NamespaceException, ResourceNotFoundException, DataAccessException {
 
-    final String BODY = "status=0";
-    InputStream stubInputStream = IOUtils.toInputStream(BODY);
     UUID groupTaskId = UUID.randomUUID();
+
+    final String BODY = "status=0";
+    final String EXPECTED_BODY = format(
+        "Unable to change the status for group task id %s to status 0 DataAccessException : ErrorMessage",
+        groupTaskId);
+
+    InputStream stubInputStream = IOUtils.toInputStream(BODY);
     TaskResource recallEndpoint = getTaskResource(getResourceService(STORI),
-        getTapeRecallCatalogGroupTaskIdThrowExceptionOnUpdate(groupTaskId));
+        getTapeRecallCatalogGroupTaskIdThrowExceptionOnUpdate(groupTaskId, "ErrorMessage"));
     Response res = recallEndpoint.updateGroupTasks(groupTaskId, stubInputStream);
     assertThat(res.getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
-    assertThat(res.getEntity().toString(), equalTo("Expected one property. Found 2."));
+    assertThat(res.getEntity().toString(), equalTo(EXPECTED_BODY));
 
   }
 }
