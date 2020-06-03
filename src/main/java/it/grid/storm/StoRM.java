@@ -15,8 +15,18 @@
 
 package it.grid.storm;
 
+import static it.grid.storm.metrics.StormMetricRegistry.METRIC_REGISTRY;
 import static it.grid.storm.rest.RestService.startServer;
 import static it.grid.storm.rest.RestService.stop;
+import static java.lang.String.valueOf;
+import static java.security.Security.setProperty;
+
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import it.grid.storm.asynch.AdvancedPicker;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
@@ -26,24 +36,16 @@ import it.grid.storm.check.CheckManager;
 import it.grid.storm.check.CheckResponse;
 import it.grid.storm.check.CheckStatus;
 import it.grid.storm.check.SimpleCheckManager;
-import it.grid.storm.config.ConfigReader;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.health.HealthDirector;
-import it.grid.storm.metrics.StormMetricRegistry;
 import it.grid.storm.metrics.StormMetricsReporter;
 import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
 import it.grid.storm.startup.Bootstrap;
 import it.grid.storm.startup.BootstrapException;
 import it.grid.storm.synchcall.SimpleSynchcallDispatcher;
 import it.grid.storm.xmlrpc.StoRMXmlRpcException;
 import it.grid.storm.xmlrpc.XMLRPCHttpServer;
-
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class represents a StoRM as a whole: it sets the configuration file which contains
@@ -55,353 +57,416 @@ import org.slf4j.LoggerFactory;
 
 public class StoRM {
 
-	private AdvancedPicker picker = null;
+  private AdvancedPicker picker = null;
 
-	private XMLRPCHttpServer xmlrpcServer = null;
+  private XMLRPCHttpServer xmlrpcServer = null;
 
-	private static final Logger log = LoggerFactory.getLogger(StoRM.class);
+  private static final Logger log = LoggerFactory.getLogger(StoRM.class);
 
-	public static final String DEFAULT_CONFIGURATION_FILE_PATH =
-			"/etc/storm/backend-server/storm.properties";
+  // Timer object in charge to call periodically the Space Garbage Collector
+  private final Timer gc = new Timer();
+  private TimerTask cleaningTask = null;
+  private boolean isSpaceGCRunning = false;
 
-	// Timer object in charge to call periodically the Space Garbage Collector
-	private final Timer gc = new Timer();
-	private TimerTask cleaningTask = null;
-	private boolean isSpaceGCRunning = false;
+  /*
+   * Timer object in charge of transit expired put requests from SRM_SPACE_AVAILABLE to
+   * SRM_FILE_LIFETIME_EXPIRED and from SRM_REQUEST_INPROGRESS to SRM_FAILURE
+   */
+  private final Timer transiter = new Timer();
+  private TimerTask expiredAgent = null;
+  private boolean isExpiredAgentRunning = false;
 
-	/*
-	 * Timer object in charge of transit expired put requests from SRM_SPACE_AVAILABLE to
-	 * SRM_FILE_LIFETIME_EXPIRED and from SRM_REQUEST_INPROGRESS to SRM_FAILURE
-	 */
-	private final Timer transiter = new Timer();
-	private TimerTask expiredAgent = null;
-	private boolean isExpiredAgentRunning = false;
+  private final ReservedSpaceCatalog spaceCatalog;
 
-	private final ReservedSpaceCatalog spaceCatalog;
+  private boolean isPickerRunning = false;
+  private boolean isXmlrpcServerRunning = false;
+  private boolean isRestServerRunning = false;
 
-	private boolean isPickerRunning = false;
-	private boolean isXmlrpcServerRunning = false;
-	private boolean isRestServerRunning = false;
+  /**
+   * Public constructor that requires a String containing the complete pathname to the configuration
+   * file, as well as the desired refresh rate in seconds for changes in configuration. Beware that
+   * by pathname it is meant the complete path starting from root, including the name of the file
+   * itself! If pathname is empty or null, then an attempt will be made to read properties off
+   * /opt/storm/etc/storm.properties. BEWARE!!! For MS Windows installations this attempt _will_
+   * fail! In any case, failure to read the configuration file causes StoRM to use hard-coded
+   * default values.
+   */
+  public StoRM() {
 
-	/**
-	 * Public constructor that requires a String containing the complete pathname to the
-	 * configuration file, as well as the desired refresh rate in seconds for changes in
-	 * configuration. Beware that by pathname it is meant the complete path starting from root,
-	 * including the name of the file itself! If pathname is empty or null, then an attempt will be
-	 * made to read properties off /opt/storm/etc/storm.properties. BEWARE!!! For MS Windows
-	 * installations this attempt _will_ fail! In any case, failure to read the configuration file
-	 * causes StoRM to use hard-coded default values.
-	 */
-	public StoRM(String configurationPathname, int refresh) {
+    configureLogging();
 
-		loadConfiguration(configurationPathname, refresh);
+    configureSecurity();
 
-		configureLogging();
+    configureMetricsReporting();
 
-		configureMetricsReporting();
+    configureStoRMDataSource();
 
-		configureStoRMDataSource();
+    // Start space catalog
+    spaceCatalog = new ReservedSpaceCatalog();
 
-		// Start space catalog
-		spaceCatalog = new ReservedSpaceCatalog();
+    loadNamespaceConfiguration();
 
-		loadNamespaceConfiguration();
+    HealthDirector.initializeDirector(false);
 
-		HealthDirector.initializeDirector(false);
+    loadPathAuthzDBConfiguration();
 
-		loadPathAuthzDBConfiguration();
+    // Initialize Used Space
+    Bootstrap.initializeUsedSpace();
 
-		// Initialize Used Space
-		Bootstrap.initializeUsedSpace();
+    // Start the "advanced" picker
+    picker = new AdvancedPicker();
 
-		// Start the "advanced" picker
-		picker = new AdvancedPicker();
+    configureXMLRPCService();
 
-		configureXMLRPCService();
+    performSanityChecks();
 
-		performSanityChecks();
+  }
 
-	}
+  private void configureLogging() {
 
-	private void loadConfiguration(String configurationPathname, int refresh) {
+    String configurationDir = Configuration.getInstance().configurationDir();
+    String logFile = configurationDir + "logging.xml";
+    Bootstrap.configureLogging(logFile);
+  }
 
-		if ((configurationPathname == null) || (configurationPathname.isEmpty())) {
-			configurationPathname = DEFAULT_CONFIGURATION_FILE_PATH;
-		}
+  private void configureSecurity() {
 
-		log.info("Loading backend configuration from '{}'", configurationPathname);
-		log.info("Configuration refresh rate (in secs): {}", refresh);
+    int cacheTtl = Configuration.getInstance().getNetworkAddressCacheTtl();
+    log.debug("Setting networkaddress.cache.ttl to {}", cacheTtl);
+    setProperty("networkaddress.cache.ttl", valueOf(cacheTtl));
 
-		Configuration.getInstance()
-				.setConfigReader(new ConfigReader(configurationPathname, refresh));
+    int cacheNegativeTtl = Configuration.getInstance().getNetworkAddressCacheNegativeTtl();
+    log.debug("Setting networkaddress.cache.negative.ttl to {}", cacheNegativeTtl);
+    setProperty("networkaddress.cache.negative.ttl", valueOf(cacheNegativeTtl));
+  }
 
-	}
+  private void configureMetricsReporting() {
 
-	private void configureLogging() {
+    METRIC_REGISTRY.getRegistry().timer(SimpleSynchcallDispatcher.SYNCH_CALL_TIMER_NAME);
 
-		String configurationDir = Configuration.getInstance().configurationDir();
-		String logFile = configurationDir + "logging.xml";
-		Bootstrap.configureLogging(logFile);
-	}
+    final StormMetricsReporter metricsReporter =
+        StormMetricsReporter.forRegistry(METRIC_REGISTRY.getRegistry()).build();
 
-	private void configureMetricsReporting() {
+    metricsReporter.start(1, TimeUnit.MINUTES);
 
-		StormMetricRegistry.INSTANCE.getRegistry()
-				.timer(SimpleSynchcallDispatcher.SYNCH_CALL_TIMER_NAME);
+  }
 
-		final StormMetricsReporter metricsReporter = StormMetricsReporter
-				.forRegistry(StormMetricRegistry.INSTANCE.getRegistry()).build();
+  private void loadNamespaceConfiguration() {
 
-		metricsReporter.start(1, TimeUnit.MINUTES);
+    NamespaceDirector.initializeDirector();
 
-	}
+  }
 
-	private void loadNamespaceConfiguration() {
-
-		boolean verboseMode = false; // true generates verbose logging
-		boolean testingMode = false; // True if you wants testing namespace
-		NamespaceDirector.initializeDirector(verboseMode, testingMode);
-
-	}
-
-	private void loadPathAuthzDBConfiguration() {
-
-		String pathAuthzDBFileName =
-				Configuration.getInstance().configurationDir() + "path-authz.db";
-
-		try {
-			Bootstrap.initializePathAuthz(pathAuthzDBFileName);
-		} catch (BootstrapException e) {
-			log.error("Unable to initialize the Path Authorization manager. BootstrapException: "
-					+ e.getMessage(), e);
-
-			throw new RuntimeException("Unable to initialize the Path Authorization manager", e);
-		}
-	}
-
-	private void configureXMLRPCService() {
-
-		try {
-
-			xmlrpcServer = new XMLRPCHttpServer(Configuration.getInstance().getXmlRpcServerPort(),
-					Configuration.getInstance().getMaxXMLRPCThread());
-
-		} catch (StoRMXmlRpcException e) {
-
-			log.error(e.getMessage(), e);
-
-			throw new RuntimeException(e.getMessage(), e);
-		}
-
-	}
-
-	private void performSanityChecks() {
-
-		if (Configuration.getInstance().getSanityCheckEnabled()) {
-
-			CheckManager checkManager = new SimpleCheckManager();
-			checkManager.init();
-			CheckResponse checkResponse = checkManager.lauchChecks();
-
-			if (checkResponse.isSuccessfull()) {
-				log.info("Check suite executed successfully");
-			} else {
-				if (checkResponse.getStatus().equals(CheckStatus.CRITICAL_FAILURE)) {
-					log.error("Storm Check suite is failed for some critical checks!");
-					throw new RuntimeException(
-							"Storm Check suite is failed for some critical checks! Please check the log for more details");
-				} else {
-					log.warn(
-							"Storm Check suite is failed but not for any critical check. StoRM safely started.");
-				}
-			}
-
-		} else {
-			log.warn("Sanity checks disabled. Unable to determine if the environment is sane");
-		}
-
-	}
-
-	private void configureStoRMDataSource() {
-
-		StoRMDataSource.init();
-	}
-
-	/**
-	 * Method used to start the picker.
-	 */
-	public synchronized void startPicker() {
-
-		picker.startIt();
-		isPickerRunning = true;
-	}
-
-	/**
-	 * Method used to stop the picker.
-	 */
-	public synchronized void stopPicker() {
-
-		picker.stopIt();
-		isPickerRunning = false;
-	}
-
-	/**
-	 * @return
-	 */
-	public synchronized boolean pickerIsRunning() {
-
-		return isPickerRunning;
-	}
-
-	/**
-	 * Method used to start xmlrpcServer.
-	 * 
-	 * @throws Exception
-	 */
-	public synchronized void startXmlRpcServer() {
-
-		xmlrpcServer.start();
-		isXmlrpcServerRunning = true;
-	}
-
-	/**
-	 * Method used to stop xmlrpcServer.
-	 */
-	public synchronized void stopXmlRpcServer() {
-
-		xmlrpcServer.stop();
-		isXmlrpcServerRunning = false;
-	}
-
-	/**
-	 * @return
-	 */
-	public synchronized boolean xmlRpcServerIsRunning() {
-
-		return isXmlrpcServerRunning;
-	}
-
-	/**
-	 * RESTFul Service Start-up
-	 */
-	public synchronized void startRestServer() throws Exception {
-
-		startServer();
-		isRestServerRunning = true;
-	}
-
-	/**
-	 * @throws Exception
-	 */
-	public synchronized void stopRestServer() {
-
-		try {
-
-			stop();
-
-		} catch (Exception e) {
-
-			log.error("Unable to stop internal HTTP Server listening for RESTFul " + "services: {}",
-					e.getMessage(), e);
-		}
-
-		isRestServerRunning = false;
-	}
-
-	/**
-	 * @return
-	 */
-	public synchronized boolean restServerIsRunning() {
-
-		return isRestServerRunning;
-	}
-
-	/**
-	 * Method use to start the space Garbage Collection Thread.
-	 */
-	public synchronized void startSpaceGC() {
-
-		log.debug("Starting Space GC.");
-		// Delay time before starting
-		long delay = Configuration.getInstance().getCleaningInitialDelay() * 1000;
-
-		// cleaning thread! Set to 1 minute
-		// Period of execution of cleaning
-		long period = Configuration.getInstance().getCleaningTimeInterval() * 1000;
-
-		// Set to 1 hour
-		cleaningTask = new TimerTask() {
-
-			@Override
-			public void run() {
-
-				spaceCatalog.purge();
-			}
-		};
-		gc.scheduleAtFixedRate(cleaningTask, delay, period);
-		isSpaceGCRunning = true;
-		log.debug("Space GC started.");
-	}
-
-	/**
-	 * 
-	 */
-	public synchronized void stopSpaceGC() {
-
-		log.debug("Stopping Space GC.");
-		if (cleaningTask != null) {
-			cleaningTask.cancel();
-			gc.purge();
-		}
-		log.debug("Space GC stopped.");
-		isSpaceGCRunning = false;
-	}
-
-	/**
-	 * @return
-	 */
-	public synchronized boolean spaceGCIsRunning() {
-
-		return isSpaceGCRunning;
-	}
-
-	/**
-	 * Starts the internal timer needed to periodically check and transit requests whose pinLifetime
-	 * has expired and are in SRM_SPACE_AVAILABLE, to SRM_FILE_LIFETIME_EXPIRED. Moreover, the
-	 * physical file corresponding to the SURL gets removed; then any JiT entry gets removed, except
-	 * those on traverse for the parent directory; finally any volatile entry gets removed too. This
-	 * internal timer also transit requests whose status is still SRM_REQUEST_INPROGRESS after a
-	 * configured period to SRM_FAILURE.
-	 */
-	public synchronized void startExpiredAgent() {
-
-		/* Delay time before starting cleaning thread! Set to 1 minute */
-		final long delay = Configuration.getInstance().getTransitInitialDelay() * 1000L;
-		/* Period of execution of cleaning! Set to 1 hour */
-		final long period = Configuration.getInstance().getTransitTimeInterval() * 1000L;
-		/* Expiration time before starting move in-progress requests to failure */
-		final long inProgressExpirationTime =
-				Configuration.getInstance().getInProgressPutRequestExpirationTime();
-
-		log.debug("Starting Expired Agent.");
-		expiredAgent = new ExpiredPutRequestsAgent(inProgressExpirationTime);
-		transiter.scheduleAtFixedRate(expiredAgent, delay, period);
-		isExpiredAgentRunning = true;
-		log.debug("Expired Agent started.");
-	}
-
-	public synchronized void stopExpiredAgent() {
-
-		log.debug("Stopping Expired Agent.");
-		if (expiredAgent != null) {
-			expiredAgent.cancel();
-		}
-		log.debug("Expired Agent stopped.");
-		isExpiredAgentRunning = false;
-	}
-
-	public synchronized boolean isExpiredAgentRunning() {
-
-		return isExpiredAgentRunning;
-	}
+  private void loadPathAuthzDBConfiguration() {
+
+    String pathAuthzDBFileName = Configuration.getInstance().configurationDir() + "path-authz.db";
+
+    try {
+      Bootstrap.initializePathAuthz(pathAuthzDBFileName);
+    } catch (BootstrapException e) {
+      log.error("Unable to initialize the Path Authorization manager. BootstrapException: "
+          + e.getMessage(), e);
+
+      throw new RuntimeException("Unable to initialize the Path Authorization manager", e);
+    }
+  }
+
+  private void configureXMLRPCService() {
+
+    try {
+
+      xmlrpcServer = new XMLRPCHttpServer(Configuration.getInstance().getXmlRpcServerPort(),
+          Configuration.getInstance().getXMLRPCMaxThread(),
+          Configuration.getInstance().getXMLRPCMaxQueueSize());
+
+    } catch (StoRMXmlRpcException e) {
+
+      log.error(e.getMessage(), e);
+
+      throw new RuntimeException(e.getMessage(), e);
+    }
+
+  }
+
+  private void performSanityChecks() {
+
+    if (Configuration.getInstance().getSanityCheckEnabled()) {
+
+      CheckManager checkManager = new SimpleCheckManager();
+      checkManager.init();
+      CheckResponse checkResponse = checkManager.lauchChecks();
+
+      if (checkResponse.isSuccessfull()) {
+        log.info("Check suite executed successfully");
+      } else {
+        if (checkResponse.getStatus().equals(CheckStatus.CRITICAL_FAILURE)) {
+          log.error("Storm Check suite is failed for some critical checks!");
+          throw new RuntimeException(
+              "Storm Check suite is failed for some critical checks! Please check the log for more details");
+        } else {
+          log.warn(
+              "Storm Check suite is failed but not for any critical check. StoRM safely started.");
+        }
+      }
+
+    } else {
+      log.warn("Sanity checks disabled. Unable to determine if the environment is sane");
+    }
+
+  }
+
+  private void configureStoRMDataSource() {
+
+    StoRMDataSource.init();
+  }
+
+  /**
+   * Method used to start the picker.
+   */
+  public synchronized void startPicker() {
+
+    if (isPickerRunning) {
+      log.debug("Picker is already running");
+      return;
+    }
+    picker.startIt();
+    isPickerRunning = true;
+  }
+
+  /**
+   * Method used to stop the picker.
+   */
+  public synchronized void stopPicker() {
+
+    if (!isPickerRunning) {
+      log.debug("Picker is not running");
+      return;
+    }
+    picker.stopIt();
+    isPickerRunning = false;
+  }
+
+  /**
+   * @return
+   */
+  public synchronized boolean pickerIsRunning() {
+
+    return isPickerRunning;
+  }
+
+  /**
+   * Method used to start xmlrpcServer.
+   * 
+   * @throws Exception
+   */
+  public synchronized void startXmlRpcServer() {
+
+    if (isXmlrpcServerRunning) {
+      log.debug("XMLRPC server is already running");
+      return;
+    }
+    xmlrpcServer.start();
+    isXmlrpcServerRunning = true;
+  }
+
+  /**
+   * Method used to stop xmlrpcServer.
+   */
+  public synchronized void stopXmlRpcServer() {
+
+    if (!isXmlrpcServerRunning) {
+      log.debug("XMLRPC server is not running");
+      return;
+    }
+
+    xmlrpcServer.stop();
+    isXmlrpcServerRunning = false;
+  }
+
+  /**
+   * @return
+   */
+  public synchronized boolean xmlRpcServerIsRunning() {
+
+    return isXmlrpcServerRunning;
+  }
+
+  /**
+   * RESTFul Service Start-up
+   */
+  public synchronized void startRestServer() throws Exception {
+
+    if (isRestServerRunning) {
+      log.debug("Rest Server is already running");
+      return;
+    }
+
+    startServer();
+    isRestServerRunning = true;
+  }
+
+  /**
+   * @throws Exception
+   */
+  public synchronized void stopRestServer() {
+
+    if (!isRestServerRunning) {
+      log.debug("Rest Server is not running.");
+      return;
+    }
+
+    try {
+
+      stop();
+      isRestServerRunning = false;
+
+    } catch (Exception e) {
+
+      log.error("Unable to stop internal HTTP Server listening for RESTFul services: {}",
+          e.getMessage(), e);
+    }
+  }
+
+  /**
+   * @return
+   */
+  public synchronized boolean restServerIsRunning() {
+
+    return isRestServerRunning;
+  }
+
+  /**
+   * Method use to start the space Garbage Collection Thread.
+   */
+  public synchronized void startSpaceGC() {
+
+    if (isSpaceGCRunning) {
+      log.debug("Space Garbage Collector is already running");
+      return;
+    }
+
+    log.debug("Starting Space Garbage Collector ...");
+    // Delay time before starting
+    long delay = Configuration.getInstance().getCleaningInitialDelay() * 1000;
+
+    // cleaning thread! Set to 1 minute
+    // Period of execution of cleaning
+    long period = Configuration.getInstance().getCleaningTimeInterval() * 1000;
+
+    // Set to 1 hour
+    cleaningTask = new TimerTask() {
+
+      @Override
+      public void run() {
+
+        spaceCatalog.purge();
+      }
+    };
+    gc.scheduleAtFixedRate(cleaningTask, delay, period);
+    isSpaceGCRunning = true;
+    log.debug("Space Garbage Collector started.");
+  }
+
+  /**
+   * 
+   */
+  public synchronized void stopSpaceGC() {
+
+    if (!isSpaceGCRunning) {
+      log.debug("Space Garbage Collector is not running.");
+      return;
+    }
+
+    log.debug("Stopping Space Garbage Collector.");
+    if (cleaningTask != null) {
+      cleaningTask.cancel();
+      gc.purge();
+    }
+    log.debug("Space Garbage Collector stopped.");
+    isSpaceGCRunning = false;
+  }
+
+  /**
+   * @return
+   */
+  public synchronized boolean spaceGCIsRunning() {
+
+    return isSpaceGCRunning;
+  }
+
+  /**
+   * Starts the internal timer needed to periodically check and transit requests whose pinLifetime
+   * has expired and are in SRM_SPACE_AVAILABLE, to SRM_FILE_LIFETIME_EXPIRED. Moreover, the
+   * physical file corresponding to the SURL gets removed; then any JiT entry gets removed, except
+   * those on traverse for the parent directory; finally any volatile entry gets removed too. This
+   * internal timer also transit requests whose status is still SRM_REQUEST_INPROGRESS after a
+   * configured period to SRM_FAILURE.
+   */
+  public synchronized void startExpiredAgent() {
+
+    if (isExpiredAgentRunning) {
+      log.debug("Expired Agent is already running.");
+      return;
+    }
+
+    /* Delay time before starting cleaning thread! Set to 1 minute */
+    final long delay = Configuration.getInstance().getTransitInitialDelay() * 1000L;
+    /* Period of execution of cleaning! Set to 1 hour */
+    final long period = Configuration.getInstance().getTransitTimeInterval() * 1000L;
+    /* Expiration time before starting move in-progress requests to failure */
+    final long inProgressExpirationTime =
+        Configuration.getInstance().getInProgressPutRequestExpirationTime();
+
+    log.debug("Starting Expired Agent.");
+    expiredAgent = new ExpiredPutRequestsAgent(inProgressExpirationTime);
+    transiter.scheduleAtFixedRate(expiredAgent, delay, period);
+    isExpiredAgentRunning = true;
+    log.debug("Expired Agent started.");
+  }
+
+  public synchronized void stopExpiredAgent() {
+
+    if (!isExpiredAgentRunning) {
+      log.debug("Expired Agent is not running.");
+      return;
+    }
+
+    log.debug("Stopping Expired Agent.");
+    if (expiredAgent != null) {
+      expiredAgent.cancel();
+    }
+    log.debug("Expired Agent stopped.");
+    isExpiredAgentRunning = false;
+  }
+
+  public synchronized boolean isExpiredAgentRunning() {
+
+    return isExpiredAgentRunning;
+  }
+
+  public boolean startServices() {
+
+    try {
+      startPicker();
+      startXmlRpcServer();
+      startRestServer();
+      startSpaceGC();
+      startExpiredAgent();
+    } catch (Exception e) {
+      log.error(e.getMessage(), e);
+      return false;
+    }
+    return true;
+  }
+
+  public void stopServices() {
+
+    stopPicker();
+    stopXmlRpcServer();
+    stopRestServer();
+    stopSpaceGC();
+    stopExpiredAgent();
+
+    GPFSQuotaManager.INSTANCE.shutdown();
+  }
 }

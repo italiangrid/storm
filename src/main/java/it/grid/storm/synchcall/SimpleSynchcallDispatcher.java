@@ -17,10 +17,11 @@
 
 package it.grid.storm.synchcall;
 
+import static it.grid.storm.metrics.StormMetricRegistry.METRIC_REGISTRY;
+
 import com.codahale.metrics.Timer;
 
 import it.grid.storm.common.OperationType;
-import it.grid.storm.metrics.StormMetricRegistry;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.CommandFactory;
 import it.grid.storm.synchcall.command.datatransfer.CommandException;
@@ -45,7 +46,7 @@ public class SimpleSynchcallDispatcher implements SynchcallDispatcher {
   public OutputData processRequest(OperationType type, InputData inputData)
     throws IllegalArgumentException, CommandException {
 
-    final Timer timer = StormMetricRegistry.INSTANCE.getRegistry()
+    final Timer timer = METRIC_REGISTRY.getRegistry()
       .timer(SYNCH_CALL_TIMER_NAME);
 
     // This provides metrics for all synch calls

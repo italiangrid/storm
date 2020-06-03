@@ -17,6 +17,18 @@
 
 package it.grid.storm.namespace.model;
 
+import static it.grid.storm.metrics.StormMetricRegistry.METRIC_REGISTRY;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
+
+import org.slf4j.Logger;
+
 import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.balancer.Node;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
@@ -31,12 +43,12 @@ import it.grid.storm.filesystem.InvalidSpaceAttributesException;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.MetricsFilesystemAdapter;
 import it.grid.storm.filesystem.MockSpaceSystem;
+import it.grid.storm.filesystem.RandomWaitFilesystemAdapter;
 import it.grid.storm.filesystem.ReservationException;
 import it.grid.storm.filesystem.Space;
 import it.grid.storm.filesystem.SpaceSystem;
 import it.grid.storm.filesystem.swig.genericfs;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.metrics.StormMetricRegistry;
 import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.DefaultValuesInterface;
 import it.grid.storm.namespace.ExpiredSpaceTokenException;
@@ -58,16 +70,6 @@ import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TSpaceType;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-
-import org.slf4j.Logger;
 
 /**
  * <p> Title: </p>
@@ -110,12 +112,6 @@ public class VirtualFS implements VirtualFSInterface {
 
   // For debug purpose only
   public long creationTime = System.currentTimeMillis();
-  public boolean testingMode = false;
-
-  public VirtualFS(boolean testingMode) {
-
-    this.testingMode = testingMode;
-  }
 
   /*****************************************************************************
    * BUILDING METHODs
@@ -135,15 +131,12 @@ public class VirtualFS implements VirtualFSInterface {
   public void setFSDriver(Class fsDriver) throws NamespaceException {
 
     this.fsDriver = fsDriver;
-    if (testingMode) {
-      this.genericFS = null;
-    } else {
-      this.genericFS = makeFSInstance();
-    }
+    this.genericFS = makeFSInstance();
 
+    fsWrapper = RandomWaitFilesystemAdapter.maybeWrapFilesystem(fsWrapper);
     this.fsWrapper = new MetricsFilesystemAdapter(
       new Filesystem(getFSDriverInstance()),
-      StormMetricRegistry.INSTANCE.getRegistry());
+      METRIC_REGISTRY.getRegistry());
   }
 
   public void setSpaceTokenDescription(String spaceTokenDescription) {
@@ -325,7 +318,7 @@ public class VirtualFS implements VirtualFSInterface {
 
   public genericfs getFSDriverInstance() throws NamespaceException {
 
-    if ((this.genericFS == null) && (!testingMode)) {
+    if (this.genericFS == null) {
       this.genericFS = makeFSInstance();
     }
     return this.genericFS;
@@ -417,8 +410,10 @@ public class VirtualFS implements VirtualFSInterface {
 
       FilesystemIF fs = new Filesystem(getFSDriverInstance());
 
+      fs = RandomWaitFilesystemAdapter.maybeWrapFilesystem(fs);
+      
       fsWrapper = new MetricsFilesystemAdapter(fs,
-        StormMetricRegistry.INSTANCE.getRegistry());
+        METRIC_REGISTRY.getRegistry());
 
     }
     return this.fsWrapper;
@@ -431,7 +426,7 @@ public class VirtualFS implements VirtualFSInterface {
 
   public SpaceSystem getSpaceSystemDriverInstance() throws NamespaceException {
 
-    if ((this.spaceSystem == null) && (!testingMode)) {
+    if (this.spaceSystem == null) {
       this.spaceSystem = makeSpaceSystemInstance();
     }
     return this.spaceSystem;

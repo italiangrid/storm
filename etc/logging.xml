@@ -3,25 +3,25 @@
 
   <appender name="METRICS"
     class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <File>${storm.log.dir}/storm-backend-metrics.log</File>
+    <File>/var/log/storm/storm-backend-metrics.log</File>
    
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <FileNamePattern>${storm.log.dir}/storm-backend-metrics-%d{yyyy-MM-dd}.log.gz
+      <FileNamePattern>/var/log/storm/storm-backend-metrics-%d{yyyy-MM-dd}.log.gz
       </FileNamePattern>
       <MaxHistory>90</MaxHistory>
     </rollingPolicy>
 
     <encoder>
-      <pattern>%date{HH:mm:ss.SSS} - %msg%n</pattern>
+      <pattern>%date{ISO8601} - %msg%n</pattern>
     </encoder>
     
   </appender>
   <appender name="PROCESS"
     class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <File>${storm.log.dir}/storm-backend.log</File>
+    <File>/var/log/storm/storm-backend.log</File>
    
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <FileNamePattern>${storm.log.dir}/storm-backend-%d{yyyy-MM-dd}.log.gz
+      <FileNamePattern>/var/log/storm/storm-backend-%d{yyyy-MM-dd}.log.gz
       </FileNamePattern>
       <MaxHistory>90</MaxHistory>
     </rollingPolicy>
@@ -34,10 +34,10 @@
 
   <appender name="HEARTBEAT"
     class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <File>${storm.log.dir}/heartbeat.log</File>
+    <File>/var/log/storm/heartbeat.log</File>
 
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <FileNamePattern>${storm.log.dir}/heartbeat-%d{yyyy-MM-dd}.log.gz
+      <FileNamePattern>/var/log/storm/heartbeat-%d{yyyy-MM-dd}.log.gz
       </FileNamePattern>
       <!-- keep 365 days' worth of history -->
       <!-- <MaxHistory>365</MaxHistory> -->
@@ -50,10 +50,10 @@
 
   <appender name="BOOKKEEPING"
     class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <File>${storm.log.dir}/bookkeeping.log</File>
+    <File>/var/log/storm/bookkeeping.log</File>
 
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <FileNamePattern>${storm.log.dir}/bookkeeping-%d{yyyy-MM-dd}.log.gz
+      <FileNamePattern>/var/log/storm/bookkeeping-%d{yyyy-MM-dd}.log.gz
       </FileNamePattern>
       <!-- keep 365 days' worth of history -->
       <!-- <MaxHistory>365</MaxHistory> -->

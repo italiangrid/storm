@@ -2,7 +2,6 @@ package it.grid.storm.rest.auth;
 
 import static it.grid.storm.rest.auth.RestTokenFilter.TOKEN_HEADER_NAME;
 import static it.grid.storm.rest.auth.RestTokenFilter.TOKEN_INIT_PARAM_NAME;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.fail;
 import static org.apache.commons.io.FileUtils.readFileToString;

@@ -20,6 +20,8 @@
  */
 package it.grid.storm.rest;
 
+import static it.grid.storm.metrics.StormMetricRegistry.METRIC_REGISTRY;
+
 import java.util.EnumSet;
 
 import javax.servlet.DispatcherType;
@@ -34,12 +36,17 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.codahale.metrics.jetty8.InstrumentedHandler;
+import com.codahale.metrics.servlets.MetricsServlet;
+
 import it.grid.storm.authz.remote.resource.AuthorizationResource;
 import it.grid.storm.authz.remote.resource.AuthorizationResourceCompat_1_0;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.remote.resource.StormEAResource;
 import it.grid.storm.info.remote.resources.Ping;
 import it.grid.storm.info.remote.resources.SpaceStatusResource;
+import it.grid.storm.metrics.NamedInstrumentedSelectChannelConnector;
+import it.grid.storm.metrics.NamedInstrumentedThreadPool;
 import it.grid.storm.namespace.remote.resource.VirtualFSResource;
 import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_0;
 import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_1;
@@ -52,122 +59,144 @@ import it.grid.storm.tape.recalltable.resources.TasksCardinality;
 import it.grid.storm.tape.recalltable.resources.TasksResource;
 
 /**
- * This class provides static methods for starting and stopping the
- * storm-backend restful services.
+ * This class provides static methods for starting and stopping the storm-backend restful services.
  * 
  * @author zappi
  * @author valerioventuri
  */
 public class RestService {
 
-	private static final Logger log = LoggerFactory.getLogger(RestService.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RestService.class);
 
-	/**
-	 * Object holding the service configuration.
-	 */
-	private static Configuration config = Configuration.getInstance();
+  public static final int DEFAULT_PORT = 9998;
 
-	/**
-	 * The Jetty {@link Server} object.
-	 */
-	private static Server server;
+  public static final int DEFAULT_MAX_THREADS = 100;
 
-	/**
-	 * Get the port on which the server will bind from the service configuration.
-	 * 
-	 * @return the port on which the server will bind
-	 */
-	private static int getPort() {
+  public static final int DEFAULT_MAX_QUEUE_SIZE = 1000;
 
-		int restServicePort = config.getRestServicesPort();
+  /**
+   * The Jetty {@link Server} object.
+   */
+  private static Server server;
 
-		log.debug("RESTFul services will be listening on port {}", 
-		  restServicePort);
+  /**
+   * Get the port on which the server will bind from the service configuration.
+   * 
+   * @return the port on which the server will bind
+   */
+  private static int getPort() {
 
-		return restServicePort;
-	}
+    int restServicePort = Configuration.getInstance().getRestServicesPort();
 
-	/**
-	 * Configure the {@link Server}. Install the Jersey {@link ServletContainer}
-	 * and configure it to with resources locations.
-	 * @throws Exception 
-	 * 
-	 */
-	private static void configureServer() throws Exception {
+    LOG.debug("RESTFul services will be listening on port {}", restServicePort);
 
-		ResourceConfig resourceConfig = new ResourceConfig();
-		/* Register resources: */
-		resourceConfig.register(TaskResource.class);
-		resourceConfig.register(TasksResource.class);
-		resourceConfig.register(TasksCardinality.class);
-		resourceConfig.register(TapeRecallTOListMessageBodyWriter.class);
-		resourceConfig.register(AuthorizationResource.class);
-		resourceConfig.register(AuthorizationResourceCompat_1_0.class);
-		resourceConfig.register(VirtualFSResource.class);
-		resourceConfig.register(VirtualFSResourceCompat_1_0.class);
-		resourceConfig.register(VirtualFSResourceCompat_1_1.class);
-		resourceConfig.register(VirtualFSResourceCompat_1_2.class);
-		resourceConfig.register(StormEAResource.class);
-		resourceConfig.register(Metadata.class);
-		resourceConfig.register(Ping.class);
-		resourceConfig.register(SpaceStatusResource.class);
-		/* JSON POJO support: */
-		resourceConfig.register(JacksonFeature.class);
+    return restServicePort;
+  }
 
-		ServletHolder holder = new ServletHolder(new ServletContainer(resourceConfig));
 
-		ServletContextHandler servletContextHandler =
-				new ServletContextHandler(ServletContextHandler.SESSIONS);
-		servletContextHandler.setContextPath("/");
-		servletContextHandler.addServlet(holder, "/*");
+  /**
+   * Configure the {@link Server}. Install the Jersey {@link ServletContainer} and configure it to
+   * with resources locations.
+   * 
+   * @throws Exception
+   * 
+   */
+  private static void configureServer() throws Exception {
 
-		if (config.getXmlRpcTokenEnabled()) {
+    ResourceConfig resourceConfig = new ResourceConfig();
+    /* Register resources: */
+    resourceConfig.register(TaskResource.class);
+    resourceConfig.register(TasksResource.class);
+    resourceConfig.register(TasksCardinality.class);
+    resourceConfig.register(TapeRecallTOListMessageBodyWriter.class);
+    resourceConfig.register(AuthorizationResource.class);
+    resourceConfig.register(AuthorizationResourceCompat_1_0.class);
+    resourceConfig.register(VirtualFSResource.class);
+    resourceConfig.register(VirtualFSResourceCompat_1_0.class);
+    resourceConfig.register(VirtualFSResourceCompat_1_1.class);
+    resourceConfig.register(VirtualFSResourceCompat_1_2.class);
+    resourceConfig.register(StormEAResource.class);
+    resourceConfig.register(Metadata.class);
+    resourceConfig.register(Ping.class);
+    resourceConfig.register(SpaceStatusResource.class);
+    /* JSON POJO support: */
+    resourceConfig.register(JacksonFeature.class);
 
-			log.info("Enabling security filter for rest server requests");
-			String token = config.getXmlRpcToken();
-			if (token == null || token.isEmpty()) {
-				log.error("Rest server security token enabled, but token not found");
-				throw new Exception("Rest server security token enabled, but token not found");
-			}
-			FilterHolder filterHolder = new FilterHolder(new RestTokenFilter());
-			filterHolder.setInitParameter("token", token);
-			servletContextHandler.addFilter(filterHolder, "/metadata/*", EnumSet.of(DispatcherType.REQUEST));
-			servletContextHandler.addFilter(filterHolder, "/recalltable/*", EnumSet.of(DispatcherType.REQUEST));
-		}
+    ServletHolder holder = new ServletHolder(new ServletContainer(resourceConfig));
 
-		server = new Server(RestService.getPort());
-		server.setHandler(servletContextHandler);
-	}
+    ServletContextHandler servletContextHandler =
+        new ServletContextHandler(ServletContextHandler.SESSIONS);
 
-	/**
-	 * Starts the server.
-	 * 
-	 * @throws Exception
-	 */
-	public static void startServer() throws Exception {
+    servletContextHandler.setContextPath("/");
 
-		configureServer();
 
-		log.info("Starting RESTFul services ... ");
+    ServletHolder metrics = new ServletHolder(new MetricsServlet(METRIC_REGISTRY.getRegistry()));
 
-		JettyThread thread = new JettyThread(server);
-		thread.start();
+    servletContextHandler.addServlet(metrics, "/metrics");
+    servletContextHandler.addServlet(holder, "/*");
+    if (Configuration.getInstance().getXmlRpcTokenEnabled()) {
 
-		log.info(" ... started");
-	}
+      LOG.info("Enabling security filter for rest server requests");
+      String token = Configuration.getInstance().getXmlRpcToken();
+      if (token == null || token.isEmpty()) {
+        LOG.error("Rest server security token enabled, but token not found");
+        throw new Exception("Rest server security token enabled, but token not found");
+      }
+      FilterHolder filterHolder = new FilterHolder(new RestTokenFilter());
+      filterHolder.setInitParameter("token", token);
+      servletContextHandler.addFilter(filterHolder, "/metadata/*",
+          EnumSet.of(DispatcherType.REQUEST));
+      servletContextHandler.addFilter(filterHolder, "/recalltable/*",
+          EnumSet.of(DispatcherType.REQUEST));
+    }
 
-	/**
-	 * Stops the server.
-	 * 
-	 * @throws Exception
-	 */
-	public static void stop() throws Exception {
+    server = new Server();
 
-		log.info("Stopping RESTFul services ... ");
+    NamedInstrumentedSelectChannelConnector connector = new NamedInstrumentedSelectChannelConnector(
+        "rest-connector", getPort(), METRIC_REGISTRY.getRegistry());
 
-		server.stop();
+    server.addConnector(connector);
 
-		log.info("... stopped");
+    // Configure thread pool
+    NamedInstrumentedThreadPool tp =
+        new NamedInstrumentedThreadPool("rest", METRIC_REGISTRY.getRegistry());
 
-	}
+
+    tp.setMaxThreads(Configuration.getInstance().getRestServicesMaxThreads());
+    tp.setMaxQueued(Configuration.getInstance().getRestServicesMaxQueueSize());
+    server.setThreadPool(tp);
+
+    LOG.info("RESTful services threadpool configured: maxThreads={}, maxQueueSize={}",
+        Configuration.getInstance().getRestServicesMaxThreads(),
+        Configuration.getInstance().getRestServicesMaxQueueSize());
+
+    InstrumentedHandler ih = new InstrumentedHandler(METRIC_REGISTRY.getRegistry(),
+        servletContextHandler, "rest-handler");
+
+    server.setHandler(ih);
+  }
+
+  /**
+   * Starts the server.
+   * 
+   * @throws Exception
+   */
+  public static void startServer() throws Exception {
+
+    configureServer();
+    JettyThread thread = new JettyThread(server);
+    thread.start();
+    LOG.info("StoRM RESTful services started.");
+
+  }
+
+  /**
+   * Stops the server.
+   * 
+   * @throws Exception
+   */
+  public static void stop() throws Exception {
+    server.stop();
+    LOG.info("StoRM RESTful services stopped.");
+  }
 }

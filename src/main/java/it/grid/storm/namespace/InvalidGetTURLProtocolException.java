@@ -27,19 +27,15 @@ package it.grid.storm.namespace;
  * @version 1.0
  */
 
-import it.grid.storm.common.types.*;
-
 public class InvalidGetTURLProtocolException extends Exception {
 
-	private int size = 0;
+  /**
+   *
+   */
+  private static final long serialVersionUID = 1L;
 
-	public InvalidGetTURLProtocolException(TURLPrefix turls) {
+  public InvalidGetTURLProtocolException(String message) {
 
-		size = turls.size();
-	}
-
-	public String toString() {
-
-		return ("Preifix of Matching Protocol is EMPTY  = " + size);
-	}
+    super(message);
+  }
 }

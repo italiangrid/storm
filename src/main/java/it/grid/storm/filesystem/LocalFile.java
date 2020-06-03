@@ -244,7 +244,7 @@ public class LocalFile {
 				localFile.getAbsolutePath());
 		} catch (FileNotFoundException e) {
 		  log.error(e.getMessage(), e);
-			return new HashMap<String, String>(0);
+			return new HashMap<>(0);
 		}
 
 	}
@@ -438,10 +438,6 @@ public class LocalFile {
 	 *         the given LocalUser <i>u</i> in this file ACL, or
 	 *         {@link Filesystem#NONE} if no ACE for that group was found.
 	 */
-	// TODO ACL manager
-	// public FilesystemPermission grantGroupPermission(final LocalUser u, final
-	// FilesystemPermission permission)
-	// throws CannotMapUserException {
 	public FilesystemPermission grantGroupPermission(final LocalUser u,
 		final FilesystemPermission permission) {
 
@@ -467,10 +463,6 @@ public class LocalFile {
 	 *         given LocalUser <i>u</i> in this file ACL, or
 	 *         {@link Filesystem#NONE} if no ACE for that user was found.
 	 */
-	// TODO ACL manager
-	// public FilesystemPermission grantUserPermission(final LocalUser u, final
-	// FilesystemPermission permission)
-	// throws CannotMapUserException {
 	public FilesystemPermission grantUserPermission(final LocalUser u,
 		final FilesystemPermission permission) {
 
@@ -488,28 +480,13 @@ public class LocalFile {
 			return ChecksumManager.getInstance().hasChecksum(
 				localFile.getAbsolutePath());
 		} catch (FileNotFoundException e) {
-		  log.warn("File not found when checking checksum: {}",e.getMessage());
+		  log.warn("File not found when checking checksum: {}", e.getMessage(), e);
 			return false;
 		}
 	}
 
 	public boolean isDirectory() throws SecurityException {
 		return localFile.isDirectory();
-	}
-
-	private boolean isGPFS() throws FSException {
-
-		try {
-			return FileSystemCheckerFactory.getInstance().createFileSystemChecker()
-				.isGPFS(this.localFile);
-		} catch (Exception e) {
-			log.error("Unable to check if file {} is on GPFS. {}",
-			  this.localFile.getAbsolutePath(),
-			  e.getMessage(),e);
-			throw new FSException("Unable to check if file "
-				+ this.localFile.getAbsolutePath()
-				+ " is on GPFS. IllegalArgumentException " + e.getMessage());
-		}
 	}
 
 	/**
@@ -609,9 +586,6 @@ public class LocalFile {
 	 *         the given LocalUser <i>u</i> in this file ACL, or
 	 *         {@link Filesystem#NONE} if no ACE for that group was found.
 	 */
-	// TODO ACL manager
-	// public FilesystemPermission removeGroupPermission(final LocalUser u) throws
-	// CannotMapUserException {
 	public FilesystemPermission removeGroupPermission(final LocalUser u) {
 
 		return fs.removeGroupPermission(u, localFile.getAbsolutePath());
@@ -633,9 +607,6 @@ public class LocalFile {
 	 *         given LocalUser <i>u</i> in this file ACL, or
 	 *         {@link Filesystem#NONE} if no ACE for that user was found.
 	 */
-	// TODO ACL manager
-	// public FilesystemPermission removeUserPermission(final LocalUser u) throws
-	// CannotMapUserException {
 	public FilesystemPermission removeUserPermission(final LocalUser u) {
 
 		return fs.removeUserPermission(u, localFile.getAbsolutePath());
@@ -674,10 +645,6 @@ public class LocalFile {
 	 *         {@link Filesystem#NONE} if no ACE for that group was found.
 	 * @see fs_acl::revoke_group_perm()
 	 */
-	// TODO ACL manager
-	// public FilesystemPermission revokeGroupPermission(final LocalUser u, final
-	// FilesystemPermission permission)
-	// throws CannotMapUserException {
 	public FilesystemPermission revokeGroupPermission(final LocalUser u,
 		final FilesystemPermission permission) {
 
@@ -704,10 +671,6 @@ public class LocalFile {
 	 *         given LocalUser <i>u</i> in this file ACL, or
 	 *         {@link Filesystem#NONE} if no ACE for that user was found.
 	 */
-	// TODO ACL manager
-	// public FilesystemPermission revokeUserPermission(final LocalUser u, final
-	// FilesystemPermission permission)
-	// throws CannotMapUserException {
 	public FilesystemPermission revokeUserPermission(final LocalUser u,
 		final FilesystemPermission permission) {
 
@@ -752,10 +715,6 @@ public class LocalFile {
 	 *         the given LocalUser <i>u</i> in this file ACL, or
 	 *         {@link Filesystem#NONE} if no ACE for that group was found.
 	 */
-	// TODO ACL manager
-	// public FilesystemPermission setGroupPermission(final LocalUser u, final
-	// FilesystemPermission permission)
-	// throws CannotMapUserException {
 	public FilesystemPermission setGroupPermission(final LocalUser u,
 		final FilesystemPermission permission) {
 
@@ -778,10 +737,6 @@ public class LocalFile {
 	 *         given LocalUser <i>u</i> in this file ACL, or
 	 *         {@link Filesystem#NONE} if no ACE for that user was found.
 	 */
-	// TODO ACL manager
-	// public FilesystemPermission setUserPermission(final LocalUser u, final
-	// FilesystemPermission permission)
-	// throws CannotMapUserException {
 	public FilesystemPermission setUserPermission(final LocalUser u,
 		final FilesystemPermission permission) {
 
