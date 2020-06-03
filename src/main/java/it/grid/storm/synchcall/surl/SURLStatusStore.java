@@ -6,12 +6,11 @@ import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
+import jersey.repackaged.com.google.common.collect.Maps;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -25,6 +24,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
+import com.google.common.collect.Lists;
 
 public enum SURLStatusStore implements SURLStatusStoreIF {
 
@@ -33,7 +33,7 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
   static class Entry {
 
     public static Entry from(TRequestToken token, GridUserInterface usr,
-      Map<TSURL, TReturnStatus> statuses) {
+        Map<TSURL, TReturnStatus> statuses) {
 
       return new Entry(token, usr, statuses);
     }
@@ -43,8 +43,7 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
 
     final Map<TSURL, TReturnStatus> surlStatuses;
 
-    private Entry(TRequestToken tok, GridUserInterface usr,
-      Map<TSURL, TReturnStatus> statuses) {
+    private Entry(TRequestToken tok, GridUserInterface usr, Map<TSURL, TReturnStatus> statuses) {
 
       this.token = tok;
       this.user = usr;
@@ -79,8 +78,7 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
 
       final int prime = 31;
       int result = 1;
-      result = prime * result
-        + ((surlStatuses == null) ? 0 : surlStatuses.hashCode());
+      result = prime * result + ((surlStatuses == null) ? 0 : surlStatuses.hashCode());
       result = prime * result + ((token == null) ? 0 : token.hashCode());
       return result;
     }
@@ -88,8 +86,8 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
     @Override
     public String toString() {
 
-      return "SURLStore.Entry [token=" + token + ", user=" + user
-        + ", surlStatuses=" + surlStatuses + "]";
+      return "SURLStore.Entry [token=" + token + ", user=" + user + ", surlStatuses=" + surlStatuses
+          + "]";
     }
 
   }
@@ -98,50 +96,50 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
 
   final Cache<TRequestToken, Entry> statusStore;
 
-  final EnumSet<TStatusCode> interestingStatuses = EnumSet.of(
-    TStatusCode.SRM_SPACE_AVAILABLE, TStatusCode.SRM_FILE_BUSY,
-    TStatusCode.SRM_FILE_PINNED, TStatusCode.SRM_REQUEST_QUEUED,
-    TStatusCode.SRM_REQUEST_INPROGRESS);
+  final EnumSet<TStatusCode> interestingStatuses = EnumSet.of(TStatusCode.SRM_SPACE_AVAILABLE,
+      TStatusCode.SRM_FILE_BUSY, TStatusCode.SRM_FILE_PINNED, TStatusCode.SRM_REQUEST_QUEUED,
+      TStatusCode.SRM_REQUEST_INPROGRESS);
 
-  final ScheduledExecutorService cacheStatsLoggerService = Executors
-    .newScheduledThreadPool(1);
+  final ScheduledExecutorService cacheStatsLoggerService = Executors.newScheduledThreadPool(1);
 
   private SURLStatusStore() {
 
-    statusStore = CacheBuilder.newBuilder().maximumSize(1000).recordStats()
-      .expireAfterWrite(10L, TimeUnit.MINUTES).concurrencyLevel(1)
+    statusStore = CacheBuilder.newBuilder()
+      .maximumSize(1000)
+      .recordStats()
+      .expireAfterWrite(10L, TimeUnit.MINUTES)
+      .concurrencyLevel(1)
       .removalListener(new RemovalListener<TRequestToken, Entry>() {
 
         @Override
-        public void onRemoval(
-          RemovalNotification<TRequestToken, Entry> notification) {
+        public void onRemoval(RemovalNotification<TRequestToken, Entry> notification) {
 
           if (notification.wasEvicted()) {
-            logger.debug("SURLStatusStore: Entry {} evicted. Cause: {}",
-              notification.getValue(), notification.getCause());
+            logger.debug("SURLStatusStore: Entry {} evicted. Cause: {}", notification.getValue(),
+                notification.getCause());
           }
         }
-      }).build();
+      })
+      .build();
 
     Runnable cacheStatsLogger = new Runnable() {
 
       @Override
       public void run() {
 
-        logger.debug("SURLStatusStore status: size={}, stats={}",
-          statusStore.size(), statusStore.stats());
+        logger.debug("SURLStatusStore status: size={}, stats={}", statusStore.size(),
+            statusStore.stats());
 
       }
     };
 
-    cacheStatsLoggerService.scheduleWithFixedDelay(cacheStatsLogger, 1L, 1L,
-      TimeUnit.MINUTES);
+    cacheStatsLoggerService.scheduleWithFixedDelay(cacheStatsLogger, 1L, 1L, TimeUnit.MINUTES);
   }
 
   @Override
   public int abortAllRequestForSURL(TSURL surl) {
 
-    final List<TRequestToken> toBeRemoved = new ArrayList<TRequestToken>();
+    final List<TRequestToken> toBeRemoved = Lists.newArrayList();
 
     for (Map.Entry<TRequestToken, Entry> e : statusStore.asMap().entrySet()) {
       if (e.getValue().surlStatuses.containsKey(surl)) {
@@ -169,28 +167,26 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
     if (user != null && e.user != null) {
 
       if (!user.getDn().equals(e.user.getDn())) {
-        String errorMsg = String.format(
-          "User %s is not authorized to access request with token %s",
-          user.getDn(), e.token);
+        String errorMsg = String.format("User %s is not authorized to access request with token %s",
+            user.getDn(), e.token);
 
         throw new AuthzException(errorMsg);
       }
     }
 
     if (user == null && e.user != null) {
-      throw new AuthzException(
-        "Anonymous user cannot access request with token " + e.token);
+      throw new AuthzException("Anonymous user cannot access request with token " + e.token);
     }
   }
 
   @Override
   public int checkedUpdate(GridUserInterface user, List<TSURL> surls,
-    TStatusCode requiredStatusCode, TStatusCode newStatusCode,
-    String explanation) {
+      TStatusCode requiredStatusCode, TStatusCode newStatusCode, String explanation) {
 
-    logger.debug("checkedUpdate: user={}, surls={}, requiredStatusCode={}, "
-      + "newStatusCode={}, explanation={}", user, surls, requiredStatusCode,
-      newStatusCode, explanation);
+    logger.debug(
+        "checkedUpdate: user={}, surls={}, requiredStatusCode={}, "
+            + "newStatusCode={}, explanation={}",
+        user, surls, requiredStatusCode, newStatusCode, explanation);
 
     int updateCount = 0;
     for (Map.Entry<TRequestToken, Entry> e : statusStore.asMap().entrySet()) {
@@ -204,19 +200,18 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
           for (TSURL s : surls) {
             if (entry.surlStatuses.containsKey(s)) {
 
-              TStatusCode inCacheStatus = entry.surlStatuses.get(s)
-                .getStatusCode();
+              TStatusCode inCacheStatus = entry.surlStatuses.get(s).getStatusCode();
 
               if (!requiredStatusCode.equals(inCacheStatus)) {
 
-                logger.warn("checkedUpdate: status not updated for surl {}. "
-                  + "inCacheStatus does not match requiredStatus. {} != {}", s,
-                  inCacheStatus, requiredStatusCode);
+                logger.warn(
+                    "checkedUpdate: status not updated for surl {}. "
+                        + "inCacheStatus does not match requiredStatus. {} != {}",
+                    s, inCacheStatus, requiredStatusCode);
 
               } else {
 
-                entry.surlStatuses.put(s, new TReturnStatus(newStatusCode,
-                  explanation));
+                entry.surlStatuses.put(s, new TReturnStatus(newStatusCode, explanation));
                 updateCount++;
               }
 
@@ -236,13 +231,14 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
 
   @Override
   public int checkedUpdate(TRequestToken requestToken, List<TSURL> surls,
-    TStatusCode requiredStatusCode, TStatusCode newStatusCode,
-    String explanation) throws IllegalArgumentException, UnknownTokenException,
-    ExpiredTokenException, UnknownSurlException {
+      TStatusCode requiredStatusCode, TStatusCode newStatusCode, String explanation)
+      throws UnknownTokenException, ExpiredTokenException,
+      UnknownSurlException {
 
-    logger.debug("checkedUpdate: token={}, surls={}, requiredStatusCode={}, "
-      + "newStatusCode={}, explanation={}", requestToken, surls,
-      requiredStatusCode, newStatusCode, explanation);
+    logger.debug(
+        "checkedUpdate: token={}, surls={}, requiredStatusCode={}, "
+            + "newStatusCode={}, explanation={}",
+        requestToken, surls, requiredStatusCode, newStatusCode, explanation);
 
     Entry e = statusStore.getIfPresent(requestToken);
 
@@ -250,22 +246,22 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
 
     if (e == null) {
       logger.warn("Token not found in store: {}", requestToken);
-      throw new UnknownSurlException("Token not found in store: "
-        + requestToken.getValue());
+      throw new UnknownSurlException("Token not found in store: " + requestToken.getValue());
     }
 
     for (TSURL s : surls) {
       if (!e.surlStatuses.containsKey(s)) {
-        throw new UnknownSurlException(String.format(
-          "SURL %s not linked to request token %s", s, requestToken));
+        throw new UnknownSurlException(
+            String.format("SURL %s not linked to request token %s", s, requestToken));
       }
 
       TStatusCode inCacheStatus = e.surlStatuses.get(s).getStatusCode();
 
       if (!inCacheStatus.equals(requiredStatusCode)) {
-        logger.warn("checkedUpdate: status not updated for surl {}. "
-          + "inCacheStatus does not match requiredStatus. {} != {}", s,
-          inCacheStatus, requiredStatusCode);
+        logger.warn(
+            "checkedUpdate: status not updated for surl {}. "
+                + "inCacheStatus does not match requiredStatus. {} != {}",
+            s, inCacheStatus, requiredStatusCode);
       } else {
         e.surlStatuses.put(s, new TReturnStatus(newStatusCode, explanation));
         updateCount++;
@@ -287,15 +283,14 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
       return true;
     }
 
-    return (user != null && e.user != null && user.getDn().equals(
-      e.user.getDn()));
+    return (user != null && e.user != null && user.getDn().equals(e.user.getDn()));
   }
 
   @Override
-  public Map<TSURL, TReturnStatus> getPinnedSURLsForUser(
-    GridUserInterface user, TRequestToken token, List<TSURL> surls) {
+  public Map<TSURL, TReturnStatus> getPinnedSURLsForUser(GridUserInterface user,
+      TRequestToken token, List<TSURL> surls) {
 
-    Map<TSURL, TReturnStatus> statusMap = new HashMap<TSURL, TReturnStatus>();
+    Map<TSURL, TReturnStatus> statusMap = Maps.newHashMap();
 
     if (token != null) {
       Entry entry = statusStore.getIfPresent(token);
@@ -305,8 +300,7 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
 
           for (TSURL s : surls) {
             if (entry.surlStatuses.containsKey(s)
-              && entry.surlStatuses.get(s).getStatusCode()
-                .equals(TStatusCode.SRM_FILE_PINNED)) {
+                && entry.surlStatuses.get(s).getStatusCode().equals(TStatusCode.SRM_FILE_PINNED)) {
               statusMap.put(s, entry.surlStatuses.get(s));
             }
           }
@@ -324,8 +318,7 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
         for (TSURL s : surls) {
 
           if (entry.surlStatuses.containsKey(s)
-            && entry.surlStatuses.get(s).getStatusCode()
-              .equals(TStatusCode.SRM_FILE_PINNED)) {
+              && entry.surlStatuses.get(s).getStatusCode().equals(TStatusCode.SRM_FILE_PINNED)) {
             statusMap.put(s, entry.surlStatuses.get(s));
           }
         }
@@ -337,9 +330,9 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
 
   @Override
   public Map<TRequestToken, TReturnStatus> getSurlPerTokenStatuses(TSURL surl)
-    throws IllegalArgumentException, UnknownSurlException {
+      throws UnknownSurlException {
 
-    Map<TRequestToken, TReturnStatus> statusMap = new HashMap<TRequestToken, TReturnStatus>();
+    Map<TRequestToken, TReturnStatus> statusMap = Maps.newHashMap();
 
     for (Map.Entry<TRequestToken, Entry> e : statusStore.asMap().entrySet()) {
       if (e.getValue().surlStatuses.containsKey(surl)) {
@@ -352,8 +345,7 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
   }
 
   @Override
-  public Map<TSURL, TReturnStatus> getSurlStatuses(GridUserInterface user,
-    TRequestToken token) {
+  public Map<TSURL, TReturnStatus> getSurlStatuses(GridUserInterface user, TRequestToken token) {
 
     Entry e = statusStore.getIfPresent(token);
 
@@ -366,17 +358,17 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
   }
 
   @Override
-  public Map<TSURL, TReturnStatus> getSurlStatuses(GridUserInterface user,
-    TRequestToken token, List<TSURL> surls) {
+  public Map<TSURL, TReturnStatus> getSurlStatuses(GridUserInterface user, TRequestToken token,
+      List<TSURL> surls) {
 
     return getSurlStatuses(user, token);
   }
 
   @Override
-  public Collection<TReturnStatus> getSurlStatuses(GridUserInterface user,
-    TSURL surl) throws UnknownSurlException, IllegalArgumentException {
+  public Collection<TReturnStatus> getSurlStatuses(GridUserInterface user, TSURL surl)
+      throws UnknownSurlException {
 
-    List<TReturnStatus> statuses = new ArrayList<TReturnStatus>();
+    List<TReturnStatus> statuses = Lists.newArrayList();
 
     for (Map.Entry<TRequestToken, Entry> e : statusStore.asMap().entrySet()) {
       Entry entry = e.getValue();
@@ -409,7 +401,7 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
 
   @Override
   public void store(TRequestToken requestToken, GridUserInterface user,
-    HashMap<TSURL, TReturnStatus> surlStatuses) {
+      Map<TSURL, TReturnStatus> surlStatuses) {
 
     Entry e = Entry.from(requestToken, user, surlStatuses);
 
@@ -423,26 +415,23 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
   }
 
   @Override
-  public int update(TRequestToken requestToken, List<TSURL> surls,
-    TReturnStatus status) throws UnknownTokenException, ExpiredTokenException,
-    UnknownSurlException {
+  public int update(TRequestToken requestToken, List<TSURL> surls, TReturnStatus status)
+      throws UnknownTokenException, ExpiredTokenException, UnknownSurlException {
 
-    logger.debug("update: token={}, surls={}, status={}", requestToken, surls,
-      status);
+    logger.debug("update: token={}, surls={}, status={}", requestToken, surls, status);
 
     Entry e = statusStore.getIfPresent(requestToken);
     int updateCount = 0;
 
     if (e == null) {
       logger.warn("Token not found in store: {}", requestToken);
-      throw new UnknownSurlException("Token not found in store: "
-        + requestToken.getValue());
+      throw new UnknownSurlException("Token not found in store: " + requestToken.getValue());
     }
 
     for (TSURL s : surls) {
       if (!e.surlStatuses.containsKey(s)) {
-        throw new UnknownSurlException(String.format(
-          "SURL %s not linked to request token %s", s, requestToken));
+        throw new UnknownSurlException(
+            String.format("SURL %s not linked to request token %s", s, requestToken));
       }
       e.surlStatuses.put(s, status);
       updateCount++;
@@ -458,8 +447,7 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
   }
 
   @Override
-  public int update(TRequestToken requestToken, TReturnStatus status)
-    throws UnknownSurlException {
+  public int update(TRequestToken requestToken, TReturnStatus status) throws UnknownSurlException {
 
     logger.debug("update: token={}, status={}", requestToken, status);
 
@@ -468,8 +456,7 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
 
     if (e == null) {
       logger.warn("Token not found in store: {}", requestToken);
-      throw new UnknownSurlException("Token not found in store: "
-        + requestToken.getValue());
+      throw new UnknownSurlException("Token not found in store: " + requestToken.getValue());
     }
 
     for (TSURL s : e.surlStatuses.keySet()) {
@@ -487,7 +474,7 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
 
   @Override
   public int update(TRequestToken requestToken, TSURL surl, TReturnStatus status)
-    throws UnknownTokenException, ExpiredTokenException, UnknownSurlException {
+      throws UnknownTokenException, ExpiredTokenException, UnknownSurlException {
 
     return update(requestToken, Arrays.asList(surl), status);
   }

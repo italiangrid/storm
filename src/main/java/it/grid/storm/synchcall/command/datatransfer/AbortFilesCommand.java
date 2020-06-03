@@ -47,6 +47,10 @@ import it.grid.storm.synchcall.data.datatransfer.AbortInputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
+import static it.grid.storm.srm.types.TStatusCode.SRM_AUTHORIZATION_FAILURE;
+import static it.grid.storm.srm.types.TStatusCode.SRM_INVALID_REQUEST;
+import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_TIMED_OUT;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,29 +152,25 @@ public class AbortFilesCommand extends DataTransferCommand implements Command {
         hasErrors = true;
         log.info("Unable to update surls status on token {}: {}", requestToken,
           e.getMessage(), e);
-        globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-          "Invalid request token");
+        globalStatus = new TReturnStatus(SRM_INVALID_REQUEST, "Invalid request token");
 
       } catch (ExpiredTokenException e) {
 
         hasErrors = true;
         log.info("Expired token: {}. {}", requestToken, e.getMessage(), e);
-        globalStatus = new TReturnStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
-          "Request expired");
+        globalStatus = new TReturnStatus(SRM_REQUEST_TIMED_OUT, "Request expired");
       
       } catch (AuthzException e) {
 
         hasErrors = true;
-        log.info("Authorization error: {}", e);
-        globalStatus = new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
-          e.getMessage());
+        log.info("Authorization error: {}", e.getMessage());
+        globalStatus = new TReturnStatus(SRM_AUTHORIZATION_FAILURE, e.getMessage());
         
       } catch (IllegalArgumentException e) {
         
         hasErrors = true;
-        log.info("Invalid request error: {}", e);
-        globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-          e.getMessage());
+        log.info("Invalid request error: {}", e.getMessage());
+        globalStatus = new TReturnStatus(SRM_INVALID_REQUEST, e.getMessage());
         
       } finally {
         
@@ -181,7 +181,6 @@ public class AbortFilesCommand extends DataTransferCommand implements Command {
           CommandHelper.printRequestOutcome(SRM_COMMAND, log, globalStatus,
             inputData, inputData.getRequestToken());
           return outputData;
-          
         }
       }
 
