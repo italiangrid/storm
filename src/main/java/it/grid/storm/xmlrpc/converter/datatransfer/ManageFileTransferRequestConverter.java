@@ -70,7 +70,7 @@ public class ManageFileTransferRequestConverter extends
 		/* (3) anyURI[] arrayOfSURLs */
 		ArrayOfSURLs arrayOfSURLs;
 		try {
-			arrayOfSURLs = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAYOFSURLS);
+			arrayOfSURLs = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAY_OF_SURLS);
 		} catch (InvalidArrayOfSURLsAttributeException e) {
 			log.debug("Empty surlArray!",e);
 			arrayOfSURLs = null;

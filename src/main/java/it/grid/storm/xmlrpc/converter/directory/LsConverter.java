@@ -94,7 +94,7 @@ public class LsConverter implements Converter {
 		/* (2) anyURI[] arrayOfSURLs */
 		ArrayOfSURLs surlArray = null;
 		try {
-			surlArray = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAYOFSURLS);
+			surlArray = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAY_OF_SURLS);
 		} catch (InvalidArrayOfSURLsAttributeException e2) {
 			log.debug("SrmLs: Empty surlArray found!",e2);
 			surlArray = null;

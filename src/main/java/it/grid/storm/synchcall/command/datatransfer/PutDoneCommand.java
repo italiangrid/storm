@@ -45,7 +45,6 @@ import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestFilesI
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +67,7 @@ import static it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS;
 import static it.grid.storm.synchcall.command.CommandHelper.buildStatus;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
 /**
  * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
@@ -153,7 +153,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
       throws PutDoneCommandException {
     
     TRequestToken requestToken = inputData.getRequestToken();
-    ArrayList<TSURL> listOfSURLs = inputData.getArrayOfSURLs().getArrayList();
+    List<TSURL> listOfSURLs = inputData.getArrayOfSURLs().getArrayList();
     
     ArrayOfTSURLReturnStatus surlsStatuses = null;
     try {
@@ -226,7 +226,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     GridUserInterface user = inputData instanceof IdentityInputData
       ? ((IdentityInputData) inputData).getUser() : null;
     TRequestToken requestToken = inputData.getRequestToken();
-    List<TSURL> spaceAvailableSURLs = new ArrayList<TSURL>();
+    List<TSURL> spaceAvailableSURLs = Lists.newArrayList();
       
     try {
       
@@ -405,7 +405,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 			log.debug("PutDone: JiT case, removing ACEs on SURL: " + surl.toString());
 			// Retrieve the PFN of the SURL parents
 			List<StoRI> storiParentsList = stori.getParents();
-			List<PFN> pfnParentsList = new ArrayList<PFN>(storiParentsList.size());
+			List<PFN> pfnParentsList = Lists.newArrayList();
 
 			for (StoRI parentStoRI : storiParentsList) {
 				pfnParentsList.add(parentStoRI.getPFN());
