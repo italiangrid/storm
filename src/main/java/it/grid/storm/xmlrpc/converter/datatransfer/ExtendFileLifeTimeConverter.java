@@ -93,7 +93,7 @@ public class ExtendFileLifeTimeConverter implements Converter {
 
 		ArrayOfSURLs arrayOfSURLs;
 		try {
-			arrayOfSURLs = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAYOFSURLS);
+			arrayOfSURLs = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAY_OF_SURLS);
 		} catch (InvalidArrayOfSURLsAttributeException e) {
 			log.error("Empty surlArray!",e);
 			arrayOfSURLs = null;

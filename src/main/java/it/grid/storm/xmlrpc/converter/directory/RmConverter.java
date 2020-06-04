@@ -79,7 +79,7 @@ public class RmConverter implements Converter {
 
 		ArrayOfSURLs surlArray = null;
 		try {
-			surlArray = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAYOFSURLS);
+			surlArray = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAY_OF_SURLS);
 		} catch (InvalidArrayOfSURLsAttributeException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

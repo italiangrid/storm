@@ -26,119 +26,120 @@
 package it.grid.storm.srm.types;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.Lists;
+
 public class ArrayOfSURLs implements Serializable {
 
-	private static final long serialVersionUID = -6162739978949956886L;
+  private static final long serialVersionUID = -6162739978949956886L;
 
-	public static final String ARRAYOFSURLS = "arrayOfSURLs";
+  public static final String ARRAY_OF_SURLS = "arrayOfSURLs";
 
-	ArrayList<TSURL> surlList;
+  private List<TSURL> surls;
 
-	/**
-	 * Constructor that requires a String. If it is null, then an
-	 * InvalidArrayOfTExtraInfoAttributeException is thrown.
-	 */
-	public ArrayOfSURLs(TSURL[] surlArray) throws IllegalArgumentException {
+  /**
+   * Constructor that requires a String. If it is null, then an
+   * InvalidArrayOfTExtraInfoAttributeException is thrown.
+   */
+  public ArrayOfSURLs(TSURL[] surlArray) {
 
-		if (surlArray == null) {
-			throw new IllegalArgumentException(
-				"Unable to create the object, null arguments: surlArray=" + surlArray);
-		}
-		surlList = new ArrayList<TSURL>(Arrays.asList(surlArray));
-	}
+    if (surlArray == null) {
+      throw new IllegalArgumentException(
+          "Unable to create the object, null arguments: surlArray=" + surlArray);
+    }
+    surls = Lists.newArrayList(surlArray);
+  }
 
-	public ArrayOfSURLs() {
+  public ArrayOfSURLs() {
 
-		surlList = new ArrayList<TSURL>();
-	}
+    surls = Lists.newArrayList();
+  }
 
-	public ArrayList<TSURL> getArrayList() {
+  public List<TSURL> getArrayList() {
 
-		return surlList;
-	}
+    return surls;
+  }
 
-	public TSURL getTSURL(int i) {
+  public TSURL getTSURL(int i) {
 
-		return (TSURL) surlList.get(i);
-	}
+    return surls.get(i);
+  }
 
-	public void setTSURL(int index, TSURL surl) {
+  public void setTSURL(int index, TSURL surl) {
 
-		surlList.set(index, surl);
-	}
+    surls.set(index, surl);
+  }
 
-	public void addTSURL(TSURL surl) {
+  public void addTSURL(TSURL surl) {
 
-		surlList.add(surl);
-	}
+    surls.add(surl);
+  }
 
-	public int size() {
+  public int size() {
 
-		return surlList.size();
-	}
+    return surls.size();
+  }
 
-	public static ArrayOfSURLs decode(Map inputParam, String name)
-		throws InvalidArrayOfSURLsAttributeException {
+  public String toString() {
 
-		List<Object> list = null;
-		ArrayOfSURLs surlArray = new ArrayOfSURLs();
-		try {
-			/*
-			 * here we can have a cast exception if the array contained in the hashmap
-			 * has been created as an object array!
-			 */
-			list = Arrays.asList((Object[]) inputParam.get(name));
-		} catch (NullPointerException e) {
+    StringBuilder buf = new StringBuilder("");
 
-		}
+    if (surls != null) {
+      for (int i = 0; i < surls.size(); i++) {
+        buf.append("'" + surls.get(i) + "'");
+        if (i + 1 < surls.size())
+          buf.append(",");
+      }
 
-		if (list == null) {
-			throw new InvalidArrayOfSURLsAttributeException(list);
-		}
-		for (Object surlString : list) {
-			TSURL surl = null;
-			try {
-				surl = TSURL.makeFromStringValidate((String) surlString);
-			} catch (InvalidTSURLAttributesException e) {
-				throw new InvalidArrayOfSURLsAttributeException(null);
-			}
-			surlArray.addTSURL(surl);
-		}
-		return surlArray;
-	}
+    } else {
+      return buf.toString();
+    }
 
-	public String toString() {
+    return buf.toString();
 
-		StringBuilder buf = new StringBuilder("");
+  }
 
-		if (surlList != null) {
-			for (int i = 0; i < surlList.size(); i++) {
-				buf.append("'" + (TSURL) surlList.get(i) + "'");
-				if (i + 1 < surlList.size())
-					buf.append(",");
-			}
+  public List<String> asStringList() {
 
-		} else {
-			return buf.toString();
-		}
+    List<String> stringList = Lists.newArrayList();
+    if (surls != null) {
+      for (TSURL surl : surls) {
+        stringList.add(surl.toString());
+      }
+    }
+    return stringList;
+  }
 
-		return buf.toString();
+  public static ArrayOfSURLs decode(Map inputParam, String name)
+      throws InvalidArrayOfSURLsAttributeException {
 
-	}
+    List<Object> list = null;
+    ArrayOfSURLs surlArray = new ArrayOfSURLs();
+    try {
+      /*
+       * here we can have a cast exception if the array contained in the hashmap has been created as
+       * an object array!
+       */
+      list = Arrays.asList((Object[]) inputParam.get(name));
+    } catch (NullPointerException e) {
 
-	public List<String> asStringList() {
+    }
 
-		ArrayList<String> stringList = new ArrayList<String>(surlList.size());
-		if (surlList != null) {
-			for (TSURL surl : surlList) {
-				stringList.add(surl.toString());
-			}
-		}
-		return stringList;
-	}
+    if (list == null) {
+      throw new InvalidArrayOfSURLsAttributeException(list);
+    }
+    for (Object surlString : list) {
+      TSURL surl = null;
+      try {
+        surl = TSURL.makeFromStringValidate((String) surlString);
+      } catch (InvalidTSURLAttributesException e) {
+        throw new InvalidArrayOfSURLsAttributeException(null);
+      }
+      surlArray.addTSURL(surl);
+    }
+    return surlArray;
+  }
 }

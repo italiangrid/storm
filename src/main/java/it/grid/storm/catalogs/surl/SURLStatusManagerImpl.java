@@ -13,6 +13,8 @@ import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
 
+import static it.grid.storm.srm.types.TStatusCode.SRM_ABORTED;
+
 import java.util.List;
 import java.util.Map;
 
@@ -84,19 +86,17 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
 
     switch (request.requestType()) {
 
-    case PREPARE_TO_GET:
-      PtGChunkCatalog.getInstance().updateStatus(token, surl,
-        TStatusCode.SRM_ABORTED, explanation);
-      break;
+      case PREPARE_TO_GET:
+        PtGChunkCatalog.getInstance().updateStatus(token, surl, SRM_ABORTED, explanation);
+        break;
 
-    case PREPARE_TO_PUT:
-      PtPChunkCatalog.getInstance().updateStatus(token, surl,
-        TStatusCode.SRM_ABORTED, explanation);
-      break;
+      case PREPARE_TO_PUT:
+        PtPChunkCatalog.getInstance().updateStatus(token, surl, SRM_ABORTED, explanation);
+        break;
 
-    default:
-      throw new IllegalArgumentException("Unsupported abort for request type: "
-        + request.requestType());
+      default:
+        throw new IllegalArgumentException(
+            "Unsupported abort for request type: " + request.requestType());
     }
 
     return true;
