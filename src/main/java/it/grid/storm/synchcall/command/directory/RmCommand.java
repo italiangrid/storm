@@ -148,7 +148,7 @@ public class RmCommand implements Command {
       try {
         returnStatus = removeFile(surl, user, data);
       } catch (RmException e) {
-        log.error("srmRm: {}", e.getMessage());
+        log.info("srmRm failed: {}", e.getMessage());
         returnStatus = e.getReturnStatus();
       } finally {
         arrayOfFileStatus.addTSurlReturnStatus(new TSURLReturnStatus(surl, returnStatus));
