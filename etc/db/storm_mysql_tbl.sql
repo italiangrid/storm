@@ -16,11 +16,12 @@ CREATE DATABASE IF NOT EXISTS storm_db;
 USE storm_db;
 
 CREATE TABLE IF NOT EXISTS db_version (
-  ID int NOT NULL UNIQUE,
+  ID int NOT NULL auto_increment,
   major int,
   minor int,
   revision int,
-  description VARCHAR(100));
+  description VARCHAR(100),
+  primary key (ID)) type=InnoDB;
 
 DELETE FROM storm_db.db_version;
 INSERT INTO storm_db.db_version (major,minor,revision,description) VALUES (1,7,2,'10 Mar 2015');
@@ -393,12 +394,14 @@ CREATE DATABASE IF NOT EXISTS storm_be_ISAM;
 USE storm_be_ISAM;
 
 CREATE TABLE IF NOT EXISTS db_version (
-  ID int NOT NULL UNIQUE,
+  ID int NOT NULL auto_increment,
   major int,
   minor int,
   revision int,
-  description VARCHAR(100));
-  
+  description VARCHAR(100),
+  primary key (ID)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
 DELETE FROM storm_be_ISAM.db_version;
 INSERT INTO storm_be_ISAM.db_version (major,minor,revision,description) VALUES (1,1,0,'27 May 2011');
 
