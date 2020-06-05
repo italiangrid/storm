@@ -48,10 +48,6 @@ import jersey.repackaged.com.google.common.collect.Lists;
 
 public class Configuration {
 
-  public static final String DEFAULT_STORM_CONFIG_FILE =
-      "/etc/storm/backend-server/storm.properties";
-  public static final int DEFAULT_STORM_CONFIG_REFRESH_RATE = 0;
-
   private static final Logger log = LoggerFactory.getLogger(Configuration.class);
 
   private final ConfigReader cr;
@@ -199,12 +195,15 @@ public class Configuration {
 
   private Configuration() throws ConfigurationException {
 
-    String filePath = getProperty(CONFIG_FILE_PATH, DEFAULT_STORM_CONFIG_FILE);
+    final int DEFAULT_REFRESH_RATE = 0;
+    final String DEFAULT_CONFIG_FILE_PATH = "/etc/storm/backend-server/storm.properties";
+
+    String filePath = getProperty(CONFIG_FILE_PATH, DEFAULT_CONFIG_FILE_PATH);
     int refreshRate;
     try {
       refreshRate = Integer.valueOf(getProperty(REFRESH_RATE));
     } catch (NumberFormatException e) {
-      refreshRate = DEFAULT_STORM_CONFIG_REFRESH_RATE;
+      refreshRate = DEFAULT_REFRESH_RATE;
     }
     cr = new ConfigReader(filePath, refreshRate);
   }
@@ -214,7 +213,7 @@ public class Configuration {
    */
   public static Configuration getInstance() {
 
-    return Configuration.instance;
+    return instance;
   }
 
   /**
