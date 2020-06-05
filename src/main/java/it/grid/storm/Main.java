@@ -11,9 +11,9 @@ public class Main {
 
   public static void main(String[] args) {
 
-    Thread.setDefaultUncaughtExceptionHandler(new StoRMDefaultUncaughtExceptionHandler());
-
     StoRM storm = new StoRM();
+
+    Thread.setDefaultUncaughtExceptionHandler(new StoRMDefaultUncaughtExceptionHandler());
 
     Runtime.getRuntime().addShutdownHook(new ShutdownHook(storm));
 
