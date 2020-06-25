@@ -450,6 +450,8 @@ public class StoRM {
     } else {
       duService = DiskUsageService.getSingleThreadScheduledService(sas);
     }
+    duService.setDelay(config.getDiskUsageServiceInitialDelay());
+    duService.setPeriod(config.getDiskUsageServiceTasksInterval());
   }
 
   /**
@@ -460,12 +462,10 @@ public class StoRM {
 
     if (isDiskUsageServiceEnabled) {
 
-      long delay = config.getDiskUsageServiceInitialDelay();
-      long period = config.getDiskUsageServiceTasksInterval();
+      log.info("Starting DiskUsage Service (delay: {}s, period: {}s)", duService.getDelay(),
+          duService.getPeriod());
 
-      log.info("Starting DiskUsage Service (delay: {}s, period: {}s)", delay, period);
-
-      duService.start(delay, period);
+      duService.start();
 
       log.info("DiskUsage Service started.");
 

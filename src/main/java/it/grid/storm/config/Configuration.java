@@ -17,6 +17,9 @@
 
 package it.grid.storm.config;
 
+import static it.grid.storm.info.du.DiskUsageService.DEFAULT_INITIAL_DELAY;
+import static it.grid.storm.info.du.DiskUsageService.DEFAULT_TASKS_INTERVAL;
+import static it.grid.storm.info.du.DiskUsageService.DEFAULT_TASKS_PARALLEL;
 import static java.lang.System.getProperty;
 
 import java.io.File;
@@ -183,7 +186,7 @@ public class Configuration {
   private static final String NETWORKADDRESS_CACHE_NEGATIVE_TTL =
       "networkaddress.cache.negative.ttl";
 
-  private static final String DISKUSAGE_SERVICE_ENABLED = "storm.service.du.enabled";
+  public static final String DISKUSAGE_SERVICE_ENABLED = "storm.service.du.enabled";
   private static final String DISKUSAGE_SERVICE_INITIAL_DELAY = "storm.service.du.delaySecs";
   private static final String DISKUSAGE_SERVICE_TASKS_INTERVAL = "storm.service.du.periodSecs";
   private static final String DISKUSAGE_SERVICE_TASKS_PARALLEL = "storm.service.du.parallelTasks";
@@ -1453,17 +1456,17 @@ public class Configuration {
 
   public int getDiskUsageServiceInitialDelay() {
 
-    return cr.getConfiguration().getInt(DISKUSAGE_SERVICE_INITIAL_DELAY, 0);
+    return cr.getConfiguration().getInt(DISKUSAGE_SERVICE_INITIAL_DELAY, DEFAULT_INITIAL_DELAY);
   }
 
   public int getDiskUsageServiceTasksInterval() {
 
     // default: 604800 s => 1 week
-    return cr.getConfiguration().getInt(DISKUSAGE_SERVICE_TASKS_INTERVAL, 604800);
+    return cr.getConfiguration().getInt(DISKUSAGE_SERVICE_TASKS_INTERVAL, DEFAULT_TASKS_INTERVAL);
   }
 
   public boolean getDiskUsageServiceTasksParallel() {
 
-    return cr.getConfiguration().getBoolean(DISKUSAGE_SERVICE_TASKS_PARALLEL, false);
+    return cr.getConfiguration().getBoolean(DISKUSAGE_SERVICE_TASKS_PARALLEL, DEFAULT_TASKS_PARALLEL);
   }
 }

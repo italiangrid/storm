@@ -1,7 +1,6 @@
 package it.grid.storm.info.du;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -16,14 +15,21 @@ import it.grid.storm.namespace.VirtualFSInterface;
 
 public class DiskUsageService {
 
+  public static final int DEFAULT_INITIAL_DELAY = 0;
+  public static final int DEFAULT_TASKS_INTERVAL = 604800;
+  public static final boolean DEFAULT_TASKS_PARALLEL = false;
+
   private static final Logger log = LoggerFactory.getLogger(DiskUsageService.class);
 
   private List<VirtualFSInterface> monitoredSAs;
 
   private ScheduledExecutorService executor;
   private boolean running;
+  private int delay;
+  private int period;
 
-  private DiskUsageService(List<VirtualFSInterface> vfss, ScheduledExecutorService executor) {
+  private DiskUsageService(List<VirtualFSInterface> vfss, ScheduledExecutorService executor,
+      int delay, int period) {
 
     Preconditions.checkNotNull(vfss, "Invalid null list of Virtual FS");
     Preconditions.checkNotNull(executor, "Invalid null scheduled executor service");
@@ -31,7 +37,33 @@ public class DiskUsageService {
     this.monitoredSAs = Lists.newArrayList(vfss);
     this.executor = executor;
     this.running = false;
+    this.delay = delay;
+    this.period = period;
+  }
 
+  private DiskUsageService(List<VirtualFSInterface> vfss, ScheduledExecutorService executor) {
+
+    this(vfss, executor, DEFAULT_INITIAL_DELAY, DEFAULT_TASKS_INTERVAL);
+  }
+
+  public int getDelay() {
+
+    return delay;
+  }
+
+  public int getPeriod() {
+
+    return period;
+  }
+
+  public void setDelay(int delay) {
+
+    this.delay = delay;
+  }
+
+  public void setPeriod(int period) {
+
+    this.period = period;
   }
 
   public static DiskUsageService getSingleThreadScheduledService(List<VirtualFSInterface> vfss) {
@@ -70,7 +102,7 @@ public class DiskUsageService {
     monitoredSAs.add(vfs);
   }
 
-  public synchronized int start(long delay, long period) {
+  public synchronized int start() {
 
     if (running) {
       log.info("DiskUsage service is already running");
@@ -102,20 +134,5 @@ public class DiskUsageService {
   public boolean isRunning() {
 
     return running;
-  }
-
-  public static synchronized int runTasksOnce(List<VirtualFSInterface> vfss) {
-
-    log.debug("Starting DiskUsageService runTasksOnce ...");
-    ExecutorService executor = Executors.newSingleThreadExecutor();
-    vfss.forEach(vfs -> {
-      DiskUsageTask task = new DiskUsageTask(vfs);
-      log.debug("Run task {}", task);
-      executor.submit(task);
-    });
-    log.debug("Submitted {} tasks", vfss.size());
-    executor.shutdown();
-    return vfss.size();
-
   }
 }

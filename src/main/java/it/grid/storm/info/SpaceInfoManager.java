@@ -17,6 +17,8 @@
 
 package it.grid.storm.info;
 
+import static it.grid.storm.config.Configuration.DISKUSAGE_SERVICE_ENABLED;
+
 import java.io.FileNotFoundException;
 import java.util.List;
 
@@ -29,9 +31,7 @@ import com.google.common.collect.Lists;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.config.Configuration;
-import it.grid.storm.info.du.DiskUsageService;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.persistence.exceptions.DataAccessException;
@@ -84,22 +84,15 @@ public class SpaceInfoManager {
       return;
     }
 
-    log.info("Initialize used-space on remaining {} storage spaces with du ...", ssni.size());
-    int n = initUsedSpaceUsingDU(ssni);
-    log.info("Launched {} du on {} storage areas", n, ssni.size());
-  }
-
-  private int initUsedSpaceUsingDU(List<StorageSpaceData> ssni) {
-
-    List<VirtualFSInterface> vfss = Lists.newArrayList();
-    ssni.forEach(ssd -> {
-      try {
-        vfss.add(namespace.resolveVFSbySpaceToken(ssd.getSpaceToken()));
-      } catch (NamespaceException e) {
-        log.error(e.getMessage(), e);
-      }
-    });
-    return DiskUsageService.runTasksOnce(vfss);
+    if (Configuration.getInstance().getDiskUsageServiceEnabled()) {
+      log.info("The remaining {} storage spaces will be initialized by DiskUsage service",
+          ssni.size());
+    } else {
+      log.warn(
+          "The remaining {} storage spaces WON'T be initialized with DUs. "
+              + "Please enable DiskUsage service by setting '{}' as true.",
+          ssni.size(), DISKUSAGE_SERVICE_ENABLED);
+    }
   }
 
   public final int getQuotasDefined() {
