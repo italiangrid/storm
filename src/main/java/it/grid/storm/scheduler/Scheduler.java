@@ -42,12 +42,6 @@ package it.grid.storm.scheduler;
 
 public interface Scheduler {
 
-	public static int PtG_WorkerPoolType = 0;
-	public static int PtP_WorkerPoolType = 1;
-	public static int Copy_WorkerPoolType = 2;
-	public static int BoL_WorkerPoolType = 3;
-	public static int CrusherSchedule = 4;
-
 	/**
 	 * Method that accepts a Task for scheduling.
 	 * 
@@ -74,11 +68,8 @@ public interface Scheduler {
 	public void suspend(Delegable task) throws SchedulerException;
 
 	/**
-	 * 
-	 * @param workerPoolType
-	 *          int
 	 * @return SchedulerStatus
 	 */
-	public SchedulerStatus getStatus(int workerPoolType);
+	public SchedulerStatus getStatus();
 
 }

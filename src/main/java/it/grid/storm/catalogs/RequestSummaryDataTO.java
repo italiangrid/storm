@@ -30,6 +30,11 @@ import java.sql.Timestamp;
  */
 public class RequestSummaryDataTO {
 
+    public static final String PTG_REQUEST_TYPE = "PTG";
+    public static final String PTP_REQUEST_TYPE = "PTP";
+    public static final String BOL_REQUEST_TYPE = "BOL";
+    public static final String COPY_REQUEST_TYPE = "COP";
+
 	private long id = -1; // id of request in persistence
 	private String requestType = ""; // request type
 	private String requestToken = ""; // request token

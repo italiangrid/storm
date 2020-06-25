@@ -155,7 +155,7 @@ public class PtGAbortExecutor implements AbortExecutorInterface {
        * SRM_INVALID_PATH
        */
 
-      ArrayList<TSURL> surlList = extractSurlArray(inputData).getArrayList();
+      List<TSURL> surlList = extractSurlArray(inputData).getArrayList();
       surlStatusMap.keySet().retainAll(surlList);
       if (!surlStatusMap.keySet().containsAll(surlList)) {
         for (TSURL surl : surlList) {

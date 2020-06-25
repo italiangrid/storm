@@ -9,6 +9,8 @@ import it.grid.storm.synchcall.surl.SURLStatusStore;
 import it.grid.storm.synchcall.surl.SURLStatusStoreIF;
 import it.grid.storm.synchcall.surl.UnknownSurlException;
 
+import static it.grid.storm.srm.types.TStatusCode.SRM_ABORTED;
+
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
@@ -87,13 +89,11 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
     SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
 
     if (store.hasEntryForToken(token)) {
-      LOGGER.debug("abortRequestForSURL in memory for token {} and surl {}",
-        token);
+      LOGGER.debug("abortRequestForSURL in memory for token {} and surl {}", token, surl);
 
       try {
 
-        return (store.update(token, surl, new TReturnStatus(
-          TStatusCode.SRM_ABORTED, explanation)) != 0);
+        return store.update(token, surl, new TReturnStatus(SRM_ABORTED, explanation)) != 0;
 
       } catch (UnknownSurlException e) {
         LOGGER.error(e.getMessage(), e);

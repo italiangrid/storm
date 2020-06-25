@@ -15,8 +15,6 @@ public class Main {
 
   public static void main(String[] args) {
 
-    Thread.setDefaultUncaughtExceptionHandler(new StoRMDefaultUncaughtExceptionHandler());
-
     StoRM storm = new StoRM();
 
     try {
@@ -25,6 +23,8 @@ public class Main {
       log.error(e.getMessage(), e);
       exit(1);
     }
+
+    Thread.setDefaultUncaughtExceptionHandler(new StoRMDefaultUncaughtExceptionHandler());
 
     Runtime.getRuntime().addShutdownHook(new ShutdownHook(storm));
 

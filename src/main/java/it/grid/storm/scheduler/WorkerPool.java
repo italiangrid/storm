@@ -51,111 +51,99 @@ import java.util.concurrent.TimeUnit;
 
 public class WorkerPool {
 
-	private ThreadPoolExecutor workers = null;
-	private int workerCorePoolSize = 10;
-	private int workerMaxPoolSize = 100;
-	private BlockingQueue taskQueue = new ArrayBlockingQueue(100);
-	private int queueSize = 100;
+  public static final int DEFAULT_CORE_POOL_SIZE = 10;
+  public static final int DEFAULT_MAX_POOL_SIZE = 100;
+  public static final int DEFAULT_TASK_QUEUE_SIZE = 100;
 
-	private static final Logger log = LoggerFactory.getLogger(WorkerPool.class);
+  private static final Logger log = LoggerFactory.getLogger(WorkerPool.class);
 
-	private long keepAliveTime = 10000; // 10 seconds.
-	private TimeUnit unit = TimeUnit.MILLISECONDS;
+  private ThreadPoolExecutor workers;
+  private BlockingQueue<Runnable> taskQueue;
+  private int queueSize = 100;
 
-	public WorkerPool() {
 
-		super();
-		workers = new ThreadPoolExecutor(workerCorePoolSize, workerMaxPoolSize,
-			keepAliveTime, unit, taskQueue);
-	}
+  private long keepAliveTime = 10000; // 10 seconds.
+  private TimeUnit unit = TimeUnit.MILLISECONDS;
 
-	public WorkerPool(int corePoolSize, int maxPoolSize, int queueSize) {
+  public WorkerPool() {
 
-		workerCorePoolSize = corePoolSize;
-		workerMaxPoolSize = maxPoolSize;
-		this.queueSize = queueSize;
-		taskQueue = new ArrayBlockingQueue(queueSize);
-		workers = new ThreadPoolExecutor(workerCorePoolSize, workerMaxPoolSize,
-			keepAliveTime, unit, taskQueue);
-	}
+    this(DEFAULT_CORE_POOL_SIZE, DEFAULT_MAX_POOL_SIZE, DEFAULT_TASK_QUEUE_SIZE);
+  }
 
-	/**
-	 * 
-	 * @param task
-	 *          Task
-	 * @throws SchedulerException
-	 */
-	public void submit(Task task) throws SchedulerException {
+  public WorkerPool(int poolSize, int maxPoolSize, int queueSize) {
 
-	  log.trace("WorkerPool.submit");
-		log.debug("Taskqueue Size: {}", queueSize);
-		log.debug("Taskqueue Remaining Capacity: {}", 
-		  workers.getQueue().remainingCapacity());
+    this.queueSize = queueSize;
+    taskQueue = new ArrayBlockingQueue<>(queueSize);
+    workers = new ThreadPoolExecutor(poolSize, maxPoolSize, keepAliveTime, unit, taskQueue);
+  }
 
-		task.enqueueEvent();
+  /**
+   * 
+   * @param task Task
+   * @throws SchedulerException
+   */
+  public void submit(Task task) throws SchedulerException {
 
-		try {
-			log.debug("Submitting task {}" , task.getName());
-			workers.execute(task);
-		} catch (RejectedExecutionException e) {
-		  log.error("Task {} was rejected. {}", task.getName(), e.getMessage(), e);
-			throw new SchedulerException(task.getName(), e);
-		}
-	}
+    log.trace("WorkerPool.submit");
+    log.debug("Taskqueue Size: {}", queueSize);
+    log.debug("Taskqueue Remaining Capacity: {}", workers.getQueue().remainingCapacity());
 
-	/**
-	 * 
-	 * @param task
-	 *          Task
-	 * @throws SchedulerException
-	 */
-	public void remove(Task task) throws SchedulerException {
+    task.enqueueEvent();
 
-	  log.trace("WorkerPool.remove");
-		task.abortEvent();
-		log.debug("Aborting task {}", task.getName());
-		boolean taskFound = false;
-		BlockingQueue queue = workers.getQueue();
-		taskFound = queue.contains(task);
+    try {
+      log.debug("Submitting task {}", task.getName());
+      workers.execute(task);
+    } catch (RejectedExecutionException e) {
+      log.error("Task {} was rejected. {}", task.getName(), e.getMessage(), e);
+      throw new SchedulerException(task.getName(), e);
+    }
+  }
 
-		if (taskFound) {
-			// If found, remove it
-			workers.remove(task);
-			workers.purge(); // Remove task named "Future task" from internal Queue.
+  /**
+   * 
+   * @param task Task
+   * @throws SchedulerException
+   */
+  public void remove(Task task) {
 
-			// Checking if Task is removed
-		}
-	}
+    log.trace("WorkerPool.remove");
+    task.abortEvent();
+    log.debug("Aborting task {}", task.getName());
+    if (workers.remove(task)) {
+      // Remove task named "Future task" from internal Queue.
+      workers.purge(); 
+    }
+  }
 
-	// INFORMATIONS about THREADPOOL
+  // INFORMATIONS about THREADPOOL
 
-	protected int getActualPoolSize() {
+  protected int getActualPoolSize() {
 
-		return workers.getPoolSize();
-	}
+    return workers.getPoolSize();
+  }
 
-	protected int getActiveCount() {
+  protected int getActiveCount() {
 
-		return workers.getActiveCount();
-	}
+    return workers.getActiveCount();
+  }
 
-	protected int getLargestPoolSize() {
+  protected int getLargestPoolSize() {
 
-		return workers.getLargestPoolSize();
-	}
+    return workers.getLargestPoolSize();
+  }
 
-	protected long getCompletedTaskCount() {
+  protected long getCompletedTaskCount() {
 
-		return workers.getCompletedTaskCount();
-	}
+    return workers.getCompletedTaskCount();
+  }
 
-	protected long getTaskCount() {
+  protected long getTaskCount() {
 
-		return workers.getTaskCount();
-	}
+    return workers.getTaskCount();
+  }
 
-	protected int getRemainingCapacity() {
+  protected int getRemainingCapacity() {
 
-		return workers.getQueue().remainingCapacity();
-	}
+    return workers.getQueue().remainingCapacity();
+  }
 }

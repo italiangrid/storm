@@ -17,13 +17,8 @@
 
 package it.grid.storm.asynch;
 
-import it.grid.storm.config.Configuration;
 import it.grid.storm.scheduler.ChunkScheduler;
 import it.grid.storm.scheduler.CrusherScheduler;
-import it.grid.storm.scheduler.Delegable;
-import it.grid.storm.scheduler.Scheduler;
-import it.grid.storm.scheduler.SchedulerException;
-import it.grid.storm.scheduler.SchedulerStatus;
 
 /**
  * This class is a factory for making the schedulers of StoRM
@@ -35,66 +30,23 @@ import it.grid.storm.scheduler.SchedulerStatus;
  */
 public class SchedulerFactory {
 
-	/**
-	 * Method that returns the Scheduler in charge of handling Feeder tasks.
-	 */
-	public static Scheduler crusherSched() {
 
-		if (Configuration.getInstance().getSerialScheduler()) {
-			return new Scheduler() {
+  private SchedulerFactory() {
+  }
 
-				public void schedule(Delegable t) throws SchedulerException {
+  /**
+   * Method that returns the Scheduler in charge of handling Feeder tasks.
+   */
+  public static CrusherScheduler crusherSched() {
 
-					t.doIt();
-				}
+    return CrusherScheduler.getInstance();
+  }
 
-				public SchedulerStatus getStatus(int type) {
+  /**
+   * Method that returns the Scheduler in charge of Chunk tasks.
+   */
+  public static ChunkScheduler chunkSched() {
 
-					return null;
-				}
-
-				public void abort(Delegable task) throws SchedulerException {
-
-				}
-
-				public void suspend(Delegable task) throws SchedulerException {
-
-				}
-
-			};
-		} else {
-			return CrusherScheduler.getInstance();
-		}
-	}
-
-	/**
-	 * Method that returns the Scheduler in charge of Chunk tasks.
-	 */
-	public static Scheduler chunkSched() {
-
-		if (Configuration.getInstance().getSerialScheduler()) {
-			return new Scheduler() {
-
-				public void schedule(Delegable t) throws SchedulerException {
-
-					t.doIt();
-				}
-
-				public SchedulerStatus getStatus(int type) {
-
-					return null;
-				}
-
-				public void abort(Delegable task) throws SchedulerException {
-
-				}
-
-				public void suspend(Delegable task) throws SchedulerException {
-
-				}
-			};
-		} else {
-			return ChunkScheduler.getInstance();
-		}
-	}
+    return ChunkScheduler.getInstance();
+  }
 }

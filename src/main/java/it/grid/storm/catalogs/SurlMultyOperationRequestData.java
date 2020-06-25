@@ -11,23 +11,24 @@ import it.grid.storm.synchcall.surl.SURLStatusStore;
 import it.grid.storm.synchcall.surl.UnknownSurlException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class SurlMultyOperationRequestData extends SurlRequestData
-  implements SynchMultyOperationRequestData {
+import com.google.common.collect.Maps;
 
-  private static final Logger log = LoggerFactory
-    .getLogger(SurlMultyOperationRequestData.class);
+public abstract class SurlMultyOperationRequestData extends SurlRequestData
+    implements SynchMultyOperationRequestData {
+
+  private static final Logger log = LoggerFactory.getLogger(SurlMultyOperationRequestData.class);
 
   private TRequestToken generatedRequestToken = TRequestToken.getRandom();
 
   private boolean stored = false;
 
   public SurlMultyOperationRequestData(TSURL surl, TReturnStatus status)
-    throws InvalidSurlRequestDataAttributesException {
+      throws InvalidSurlRequestDataAttributesException {
 
     super(surl, status);
   }
@@ -41,21 +42,18 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
     if (this instanceof IdentityInputData) {
       user = ((IdentityInputData) this).getUser();
     }
-    SURLStatusStore.INSTANCE.store(generatedRequestToken, user,
-      buildSurlStatusMap(SURL, status));
+    SURLStatusStore.INSTANCE.store(generatedRequestToken, user, buildSurlStatusMap(SURL, status));
     stored = true;
   }
 
-  private static HashMap<TSURL, TReturnStatus> buildSurlStatusMap(TSURL surl,
-    TReturnStatus status) {
+  private static Map<TSURL, TReturnStatus> buildSurlStatusMap(TSURL surl,
+      TReturnStatus status) {
 
     if (surl == null || status == null) {
       throw new IllegalArgumentException(
-        "Unable to build the status, null arguments: surl=" + surl + " status="
-          + status);
+          "Unable to build the status, null arguments: surl=" + surl + " status=" + status);
     }
-    HashMap<TSURL, TReturnStatus> surlStatusMap = new HashMap<TSURL, TReturnStatus>(
-      1);
+    Map<TSURL, TReturnStatus> surlStatusMap = Maps.newHashMap();
     surlStatusMap.put(surl, status);
     return surlStatusMap;
   }
@@ -73,8 +71,8 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
   }
 
   /**
-   * Method used to set the Status associated to this chunk. If status is null,
-   * then nothing gets set!
+   * Method used to set the Status associated to this chunk. If status is null, then nothing gets
+   * set!
    */
   @Override
   public final void setStatus(TReturnStatus status) {
@@ -82,19 +80,16 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
     super.setStatus(status);
     if (!(this instanceof PersistentChunkData)) {
       try {
-        SURLStatusStore.INSTANCE.update(generatedRequestToken, this.SURL,
-          status);
+        SURLStatusStore.INSTANCE.update(generatedRequestToken, this.SURL, status);
       } catch (UnknownTokenException e) {
         log.warn("Received an UnknownTokenException, probably the token has "
-          + "expired, unable to update its status in the store: {}",
-          e.getMessage());
+            + "expired, unable to update its status in the store: {}", e.getMessage());
       } catch (ExpiredTokenException e) {
         log.warn("Received an ExpiredTokenException. The token is expired, "
-          + "unable to update its status in the store: {}", e.getMessage());
+            + "unable to update its status in the store: {}", e.getMessage());
       } catch (UnknownSurlException e) {
         log.warn("Received an UnknownSurlException, probably the token has "
-          + "expired, unable to update its status in the store: {}",
-          e.getMessage());
+            + "expired, unable to update its status in the store: {}", e.getMessage());
       }
     }
   }
@@ -105,20 +100,17 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
     super.setStatus(statusCode, explanation);
     if (!(this instanceof PersistentChunkData)) {
       try {
-        SURLStatusStore.INSTANCE.update(generatedRequestToken, this.SURL,
-          super.getStatus());
+        SURLStatusStore.INSTANCE.update(generatedRequestToken, this.SURL, super.getStatus());
       } catch (UnknownTokenException e) {
         // Never thrown
         log.warn("Received an UnknownTokenException, probably the token has "
-          + "expired, unable to update its status in the store: {}",
-          e.getMessage());
+            + "expired, unable to update its status in the store: {}", e.getMessage());
       } catch (ExpiredTokenException e) {
         log.warn("Received an ExpiredTokenException. The token is expired, "
-          + "unable to update its status in the store: {}", e.getMessage());
+            + "unable to update its status in the store: {}", e.getMessage());
       } catch (UnknownSurlException e) {
         log.warn("Received an UnknownSurlException, probably the token has "
-          + "expired, unable to update its status in the store: {}",
-          e.getMessage());
+            + "expired, unable to update its status in the store: {}", e.getMessage());
       }
     }
   }

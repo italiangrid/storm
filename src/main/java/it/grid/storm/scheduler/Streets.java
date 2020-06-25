@@ -46,7 +46,5 @@ public interface Streets {
 
 	public void ptpStreet(Delegable d);
 
-	public void copyStreet(Delegable d);
-
 	public void bolStreet(Delegable d);
 }

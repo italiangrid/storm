@@ -6,7 +6,7 @@ WorkingDirectory=/etc/storm/backend-server
 EnvironmentFile=-/etc/sysconfig/storm-backend-server
 User=storm
 Type=simple
-ExecStart=/bin/bash -ac "/usr/bin/java \
+ExecStart=/bin/bash -ac "exec /usr/bin/java \
     -server \
     ${STORM_BE_JVM_OPTS} \
     ${STORM_BE_DEBUG_OPTS} \
@@ -16,10 +16,8 @@ ExecStart=/bin/bash -ac "/usr/bin/java \
     -Djna.library.path=/usr/lib64/modules:/usr/lib64/:${LD_LIBRARY_PATH} \
     -Dstorm.configuration.file=${STORM_BE_CONFIG_FILE} \
     -Dstorm.configuration.refresh=${STORM_BE_CONFIG_REFRESH} \
-    it.grid.storm.Main"
+    it.grid.storm.Main > ${STORM_BE_LOGDIR}/storm-backend.stdout 2> ${STORM_BE_LOGDIR}/storm-backend.stderr"
 KillMode=process
-StandardOutput=file:/var/log/storm/storm-backend.stdout
-StandardError=file:/var/log/storm/storm-backend.stderr
 
 [Install]
 WantedBy=multi-user.target
