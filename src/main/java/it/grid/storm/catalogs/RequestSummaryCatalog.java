@@ -39,6 +39,8 @@ import java.util.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
+
 /**
  * Class that represents the RequestSummaryCatalog of StoRM. The rows in the
  * catalog are called RequestSummaryData. Methods are provided to: look up newly
@@ -94,7 +96,7 @@ public class RequestSummaryCatalog {
 	synchronized public Collection<RequestSummaryData> fetchNewRequests(
 		int capacity) {
 
-		List<RequestSummaryData> list = new ArrayList<RequestSummaryData>();
+		List<RequestSummaryData> list = Lists.newArrayList();
 		
 		Collection<RequestSummaryDataTO> c = dao.findNew(capacity);
 		if (c == null || c.isEmpty()) {
