@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS db_version (
   minor int,
   revision int,
   description VARCHAR(100),
-  primary key (ID)) type=InnoDB;
+  primary key (ID)
+) engine=InnoDB;
 
 DELETE FROM storm_db.db_version;
 INSERT INTO storm_db.db_version (major,minor,revision,description) VALUES (1,7,2,'10 Mar 2015');
@@ -51,7 +52,7 @@ CREATE TABLE IF NOT EXISTS request_queue (
   proxy blob,
   deferredStartTime int,
   remainingDeferredStartTime int,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
   
 CREATE TABLE IF NOT EXISTS request_Get (
   ID int not null auto_increment,
@@ -60,7 +61,7 @@ CREATE TABLE IF NOT EXISTS request_Get (
   sourceSURL text not null,
   normalized_sourceSURL_StFN text,
   sourceSURL_uniqueID int,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
   
 CREATE TABLE IF NOT EXISTS status_Get (
   ID int not null auto_increment,
@@ -71,7 +72,7 @@ CREATE TABLE IF NOT EXISTS status_Get (
   remainingPinTime int,
   transferURL text,
   request_GetID int not null,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
   
 CREATE TABLE IF NOT EXISTS request_Put (
   ID int not null auto_increment,
@@ -80,7 +81,7 @@ CREATE TABLE IF NOT EXISTS request_Put (
   expectedFileSize bigint,
   normalized_targetSURL_StFN text,
   targetSURL_uniqueID int,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
 
 CREATE TABLE IF NOT EXISTS status_Put (
   ID int not null auto_increment,  
@@ -92,7 +93,7 @@ CREATE TABLE IF NOT EXISTS status_Put (
   remainingFileTime int,
   transferURL text,
   request_PutID int not null,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
   
 CREATE TABLE IF NOT EXISTS request_BoL (
   ID int not null auto_increment,
@@ -101,7 +102,7 @@ CREATE TABLE IF NOT EXISTS request_BoL (
   request_queueID int,
   normalized_sourceSURL_StFN text,
   sourceSURL_uniqueID int,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
 
 CREATE TABLE IF NOT EXISTS status_BoL (
   ID int not null auto_increment,
@@ -111,7 +112,7 @@ CREATE TABLE IF NOT EXISTS status_BoL (
   fileSize bigint,
   estimatedWaitTime int,
   remainingPinTime int,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
 
 CREATE TABLE IF NOT EXISTS request_Copy (
   ID int not null auto_increment,
@@ -123,7 +124,7 @@ CREATE TABLE IF NOT EXISTS request_Copy (
   sourceSURL_uniqueID int,
   normalized_targetSURL_StFN text,
   targetSURL_uniqueID int,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
 
 CREATE TABLE IF NOT EXISTS status_Copy (
   ID int not null auto_increment,
@@ -133,7 +134,7 @@ CREATE TABLE IF NOT EXISTS status_Copy (
   estimatedWaitTime int,  
   remainingFileTime int,
   request_CopyID int not null,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
   
 CREATE TABLE IF NOT EXISTS request_ExtraInfo (
   ID int not null auto_increment,
@@ -143,32 +144,32 @@ CREATE TABLE IF NOT EXISTS request_ExtraInfo (
   status_PutID int,
   ei_key VARCHAR(255) not null,
   ei_value VARCHAR(255),
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
   
 CREATE TABLE IF NOT EXISTS request_RetentionPolicyInfo (
   ID int not null auto_increment,
   request_queueID int not null,
   config_RetentionPolicyID CHAR(1),
   config_AccessLatencyID CHAR(1),
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
   
 CREATE TABLE IF NOT EXISTS request_ClientNetworks (
   ID int not null auto_increment,
   network VARCHAR(255) not null,
-  request_queueID int, primary key (ID)) type=InnoDB;
+  request_queueID int, primary key (ID)) engine=InnoDB;
   
 CREATE TABLE IF NOT EXISTS request_TransferProtocols (
   ID int not null auto_increment,
   request_queueID int,
   config_ProtocolsID VARCHAR(30),
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
  
 CREATE TABLE IF NOT EXISTS request_DirOption (
   ID int not null auto_increment,
   isSourceADirectory tinyint(1) default 0 not null,
   allLevelRecursive tinyint(1) default 0,
   numOfLevels int default 1,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
 
 CREATE TABLE IF NOT EXISTS request_VOMSAttributes (
   ID int not null auto_increment,  
@@ -177,14 +178,14 @@ CREATE TABLE IF NOT EXISTS request_VOMSAttributes (
   voms_group text,
   voms_role text,
   voms_capability text,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
   
 CREATE TABLE IF NOT EXISTS volatile (
   ID int not null auto_increment,
   file text not null,
   start datetime not null,
   fileLifetime int not null,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
 
 CREATE TABLE IF NOT EXISTS jit (
   ID int not null auto_increment,
@@ -194,39 +195,39 @@ CREATE TABLE IF NOT EXISTS jit (
   start datetime not null,
   pinLifetime int not null,
   gid int not null,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
 
 CREATE TABLE IF NOT EXISTS config_Protocols (
   ID VARCHAR(30) not null,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
 
 CREATE TABLE IF NOT EXISTS config_RetentionPolicy (
   ID CHAR(1) not null,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
 
 CREATE TABLE IF NOT EXISTS config_AccessLatency (
   ID CHAR(1) not null,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
 
 CREATE TABLE IF NOT EXISTS config_FileStorageType (
   ID CHAR(1) not null,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
 
 CREATE TABLE IF NOT EXISTS config_AccessPattern (
   ID CHAR(1) not null,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
 
 CREATE TABLE IF NOT EXISTS config_ConnectionType (
   ID CHAR(1) not null,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
 
 CREATE TABLE IF NOT EXISTS config_Overwrite (
   ID CHAR(1) not null,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
 
 CREATE TABLE IF NOT EXISTS config_RequestType (
   ID VARCHAR(3) not null,
-  primary key (ID)) type=InnoDB;
+  primary key (ID)) engine=InnoDB;
 
 
 
@@ -405,7 +406,6 @@ CREATE TABLE IF NOT EXISTS db_version (
 DELETE FROM storm_be_ISAM.db_version;
 INSERT INTO storm_be_ISAM.db_version (major,minor,revision,description) VALUES (1,1,0,'27 May 2011');
 
-
 --
 -- Table structure for table `storage_space`
 --
@@ -454,7 +454,7 @@ CREATE TABLE IF NOT EXISTS tape_recall (
   groupTaskId CHAR(36) NOT NULL,
   inProgressTime datetime,
   finalStatusTime datetime,
-  primary key (taskId , requestToken)) type=InnoDB;
+  primary key (taskId , requestToken)) ENGINE=InnoDB;
 
 ALTER TABLE tape_recall 
   ADD INDEX deferredStartTime (deferredStartTime),
