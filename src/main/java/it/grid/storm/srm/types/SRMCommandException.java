@@ -1,10 +1,10 @@
 package it.grid.storm.srm.types;
 
-public class SRMCommandException extends RuntimeException {
+public class SRMCommandException extends Exception {
 
   private static final long serialVersionUID = 1L;
 
-  private TReturnStatus returnStatus;
+  private final TReturnStatus returnStatus;
 
   public SRMCommandException(TStatusCode code, String message) {
 
