@@ -38,40 +38,38 @@ import it.grid.storm.namespace.remote.Constants;
 @Path("/" + Constants.RESOURCE + "/" + Constants.VERSION)
 public class VirtualFSResource {
 
-	private static final Logger log = LoggerFactory
-		.getLogger(VirtualFSResource.class);
+  private static final Logger log = LoggerFactory.getLogger(VirtualFSResource.class);
 
-	/**
-	 * @return
-	 * @throws WebApplicationException
-	 */
-	@GET
-	@Path("/" + Constants.LIST_ALL_VFS)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Map<String, SAInfo> listVFS() throws WebApplicationException {
+  /**
+   * @return
+   * @throws WebApplicationException
+   */
+  @GET
+  @Path("/" + Constants.LIST_ALL_VFS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Map<String, SAInfo> listVFS() throws WebApplicationException {
 
-		log.debug("Serving VFS resource listing");
-		Collection<VirtualFSInterface> vfsCollection = null;
-		try {
-			vfsCollection = NamespaceDirector.getNamespace().getAllDefinedVFS();
-		} catch (NamespaceException e) {
-			log
-				.error("Unable to retrieve virtual file system list. NamespaceException : "
-					+ e.getMessage());
-			throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)
-				.entity("Unable to retrieve virtual file systems")
-				.build());
-		}
-		Map<String, SAInfo> output = new HashMap<String, SAInfo>();
-		for (VirtualFSInterface vfs : vfsCollection) {
-			try {
-				output.put(vfs.getAliasName(), SAInfo.buildFromVFS(vfs));
-			} catch (NamespaceException e) {
-				log.error(e.getMessage());
-			}
-		}
-		
-		return output;
-	}
+    log.debug("Serving VFS resource listing");
+    Collection<VirtualFSInterface> vfsCollection = null;
+    try {
+      vfsCollection = NamespaceDirector.getNamespace().getAllDefinedVFS();
+    } catch (NamespaceException e) {
+      log.error(
+          "Unable to retrieve virtual file system list. NamespaceException : " + e.getMessage());
+      throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)
+        .entity("Unable to retrieve virtual file systems")
+        .build());
+    }
+    Map<String, SAInfo> output = new HashMap<String, SAInfo>();
+    for (VirtualFSInterface vfs : vfsCollection) {
+      try {
+        output.put(vfs.getAliasName(), SAInfo.buildFromVFS(vfs));
+      } catch (NamespaceException e) {
+        log.error(e.getMessage());
+      }
+    }
+
+    return output;
+  }
 
 }

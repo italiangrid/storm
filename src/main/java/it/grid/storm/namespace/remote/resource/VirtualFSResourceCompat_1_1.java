@@ -35,84 +35,79 @@ import org.slf4j.LoggerFactory;
 @Path("/" + Constants.RESOURCE + "/" + Constants.VERSION_1_1)
 public class VirtualFSResourceCompat_1_1 {
 
-	private static final Logger log = LoggerFactory
-		.getLogger(VirtualFSResourceCompat_1_1.class);
+  private static final Logger log = LoggerFactory.getLogger(VirtualFSResourceCompat_1_1.class);
 
-	/**
-	 * @return
-	 * @throws WebApplicationException
-	 */
-	@GET
-	@Path("/" + Constants.LIST_ALL_KEY)
-	@Produces("text/plain")
-	public String listVFS() throws WebApplicationException {
+  /**
+   * @return
+   * @throws WebApplicationException
+   */
+  @GET
+  @Path("/" + Constants.LIST_ALL_KEY)
+  @Produces("text/plain")
+  public String listVFS() throws WebApplicationException {
 
-		log.info("Serving VFS resource listing");
-		String vfsListString = "";
-		Collection<VirtualFSInterface> vfsCollection = null;
-		try {
-			vfsCollection = NamespaceDirector.getNamespace().getAllDefinedVFS();
-		} catch (NamespaceException e) {
-			log
-				.error("Unable to retrieve virtual file system list. NamespaceException : "
-					+ e.getMessage());
-			throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)
-				.entity("Unable to retrieve virtual file systems")
-				.build());
-		}
-		for (VirtualFSInterface vfs : vfsCollection) {
-			if (!vfsListString.equals("")) {
-				vfsListString += Constants.VFS_LIST_SEPARATOR;
-			}
-			try {
-				vfsListString += encodeVFS(vfs);
-			} catch (NamespaceException e) {
-				log
-					.error("Unable to encode the virtual file system. NamespaceException : "
-						+ e.getMessage());
-				throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)
-					.entity("Unable to encode the virtual file system")
-					.build());
-			}
-		}
-		return vfsListString;
-	}
+    log.info("Serving VFS resource listing");
+    String vfsListString = "";
+    Collection<VirtualFSInterface> vfsCollection = null;
+    try {
+      vfsCollection = NamespaceDirector.getNamespace().getAllDefinedVFS();
+    } catch (NamespaceException e) {
+      log.error(
+          "Unable to retrieve virtual file system list. NamespaceException : " + e.getMessage());
+      throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)
+        .entity("Unable to retrieve virtual file systems")
+        .build());
+    }
+    for (VirtualFSInterface vfs : vfsCollection) {
+      if (!vfsListString.equals("")) {
+        vfsListString += Constants.VFS_LIST_SEPARATOR;
+      }
+      try {
+        vfsListString += encodeVFS(vfs);
+      } catch (NamespaceException e) {
+        log.error(
+            "Unable to encode the virtual file system. NamespaceException : " + e.getMessage());
+        throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)
+          .entity("Unable to encode the virtual file system")
+          .build());
+      }
+    }
+    return vfsListString;
+  }
 
-	/**
-	 * @param vfs
-	 * @return
-	 * @throws NamespaceException
-	 */
-	private String encodeVFS(VirtualFSInterface vfs) throws NamespaceException {
+  /**
+   * @param vfs
+   * @return
+   * @throws NamespaceException
+   */
+  private String encodeVFS(VirtualFSInterface vfs) throws NamespaceException {
 
-		String vfsEncoded = Constants.VFS_NAME_KEY + Constants.VFS_FIELD_MATCHER
-			+ vfs.getAliasName();
-		vfsEncoded += Constants.VFS_FIELD_SEPARATOR;
-		vfsEncoded += Constants.VFS_ROOT_KEY + Constants.VFS_FIELD_MATCHER
-			+ vfs.getRootPath();
-		vfsEncoded += Constants.VFS_FIELD_SEPARATOR;
-		List<MappingRule> mappingRules = vfs.getMappingRules();
-		vfsEncoded += Constants.VFS_STFN_ROOT_KEY + Constants.VFS_FIELD_MATCHER;
-		for (int i = 0; i < mappingRules.size(); i++) {
-			MappingRule mappingRule = mappingRules.get(i);
-			if (i > 0) {
-				vfsEncoded += Constants.VFS_STFN_ROOT_SEPARATOR;
-			}
-			vfsEncoded += mappingRule.getStFNRoot();
-		}
-		Iterator<Protocol> protocolsIterator = vfs.getCapabilities()
-			.getAllManagedProtocols().iterator();
-		if (protocolsIterator.hasNext()) {
-			vfsEncoded += Constants.VFS_FIELD_SEPARATOR;
-			vfsEncoded += Constants.VFS_ENABLED_PROTOCOLS_KEY;
-			vfsEncoded += Constants.VFS_FIELD_MATCHER;
-		}
-		while (protocolsIterator.hasNext()) {
-			vfsEncoded += protocolsIterator.next().getSchema();
-			if (protocolsIterator.hasNext()) {
-				vfsEncoded += Constants.VFS_ENABLED_PROTOCOLS_SEPARATOR;
-			}
-		}
-		return vfsEncoded;
-	}
+    String vfsEncoded = Constants.VFS_NAME_KEY + Constants.VFS_FIELD_MATCHER + vfs.getAliasName();
+    vfsEncoded += Constants.VFS_FIELD_SEPARATOR;
+    vfsEncoded += Constants.VFS_ROOT_KEY + Constants.VFS_FIELD_MATCHER + vfs.getRootPath();
+    vfsEncoded += Constants.VFS_FIELD_SEPARATOR;
+    List<MappingRule> mappingRules = vfs.getMappingRules();
+    vfsEncoded += Constants.VFS_STFN_ROOT_KEY + Constants.VFS_FIELD_MATCHER;
+    for (int i = 0; i < mappingRules.size(); i++) {
+      MappingRule mappingRule = mappingRules.get(i);
+      if (i > 0) {
+        vfsEncoded += Constants.VFS_STFN_ROOT_SEPARATOR;
+      }
+      vfsEncoded += mappingRule.getStFNRoot();
+    }
+    Iterator<Protocol> protocolsIterator =
+        vfs.getCapabilities().getAllManagedProtocols().iterator();
+    if (protocolsIterator.hasNext()) {
+      vfsEncoded += Constants.VFS_FIELD_SEPARATOR;
+      vfsEncoded += Constants.VFS_ENABLED_PROTOCOLS_KEY;
+      vfsEncoded += Constants.VFS_FIELD_MATCHER;
+    }
+    while (protocolsIterator.hasNext()) {
+      vfsEncoded += protocolsIterator.next().getSchema();
+      if (protocolsIterator.hasNext()) {
+        vfsEncoded += Constants.VFS_ENABLED_PROTOCOLS_SEPARATOR;
+      }
+    }
+    return vfsEncoded;
+  }
 }

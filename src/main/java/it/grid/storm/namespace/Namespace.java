@@ -546,7 +546,8 @@ public class Namespace implements NamespaceInterface {
 
     // Purging incompatible rules from the results
     if (rules != null) {
-      Map<Object, ApproachableRule> appRulesUnorderd = Maps.newHashMap(parser.getApproachableRules());
+      Map<Object, ApproachableRule> appRulesUnorderd =
+          Maps.newHashMap(parser.getApproachableRules());
       // List the entries
       appRulesUnorderd.keySet().forEach(key -> {
         ApproachableRule appRule = appRulesUnorderd.get(key);
