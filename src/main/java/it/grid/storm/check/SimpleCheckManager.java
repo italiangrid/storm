@@ -75,7 +75,7 @@ public class SimpleCheckManager extends CheckManager {
 			throw new IllegalStateException("Unable to get filesystem mount points");
 		}
 		if (log.isDebugEnabled()) {
-		  log.debug("Retrieved MountPoints: {}", printMapCoupples(mountPoints));
+		  log.debug("Retrieved MountPoints: {}", printMapCouples(mountPoints));
 		}
 		List<VirtualFSInterface> vfsSet = NamespaceDirector.getNamespace().getAllDefinedVFS();
 		return new NamespaceFSAssociationCheck(mountPoints, vfsSet);
@@ -87,7 +87,7 @@ public class SimpleCheckManager extends CheckManager {
 	 * @param map
 	 * @return
 	 */
-	private String printMapCoupples(Map<String, String> map) {
+	private String printMapCouples(Map<String, String> map) {
 
 		String output = "";
 		for (Entry<String, String> couple : map.entrySet()) {
