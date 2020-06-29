@@ -91,14 +91,8 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 
   private NamespaceInterface namespace;
 
-  private List<TStatusCode> acceptedStatuses = Lists.newArrayList();
-
-  public PtPAbortExecutor() {
-
-    acceptedStatuses.clear();
-    acceptedStatuses.add(SRM_SPACE_AVAILABLE);
-    acceptedStatuses.add(SRM_REQUEST_QUEUED);
-  };
+  private final List<TStatusCode> acceptedStatuses =
+      Lists.newArrayList(SRM_SPACE_AVAILABLE, SRM_REQUEST_QUEUED);
 
   public AbortGeneralOutputData doIt(AbortInputData inputData) {
 
