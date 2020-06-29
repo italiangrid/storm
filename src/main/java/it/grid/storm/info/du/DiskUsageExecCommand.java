@@ -19,7 +19,7 @@ public class DiskUsageExecCommand {
 
   private static final Logger LOG = LoggerFactory.getLogger(DiskUsageExecCommand.class);
 
-  private String absPath;
+  private final String absPath;
 
   public DiskUsageExecCommand(String absPath) {
     this.absPath = absPath;
