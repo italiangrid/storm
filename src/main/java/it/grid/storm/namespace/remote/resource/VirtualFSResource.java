@@ -38,6 +38,7 @@ public class VirtualFSResource {
     log.debug("Serving VFS resource listing");
     List<VirtualFSInterface> vfsCollection = NamespaceDirector.getNamespace().getAllDefinedVFS();
     Map<String, SAInfo> output = Maps.newHashMap();
+
     for (VirtualFSInterface vfs : vfsCollection) {
       try {
         output.put(vfs.getAliasName(), SAInfo.buildFromVFS(vfs));

@@ -302,23 +302,17 @@ public class AbortFilesCommand extends DataTransferCommand implements Command {
         executor = new PtPAbortExecutor();
         return executor.doIt(inputData);
       } else {
-        if (rtype == TRequestType.COPY) {
-          executor = new CopyAbortExecutor();
-          return executor.doIt(inputData);
-        } else {
-          log.debug("srmAbortFiles : Invalid input parameter specified");
+        log.debug("srmAbortFiles : Invalid input parameter specified");
 
+        globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
+            "Invalid request token. Abort only works for PtG and PtP.");
 
-          globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-            "Invalid request token. Abort only works for PtG, PtP and Copy.");
+        CommandHelper.printRequestOutcome(SRM_COMMAND, log, globalStatus, inputData,
+            inputData.getRequestToken());
 
-          CommandHelper.printRequestOutcome(SRM_COMMAND, log, globalStatus,
-            inputData, inputData.getRequestToken());
-
-          outputData.setReturnStatus(globalStatus);
-          outputData.setArrayOfFileStatuses(null);
-          return outputData;
-        }
+        outputData.setReturnStatus(globalStatus);
+        outputData.setArrayOfFileStatuses(null);
+        return outputData;
       }
     }
   }

@@ -21,11 +21,12 @@ import java.util.List;
 import java.util.Map;
 
 import it.grid.storm.common.types.PFN;
+import it.grid.storm.filesystem.Space;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
-import it.grid.storm.srm.types.TTURL;
 
 public interface NamespaceInterface {
 
@@ -141,19 +142,6 @@ public interface NamespaceInterface {
 
   /**
    * 
-   * @param surl TSURL
-   * @param user GridUserInterface
-   * @return VirtualFSInterface
-   * @throws NamespaceException
-   * @throws UnapprochableSurlException
-   * @throws InvalidSURLException
-   * @throws IllegalArgumentException
-   */
-  public VirtualFSInterface resolveVFSbySURL(TSURL surl, GridUserInterface user)
-      throws UnapprochableSurlException, InvalidSURLException, NamespaceException;
-
-  /**
-   * 
    * @param absolutePath String
    * @param user GridUserInterface
    * @return StoRI
@@ -200,24 +188,6 @@ public interface NamespaceInterface {
 
   /**
    * 
-   * @param file LocalFile
-   * @return VirtualFSInterface
-   * @throws NamespaceException
-   */
-  public VirtualFSInterface resolveVFSbyLocalFile(it.grid.storm.filesystem.LocalFile file)
-      throws NamespaceException;
-
-  /**
-   * 
-   * @param pfn PFN
-   * @param user GridUserInterface
-   * @return StoRI
-   * @throws NamespaceException
-   */
-  public StoRI resolveStoRIbyPFN(PFN pfn, GridUserInterface user) throws NamespaceException;
-
-  /**
-   * 
    * @param pfn PFN
    * @return StoRI
    * @throws NamespaceException
@@ -226,12 +196,11 @@ public interface NamespaceInterface {
 
   /**
    * 
-   * @param pfn PFN
-   * @param user GridUserInterface
+   * @param file LocalFile
    * @return VirtualFSInterface
    * @throws NamespaceException
    */
-  public VirtualFSInterface resolveVFSbyPFN(PFN pfn, GridUserInterface user)
+  public VirtualFSInterface resolveVFSbyLocalFile(it.grid.storm.filesystem.LocalFile file)
       throws NamespaceException;
 
   /**
@@ -244,20 +213,24 @@ public interface NamespaceInterface {
 
   /**
    * 
-   * @param turl TTURL
    * @param user GridUserInterface
    * @return StoRI
    * @throws NamespaceException
    */
-  public StoRI resolveStoRIbyTURL(TTURL turl, GridUserInterface user) throws NamespaceException;
+  public StoRI getDefaultSpaceFileForUser(GridUserInterface user) throws NamespaceException;
 
   /**
+   * Method that retrieves a previously reserved Space as identified by the SpaceToken, for the
+   * given new size. If null or Empty TSizeInBytes are supplied, a Space object built off deafult
+   * values is returned instead.
    * 
-   * @param turl TTURL
-   * @return StoRI
-   * @throws NamespaceException
+   * 
+   * @param totSize TSizeInBytes
+   * @param token TSpaceToken
+   * @return Space
    */
-  public StoRI resolveStoRIbyTURL(TTURL turl) throws NamespaceException;
+
+  public Space retrieveSpaceByToken(TSizeInBytes totSize, TSpaceToken token);
 
   /**
    * 

@@ -22,13 +22,10 @@ import static it.grid.storm.namespace.naming.NamespaceUtil.getWinnerRule;
 import static it.grid.storm.namespace.naming.NamespaceUtil.getWinnerVFS;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -37,10 +34,12 @@ import org.slf4j.Logger;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import it.grid.storm.common.GUID;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.filesystem.LocalFile;
+import it.grid.storm.filesystem.Space;
 import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
@@ -53,8 +52,8 @@ import it.grid.storm.namespace.naming.NamespaceUtil;
 import it.grid.storm.namespace.naming.NamingConst;
 import it.grid.storm.namespace.naming.SURL;
 import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
-import it.grid.storm.srm.types.TTURL;
 
 public class Namespace implements NamespaceInterface {
 
@@ -151,7 +150,8 @@ public class Namespace implements NamespaceInterface {
 
   public VirtualFSInterface getDefaultVFS(GridUserInterface user) throws NamespaceException {
 
-    TreeSet<ApproachableRule> appRules = new TreeSet<>(getApproachableRules(user));
+    SortedSet<ApproachableRule> appRules = Sets.newTreeSet(getApproachableRules(user));
+
     if (appRules.isEmpty()) {
       if (user instanceof AbstractGridUser) {
         String msg =
@@ -400,14 +400,6 @@ public class Namespace implements NamespaceInterface {
     }
   }
 
-  public StoRI resolveStoRIbyPFN(PFN pfn, GridUserInterface user) throws NamespaceException {
-
-    VirtualFSInterface vfs = resolveVFSbyPFN(pfn, user);
-    String vfsRoot = vfs.getRootPath();
-    String relativePath = NamespaceUtil.extractRelativePath(vfsRoot, pfn.getValue());
-    return vfs.createFile(relativePath);
-  }
-
   public StoRI resolveStoRIbyPFN(PFN pfn) throws NamespaceException {
 
     /**
@@ -417,15 +409,6 @@ public class Namespace implements NamespaceInterface {
     String vfsRoot = vfs.getRootPath();
     String relativePath = NamespaceUtil.extractRelativePath(vfsRoot, pfn.getValue());
     return vfs.createFile(relativePath);
-  }
-
-  public VirtualFSInterface resolveVFSbyPFN(PFN pfn, GridUserInterface user)
-      throws NamespaceException {
-
-    /**
-     * @todo insert checking the approachable rules
-     */
-    return resolveVFSbyPFN(pfn);
   }
 
   /**
@@ -440,16 +423,14 @@ public class Namespace implements NamespaceInterface {
     return getWinnerVFS(pfn.getValue(), parser.getMapVFS_Root());
   }
 
-  public StoRI resolveStoRIbyTURL(TTURL turl, GridUserInterface user) throws NamespaceException {
+  public StoRI getDefaultSpaceFileForUser(GridUserInterface user) throws NamespaceException {
 
-    PFN pfn = turl.tfn().pfn();
-    return resolveStoRIbyPFN(pfn, user);
+    return null;
   }
 
-  public StoRI resolveStoRIbyTURL(TTURL turl) throws NamespaceException {
+  public Space retrieveSpaceByToken(TSizeInBytes totSize, TSpaceToken token) {
 
-    PFN pfn = turl.tfn().pfn();
-    return resolveStoRIbyPFN(pfn);
+    return null;
   }
 
   /***********************************************
@@ -459,7 +440,7 @@ public class Namespace implements NamespaceInterface {
   public String makeSpaceFileURI(GridUserInterface user) throws NamespaceException {
 
     String result = null;
-    TreeSet<ApproachableRule> appRules = new TreeSet<>(getApproachableRules(user));
+    SortedSet<ApproachableRule> appRules = Sets.newTreeSet(getApproachableRules(user));
 
     log.debug("Compatible Approachable rules: {}", appRules);
 
@@ -520,10 +501,8 @@ public class Namespace implements NamespaceInterface {
 
   public boolean isSpaceFile(String fileName) {
 
-    if (fileName == null) {
-      throw new IllegalArgumentException(
-          "Unable to check space file name. " + "Invalid arguments: fileName=" + fileName);
-    }
+    Preconditions.checkNotNull(fileName, "Unable to check space file name. Invalid null fileName");
+
     if (!fileName.endsWith(SPACE_FILE_NAME_SUFFIX))
       return false;
     if (fileName.indexOf(SPACE_FILE_NAME_SEPARATOR) <= 0)
@@ -548,26 +527,21 @@ public class Namespace implements NamespaceInterface {
    */
   public SortedSet<ApproachableRule> getApproachableRules(GridUserInterface user) {
 
-    TreeSet<ApproachableRule> appRules = null;
+    SortedSet<ApproachableRule> appRules = Sets.newTreeSet();
     Map<String, ApproachableRule> rules = parser.getApproachableRules();
-    Map<Object, Object> appRulesUnorderd = null;
-    if (rules != null) {
-      appRulesUnorderd = Maps.newHashMap(parser.getApproachableRules());
-    }
-    appRules = new TreeSet<>();
 
     // Purging incompatible rules from the results
-    if (appRulesUnorderd != null) {
-      ApproachableRule appRule = null;
+    if (rules != null) {
+      Map<Object, ApproachableRule> appRulesUnorderd =
+          Maps.newHashMap(parser.getApproachableRules());
       // List the entries
-      for (Iterator<Object> it = appRulesUnorderd.keySet().iterator(); it.hasNext();) {
-        String key = (String) it.next();
-        appRule = (ApproachableRule) appRulesUnorderd.get(key);
+      appRulesUnorderd.keySet().forEach(key -> {
+        ApproachableRule appRule = appRulesUnorderd.get(key);
         if (matchSubject(appRule, user)) {
           // Insert into the result (that is an ordered set)
           appRules.add(appRule);
         }
-      }
+      });
     }
     return appRules;
   }
@@ -652,7 +626,7 @@ public class Namespace implements NamespaceInterface {
 
     for (String stfnRoot : stfnRoots) {
       log.debug("FITTING: considering StFNRoot = {} agaist StFN = {}", stfnRoot, stfn);
-      ArrayList<String> stfnRootArray = (ArrayList<String>) NamespaceUtil.getPathElement(stfnRoot);
+      List<String> stfnRootArray = NamespaceUtil.getPathElement(stfnRoot);
       stfnRootArray.retainAll(stfnArray);
       if (!(stfnRootArray.isEmpty())) {
         return true;
@@ -695,6 +669,7 @@ public class Namespace implements NamespaceInterface {
       return false;
     }
     return (quota.getDefined() && quota.getEnabled());
+
   }
 
 }
