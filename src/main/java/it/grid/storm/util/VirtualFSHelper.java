@@ -39,7 +39,6 @@ public class VirtualFSHelper {
   public static List<VirtualFSInterface> getGPFSQuotaEnabledFilesystems() {
 
     List<VirtualFSInterface> fss = Lists.newArrayList();
-
     List<VirtualFSInterface> allVFS = NamespaceDirector.getNamespace().getAllDefinedVFS();
 
     for (VirtualFSInterface vfs : allVFS) {
