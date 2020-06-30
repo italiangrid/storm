@@ -1,0 +1,7 @@
+[storm-nightly-centos7]
+name=storm-nightly-centos7
+baseurl=https://repo.cloud.cnaf.infn.it/repository/storm-rpm-nightly/centos7/
+protect=1
+enabled=1
+priority=1
+gpgcheck=0

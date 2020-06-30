@@ -1,6 +1,6 @@
 [storm-stable-centos6]
 name=storm-stable-centos6
-baseurl=https://repo.cloud.cnaf.infn.it/repository/storm/stable/el6/x86_64/
+baseurl=https://repo.cloud.cnaf.infn.it/repository/storm-rpm-stable/centos6/
 protect=1
 enabled=1
 priority=1
