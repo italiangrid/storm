@@ -38,10 +38,10 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.jetty8.InstrumentedHandler;
 import com.codahale.metrics.servlets.MetricsServlet;
+import com.google.common.base.Preconditions;
 
 import it.grid.storm.authz.remote.resource.AuthorizationResource;
 import it.grid.storm.authz.remote.resource.AuthorizationResourceCompat_1_0;
-import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.remote.resource.StormEAResource;
 import it.grid.storm.info.remote.resources.Ping;
 import it.grid.storm.info.remote.resources.SpaceStatusResource;
@@ -64,44 +64,50 @@ import it.grid.storm.tape.recalltable.resources.TasksResource;
  * @author zappi
  * @author valerioventuri
  */
-public class RestService {
+public class RestServer {
 
-  private static final Logger LOG = LoggerFactory.getLogger(RestService.class);
-
-  public static final int DEFAULT_PORT = 9998;
-
-  public static final int DEFAULT_MAX_THREADS = 100;
-
+  public static final int DEFAULT_MAX_THREAD_NUM = 100;
   public static final int DEFAULT_MAX_QUEUE_SIZE = 1000;
 
-  /**
-   * The Jetty {@link Server} object.
-   */
-  private static Server server;
+  private static final Logger LOG = LoggerFactory.getLogger(RestServer.class);
 
-  /**
-   * Get the port on which the server will bind from the service configuration.
-   * 
-   * @return the port on which the server will bind
-   */
-  private static int getPort() {
+  private final Server server;
 
-    int restServicePort = Configuration.getInstance().getRestServicesPort();
+  private int restServicePort;
+  private boolean isTokenEnabled;
+  private String token;
+  private int maxThreads;
+  private int maxQueueSize;
 
-    LOG.debug("RESTFul services will be listening on port {}", restServicePort);
+  boolean running = false;
 
-    return restServicePort;
+  public RestServer(int restServicePort, int maxThreads, int maxQueueSize, boolean isTokenEnabled,
+      String token) {
+
+    this.restServicePort = restServicePort;
+    this.maxThreads = maxThreads;
+    this.maxQueueSize = maxQueueSize;
+    this.isTokenEnabled = isTokenEnabled;
+    this.token = token;
+    this.server = new Server();
+
+    if (isTokenEnabled) {
+      Preconditions.checkNotNull(token, "Rest server security token enabled, but token not found");
+    }
+
+    configure();
   }
-
 
   /**
    * Configure the {@link Server}. Install the Jersey {@link ServletContainer} and configure it to
    * with resources locations.
    * 
+   * @throws RestServiceException
+   * 
    * @throws Exception
    * 
    */
-  private static void configureServer() throws Exception {
+  private void configure() {
 
     ResourceConfig resourceConfig = new ResourceConfig();
     /* Register resources: */
@@ -134,14 +140,9 @@ public class RestService {
 
     servletContextHandler.addServlet(metrics, "/metrics");
     servletContextHandler.addServlet(holder, "/*");
-    if (Configuration.getInstance().getXmlRpcTokenEnabled()) {
+    if (isTokenEnabled) {
 
       LOG.info("Enabling security filter for rest server requests");
-      String token = Configuration.getInstance().getXmlRpcToken();
-      if (token == null || token.isEmpty()) {
-        LOG.error("Rest server security token enabled, but token not found");
-        throw new Exception("Rest server security token enabled, but token not found");
-      }
       FilterHolder filterHolder = new FilterHolder(new RestTokenFilter());
       filterHolder.setInitParameter("token", token);
       servletContextHandler.addFilter(filterHolder, "/metadata/*",
@@ -150,10 +151,8 @@ public class RestService {
           EnumSet.of(DispatcherType.REQUEST));
     }
 
-    server = new Server();
-
     NamedInstrumentedSelectChannelConnector connector = new NamedInstrumentedSelectChannelConnector(
-        "rest-connector", getPort(), METRIC_REGISTRY.getRegistry());
+        "rest-connector", restServicePort, METRIC_REGISTRY.getRegistry());
 
     server.addConnector(connector);
 
@@ -162,13 +161,12 @@ public class RestService {
         new NamedInstrumentedThreadPool("rest", METRIC_REGISTRY.getRegistry());
 
 
-    tp.setMaxThreads(Configuration.getInstance().getRestServicesMaxThreads());
-    tp.setMaxQueued(Configuration.getInstance().getRestServicesMaxQueueSize());
+    tp.setMaxThreads(maxThreads);
+    tp.setMaxQueued(maxQueueSize);
     server.setThreadPool(tp);
 
-    LOG.info("RESTful services threadpool configured: maxThreads={}, maxQueueSize={}",
-        Configuration.getInstance().getRestServicesMaxThreads(),
-        Configuration.getInstance().getRestServicesMaxQueueSize());
+    LOG.info("RESTful services threadpool configured: maxThreads={}, maxQueueSize={}", maxThreads,
+        maxQueueSize);
 
     InstrumentedHandler ih = new InstrumentedHandler(METRIC_REGISTRY.getRegistry(),
         servletContextHandler, "rest-handler");
@@ -181,12 +179,19 @@ public class RestService {
    * 
    * @throws Exception
    */
-  public static void startServer() throws Exception {
+  public synchronized void start() throws Exception {
 
-    configureServer();
-    JettyThread thread = new JettyThread(server);
-    thread.start();
-    LOG.info("StoRM RESTful services started.");
+    if (!running) {
+
+      LOG.info("Starting StoRM RESTful services");
+
+      JettyThread thread = new JettyThread(server);
+      thread.start();
+
+      running = true;
+
+      LOG.info("StoRM RESTful services started.");
+    }
 
   }
 
@@ -195,8 +200,37 @@ public class RestService {
    * 
    * @throws Exception
    */
-  public static void stop() throws Exception {
-    server.stop();
-    LOG.info("StoRM RESTful services stopped.");
+  public synchronized void stop() throws Exception {
+
+    LOG.info("Stopping StoRM RESTful services");
+
+    if (server != null) {
+
+      try {
+
+        server.stop();
+
+      } catch (Exception e) {
+
+        LOG.info("Could not stop StoRM RESTful services");
+
+        return;
+      }
+
+    }
+
+    running = false;
+
+    LOG.info("StoRM RESTful services is not running");
+
+  }
+
+  /**
+   * Returns if server is running.
+   * 
+   */
+  public boolean isRunning() {
+
+    return running;
   }
 }

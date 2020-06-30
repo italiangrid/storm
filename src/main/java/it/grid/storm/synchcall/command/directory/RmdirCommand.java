@@ -204,13 +204,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 	private void checkUserAuthorization(StoRI stori, GridUserInterface user) 
 		throws RmdirException {
 		
-		TSpaceToken token;
-		try {
-			token = stori.getVirtualFileSystem().getSpaceToken();
-		} catch (NamespaceException e) {
-			log.error(e.getMessage());
-			throw new RmdirException(TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
-		}
+		TSpaceToken token = stori.getVirtualFileSystem().getSpaceToken();
 		SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
 		
 		boolean isSpaceAuthorized;

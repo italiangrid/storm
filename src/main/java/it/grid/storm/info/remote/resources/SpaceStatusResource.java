@@ -35,6 +35,7 @@ import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.info.SpaceInfoManager;
 import it.grid.storm.info.model.SpaceStatusSummary;
 import it.grid.storm.info.remote.Constants;
+import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
@@ -53,7 +54,7 @@ public class SpaceStatusResource {
   public String getStatusSummary(@PathParam("alias") String saAlias) {
 
     String result = "";
-    log.debug("Received call getStatusSummary for SA '" + saAlias + "'");
+    log.debug("Received call getStatusSummary for SA '{}'", saAlias);
 
     int quotaDefined = SpaceInfoManager.getInstance().getQuotasDefined();
     if (quotaDefined > 0) {
@@ -163,11 +164,9 @@ public class SpaceStatusResource {
   /**
    * @param storageSpaceData
    * @param spaceStatusSummary
-   * @throws IllegalArgumentException
    */
   private void updateSASummary(StorageSpaceData storageSpaceData,
-      SpaceStatusSummary spaceStatusSummary, boolean updateTotalSpace)
-      throws IllegalArgumentException {
+      SpaceStatusSummary spaceStatusSummary, boolean updateTotalSpace) {
 
     // fill in the StorageSpaceData the provided values
     try {
@@ -192,6 +191,10 @@ public class SpaceStatusResource {
           "Unable to produce the TSizeInBytes object for some of the SpaceStatusSummary fields:"
               + spaceStatusSummary.toString());
     }
-    catalog.updateStorageSpace(storageSpaceData);
+    try {
+      catalog.updateStorageSpace(storageSpaceData);
+    } catch (DataAccessException e) {
+      log.error("Unable to update {}: {}", storageSpaceData, e.getMessage());
+    }
   }
 }

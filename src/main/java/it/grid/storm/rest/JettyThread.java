@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  */
 public class JettyThread extends Thread {
 
-  private static final Logger log = LoggerFactory.getLogger(JettyThread.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JettyThread.class);
 
   /**
    * The {@link Server} object.
@@ -30,9 +30,7 @@ public class JettyThread extends Thread {
     this.server = server;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  @Override
   public void run() {
 
     try {
@@ -41,7 +39,7 @@ public class JettyThread extends Thread {
       server.join();
 
     } catch (Exception e) {
-      log.error(e.getMessage(), e);
+      LOG.error(e.getMessage(), e);
 
       System.exit(1);
     }

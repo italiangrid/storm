@@ -17,12 +17,10 @@
 
 package it.grid.storm.namespace;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import it.grid.storm.common.types.PFN;
-import it.grid.storm.common.types.StFN;
 import it.grid.storm.filesystem.Space;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.model.MappingRule;
@@ -39,7 +37,7 @@ public interface NamespaceInterface {
    *         defined within Namespace
    * @throws NamespaceException
    */
-  public Collection<VirtualFSInterface> getAllDefinedVFS() throws NamespaceException;
+  public List<VirtualFSInterface> getAllDefinedVFS();
 
   /**
    * getAllDefinedVFSAsDictionary
@@ -48,7 +46,16 @@ public interface NamespaceInterface {
    *         Namespace, indexed by their root-paths
    * @throws NamespaceException
    */
-  public Map<String, VirtualFSInterface> getAllDefinedVFSAsDictionary() throws NamespaceException;
+  public Map<String, VirtualFSInterface> getAllDefinedVFSAsDictionary();
+
+  /**
+   * getVFSWithQuotaEnabled
+   * 
+   * @return Collection<VirtualFSInterface>: Return a collection of VirtualFS with fs type GPFS and
+   *         quota enabled
+   * @throws NamespaceException
+   */
+  public List<VirtualFSInterface> getVFSWithQuotaEnabled();
 
   /**
    * getAllDefinedMappingRules
@@ -57,7 +64,7 @@ public interface NamespaceInterface {
    *         within Namespace
    * @throws NamespaceException
    */
-  public Collection<MappingRule> getAllDefinedMappingRules() throws NamespaceException;
+  public List<MappingRule> getAllDefinedMappingRules();
 
   /**
    * 
@@ -181,32 +188,11 @@ public interface NamespaceInterface {
 
   /**
    * 
-   * @param file LocalFile
-   * @param user GridUserInterface
+   * @param pfn PFN
    * @return StoRI
    * @throws NamespaceException
    */
-  public StoRI resolveStoRIbyLocalFile(it.grid.storm.filesystem.LocalFile file,
-      GridUserInterface user) throws NamespaceException;
-
-  /**
-   * 
-   * @param file LocalFile
-   * @return StoRI
-   * @throws NamespaceException
-   */
-  public StoRI resolveStoRIbyLocalFile(it.grid.storm.filesystem.LocalFile file)
-      throws NamespaceException;
-
-  /**
-   * 
-   * @param file LocalFile
-   * @param user GridUserInterface
-   * @return VirtualFSInterface
-   * @throws NamespaceException
-   */
-  public VirtualFSInterface resolveVFSbyLocalFile(it.grid.storm.filesystem.LocalFile file,
-      GridUserInterface user) throws NamespaceException;
+  public StoRI resolveStoRIbyPFN(PFN pfn) throws NamespaceException;
 
   /**
    * 
@@ -216,49 +202,6 @@ public interface NamespaceInterface {
    */
   public VirtualFSInterface resolveVFSbyLocalFile(it.grid.storm.filesystem.LocalFile file)
       throws NamespaceException;
-
-  /**
-   * 
-   * @param stfn StFN
-   * @param user GridUserInterface
-   * @return StoRI
-   * @throws NamespaceException
-   */
-  public StoRI resolveStoRIbyStFN(StFN stfn, GridUserInterface user) throws NamespaceException;
-
-  /**
-   * 
-   * @param stfn StFN
-   * @return StoRI
-   * @throws NamespaceException
-   */
-  public StoRI resolveStoRIbyStFN(StFN stfn) throws NamespaceException;
-
-  /**
-   * 
-   * @param stfn StFN
-   * @param user GridUserInterface
-   * @return VirtualFSInterface
-   * @throws NamespaceException
-   */
-  public VirtualFSInterface resolveVFSbyStFN(StFN stfn, GridUserInterface user)
-      throws NamespaceException;
-
-  /**
-   * 
-   * @param stfn StFN
-   * @return VirtualFSInterface
-   * @throws NamespaceException
-   */
-  public VirtualFSInterface resolveVFSbyStFN(StFN stfn) throws NamespaceException;
-
-  /**
-   * 
-   * @param pfn PFN
-   * @return StoRI
-   * @throws NamespaceException
-   */
-  public StoRI resolveStoRIbyPFN(PFN pfn) throws NamespaceException;
 
   /**
    * 
@@ -302,7 +245,7 @@ public interface NamespaceInterface {
    * @return
    * @throws IllegalArgumentException
    */
-  public boolean isSpaceFile(String fileName) throws IllegalArgumentException;
+  public boolean isSpaceFile(String fileName);
 
   public String getNamespaceVersion() throws NamespaceException;
 

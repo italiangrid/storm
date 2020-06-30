@@ -13,16 +13,17 @@ package it.grid.storm.check.sanity.filesystem;
 
 import java.io.IOException;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import it.grid.storm.check.GenericCheckException;
+
 import it.grid.storm.check.Check;
 import it.grid.storm.check.CheckResponse;
 import it.grid.storm.check.CheckStatus;
+import it.grid.storm.check.GenericCheckException;
 import it.grid.storm.filesystem.MtabRow;
 import it.grid.storm.filesystem.MtabUtil;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 
 /**
@@ -40,7 +41,7 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check {
       "This check verifies that all the file systems declared "
           + "in namespace.xml are mounted at boot time with the mount \'extended attribute abilitation\' option ";
 
-  private static final boolean criticalCheck = false;
+  private static final boolean CRITICAL_CHECK = false;
 
   @Override
   public CheckResponse execute() throws GenericCheckException {
@@ -57,73 +58,66 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check {
           "Check not performed. Unable to get the rows from mtab. IOException : " + e.getMessage());
     }
     log.debug("Retrieved Mtab : {}", rows.toString());
-    try {
-      // load declared file systems from namespace.xml
-      for (VirtualFSInterface vfs : NamespaceDirector.getNamespace().getAllDefinedVFS()) {
-        String fsTypeName = vfs.getFSType();
-        String fsRootPath = vfs.getRootPath();
-        if (fsTypeName == null || fsRootPath == null) {
-          log.warn(
-              "Skipping chek on VFS with alias '{}' has null type ->{}<- " + "or root path ->{}<-",
-              vfs.getAliasName(), vfs.getFSType(), vfs.getRootPath());
-          continue;
-        }
-        log.debug("Checking fs at {} with type {}", fsRootPath, fsTypeName);
-        boolean found = false;
-        // for each root path get the matching line in mstab
-        for (MtabRow row : rows) {
-          if (fsRootPath.startsWith(row.getMountPoint())) {
-            log.debug("Found on mountPoint {}", row.getMountPoint());
-            // this is the row to check
-            found = true;
-            SupportedFSType fsType;
-            try {
-              fsType = SupportedFSType.parseFS(fsTypeName);
-            } catch (IllegalArgumentException e) {
-              log.warn("Unable to get the SupportedFSType for file system '{}'. "
-                  + "IllegalArgumentException: {}", fsTypeName, e.getMessage());
-              throw new GenericCheckException(
-                  "Unable to get the " + "SupportedFSType for file system \'" + fsTypeName
-                      + "\' IllegalArgumentException: " + e.getMessage());
-            }
-
-            // given the file system specified in the row check if the
-            // appropriate flag enabling EA is set
-            CheckStatus retrievedStatus;
-            switch (fsType) {
-              case EXT3:
-                retrievedStatus = checkEXT3(row.getMountOptions());
-                break;
-              case GPFS:
-                retrievedStatus = checkGPFS(row.getMountOptions());
-                break;
-              default: {
-                log.error("Unable to switch on the provided SupportedFSType " + "(unknown): {}",
-                    fsType);
-                throw new GenericCheckException(
-                    "Unable to switch on the " + "provided SupportedFSType (unknown) : " + fsType);
-              }
-            }
-            if (!retrievedStatus.equals(CheckStatus.SUCCESS)) {
-              log.error("Check failed for file system at {} with type {}", fsRootPath, fsType);
-              errorMessage +=
-                  "Check failed for file system at " + fsRootPath + " with type " + fsType + "; ";
-            }
-            status = CheckStatus.and(status, retrievedStatus);
-            break;
+    // load declared file systems from namespace.xml
+    for (VirtualFSInterface vfs : NamespaceDirector.getNamespace().getAllDefinedVFS()) {
+      String fsTypeName = vfs.getFSType();
+      String fsRootPath = vfs.getRootPath();
+      if (fsTypeName == null || fsRootPath == null) {
+        log.warn(
+            "Skipping chek on VFS with alias '{}' has null type ->{}<- " + "or root path ->{}<-",
+            vfs.getAliasName(), vfs.getFSType(), vfs.getRootPath());
+        continue;
+      }
+      log.debug("Checking fs at {} with type {}", fsRootPath, fsTypeName);
+      boolean found = false;
+      // for each root path get the matching line in mstab
+      for (MtabRow row : rows) {
+        if (fsRootPath.startsWith(row.getMountPoint())) {
+          log.debug("Found on mountPoint {}", row.getMountPoint());
+          // this is the row to check
+          found = true;
+          SupportedFSType fsType;
+          try {
+            fsType = SupportedFSType.parseFS(fsTypeName);
+          } catch (IllegalArgumentException e) {
+            log.warn("Unable to get the SupportedFSType for file system '{}'. "
+                + "IllegalArgumentException: {}", fsTypeName, e.getMessage());
+            throw new GenericCheckException(
+                "Unable to get the " + "SupportedFSType for file system \'" + fsTypeName
+                    + "\' IllegalArgumentException: " + e.getMessage());
           }
-        }
-        if (!found) {
-          log.error("No file systems are mounted at path {}!", fsRootPath);
-          errorMessage += "No file systems are mounted at path " + fsRootPath + ";";
-          status = CheckStatus.INDETERMINATE;
+
+          // given the file system specified in the row check if the
+          // appropriate flag enabling EA is set
+          CheckStatus retrievedStatus;
+          switch (fsType) {
+            case EXT3:
+              retrievedStatus = checkEXT3(row.getMountOptions());
+              break;
+            case GPFS:
+              retrievedStatus = checkGPFS(row.getMountOptions());
+              break;
+            default: {
+              log.error("Unable to switch on the provided SupportedFSType " + "(unknown): {}",
+                  fsType);
+              throw new GenericCheckException(
+                  "Unable to switch on the " + "provided SupportedFSType (unknown) : " + fsType);
+            }
+          }
+          if (!retrievedStatus.equals(CheckStatus.SUCCESS)) {
+            log.error("Check failed for file system at {} with type {}", fsRootPath, fsType);
+            errorMessage +=
+                "Check failed for file system at " + fsRootPath + " with type " + fsType + "; ";
+          }
+          status = CheckStatus.and(status, retrievedStatus);
+          break;
         }
       }
-    } catch (NamespaceException e) {
-      // NOTE: this exception is never thrown
-      log.warn("Unable to proceede received a NamespaceException: {}", e.getMessage());
-      errorMessage += "Unable to proceede received a NamespaceException : " + e.getMessage() + "; ";
-      status = CheckStatus.INDETERMINATE;
+      if (!found) {
+        log.error("No file systems are mounted at path {}!", fsRootPath);
+        errorMessage += "No file systems are mounted at path " + fsRootPath + ";";
+        status = CheckStatus.INDETERMINATE;
+      }
     }
     return new CheckResponse(status, errorMessage);
   }
@@ -180,6 +174,6 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check {
   @Override
   public boolean isCritical() {
 
-    return criticalCheck;
+    return CRITICAL_CHECK;
   }
 }

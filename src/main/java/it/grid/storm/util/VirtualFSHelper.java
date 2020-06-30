@@ -1,16 +1,19 @@
 package it.grid.storm.util;
 
+import java.util.List;
+
+import com.google.common.collect.Lists;
+
 import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.Quota;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 public class VirtualFSHelper {
+
+  private VirtualFSHelper() {
+    // empty constructor
+  }
 
   public static final boolean isGPFSQuotaEnabledForVFS(VirtualFSInterface vfs) {
 
@@ -19,17 +22,14 @@ public class VirtualFSHelper {
     if (vfs != null) {
       CapabilityInterface cap = null;
       Quota quota = null;
-      String fsType = "Unknown";
-      fsType = vfs.getFSType();
-      if (fsType != null) {
-        if (fsType.trim().toLowerCase().equals("gpfs")) {
-          cap = vfs.getCapabilities();
-          if (cap != null) {
-            quota = cap.getQuota();
-          }
-          if (quota != null) {
-            result = ((quota.getDefined()) && (quota.getEnabled()));
-          }
+      String fsType = vfs.getFSType();
+      if (fsType != null && fsType.trim().equalsIgnoreCase("gpfs")) {
+        cap = vfs.getCapabilities();
+        if (cap != null) {
+          quota = cap.getQuota();
+        }
+        if (quota != null) {
+          result = ((quota.getDefined()) && (quota.getEnabled()));
         }
       }
     }
@@ -38,16 +38,8 @@ public class VirtualFSHelper {
 
   public static List<VirtualFSInterface> getGPFSQuotaEnabledFilesystems() {
 
-    List<VirtualFSInterface> fss = new ArrayList<VirtualFSInterface>();
-
-    Collection<VirtualFSInterface> allVFS;
-    try {
-      allVFS = NamespaceDirector.getNamespace().getAllDefinedVFS();
-
-    } catch (NamespaceException e1) {
-
-      throw new IllegalStateException(e1);
-    }
+    List<VirtualFSInterface> fss = Lists.newArrayList();
+    List<VirtualFSInterface> allVFS = NamespaceDirector.getNamespace().getAllDefinedVFS();
 
     for (VirtualFSInterface vfs : allVFS) {
       if (isGPFSQuotaEnabledForVFS(vfs))

@@ -237,12 +237,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 
   private void checkUserAuthorization(StoRI stori, GridUserInterface user) throws MkdirException {
 
-    TSpaceToken token;
-    try {
-      token = stori.getVirtualFileSystem().getSpaceToken();
-    } catch (NamespaceException e) {
-      throw srmInternalError(e.getMessage());
-    }
+    TSpaceToken token = stori.getVirtualFileSystem().getSpaceToken();
     SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
 
     boolean isSpaceAuthorized;

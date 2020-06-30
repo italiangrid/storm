@@ -11,6 +11,14 @@
 
 package it.grid.storm.asynch;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.acl.AclManagerFS;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
@@ -29,7 +37,6 @@ import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.ReservationException;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.LocalUser;
-import it.grid.storm.info.SpaceInfoManager;
 import it.grid.storm.namespace.ExpiredSpaceTokenException;
 import it.grid.storm.namespace.InvalidGetTURLProtocolException;
 import it.grid.storm.namespace.InvalidSURLException;
@@ -59,14 +66,6 @@ import it.grid.storm.srm.types.TTURL;
 import it.grid.storm.synchcall.command.CommandHelper;
 import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.synchcall.data.IdentityInputData;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Class that represents a chunk of an srmPrepareToPut request: it handles a single file of a
@@ -718,7 +717,7 @@ public class PtP implements Delegable, Chooser, Request {
       SpaceHelper sp = new SpaceHelper();
       long freeSpace = sp.getSAFreeSpace(PtP.log, fileStoRI);
       if ((sp.isSAFull(PtP.log, fileStoRI))
-          || ((!size.isEmpty() && ((freeSpace != -1) && (freeSpace <= size.value()))))) {
+          || (!size.isEmpty() && ((freeSpace != -1) && (freeSpace <= size.value())))) {
         /* Verify if the storage area space has been initialized */
         /*
          * If is not initialized verify if the SpaceInfoManager is currently initializing this
@@ -730,11 +729,11 @@ public class PtP implements Delegable, Chooser, Request {
               + "TSpaceToken for stori {} . Unable to verify storage area space "
               + "initialization", fileStoRI);
           requestData.changeStatusSRM_FAILURE("No valid space token for the Storage Area");
-          failure = true; // gsm.failedChunk(chunkData);
+          failure = true;
           return false;
         } else {
           if (!sp.isSAInitialized(PtP.log, fileStoRI)
-              && SpaceInfoManager.getInstance().isInProgress(SASpaceToken)) {
+              && Configuration.getInstance().getDiskUsageServiceEnabled()) {
             /* Trust we got space, let the request pass */
             log.debug("PtPChunk: ReserveSpaceStep: the storage area space "
                 + "initialization is in progress, optimistic approach, considering "

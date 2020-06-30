@@ -17,6 +17,9 @@
 
 package it.grid.storm.config;
 
+import static it.grid.storm.info.du.DiskUsageService.DEFAULT_INITIAL_DELAY;
+import static it.grid.storm.info.du.DiskUsageService.DEFAULT_TASKS_INTERVAL;
+import static it.grid.storm.info.du.DiskUsageService.DEFAULT_TASKS_PARALLEL;
 import static java.lang.System.getProperty;
 
 import java.io.File;
@@ -32,9 +35,10 @@ import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.grid.storm.rest.RestService;
+import com.google.common.collect.Lists;
+
+import it.grid.storm.rest.RestServer;
 import it.grid.storm.xmlrpc.XMLRPCHttpServer;
-import jersey.repackaged.com.google.common.collect.Lists;
 
 /**
  * Singleton holding all configuration values that any other object in the StoRM backend reads from
@@ -182,6 +186,11 @@ public class Configuration {
   private static final String NETWORKADDRESS_CACHE_NEGATIVE_TTL =
       "networkaddress.cache.negative.ttl";
 
+  public static final String DISKUSAGE_SERVICE_ENABLED = "storm.service.du.enabled";
+  private static final String DISKUSAGE_SERVICE_INITIAL_DELAY = "storm.service.du.delaySecs";
+  private static final String DISKUSAGE_SERVICE_TASKS_INTERVAL = "storm.service.du.periodSecs";
+  private static final String DISKUSAGE_SERVICE_TASKS_PARALLEL = "storm.service.du.parallelTasks";
+
   static {
     try {
       instance = new Configuration();
@@ -270,13 +279,7 @@ public class Configuration {
    */
   public String getServiceHostname() {
 
-    String defaultValue = "UNDEFINED_STORM_HOSTNAME";
-    if (!cr.getConfiguration().containsKey(SERVICE_HOSTNAME_KEY)) {
-      return defaultValue;
-    } else {
-      // load from external source
-      return cr.getConfiguration().getString(SERVICE_HOSTNAME_KEY);
-    }
+    return cr.getConfiguration().getString(SERVICE_HOSTNAME_KEY, "UNDEFINED_STORM_HOSTNAME");
   }
 
   /**
@@ -285,13 +288,7 @@ public class Configuration {
    */
   public int getServicePort() {
 
-    int defaultValue = 8444;
-    if (!cr.getConfiguration().containsKey(SERVICE_PORT_KEY)) {
-      return defaultValue;
-    } else {
-      // load from external source
-      return cr.getConfiguration().getInt(SERVICE_PORT_KEY);
-    }
+    return cr.getConfiguration().getInt(SERVICE_PORT_KEY, 8444);
   }
 
   /**
@@ -314,7 +311,7 @@ public class Configuration {
       return Arrays.asList(names);
 
     } else {
-      return Arrays.asList(new String[] {"127.0.0.1"});
+      return Arrays.asList("127.0.0.1");
     }
   }
 
@@ -1260,18 +1257,17 @@ public class Configuration {
    */
   public int getRestServicesPort() {
 
-    return cr.getConfiguration().getInt(REST_SERVICES_PORT_KEY, RestService.DEFAULT_PORT);
+    return cr.getConfiguration().getInt(REST_SERVICES_PORT_KEY, 9998);
   }
 
   public int getRestServicesMaxThreads() {
 
-    return cr.getConfiguration().getInt(REST_SERVICES_MAX_THREAD, RestService.DEFAULT_MAX_THREADS);
+    return cr.getConfiguration().getInt(REST_SERVICES_MAX_THREAD, RestServer.DEFAULT_MAX_THREAD_NUM);
   }
 
   public int getRestServicesMaxQueueSize() {
 
-    return cr.getConfiguration()
-      .getInt(REST_SERVICES_MAX_QUEUE_SIZE, RestService.DEFAULT_MAX_QUEUE_SIZE);
+    return cr.getConfiguration().getInt(REST_SERVICES_MAX_QUEUE_SIZE, RestServer.DEFAULT_MAX_QUEUE_SIZE);
   }
 
   /**
@@ -1451,5 +1447,26 @@ public class Configuration {
 
   public int getNetworkAddressCacheNegativeTtl() {
     return cr.getConfiguration().getInt(NETWORKADDRESS_CACHE_NEGATIVE_TTL, 0);
+  }
+
+  public boolean getDiskUsageServiceEnabled() {
+
+    return cr.getConfiguration().getBoolean(DISKUSAGE_SERVICE_ENABLED, false);
+  }
+
+  public int getDiskUsageServiceInitialDelay() {
+
+    return cr.getConfiguration().getInt(DISKUSAGE_SERVICE_INITIAL_DELAY, DEFAULT_INITIAL_DELAY);
+  }
+
+  public int getDiskUsageServiceTasksInterval() {
+
+    // default: 604800 s => 1 week
+    return cr.getConfiguration().getInt(DISKUSAGE_SERVICE_TASKS_INTERVAL, DEFAULT_TASKS_INTERVAL);
+  }
+
+  public boolean getDiskUsageServiceTasksParallel() {
+
+    return cr.getConfiguration().getBoolean(DISKUSAGE_SERVICE_TASKS_PARALLEL, DEFAULT_TASKS_PARALLEL);
   }
 }

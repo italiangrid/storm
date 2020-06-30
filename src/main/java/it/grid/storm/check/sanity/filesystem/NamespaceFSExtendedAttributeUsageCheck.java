@@ -11,6 +11,13 @@
 
 package it.grid.storm.check.sanity.filesystem;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Calendar;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.check.Check;
 import it.grid.storm.check.CheckResponse;
 import it.grid.storm.check.CheckStatus;
@@ -19,15 +26,7 @@ import it.grid.storm.ea.ExtendedAttributes;
 import it.grid.storm.ea.ExtendedAttributesException;
 import it.grid.storm.ea.ExtendedAttributesFactory;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Calendar;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Michele Dibenedetto
@@ -62,57 +61,50 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check {
   private final ExtendedAttributes extendedAttribute =
       ExtendedAttributesFactory.getExtendedAttributes();
 
-  private static final boolean criticalCheck = true;
+  private static final boolean CRITICAL_CHECK = true;
 
   @Override
   public CheckResponse execute() throws GenericCheckException {
 
     CheckStatus status = CheckStatus.SUCCESS;
     String errorMessage = "";
-    try {
-      // load declared file systems from namespace.xml
-      for (VirtualFSInterface vfs : NamespaceDirector.getNamespace().getAllDefinedVFS()) {
-        String fsRootPath = vfs.getRootPath().trim();
-        if (fsRootPath.charAt(fsRootPath.length() - 1) != File.separatorChar) {
-          fsRootPath += File.separatorChar;
-        }
-        // for each root path get a temporary file in it
-        File checkFile;
-        try {
-          checkFile = provideCheckFile(fsRootPath, TEST_FILE_INFIX);
-        } catch (GenericCheckException e) {
-          log.warn("Unable to obtain a check temporary file. " + "GenericCheckException: {}",
-              e.getMessage());
-          errorMessage += "Unable to obtain a check temporary file. " + "GenericCheckException : "
-              + e.getMessage() + "; ";
-          status = CheckStatus.INDETERMINATE;
-          continue;
-        }
-        // tries to manage the extended attributes on file checkFile
-        boolean currentResponse = this.checkEA(checkFile);
-        if (!currentResponse) {
-          log.warn(
-              "Check on VFS {} to add EA on file {} failed. File System "
-                  + "type = {}, root path = {}",
-              vfs.getAliasName(), checkFile.getAbsolutePath(), vfs.getFSType(), fsRootPath);
-          errorMessage += "Check on VFS " + vfs.getAliasName() + " to add EA on file "
-              + checkFile.getAbsolutePath() + " failed. File System type =" + vfs.getFSType()
-              + " , root path =" + fsRootPath + "; ";
-        }
-        log.debug("Check response for path {} is {}", fsRootPath,
-            currentResponse ? "success" : "failure");
-        status = CheckStatus.and(status, currentResponse);
-        log.debug("Partial result is {}", status.toString());
-        if (!checkFile.delete()) {
-          log.warn("Unable to delete the temporary file used for the check {}",
-              checkFile.getAbsolutePath());
-        }
+    // load declared file systems from namespace.xml
+    for (VirtualFSInterface vfs : NamespaceDirector.getNamespace().getAllDefinedVFS()) {
+      String fsRootPath = vfs.getRootPath().trim();
+      if (fsRootPath.charAt(fsRootPath.length() - 1) != File.separatorChar) {
+        fsRootPath += File.separatorChar;
       }
-    } catch (NamespaceException e) {
-      // NOTE: this exception is never thrown
-      log.warn("Unable to proceede. NamespaceException: {}", e.getMessage());
-      errorMessage += "Unable to proceede. NamespaceException : " + e.getMessage() + "; ";
-      status = CheckStatus.INDETERMINATE;
+      // for each root path get a temporary file in it
+      File checkFile;
+      try {
+        checkFile = provideCheckFile(fsRootPath, TEST_FILE_INFIX);
+      } catch (GenericCheckException e) {
+        log.warn("Unable to obtain a check temporary file. " + "GenericCheckException: {}",
+            e.getMessage());
+        errorMessage += "Unable to obtain a check temporary file. " + "GenericCheckException : "
+            + e.getMessage() + "; ";
+        status = CheckStatus.INDETERMINATE;
+        continue;
+      }
+      // tries to manage the extended attributes on file checkFile
+      boolean currentResponse = this.checkEA(checkFile);
+      if (!currentResponse) {
+        log.warn(
+            "Check on VFS {} to add EA on file {} failed. File System "
+                + "type = {}, root path = {}",
+            vfs.getAliasName(), checkFile.getAbsolutePath(), vfs.getFSType(), fsRootPath);
+        errorMessage += "Check on VFS " + vfs.getAliasName() + " to add EA on file "
+            + checkFile.getAbsolutePath() + " failed. File System type =" + vfs.getFSType()
+            + " , root path =" + fsRootPath + "; ";
+      }
+      log.debug("Check response for path {} is {}", fsRootPath,
+          currentResponse ? "success" : "failure");
+      status = CheckStatus.and(status, currentResponse);
+      log.debug("Partial result is {}", status.toString());
+      if (!checkFile.delete()) {
+        log.warn("Unable to delete the temporary file used for the check {}",
+            checkFile.getAbsolutePath());
+      }
     }
     return new CheckResponse(status, errorMessage);
   }
@@ -158,7 +150,7 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check {
       attempCount++;
     }
     if (!fileAvailable) {
-      log.warn("Unable to create check file, reaced maximum iterations at " + "path: {}",
+      log.warn("Unable to create check file, reached maximum iterations at " + "path: {}",
           checkFile.getAbsolutePath());
       throw new GenericCheckException(
           "Unable to create the check file for root path '" + rootPath + "'");
@@ -179,7 +171,7 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check {
     boolean response = false;
     log.debug("Testing extended attribute management on file {}", file.getAbsolutePath());
     try {
-      log.debug("Trying to set the extended attribute {} to value {} on file ",
+      log.debug("Trying to set the extended attribute {} to value {} on file {}",
           CHECK_ATTRIBUTE_NAME, CHECK_ATTRIBUTE_VALUE, file.getAbsolutePath());
 
       extendedAttribute.setXAttr(file.getAbsolutePath(), CHECK_ATTRIBUTE_NAME,
@@ -187,8 +179,7 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check {
 
       log.debug("Trying to get the extended attribute {} from file {}", CHECK_ATTRIBUTE_NAME,
           file.getAbsolutePath());
-      String value =
-          new String(extendedAttribute.getXAttr(file.getAbsolutePath(), CHECK_ATTRIBUTE_NAME));
+      String value = extendedAttribute.getXAttr(file.getAbsolutePath(), CHECK_ATTRIBUTE_NAME);
       log.debug("Returned value is '{}'", value);
       log.debug("Trying to remove the extended attribute {} from file {}", CHECK_ATTRIBUTE_NAME,
           file.getAbsolutePath());
@@ -223,6 +214,6 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check {
   @Override
   public boolean isCritical() {
 
-    return criticalCheck;
+    return CRITICAL_CHECK;
   }
 }

@@ -282,3 +282,22 @@ ptg.skip-acl-setup = false
 # Default value: 0
 #
 #networkaddress.cache.negative.ttl=0
+
+# ================================
+# Disk Usage Service Configuration
+# ================================
+#
+# Disk Usage service is used for the periodic update of the used-space of all the storage spaces that are not 
+# GPFS-with-quota-enabled. Running a periodic 'du -s -b' on the top of the storage spaces root directory, the
+# used-space stored into the database is updated. By default, the service is disabled.
+# The initial starting delay of the service and the period can also be configured.
+#
+# Enable/Disable the periodic run of the service
+storm.service.du.enabled=false
+# Enable/Disable parallel du execution
+storm.service.du.parallelTasks=false
+# Initial delay of service start in seconds. Default: 60s
+storm.service.du.delaySecs=60
+# Interval of execution of the du in seconds. Default: 86400s (24h)
+storm.service.du.periodSecs=86400
+ß
