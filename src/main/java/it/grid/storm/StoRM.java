@@ -190,7 +190,12 @@ public class StoRM {
 
       CheckManager checkManager = new SimpleCheckManager();
       checkManager.init();
-      CheckResponse checkResponse = checkManager.lauchChecks();
+      CheckResponse checkResponse = null;
+      try {
+        checkResponse = checkManager.lauchChecks();
+      } catch (Exception e) {
+        throw new BootstrapException(e);
+      }
 
       if (checkResponse.isSuccessfull()) {
         log.info("Check suite executed successfully");
