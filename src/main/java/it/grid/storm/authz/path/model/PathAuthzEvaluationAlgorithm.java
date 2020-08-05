@@ -28,32 +28,32 @@ import java.util.List;
  */
 public abstract class PathAuthzEvaluationAlgorithm {
 
-	public static PathAuthzEvaluationAlgorithm instance = null;
+  public static PathAuthzEvaluationAlgorithm instance = null;
 
-	public static PathAuthzEvaluationAlgorithm getInstance() throws Exception {
+  public static PathAuthzEvaluationAlgorithm getInstance() throws Exception {
 
-		if (instance == null) {
-			throw new Exception(
-				"Unable to provide the instance, my comcrete subclass as not provided any");
-		}
-		return instance;
-	}
+    if (instance == null) {
+      throw new Exception(
+          "Unable to provide the instance, my comcrete subclass as not provided any");
+    }
+    return instance;
+  }
 
-	public abstract AuthzDecision evaluate(String subject, StFN fileName,
-		SRMFileRequest pathOperation, List<PathACE> acl);
+  public abstract AuthzDecision evaluate(String subject, StFN fileName,
+      SRMFileRequest pathOperation, List<PathACE> acl);
 
-	public abstract AuthzDecision evaluate(String subject, StFN fileName,
-		PathOperation pathOperation, List<PathACE> acl);
+  public abstract AuthzDecision evaluate(String subject, StFN fileName, PathOperation pathOperation,
+      List<PathACE> acl);
 
-	/**
-	 * @return
-	 */
-	public abstract String getDescription();
+  /**
+   * @return
+   */
+  public abstract String getDescription();
 
-	public abstract AuthzDecision evaluateAnonymous(StFN fileStFN,
-		PathOperation pathOperation, LinkedList<PathACE> authzDB);
+  public abstract AuthzDecision evaluateAnonymous(StFN fileStFN, PathOperation pathOperation,
+      LinkedList<PathACE> authzDB);
 
-	public abstract AuthzDecision evaluateAnonymous(StFN fileStFN,
-		SRMFileRequest pathOperation, LinkedList<PathACE> authzDB);
+  public abstract AuthzDecision evaluateAnonymous(StFN fileStFN, SRMFileRequest pathOperation,
+      LinkedList<PathACE> authzDB);
 
 }

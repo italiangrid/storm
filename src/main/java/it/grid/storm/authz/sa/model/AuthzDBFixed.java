@@ -31,21 +31,21 @@ import java.util.List;
  */
 public abstract class AuthzDBFixed implements AuthzDBInterface {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see it.grid.storm.authz.sa.AuthzDBInterface#getAuthzDBType()
-	 */
-	public SAAuthzType getAuthzDBType() {
+  /*
+   * (non-Javadoc)
+   * 
+   * @see it.grid.storm.authz.sa.AuthzDBInterface#getAuthzDBType()
+   */
+  public SAAuthzType getAuthzDBType() {
 
-		return SAAuthzType.FIXED;
-	}
+    return SAAuthzType.FIXED;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see it.grid.storm.authz.sa.AuthzDBInterface#getOrderedListOfACE()
-	 */
-	public abstract List<SpaceACE> getOrderedListOfACE();
+  /*
+   * (non-Javadoc)
+   * 
+   * @see it.grid.storm.authz.sa.AuthzDBInterface#getOrderedListOfACE()
+   */
+  public abstract List<SpaceACE> getOrderedListOfACE();
 
 }

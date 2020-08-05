@@ -19,84 +19,83 @@ package it.grid.storm.authz.sa.model;
 
 public class SpaceACE {
 
-	public static final String ACE_PREFIX = "ace.";
+  public static final String ACE_PREFIX = "ace.";
 
-	private int aceNumber;
-	private SubjectType subjectType;
-	private SubjectPattern subjectPattern;
-	private SpaceAccessMask spaceAccessMask;
-	private AceType aceType;
+  private int aceNumber;
+  private SubjectType subjectType;
+  private SubjectPattern subjectPattern;
+  private SpaceAccessMask spaceAccessMask;
+  private AceType aceType;
 
-	public SpaceACE() {
+  public SpaceACE() {
 
-	}
+  }
 
-	/**
-	 * @return the aceNumber
-	 */
-	public int getAceNumber() {
+  /**
+   * @return the aceNumber
+   */
+  public int getAceNumber() {
 
-		return aceNumber;
-	}
+    return aceNumber;
+  }
 
-	/**
-	 * @param aceNumber
-	 *          the aceNumber to set
-	 */
-	public void setAceNumber(int aceNumber) {
+  /**
+   * @param aceNumber the aceNumber to set
+   */
+  public void setAceNumber(int aceNumber) {
 
-		this.aceNumber = aceNumber;
-	}
+    this.aceNumber = aceNumber;
+  }
 
-	public void setSubjectType(SubjectType subjectType) {
+  public void setSubjectType(SubjectType subjectType) {
 
-		this.subjectType = subjectType;
-	}
+    this.subjectType = subjectType;
+  }
 
-	public void setSubjectPattern(SubjectPattern subject) {
+  public void setSubjectPattern(SubjectPattern subject) {
 
-		subjectPattern = subject;
-	}
+    subjectPattern = subject;
+  }
 
-	public void setSpaceAccessMask(SpaceAccessMask spAccessMask) {
+  public void setSpaceAccessMask(SpaceAccessMask spAccessMask) {
 
-		spaceAccessMask = spAccessMask;
-	}
+    spaceAccessMask = spAccessMask;
+  }
 
-	public void setAceType(AceType aceType) {
+  public void setAceType(AceType aceType) {
 
-		this.aceType = aceType;
-	}
+    this.aceType = aceType;
+  }
 
-	public SubjectType getSubjectType() {
+  public SubjectType getSubjectType() {
 
-		return subjectType;
-	}
+    return subjectType;
+  }
 
-	public SubjectPattern getSubjectPattern() {
+  public SubjectPattern getSubjectPattern() {
 
-		return subjectPattern;
-	}
+    return subjectPattern;
+  }
 
-	/**
-	 * @return the spacePermission
-	 */
-	public SpaceAccessMask getSpaceAccessMask() {
+  /**
+   * @return the spacePermission
+   */
+  public SpaceAccessMask getSpaceAccessMask() {
 
-		return spaceAccessMask;
-	}
+    return spaceAccessMask;
+  }
 
-	public AceType getAceType() {
+  public AceType getAceType() {
 
-		return aceType;
-	}
+    return aceType;
+  }
 
-	@Override
-	public String toString() {
+  @Override
+  public String toString() {
 
-		String spacePermissionStr = spaceAccessMask.toString();
-		return "SpaceACE (" + getAceNumber() + "): " + getSubjectType() + ":"
-			+ getSubjectPattern() + ":" + spacePermissionStr + ":" + aceType;
-	}
+    String spacePermissionStr = spaceAccessMask.toString();
+    return "SpaceACE (" + getAceNumber() + "): " + getSubjectType() + ":" + getSubjectPattern()
+        + ":" + spacePermissionStr + ":" + aceType;
+  }
 
 }

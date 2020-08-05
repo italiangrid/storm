@@ -23,31 +23,30 @@ import it.grid.storm.griduser.GridUserInterface;
 
 public abstract class SpaceAuthz implements SpaceAuthzInterface {
 
-	private AuthzDBInterface authzDB;
+  private AuthzDBInterface authzDB;
 
-	/**
-	 * @todo: 1) IMPLEMENT AUHTZ ENGINE
-	 * @todo: 2) IMPLEMENT CACHE
-	 * @todo: 3) IMPLEMENT PRINCIPAL LIST PERSISTENCE
-	 * @todo: 4) IMPLEMENT RECALCULATE CACHE
-	 */
+  /**
+   * @todo: 1) IMPLEMENT AUHTZ ENGINE
+   * @todo: 2) IMPLEMENT CACHE
+   * @todo: 3) IMPLEMENT PRINCIPAL LIST PERSISTENCE
+   * @todo: 4) IMPLEMENT RECALCULATE CACHE
+   */
 
-	public SpaceAuthz() {
+  public SpaceAuthz() {
 
-		super();
-	}
+    super();
+  }
 
-	public abstract boolean authorize(GridUserInterface guser,
-		SRMSpaceRequest srmSpaceOp);
+  public abstract boolean authorize(GridUserInterface guser, SRMSpaceRequest srmSpaceOp);
 
-	public void setAuthzDB(AuthzDBInterface authzDB) {
+  public void setAuthzDB(AuthzDBInterface authzDB) {
 
-		this.authzDB = authzDB;
-	}
+    this.authzDB = authzDB;
+  }
 
-	public AuthzDBInterface getAuthzDB() {
-		
-		return authzDB;
-	}
+  public AuthzDBInterface getAuthzDB() {
+
+    return authzDB;
+  }
 
 }

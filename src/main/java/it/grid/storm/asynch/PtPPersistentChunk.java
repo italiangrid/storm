@@ -28,116 +28,110 @@ import org.slf4j.LoggerFactory;
  */
 public class PtPPersistentChunk extends PtP implements PersistentRequestChunk {
 
-	private static Logger log = LoggerFactory.getLogger(PtPPersistentChunk.class);
+  private static Logger log = LoggerFactory.getLogger(PtPPersistentChunk.class);
 
-	/**
-	 * RequestSummaryData containing all the statistics for the originating
-	 * srmPrepareToPutRequest
-	 */
-	private final RequestSummaryData rsd;
+  /**
+   * RequestSummaryData containing all the statistics for the originating srmPrepareToPutRequest
+   */
+  private final RequestSummaryData rsd;
 
-	/**
-	 * GlobalStatusManager object in charge of computing the global status of the
-	 * request This chunk belongs to
-	 */
-	private final GlobalStatusManager gsm;
+  /**
+   * GlobalStatusManager object in charge of computing the global status of the request This chunk
+   * belongs to
+   */
+  private final GlobalStatusManager gsm;
 
-	/**
-	 * Constructor requiring the VomsGridUser, the RequestSummaryData, the
-	 * PtPChunkData about this chunk, and the GlobalStatusManager. If the supplied
-	 * attributes are null, an InvalidPtPChunkAttributesException is thrown.
-	 * 
-	 * @throws InvalidPtPAttributesException
-	 * @throws InvalidPtPChunkAttributesException
-	 */
-	public PtPPersistentChunk(RequestSummaryData summaryData,
-		PtPPersistentChunkData chunkData, GlobalStatusManager gsm)
-		throws InvalidRequestAttributesException, IllegalArgumentException {
+  /**
+   * Constructor requiring the VomsGridUser, the RequestSummaryData, the PtPChunkData about this
+   * chunk, and the GlobalStatusManager. If the supplied attributes are null, an
+   * InvalidPtPChunkAttributesException is thrown.
+   * 
+   * @throws InvalidPtPAttributesException
+   * @throws InvalidPtPChunkAttributesException
+   */
+  public PtPPersistentChunk(RequestSummaryData summaryData, PtPPersistentChunkData chunkData,
+      GlobalStatusManager gsm) throws InvalidRequestAttributesException, IllegalArgumentException {
 
-		super(chunkData);
-		if (summaryData == null || gsm == null) {
-			throw new IllegalArgumentException(
-				"Unable to instantiate the object, illegal arguments: summaryData="
-					+ summaryData + " chunkData=" + chunkData);
-		}
-		this.rsd = summaryData;
-		this.gsm = gsm;
-	}
+    super(chunkData);
+    if (summaryData == null || gsm == null) {
+      throw new IllegalArgumentException(
+          "Unable to instantiate the object, illegal arguments: summaryData=" + summaryData
+              + " chunkData=" + chunkData);
+    }
+    this.rsd = summaryData;
+    this.gsm = gsm;
+  }
 
-	/**
-	 * Method that supplies a String describing this PtGChunk - for scheduler Log
-	 * purposes! It returns the request token and the SURL that was asked for.
-	 */
-	@Override
-	public String getName() {
+  /**
+   * Method that supplies a String describing this PtGChunk - for scheduler Log purposes! It returns
+   * the request token and the SURL that was asked for.
+   */
+  @Override
+  public String getName() {
 
-		return "PtPChunk of request " + rsd.requestToken() + " for SURL "
-			+ requestData.getSURL();
-	}
+    return "PtPChunk of request " + rsd.requestToken() + " for SURL " + requestData.getSURL();
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see it.grid.storm.asynch.RequestChunk#getRequestToken()
-	 */
-	@Override
-	public String getRequestToken() {
+  /*
+   * (non-Javadoc)
+   * 
+   * @see it.grid.storm.asynch.RequestChunk#getRequestToken()
+   */
+  @Override
+  public String getRequestToken() {
 
-		return rsd.requestToken().toString();
-	}
+    return rsd.requestToken().toString();
+  }
 
-	@Override
-	public void persistStatus() {
+  @Override
+  public void persistStatus() {
 
-		PtPPersistentChunk.log.debug("Persisting status of request: {} on SURL {}", 
-			rsd.requestToken(), requestData.getSURL());
-		PtPChunkCatalog.getInstance().update((PtPPersistentChunkData) requestData);
-	}
+    PtPPersistentChunk.log.debug("Persisting status of request: {} on SURL {}", rsd.requestToken(),
+        requestData.getSURL());
+    PtPChunkCatalog.getInstance().update((PtPPersistentChunkData) requestData);
+  }
 
-	@Override
-	public void updateGlobalStatus() {
+  @Override
+  public void updateGlobalStatus() {
 
-		PtPPersistentChunk.log.debug("Updating global status for request: {} on "
-			+ "SURL ", rsd.requestToken(), requestData.getSURL());
-		if (failure) {
-			gsm.failedChunk((PtPPersistentChunkData) requestData);
-		} else {
-			if (spacefailure) {
-				gsm.expiredSpaceLifetimeChunk((PtPPersistentChunkData) requestData);
-			} else {
-				gsm.successfulChunk((PtPPersistentChunkData) requestData);
-			}
-		}
-	}
+    PtPPersistentChunk.log.debug("Updating global status for request: {} on " + "SURL ",
+        rsd.requestToken(), requestData.getSURL());
+    if (failure) {
+      gsm.failedChunk((PtPPersistentChunkData) requestData);
+    } else {
+      if (spacefailure) {
+        gsm.expiredSpaceLifetimeChunk((PtPPersistentChunkData) requestData);
+      } else {
+        gsm.successfulChunk((PtPPersistentChunkData) requestData);
+      }
+    }
+  }
 
-	@Override
-	protected void printRequestOutcome(PtPData inputData) {
+  @Override
+  protected void printRequestOutcome(PtPData inputData) {
 
-		if (inputData != null) {
-			if (inputData.getSURL() != null) {
-				if (rsd.requestToken() != null) {
-					CommandHelper.printRequestOutcome(SRM_COMMAND, log,
-						inputData.getStatus(), inputData, rsd.requestToken(),
-						Arrays.asList(inputData.getSURL().toString()));
-				} else {
-					CommandHelper.printRequestOutcome(SRM_COMMAND, log,
-						inputData.getStatus(), inputData,
-						Arrays.asList(inputData.getSURL().toString()));
-				}
+    if (inputData != null) {
+      if (inputData.getSURL() != null) {
+        if (rsd.requestToken() != null) {
+          CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData,
+              rsd.requestToken(), Arrays.asList(inputData.getSURL().toString()));
+        } else {
+          CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData,
+              Arrays.asList(inputData.getSURL().toString()));
+        }
 
-			} else {
-				if (rsd.requestToken() != null) {
-					CommandHelper.printRequestOutcome(SRM_COMMAND, log,
-						inputData.getStatus(), inputData, rsd.requestToken());
-				} else {
-					CommandHelper.printRequestOutcome(SRM_COMMAND, log,
-						inputData.getStatus(), inputData);
-				}
-			}
+      } else {
+        if (rsd.requestToken() != null) {
+          CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData,
+              rsd.requestToken());
+        } else {
+          CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData);
+        }
+      }
 
-		} else {
-			CommandHelper.printRequestOutcome(SRM_COMMAND, log, CommandHelper
-				.buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "No input available"));
-		}
-	}
+    } else {
+      CommandHelper.printRequestOutcome(SRM_COMMAND, log,
+          CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "No input available"));
+    }
+  }
 }

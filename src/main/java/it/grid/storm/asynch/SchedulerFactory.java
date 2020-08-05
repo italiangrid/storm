@@ -31,8 +31,7 @@ import it.grid.storm.scheduler.CrusherScheduler;
 public class SchedulerFactory {
 
 
-  private SchedulerFactory() {
-  }
+  private SchedulerFactory() {}
 
   /**
    * Method that returns the Scheduler in charge of handling Feeder tasks.

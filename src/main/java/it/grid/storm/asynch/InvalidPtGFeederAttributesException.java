@@ -21,9 +21,8 @@ import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.griduser.GridUserInterface;
 
 /**
- * Class that represents an Exception thrown when a PtGFeeder could not be
- * created because the supplied RequestSummayData or GridUser or
- * GlobalStatusManager were null.
+ * Class that represents an Exception thrown when a PtGFeeder could not be created because the
+ * supplied RequestSummayData or GridUser or GlobalStatusManager were null.
  * 
  * @author EGRID ICTP
  * @version 3.0
@@ -31,26 +30,31 @@ import it.grid.storm.griduser.GridUserInterface;
  */
 public class InvalidPtGFeederAttributesException extends Exception {
 
-	private boolean nullRequestSummaryData = false;
-	private boolean nullGridUser = false;
-	private boolean nullGlobalStatusManager = false;
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
 
-	/**
-	 * Public constructor that requires the RequestSummaryData and the GridUser
-	 * that caused the exception to be thrown.
-	 */
-	public InvalidPtGFeederAttributesException(RequestSummaryData rsd,
-		GridUserInterface gu, GlobalStatusManager gsm) {
+  private final boolean nullRequestSummaryData;
+  private final boolean nullGridUser;
+  private final boolean nullGlobalStatusManager;
 
-		nullRequestSummaryData = (rsd == null);
-		nullGridUser = (gu == null);
-		nullGlobalStatusManager = (gsm == null);
-	}
+  /**
+   * Public constructor that requires the RequestSummaryData and the GridUser that caused the
+   * exception to be thrown.
+   */
+  public InvalidPtGFeederAttributesException(RequestSummaryData rsd, GridUserInterface gu,
+      GlobalStatusManager gsm) {
 
-	public String toString() {
+    nullRequestSummaryData = (rsd == null);
+    nullGridUser = (gu == null);
+    nullGlobalStatusManager = (gsm == null);
+  }
 
-		return String.format("null-RequestSummaryData=%b; null-GridUser=%b; "
-			+ "null-GlobalStatusManager=%b", nullRequestSummaryData, nullGridUser, 
-			nullGlobalStatusManager);
-	}
+  public String toString() {
+
+    return String.format(
+        "null-RequestSummaryData=%b; null-GridUser=%b; " + "null-GlobalStatusManager=%b",
+        nullRequestSummaryData, nullGridUser, nullGlobalStatusManager);
+  }
 }

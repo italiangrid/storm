@@ -25,93 +25,92 @@ package it.grid.storm.authz.path.model;
  */
 
 public enum PathOperation {
-	WRITE_FILE('W', "WRITE_FILE", "Write data"), READ_FILE('R', "READ_FILE",
-		"Read data", true), RENAME('F', "RENAME", "Rename a file or a directory"), DELETE(
-		'D', "DELETE", "Delete a file or a directory"), LIST_DIRECTORY('L',
-		"LIST_DIRECTORY", "Listing a directory", true), MAKE_DIRECTORY('M',
-		"CREATE_DIRECTORY", "Create a directory"), CREATE_FILE('N', "CREATE_FILE",
-		"Create a new file"), UNDEFINED('?', "UNDEFINED", "Undefined");
+  WRITE_FILE('W', "WRITE_FILE", "Write data"), READ_FILE('R', "READ_FILE", "Read data",
+      true), RENAME('F', "RENAME", "Rename a file or a directory"), DELETE('D', "DELETE",
+          "Delete a file or a directory"), LIST_DIRECTORY('L', "LIST_DIRECTORY",
+              "Listing a directory",
+              true), MAKE_DIRECTORY('M', "CREATE_DIRECTORY", "Create a directory"), CREATE_FILE('N',
+                  "CREATE_FILE", "Create a new file"), UNDEFINED('?', "UNDEFINED", "Undefined");
 
-	private final char operation;
-	private final String operationName;
-	private final String operationDescription;
-	private final boolean readonly;
+  private final char operation;
+  private final String operationName;
+  private final String operationDescription;
+  private final boolean readonly;
 
-	private PathOperation(char operation, String spaceOpName, String spaceOpDesc) {
+  private PathOperation(char operation, String spaceOpName, String spaceOpDesc) {
 
-		this.operation = operation;
-		operationName = spaceOpName;
-		operationDescription = spaceOpDesc;
-		readonly = false;
-	}
+    this.operation = operation;
+    operationName = spaceOpName;
+    operationDescription = spaceOpDesc;
+    readonly = false;
+  }
 
-	private PathOperation(char operation, String spaceOpName, String spaceOpDesc,
-		boolean readonly) {
+  private PathOperation(char operation, String spaceOpName, String spaceOpDesc, boolean readonly) {
 
-		this.operation = operation;
-		operationName = spaceOpName;
-		operationDescription = spaceOpDesc;
-		this.readonly = readonly;
-	}
+    this.operation = operation;
+    operationName = spaceOpName;
+    operationDescription = spaceOpDesc;
+    this.readonly = readonly;
+  }
 
-	public String getDescription() {
-		
-		return operationDescription;
-	}
+  public String getDescription() {
 
-	public static PathOperation getSpaceOperation(char op) {
+    return operationDescription;
+  }
 
-		switch (op) {
-		case 'W':
-			return WRITE_FILE;
-		case 'R':
-			return READ_FILE;
-		case 'F':
-			return RENAME;
-		case 'D':
-			return DELETE;
-			// case 'T':
-			// return TRAVERSE_DIRECTORY;
-		case 'L':
-			return LIST_DIRECTORY;
-		case 'M':
-			return MAKE_DIRECTORY;
-		case 'N':
-			return CREATE_FILE;
-		default:
-			return UNDEFINED;
-		}
-	}
+  public static PathOperation getSpaceOperation(char op) {
 
-	@Override
-	public String toString() {
+    switch (op) {
+      case 'W':
+        return WRITE_FILE;
+      case 'R':
+        return READ_FILE;
+      case 'F':
+        return RENAME;
+      case 'D':
+        return DELETE;
+      // case 'T':
+      // return TRAVERSE_DIRECTORY;
+      case 'L':
+        return LIST_DIRECTORY;
+      case 'M':
+        return MAKE_DIRECTORY;
+      case 'N':
+        return CREATE_FILE;
+      default:
+        return UNDEFINED;
+    }
+  }
 
-		return String.valueOf(operationName);
-	}
+  @Override
+  public String toString() {
 
-	public char getSpaceOperationValue() {
+    return String.valueOf(operationName);
+  }
 
-		return operation;
-	}
+  public char getSpaceOperationValue() {
 
-	public PathOperation getSpaceOp(int ordinal) {
+    return operation;
+  }
 
-		PathOperation[] sp = PathOperation.values();
-		if ((ordinal >= 0) && (ordinal < sp.length)) {
-			return sp[ordinal];
-		} else {
-			return UNDEFINED;
-		}
-	}
+  public PathOperation getSpaceOp(int ordinal) {
 
-	public int getNumberOfPathOp() {
+    PathOperation[] sp = PathOperation.values();
+    if ((ordinal >= 0) && (ordinal < sp.length)) {
+      return sp[ordinal];
+    } else {
+      return UNDEFINED;
+    }
+  }
 
-		return PathOperation.values().length - 1;
-	}
+  public int getNumberOfPathOp() {
 
-	public boolean isReadOnly() {
+    return PathOperation.values().length - 1;
+  }
 
-		return this.readonly;
-	}
+  public boolean isReadOnly() {
+
+    return this.readonly;
+  }
 
 }

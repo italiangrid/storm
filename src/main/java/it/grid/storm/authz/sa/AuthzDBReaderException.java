@@ -15,27 +15,32 @@
  * the License.
  */
 
-package it.grid.storm.authz.sa.conf;
+package it.grid.storm.authz.sa;
 
 public class AuthzDBReaderException extends Exception {
 
-	public AuthzDBReaderException() {
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-		super();
-	}
+  public AuthzDBReaderException() {
 
-	public AuthzDBReaderException(String message) {
+    super();
+  }
 
-		super(message);
-	}
+  public AuthzDBReaderException(String message) {
 
-	public AuthzDBReaderException(String message, Throwable cause) {
+    super(message);
+  }
 
-		super(message, cause);
-	}
+  public AuthzDBReaderException(String message, Throwable cause) {
 
-	public AuthzDBReaderException(Throwable cause) {
+    super(message, cause);
+  }
 
-		super(cause);
-	}
+  public AuthzDBReaderException(Throwable cause) {
+
+    super(cause);
+  }
 }

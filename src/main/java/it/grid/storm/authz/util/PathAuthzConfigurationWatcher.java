@@ -30,28 +30,28 @@ import org.slf4j.LoggerFactory;
  */
 public class PathAuthzConfigurationWatcher extends ConfigurationWatcher {
 
-	private static final Logger log = LoggerFactory.getLogger(PathAuthzConfigurationWatcher.class);
+  private static final Logger log = LoggerFactory.getLogger(PathAuthzConfigurationWatcher.class);
 
-	/**
-	 * @param file
-	 */
-	public PathAuthzConfigurationWatcher(File file) {
+  /**
+   * @param file
+   */
+  public PathAuthzConfigurationWatcher(File file) {
 
-		super(file);
-		log.debug("Watcher manages the configuration file: {}", file);
-	}
+    super(file);
+    log.debug("Watcher manages the configuration file: {}", file);
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see it.grid.storm.authz.util.ConfigurationWatcher#onChange()
-	 */
-	@Override
-	protected void onChange() {
+  /*
+   * (non-Javadoc)
+   * 
+   * @see it.grid.storm.authz.util.ConfigurationWatcher#onChange()
+   */
+  @Override
+  protected void onChange() {
 
-		log.info("Path Authorization DB is changed! Going to reload it");
-		// Force the reload of the configuration file
+    log.info("Path Authorization DB is changed! Going to reload it");
+    // Force the reload of the configuration file
 
-	}
+  }
 
 }

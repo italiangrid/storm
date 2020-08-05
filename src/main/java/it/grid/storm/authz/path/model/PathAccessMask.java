@@ -26,91 +26,91 @@ import java.util.List;
 @SuppressWarnings("serial")
 public class PathAccessMask {
 
-	private final List<PathOperation> pathAccessMask;
+  private final List<PathOperation> pathAccessMask;
 
-	private static List<PathOperation> operations = new ArrayList<PathOperation>() {
+  private static List<PathOperation> operations = new ArrayList<PathOperation>() {
 
-		{
-			add(PathOperation.READ_FILE);
-			add(PathOperation.LIST_DIRECTORY);
-		}
-	};
+    {
+      add(PathOperation.READ_FILE);
+      add(PathOperation.LIST_DIRECTORY);
+    }
+  };
 
-	public static final PathAccessMask DEFAULT = new PathAccessMask(operations);
+  public static final PathAccessMask DEFAULT = new PathAccessMask(operations);
 
-	public PathAccessMask() {
+  public PathAccessMask() {
 
-		pathAccessMask = new ArrayList<PathOperation>();
-	}
+    pathAccessMask = new ArrayList<PathOperation>();
+  }
 
-	public PathAccessMask(List<PathOperation> operations) {
+  public PathAccessMask(List<PathOperation> operations) {
 
-		pathAccessMask = operations;
-	}
+    pathAccessMask = operations;
+  }
 
-	public void addPathOperation(PathOperation pathOp) {
+  public void addPathOperation(PathOperation pathOp) {
 
-		pathAccessMask.add(pathOp);
-	}
+    pathAccessMask.add(pathOp);
+  }
 
-	public boolean containsPathOperation(PathOperation pathOp) {
+  public boolean containsPathOperation(PathOperation pathOp) {
 
-		return pathAccessMask.contains(pathOp);
-	}
+    return pathAccessMask.contains(pathOp);
+  }
 
-	public List<PathOperation> getPathOperations() {
+  public List<PathOperation> getPathOperations() {
 
-		return pathAccessMask;
-	}
+    return pathAccessMask;
+  }
 
-	public int getSize() {
+  public int getSize() {
 
-		return pathAccessMask != null ? pathAccessMask.size() : 0;
-	}
+    return pathAccessMask != null ? pathAccessMask.size() : 0;
+  }
 
-	@Override
-	public boolean equals(Object other) {
+  @Override
+  public boolean equals(Object other) {
 
-		boolean result = false;
-		if (other instanceof PathAccessMask) {
-			PathAccessMask pOther = (PathAccessMask) other;
-			if (pathAccessMask.size() == pOther.getSize()) {
-				result = true;
-				for (PathOperation element : pathAccessMask) {
-					if (!(pOther.containsPathOperation(element))) {
-						result = false;
-					}
-				}
-			}
-		}
-		return result;
-	}
+    boolean result = false;
+    if (other instanceof PathAccessMask) {
+      PathAccessMask pOther = (PathAccessMask) other;
+      if (pathAccessMask.size() == pOther.getSize()) {
+        result = true;
+        for (PathOperation element : pathAccessMask) {
+          if (!(pOther.containsPathOperation(element))) {
+            result = false;
+          }
+        }
+      }
+    }
+    return result;
+  }
 
-	@Override
-	public String toString() {
+  @Override
+  public String toString() {
 
-		String pathPermissionStr = "";
-		for (PathOperation pathOp : PathOperation.values()) {
-			if (!(pathOp.equals(PathOperation.UNDEFINED))) {
-				if (pathAccessMask.contains(pathOp)) {
-					pathPermissionStr += pathOp.getSpaceOperationValue();
-				} else {
-					pathPermissionStr += "-";
-				}
-			}
-		}
-		return pathPermissionStr;
-	}
+    String pathPermissionStr = "";
+    for (PathOperation pathOp : PathOperation.values()) {
+      if (!(pathOp.equals(PathOperation.UNDEFINED))) {
+        if (pathAccessMask.contains(pathOp)) {
+          pathPermissionStr += pathOp.getSpaceOperationValue();
+        } else {
+          pathPermissionStr += "-";
+        }
+      }
+    }
+    return pathPermissionStr;
+  }
 
-	@Override
-	public int hashCode() {
+  @Override
+  public int hashCode() {
 
-		int result = 17;
-		if (pathAccessMask != null) {
-			for (PathOperation element : pathAccessMask) {
-				result += 31 * result + element.hashCode();
-			}
-		}
-		return result;
-	}
+    int result = 17;
+    if (pathAccessMask != null) {
+      for (PathOperation element : pathAccessMask) {
+        result += 31 * result + element.hashCode();
+      }
+    }
+    return result;
+  }
 }

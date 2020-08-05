@@ -29,81 +29,69 @@ import it.grid.storm.authz.remote.Constants;
 @Path("/" + Constants.RESOURCE + "/" + Constants.VERSION_1_0 + "/{filePath}")
 public class AuthorizationResourceCompat_1_0 {
 
-	private static final AuthorizationResource resourceInstance = new AuthorizationResource();
+  private static final AuthorizationResource resourceInstance = new AuthorizationResource();
 
-	/**
-	 * @param filePath
-	 * @param DN
-	 * @param FQANS
-	 * @return
-	 * @throws WebApplicationException
-	 */
-	@GET
-	@Path("/" + Constants.READ_OPERATION + "/" + Constants.VOMS_EXTENSIONS + "/"
-		+ Constants.USER)
-	@Produces("text/plain")
-	public String evaluateVomsGridUserReadPermission(
-		@PathParam("filePath") String filePath,
-		@QueryParam(Constants.DN_KEY) String DN,
-		@QueryParam(Constants.FQANS_KEY) String FQANS)
-		throws WebApplicationException {
+  /**
+   * @param filePath
+   * @param DN
+   * @param FQANS
+   * @return
+   * @throws WebApplicationException
+   */
+  @GET
+  @Path("/" + Constants.READ_OPERATION + "/" + Constants.VOMS_EXTENSIONS + "/" + Constants.USER)
+  @Produces("text/plain")
+  public String evaluateVomsGridUserReadPermission(@PathParam("filePath") String filePath,
+      @QueryParam(Constants.DN_KEY) String DN, @QueryParam(Constants.FQANS_KEY) String FQANS)
+      throws WebApplicationException {
 
-		return resourceInstance.evaluateVomsGridUserReadPermission(filePath, DN,
-			FQANS);
-	}
+    return resourceInstance.evaluateVomsGridUserReadPermission(filePath, DN, FQANS);
+  }
 
-	/**
-	 * @param filePath
-	 * @param DN
-	 * @param FQANS
-	 * @return
-	 * @throws WebApplicationException
-	 */
-	@GET
-	@Path("/" + Constants.WRITE_OPERATION + "/" + Constants.VOMS_EXTENSIONS + "/"
-		+ Constants.USER)
-	@Produces("text/plain")
-	public String evaluateVomsGridUserWritePermission(
-		@PathParam("filePath") String filePath,
-		@QueryParam(Constants.DN_KEY) String DN,
-		@QueryParam(Constants.FQANS_KEY) String FQANS)
-		throws WebApplicationException {
+  /**
+   * @param filePath
+   * @param DN
+   * @param FQANS
+   * @return
+   * @throws WebApplicationException
+   */
+  @GET
+  @Path("/" + Constants.WRITE_OPERATION + "/" + Constants.VOMS_EXTENSIONS + "/" + Constants.USER)
+  @Produces("text/plain")
+  public String evaluateVomsGridUserWritePermission(@PathParam("filePath") String filePath,
+      @QueryParam(Constants.DN_KEY) String DN, @QueryParam(Constants.FQANS_KEY) String FQANS)
+      throws WebApplicationException {
 
-		return resourceInstance.evaluateVomsGridUserWritePermission(filePath, DN,
-			FQANS);
-	}
+    return resourceInstance.evaluateVomsGridUserWritePermission(filePath, DN, FQANS);
+  }
 
-	/**
-	 * @param filePath
-	 * @param DN
-	 * @return
-	 * @throws WebApplicationException
-	 */
-	@GET
-	@Path("/" + Constants.READ_OPERATION + "/" + Constants.PLAIN + "/"
-		+ Constants.USER)
-	@Produces("text/plain")
-	public String evaluateGridUserReadPermission(
-		@PathParam("filePath") String filePath,
-		@QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
+  /**
+   * @param filePath
+   * @param DN
+   * @return
+   * @throws WebApplicationException
+   */
+  @GET
+  @Path("/" + Constants.READ_OPERATION + "/" + Constants.PLAIN + "/" + Constants.USER)
+  @Produces("text/plain")
+  public String evaluateGridUserReadPermission(@PathParam("filePath") String filePath,
+      @QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
 
-		return resourceInstance.evaluateGridUserReadPermission(filePath, DN);
-	}
+    return resourceInstance.evaluateGridUserReadPermission(filePath, DN);
+  }
 
-	/**
-	 * @param filePath
-	 * @param DN
-	 * @return
-	 * @throws WebApplicationException
-	 */
-	@GET
-	@Path("/" + Constants.WRITE_OPERATION + "/" + Constants.PLAIN + "/"
-		+ Constants.USER)
-	@Produces("text/plain")
-	public String evaluateGridUserWritePermission(
-		@PathParam("filePath") String filePath,
-		@QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
+  /**
+   * @param filePath
+   * @param DN
+   * @return
+   * @throws WebApplicationException
+   */
+  @GET
+  @Path("/" + Constants.WRITE_OPERATION + "/" + Constants.PLAIN + "/" + Constants.USER)
+  @Produces("text/plain")
+  public String evaluateGridUserWritePermission(@PathParam("filePath") String filePath,
+      @QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
 
-		return resourceInstance.evaluateGridUserWritePermission(filePath, DN);
-	}
+    return resourceInstance.evaluateGridUserWritePermission(filePath, DN);
+  }
 }
