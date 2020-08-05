@@ -23,117 +23,129 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Maps;
+
 public class Constants {
 
-	private static final Logger log = LoggerFactory.getLogger(Constants.class);
+  private static final Logger log = LoggerFactory.getLogger(Constants.class);
 
-	public static final Entry BE_VERSION;
-	public static final Entry NAMESPACE_VERSION;
-	public static final Entry BE_OS_DISTRIBUTION;
-	public static final Entry BE_OS_PLATFORM;
-	public static final Entry BE_OS_KERNEL_RELEASE;
+  public static final Entry BE_VERSION;
+  public static final Entry NAMESPACE_VERSION;
+  public static final Entry BE_OS_DISTRIBUTION;
+  public static final Entry BE_OS_PLATFORM;
+  public static final Entry BE_OS_KERNEL_RELEASE;
 
-	private static final String notAvailable = "N/A";
+  private static final String BE_OS_PLATFORM_KEY = "BE-OS-Platform";
+  private static final String BE_OS_KERNEL_RELEASE_KEY = "BE-OS-Kernel-Release";
 
-	static {
-		BE_VERSION = new Entry("BE-Version", Constants.class.getPackage()
-			.getImplementationVersion());
-		NAMESPACE_VERSION = new Entry("Namespace-version", "1.5.0");
-		BE_OS_DISTRIBUTION = new Entry("BE-OS-Distribution", getDistribution());
-		HashMap<String, String> map = getPlatformKernel();
-		BE_OS_PLATFORM = new Entry("BE-OS-Platform", map.get("platform"));
-		BE_OS_KERNEL_RELEASE = new Entry("BE-OS-Kernel-Release",
-			map.get("kernelRelease"));
-	}
+  private static final String NOT_AVAILABLE = "N/A";
 
-	/**
-     * 
-     */
-	private static String getDistribution() {
+  private Constants() {}
 
-		String distribution = notAvailable;
-		String issuePath = File.separatorChar + "etc" + File.separatorChar
-			+ "issue";
-		File issueFile = new File(issuePath);
-		if (!issueFile.exists() || !issueFile.isFile() || !issueFile.canRead()) {
-			log.warn("Unable to read {} file!!", issueFile.getAbsolutePath());
-		} else {
-			try {
-				BufferedReader issueReader = new BufferedReader(new FileReader(
-					issueFile));
-				String output = issueReader.readLine();
-				if (output == null) {
-					log.warn("The file {} is empty!", issueFile.getAbsolutePath());
-				} else {
-					distribution = output;
-				}
-				issueReader.close();
-			} catch (FileNotFoundException e) {
-				log.error("Unable to read file '{}'. {}", issueFile.getAbsolutePath(), e);
-			} catch (IOException e) {
-				log.error("Unable to read file '{}'. {}", issueFile.getAbsolutePath(), e);
-			}
-		}
-		return distribution;
-	}
+  static {
+    BE_VERSION = new Entry("BE-Version", Constants.class.getPackage().getImplementationVersion());
+    NAMESPACE_VERSION = new Entry("Namespace-version", "1.5.0");
+    BE_OS_DISTRIBUTION = new Entry("BE-OS-Distribution", getDistribution());
+    Map<String, String> map = getPlatformKernel();
+    BE_OS_PLATFORM = new Entry(BE_OS_PLATFORM_KEY, map.get(BE_OS_PLATFORM_KEY));
+    BE_OS_KERNEL_RELEASE = new Entry(BE_OS_KERNEL_RELEASE_KEY, map.get(BE_OS_KERNEL_RELEASE_KEY));
+  }
 
-	/**
-     * 
-     */
-	private static HashMap<String, String> getPlatformKernel() {
+  /**
+   * 
+   */
+  private static String getDistribution() {
 
-		HashMap<String, String> map = new HashMap<String, String>();
-		map.put("kernelRelease", notAvailable);
-		map.put("platform", notAvailable);
-		try {
-			Process p = Runtime.getRuntime().exec("uname -ri");
-			BufferedReader stdInput = new BufferedReader(new InputStreamReader(
-				p.getInputStream()));
-			BufferedReader stdError = new BufferedReader(new InputStreamReader(
-				p.getErrorStream()));
+    String distribution = NOT_AVAILABLE;
+    String releaseFilePath = File.separatorChar + "etc" + File.separatorChar + "redhat-release";
+    File releaseFile = new File(releaseFilePath);
+    if (!releaseFile.exists() || !releaseFile.isFile() || !releaseFile.canRead()) {
+      log.warn("Unable to read {} file!!", releaseFile.getAbsolutePath());
+      return distribution;
+    }
+    FileReader fr;
+    try {
+      fr = new FileReader(releaseFile);
+    } catch (FileNotFoundException e) {
+      log.error("Unable to find file '{}'. {}", releaseFile.getAbsolutePath(), e);
+      return distribution;
+    }
+    BufferedReader br = new BufferedReader(fr);
+    try {
+      String line = br.readLine();
+      if (line == null) {
+        log.warn("The file {} is empty!", releaseFile.getAbsolutePath());
+      } else {
+        distribution = line;
+      }
+    } catch (IOException e) {
+      log.error("Unable to read file '{}'. {}", releaseFile.getAbsolutePath(), e);
+    } finally {
+      try {
+        br.close();
+        fr.close();
+      } catch (IOException e) {
+        log.error("Unable to close file '{}'. {}", releaseFile.getAbsolutePath(), e);
+      }
+    }
+    return distribution;
+  }
 
-			String error = stdError.readLine();
-			String output = stdInput.readLine();
-			if (output == null || stdInput.read() != -1 || error != null) {
-				while (error != null) {
-					error += stdError.readLine();
-				}
-				log.error("Unable to invoke \'uname -ri\' . Standard error : {}", error);
-			} else {
-				String[] fields = output.trim().split(" ");
-				map.put("kernelRelease", fields[0]);
-				map.put("platform", fields[1]);
-			}
-		} catch (IOException e) {
-			log.error("Unable to invoke \'uname -ri\' . IOException {}", e);
-		}
-		return map;
-	}
+  /**
+   * 
+   */
+  private static Map<String, String> getPlatformKernel() {
 
-	public static class Entry {
+    Map<String, String> map = Maps.newHashMap();
+    map.put(BE_OS_KERNEL_RELEASE_KEY, NOT_AVAILABLE);
+    map.put(BE_OS_PLATFORM_KEY, NOT_AVAILABLE);
+    try {
+      Process p = Runtime.getRuntime().exec("uname -ri");
+      BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+      BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 
-		private final String key;
-		private final String value;
+      String error = stdError.readLine();
+      String output = stdInput.readLine();
+      if (output == null || stdInput.read() != -1 || error != null) {
+        while (error != null) {
+          error += stdError.readLine();
+        }
+        log.error("Unable to invoke \'uname -ri\' . Standard error : {}", error);
+      } else {
+        String[] fields = output.trim().split(" ");
+        map.put(BE_OS_KERNEL_RELEASE_KEY, fields[0]);
+        map.put(BE_OS_PLATFORM_KEY, fields[1]);
+      }
+    } catch (IOException e) {
+      log.error("Unable to invoke \'uname -ri\' . IOException {}", e);
+    }
+    return map;
+  }
 
-		private Entry(String key, String value) {
+  public static class Entry {
 
-			this.key = key;
-			this.value = value;
-		}
+    private final String key;
+    private final String value;
 
-		public String getKey() {
+    private Entry(String key, String value) {
 
-			return key;
-		}
+      this.key = key;
+      this.value = value;
+    }
 
-		public String getValue() {
+    public String getKey() {
 
-			return value;
-		}
-	}
+      return key;
+    }
+
+    public String getValue() {
+
+      return value;
+    }
+  }
 }
