@@ -1,10 +1,18 @@
 - title: "Quickly deploy all-in-one StoRM"
-  relative-link: "/documentation/how-to/basic-storm-standalone-configuration/1.11.7/"
-  description: "Example of a minimal standalone deployment of StoRM."
-  last-update: "14/04/2015"
+  relative-link: "/documentation/how-to/basic-storm-standalone-configuration/1.11.18/"
+  description: "Example of a minimal standalone deployment of StoRM with YAIM."
+  last-update: "07/08/2020"
   older-versions:
+    - name: "1.11.7"
+      relative-link: "/documentation/how-to/basic-storm-standalone-configuration/1.11.7/"
     - name: "1.11.2"
       relative-link: "/documentation/how-to/basic-storm-standalone-configuration/1.11.2/"
+
+- title: "Quickly deploy all-in-one StoRM for CentOS 7 with Puppet"
+  relative-link: "/documentation/how-to/basic-storm-standalone-configuration-centos7/1.11.18/"
+  description: "Example of a minimal standalone deployment of StoRM on CentOS 7 platform with Puppet."
+  last-update: "07/08/2020"
+  older-versions: []
 
 - title: "Manually kill StoRM backend process(es)"
   relative-link: "/documentation/how-to/kill-backend/"
