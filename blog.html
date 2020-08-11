@@ -9,7 +9,7 @@ title: StoRM Storage Resource Manager
 	<ul class="unstyled">
 	{% for post in site.posts %}
 		<li>
-			<h2><a href="{{ post.url }}">{{ post.title }}</a></h4>
+			<h2><a href="{{ post.url }}">{{ post.title }}</a></h2>
 			<p>Posted on {{ post.date | date_to_string }} by {{ author }}</p>
 			<p>{{ post.content | truncate: 500 }}</p>
 		</li>
@@ -20,5 +20,4 @@ title: StoRM Storage Resource Manager
 	
 	<a class="btn btn-warning" type="button" href="http://feeds.feedburner.com/github/cuJr"><img src="assets/images/rss.png"> RSS Feed</a>
 
-	</div>
 </div>

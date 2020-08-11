@@ -17,12 +17,10 @@ title: StoRM releases
 expected. Read and follow [UMD repositories installation instructions][umd-install-guide].
 
 > <span class="label label-success">README</span> Since
-[StoRM v1.11.14]({{site.baseurl}}/release-notes/StoRM-v1.11.14.html)
-the package repository **has been migrated** to _**repo.cloud.cnaf.infn.it**_.
-Be sure to upgrade your repository configuration.
+[StoRM v1.11.18]({{site.baseurl}}/release-notes/StoRM-v1.11.18.html)
+the package repository **has been migrated**. Be sure to upgrade your repository configuration.
 
-All the StoRM components are certified to work on RHEL 6 platforms.
-Some components have also been released for RHEL 7.
+All the StoRM components are certified to work on RHEL 6 and RHEL 7 platforms.
 
 [<i class="icon-search"></i> Browse all StoRM's repositories][storm-repo-index].
 
@@ -57,19 +55,8 @@ The StoRM source is available on [Github](https://github.com) in the following r
 - [StoRM XMLRPC api](https://github.com/italiangrid/storm-xmlrpc-api)
 - [StoRM GridFTP](https://github.com/italiangrid/storm-gridftp-dsi)
 - [CDMI StoRM](https://github.com/italiangrid/cdmi-storm)
+- [StoRM Puppet module](https://github.com/italiangrid/storm-puppet-module)
 
 [storm-repo-index]: https://repo.cloud.cnaf.infn.it/repository/storm/index.html
 
-[stable-repo]: https://repo.cloud.cnaf.infn.it/#browse/browse:storm:stable
-[stable-repoview]: https://repo.cloud.cnaf.infn.it/repository/storm/stable/el6/x86_64/repoview/index.html
-[stable-repo-file]: https://repo.cloud.cnaf.infn.it/repository/storm/stable/storm-stable-centos6.repo
-
-[beta-repo]: https://repo.cloud.cnaf.infn.it/#browse/browse:storm:beta
-[beta-repoview]: https://repo.cloud.cnaf.infn.it/repository/storm/beta/el6/x86_64/repoview/index.html
-[beta-repo-file]: https://repo.cloud.cnaf.infn.it/repository/storm/beta/storm-beta-centos6.repo
-
-[nightly-repo]: https://repo.cloud.cnaf.infn.it/#browse/browse:storm:nightly
-[nightly-repoview]: https://repo.cloud.cnaf.infn.it/repository/storm/nightly/el6/x86_64/repoview/index.html
-[nightly-repo-file]: https://repo.cloud.cnaf.infn.it/repository/storm/nightly/storm-nightly-centos6.repo
-
-[umd-install-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.17/#umdrepos
+[umd-install-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.18/#umdrepos
