@@ -23,7 +23,7 @@ This is the latest release for StoRM, available on StoRM repositories.
 |StoRM Native Libs     |[1.0.6]({{site.baseurl}}/release-notes/storm-native-libs/1.0.6/) | <span class="label label-success ">centos6</span> <span class="label label-info ">centos7</span>
 |StoRM XMLRPC-C        |[1.39.12]({{site.baseurl}}/release-notes/storm-xmlrpc-c/1.39.12/) | <span class="label label-info ">centos7</span>
 |CDMI StoRM            |[0.1.1]({{site.baseurl}}/release-notes/cdmi-storm/0.1.1/) | <span class="label label-info ">centos7</span>
-
+|YAIM StoRM            |[4.3.13]({{site.baseurl}}/release-notes/yaim-storm/4.3.13/) | <span class="label label-success ">centos6</span>
 
 See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.18.html).
 
