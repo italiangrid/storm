@@ -101,6 +101,11 @@ components:
     platforms:
       - centos6
       - centos7
+  - name: CDMI StoRM
+    package: cdmi-storm
+    version: 0.1.1
+    platforms:
+      - centos7
   - name: StoRM XMLRPC-C
     package: storm-xmlrpc-c
     version: 1.39.12
