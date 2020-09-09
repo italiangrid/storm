@@ -19,6 +19,8 @@ The aim is allowing all the users to access - through a WebDAV endpoint - the JS
 
 In the following example, a dedicated storage area named `info` has been added and configured to be readable-only by all the users.
 
+### YAIM configuration
+
 Configure `info` storage area as follow:
 
 ```
@@ -50,6 +52,28 @@ $ vim /etc/storm/backend-server/path-authz.db
 
 Run YAIM to apply configuration.
 
+### Puppet configuration
+
+Add the `info` storage area only to `storm::webdav` class. You don't need to add this storage area to Backend configuration.
+Specify all the VOs that are allowed to read this SA.
+
+```
+class { 'storm::webdav':
+  ...
+  storage_areas => [{
+    'name'                       => 'info',
+    'root_path'                  => '/storage/info',
+    'access_points'              => ['/info'],
+    'vos'                        => ['dteam', 'atlas', 'lhc'],
+    'authenticated_read_enabled' => true,
+  },
+  ...
+  ]
+}
+```
+
+Apply Puppet configuration.
+
 ## Periodically reload report <a name="reload-report">&nbsp;</a>
 
 ### Refresh script <a name="script">&nbsp;</a>
@@ -77,7 +101,6 @@ chown storm:storm $TARGET_REPORT_PATH
 
 Save it into `/root/update-report.sh`
 
-
 ### Cron-job<a name="cronjob">&nbsp;</a>
 
 Create a cron-job that runs `update-report.sh` script hourly.
@@ -85,10 +108,39 @@ Create a cron-job that runs `update-report.sh` script hourly.
 Create `/etc/cron.d/update-site-report` as follow:
 
 ```
-0 * * * *      root    /bin/bash /root/update-report.sh
+*/30 * * * *      root    /bin/bash /root/update-report.sh
 ```
 
-At XX:00 the `update-report.sh` script will be executed.
+The `update-report.sh` script will be executed each 30 minutes.
+Read more info about cron jobs into the [man page](https://crontab.guru/crontab.5.html).
+
+### Configure periodic updates with Puppet
+
+The same update script has been added to Puppet module since version 0.4.4.
+
+You can add to your manifest the following resources:
+
+```
+file { '/root/update-site-report.sh':
+  ensure => 'present',
+  source => 'puppet:///modules/storm/update-site-report.sh',
+}
+
+cron { 'update-site-report':
+  ensure  => 'present',
+  command => '/bin/bash /root/update-report.sh',
+  user    => 'root',
+  minute  => '*/30',
+  require => File['/root/update-site-report.sh'],
+}
+
+exec { 'create-site-report':
+  command => '/bin/bash /root/update-site-report.sh',
+  require => File['/root/update-site-report.sh'],
+}
+```
+
+This snippet executes the script and also creates the cron job.
 
 ## Get JSON report through HTTP <a name="json">&nbsp;</a>
 
