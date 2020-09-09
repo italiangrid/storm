@@ -32,22 +32,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class represents a PrepareToPut Feeder: the Feeder that will handle the
- * srmPrepareToPut statements. It chops a multifile request into its constituent
- * parts.
+ * This class represents a PrepareToPut Feeder: the Feeder that will handle the srmPrepareToPut
+ * statements. It chops a multifile request into its constituent parts.
  * 
- * If the request contains nothing to process, an error message gets logged, the
- * number of queued requests is decreased, and the number of finished requests
- * is increased.
+ * If the request contains nothing to process, an error message gets logged, the number of queued
+ * requests is decreased, and the number of finished requests is increased.
  * 
- * Each single part of the request is handled as follows: the number of queued
- * requests is decreased, the number of progressing requests is increased, the
- * status of that chunk is changed to SRM_REQUEST_INPROGRESS; the chunk is given
- * to the scheduler for handling. In case the scheduler cannot accept the chunk
- * for any reason, a messagge with the requestToken and the chunk s data is
- * logged, status of the chunk passes to SRM_ABORTED, and at the end the
- * counters are such that the queued-requests is decreased while the
- * finished-requests is increased.
+ * Each single part of the request is handled as follows: the number of queued requests is
+ * decreased, the number of progressing requests is increased, the status of that chunk is changed
+ * to SRM_REQUEST_INPROGRESS; the chunk is given to the scheduler for handling. In case the
+ * scheduler cannot accept the chunk for any reason, a messagge with the requestToken and the chunk
+ * s data is logged, status of the chunk passes to SRM_ABORTED, and at the end the counters are such
+ * that the queued-requests is decreased while the finished-requests is increased.
  * 
  * @author EGRID - ICTP Trieste
  * @date June, 2005
@@ -55,156 +51,152 @@ import org.slf4j.LoggerFactory;
  */
 public final class PtPFeeder implements Delegable {
 
-	private static Logger log = LoggerFactory.getLogger(PtPFeeder.class);
-	/* RequestSummaryData this PtPFeeder refers to. */
-	private RequestSummaryData rsd = null;
-	/* GridUser for this PtPFeeder. */
-	private GridUserInterface gu = null;
-	/* Overall request status. */
-	private GlobalStatusManager gsm = null;
+  private static Logger log = LoggerFactory.getLogger(PtPFeeder.class);
+  /* RequestSummaryData this PtPFeeder refers to. */
+  private RequestSummaryData rsd = null;
+  /* GridUser for this PtPFeeder. */
+  private GridUserInterface gu = null;
+  /* Overall request status. */
+  private GlobalStatusManager gsm = null;
 
-	/**
-	 * Public constructor requiring the RequestSummaryData to which this PtPFeeder
-	 * refers, as well as the GridUser. In case of null objects, an
-	 * InvalidPtPFeederAttributesException is thrown; likewise if the
-	 * OverallRequest object cannot be instantiated for this request.
-	 */
-	public PtPFeeder(RequestSummaryData rsd)
-		throws InvalidPtPFeederAttributesException {
+  /**
+   * Public constructor requiring the RequestSummaryData to which this PtPFeeder refers, as well as
+   * the GridUser. In case of null objects, an InvalidPtPFeederAttributesException is thrown;
+   * likewise if the OverallRequest object cannot be instantiated for this request.
+   */
+  public PtPFeeder(RequestSummaryData rsd) throws InvalidPtPFeederAttributesException {
 
-		if (rsd == null) {
-			throw new InvalidPtPFeederAttributesException(null, null, null);
-		}
-		if (rsd.gridUser() == null) {
-			throw new InvalidPtPFeederAttributesException(rsd, null, null);
-		}
-		try {
-			gu = rsd.gridUser();
-			this.rsd = rsd;
-			gsm = new GlobalStatusManager(rsd.requestToken());
-		} catch (InvalidOverallRequestAttributeException e) {
-			log.error("ATTENTION in PtPFeeder! Programming bug when creating "
-				+ "GlobalStatusManager! {}", e.getMessage());
-			throw new InvalidPtPFeederAttributesException(rsd, gu, null);
-		}
-	}
+    if (rsd == null) {
+      throw new InvalidPtPFeederAttributesException(null, null, null);
+    }
+    if (rsd.gridUser() == null) {
+      throw new InvalidPtPFeederAttributesException(rsd, null, null);
+    }
+    try {
+      gu = rsd.gridUser();
+      this.rsd = rsd;
+      gsm = new GlobalStatusManager(rsd.requestToken());
+    } catch (InvalidOverallRequestAttributeException e) {
+      log.error(
+          "ATTENTION in PtPFeeder! Programming bug when creating " + "GlobalStatusManager! {}",
+          e.getMessage());
+      throw new InvalidPtPFeederAttributesException(rsd, gu, null);
+    }
+  }
 
-	/**
-	 * This method splits a multifile request; it then creates the necessary tasks
-	 * and loads them into the PtP chunk scheduler.
-	 */
-	public void doIt() {
+  /**
+   * This method splits a multifile request; it then creates the necessary tasks and loads them into
+   * the PtP chunk scheduler.
+   */
+  public void doIt() {
 
-		log.debug("PtPFeeder: pre-processing {}", rsd.requestToken());
-		/* Get all parts in request */
-		Collection<PtPPersistentChunkData> chunks = PtPChunkCatalog.getInstance()
-			.lookup(rsd.requestToken());
-		if (chunks.isEmpty()) {
-			log.warn("ATTENTION in PtPFeeder! This SRM put request contained nothing "
-				+ "to process! {}", rsd.requestToken());
-			RequestSummaryCatalog.getInstance().failRequest(rsd,
-				"This SRM put request contained nothing to process!");
-		} else {
-			manageChunks(chunks);
-			log.debug("PtPFeeder: finished pre-processing {}", rsd.requestToken());
-		}
-	}
+    log.debug("PtPFeeder: pre-processing {}", rsd.requestToken());
+    /* Get all parts in request */
+    Collection<PtPPersistentChunkData> chunks =
+        PtPChunkCatalog.getInstance().lookup(rsd.requestToken());
+    if (chunks.isEmpty()) {
+      log.warn("ATTENTION in PtPFeeder! This SRM put request contained nothing " + "to process! {}",
+          rsd.requestToken());
+      RequestSummaryCatalog.getInstance()
+        .failRequest(rsd, "This SRM put request contained nothing to process!");
+    } else {
+      manageChunks(chunks);
+      log.debug("PtPFeeder: finished pre-processing {}", rsd.requestToken());
+    }
+  }
 
-	/**
-	 * Private method that handles the Collection of chunks associated with the
-	 * srm command!
-	 * 
-	 * @param chunksData
-	 */
-	private void manageChunks(Collection<PtPPersistentChunkData> chunksData) {
+  /**
+   * Private method that handles the Collection of chunks associated with the srm command!
+   * 
+   * @param chunksData
+   */
+  private void manageChunks(Collection<PtPPersistentChunkData> chunksData) {
 
-		log.debug("PtPFeeder: number of chunks in request {}", chunksData.size());
-		/* chunk currently being processed */
-		for (PtPPersistentChunkData chunkData : chunksData) {
-			/* add chunk for global status consideration */
-			gsm.addChunk(chunkData);
-			if (TSURL.isValid(chunkData.getSURL())) {
-				manage(chunkData);
-			} else {
-				/*
-				 * toSURL does _not_ correspond to this installation of StoRM: fail
-				 * chunk!
-				 */
-				log.warn("PtPFeeder: srmPtP contract violation! toSURL"
-					+ " does not refer to this machine!");
-				log.warn("Request: {}", rsd.requestToken());
-				log.warn("Chunk: {}", chunkData);
+    log.debug("PtPFeeder: number of chunks in request {}", chunksData.size());
+    /* chunk currently being processed */
+    for (PtPPersistentChunkData chunkData : chunksData) {
+      /* add chunk for global status consideration */
+      gsm.addChunk(chunkData);
+      if (TSURL.isValid(chunkData.getSURL())) {
+        manage(chunkData);
+      } else {
+        /*
+         * toSURL does _not_ correspond to this installation of StoRM: fail chunk!
+         */
+        log.warn(
+            "PtPFeeder: srmPtP contract violation! toSURL" + " does not refer to this machine!");
+        log.warn("Request: {}", rsd.requestToken());
+        log.warn("Chunk: {}", chunkData);
 
-				chunkData.changeStatusSRM_FAILURE("SRM protocol violation!"
-					+ " Cannot do an srmPtP of a SURL that is not local!");
+        chunkData.changeStatusSRM_FAILURE(
+            "SRM protocol violation!" + " Cannot do an srmPtP of a SURL that is not local!");
 
-				PtPChunkCatalog.getInstance().update(chunkData);
-				/* inform global status computation of the chunk s failure */
-				gsm.failedChunk(chunkData);
-			}
-		}
-		/*
-		 * no more chunks need to be considered for the overall status computation
-		 */
-		gsm.finishedAdding();
-	}
+        PtPChunkCatalog.getInstance().update(chunkData);
+        /* inform global status computation of the chunk s failure */
+        gsm.failedChunk(chunkData);
+      }
+    }
+    /*
+     * no more chunks need to be considered for the overall status computation
+     */
+    gsm.finishedAdding();
+  }
 
-	/**
-	 * Private method that handles the chunk!
-	 * 
-	 * @param auxChunkData
-	 */
-	private void manage(PtPPersistentChunkData auxChunkData) {
+  /**
+   * Private method that handles the chunk!
+   * 
+   * @param auxChunkData
+   */
+  private void manage(PtPPersistentChunkData auxChunkData) {
 
-		log.debug("PtPFeeder - scheduling... ");
-		try {
-			/* change status of this chunk to being processed! */
-			auxChunkData.changeStatusSRM_REQUEST_INPROGRESS("srmPrepareToPut "
-				+ "chunk is being processed!");
+    log.debug("PtPFeeder - scheduling... ");
+    try {
+      /* change status of this chunk to being processed! */
+      auxChunkData
+        .changeStatusSRM_REQUEST_INPROGRESS("srmPrepareToPut " + "chunk is being processed!");
 
-			PtPChunkCatalog.getInstance().update(auxChunkData);
+      PtPChunkCatalog.getInstance().update(auxChunkData);
 
-			/* hand it to scheduler! */
-			SchedulerFacade.getInstance().chunkScheduler()
-				.schedule(new PtPPersistentChunk(rsd, auxChunkData, gsm));
-			log.debug("PtPFeeder - chunk scheduled.");
-		} catch (IllegalArgumentException e) {
-			log.error("Unable to schedule the chunk. IllegalArgumentException: {}", 
-				e.getMessage(), e);
+      /* hand it to scheduler! */
+      SchedulerFacade.getInstance()
+        .chunkScheduler()
+        .schedule(new PtPPersistentChunk(rsd, auxChunkData, gsm));
+      log.debug("PtPFeeder - chunk scheduled.");
+    } catch (IllegalArgumentException e) {
+      log.error("Unable to schedule the chunk. IllegalArgumentException: {}", e.getMessage(), e);
 
-			auxChunkData.changeStatusSRM_FAILURE("StoRM internal error"
-				+ " does not allow this chunk to be processed!");
+      auxChunkData.changeStatusSRM_FAILURE(
+          "StoRM internal error" + " does not allow this chunk to be processed!");
 
-			PtPChunkCatalog.getInstance().update(auxChunkData);
-			gsm.failedChunk(auxChunkData);
-		} catch (InvalidRequestAttributesException e) {
-			log.error("UNEXPECTED ERROR in PtPFeeder! Chunk could not be "
-				+ "created!\n{}", e.getMessage(), e);
+      PtPChunkCatalog.getInstance().update(auxChunkData);
+      gsm.failedChunk(auxChunkData);
+    } catch (InvalidRequestAttributesException e) {
+      log.error("UNEXPECTED ERROR in PtPFeeder! Chunk could not be " + "created!\n{}",
+          e.getMessage(), e);
 
-			auxChunkData.changeStatusSRM_FAILURE("StoRM internal error does not "
-				+ "allow this chunk to be processed!");
+      auxChunkData.changeStatusSRM_FAILURE(
+          "StoRM internal error does not " + "allow this chunk to be processed!");
 
-			PtPChunkCatalog.getInstance().update(auxChunkData);
-			gsm.failedChunk(auxChunkData);
-		} catch (SchedulerException e) {
-			/* Internal error of scheduler! */
-			log.error("UNEXPECTED ERROR in ChunkScheduler! Chunk could not be "
-				+ "scheduled!\n{}", e.getMessage(), e);
+      PtPChunkCatalog.getInstance().update(auxChunkData);
+      gsm.failedChunk(auxChunkData);
+    } catch (SchedulerException e) {
+      /* Internal error of scheduler! */
+      log.error("UNEXPECTED ERROR in ChunkScheduler! Chunk could not be " + "scheduled!\n{}",
+          e.getMessage(), e);
 
-			auxChunkData.changeStatusSRM_FAILURE("StoRM internal scheduler "
-				+ "error prevented this chunk from being processed!");
+      auxChunkData.changeStatusSRM_FAILURE(
+          "StoRM internal scheduler " + "error prevented this chunk from being processed!");
 
-			PtPChunkCatalog.getInstance().update(auxChunkData);
-			gsm.failedChunk(auxChunkData);
-		}
-	}
+      PtPChunkCatalog.getInstance().update(auxChunkData);
+      gsm.failedChunk(auxChunkData);
+    }
+  }
 
-	/**
-	 * Method used by chunk scheduler for internal logging; it returns the request
-	 * token!
-	 */
-	public String getName() {
+  /**
+   * Method used by chunk scheduler for internal logging; it returns the request token!
+   */
+  public String getName() {
 
-		return "PtPFeeder of request: " + rsd.requestToken();
-	}
+    return "PtPFeeder of request: " + rsd.requestToken();
+  }
 }

@@ -27,7 +27,13 @@ package it.grid.storm.asynch;
  */
 public class InvalidOverallRequestAttributeException extends Exception {
 
-	public String toString() {
+	/**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
+
+  @Override
+  public String toString() {
 
 		return "Null TRequestToken supplied!";
 	}

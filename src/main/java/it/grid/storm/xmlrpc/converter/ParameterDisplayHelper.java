@@ -33,7 +33,7 @@ public class ParameterDisplayHelper {
 			String mapKeyStr = mapKey.toString();
 			sb.append(sepBegin).append(mapKeyStr);
 			if ((mapKeyStr.equals("userFQANS"))
-				|| (mapKeyStr.equals(ArrayOfSURLs.ARRAYOFSURLS))) {
+				|| (mapKeyStr.equals(ArrayOfSURLs.ARRAY_OF_SURLS))) {
 				sb.append(arrow).append("[");
 				Object[] mapKeyValues = (Object[]) map.get(mapKey);
 				for (int i = 0; i < mapKeyValues.length - 1; i++) {

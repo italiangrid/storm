@@ -140,9 +140,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 			checkUserAuthorization(stori, user);
 			log.debug("srmRmdir: rmdir authorized for {}. Dir={}. Recursive={}",
 				userToString(user), stori.getPFN(), recursion);
-			removeFolder(stori.getLocalFile(), recursion, size);
-			returnStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS,
-				"Directory removed with success!");
+			returnStatus = removeFolder(stori.getLocalFile(), recursion, size);
 			log.debug("srmRmdir: decrease used space of {} bytes", size.get());
 			try {
 				decreaseUsedSpace(stori.getLocalFile(), size.get());
@@ -206,13 +204,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 	private void checkUserAuthorization(StoRI stori, GridUserInterface user) 
 		throws RmdirException {
 		
-		TSpaceToken token;
-		try {
-			token = stori.getVirtualFileSystem().getSpaceToken();
-		} catch (NamespaceException e) {
-			log.error(e.getMessage());
-			throw new RmdirException(TStatusCode.SRM_INTERNAL_ERROR, e.getMessage());
-		}
+		TSpaceToken token = stori.getVirtualFileSystem().getSpaceToken();
 		SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
 		
 		boolean isSpaceAuthorized;
@@ -279,31 +271,26 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 			.decreaseUsedSpace(sizeToRemove);
 	}
 
-	private void checkPrerequisites(LocalFile dir, boolean recursion)
-		throws RmdirException {
-		
-		if (!dir.exists()) {
-			throw new RmdirException(TStatusCode.SRM_INVALID_PATH,
-				"Directory does not exists");
-		}
-		if (!dir.isDirectory()) {
-			throw new RmdirException(TStatusCode.SRM_INVALID_PATH, "Not a directory");
-		}
-		if (!recursion && (dir.listFiles().length > 0)) {
-			throw new RmdirException(TStatusCode.SRM_NON_EMPTY_DIRECTORY,
-				"Directory is not empty");
-		}
-	}
-
-	private void removeFolder(LocalFile dir, boolean recursive, TSize size)
+	private TReturnStatus removeFolder(LocalFile dir, boolean recursive, TSize size)
 		throws RmdirException {
 		
 		/* 
 		 * Check if dir exists and is a directory, if recursion is enabled when 
 		 * directory is not empty, etc...
 		 */
-		checkPrerequisites(dir, recursive);
-		
+
+		if (!dir.exists()) {
+			return new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
+				"Directory does not exists");
+		}
+		if (!dir.isDirectory()) {
+			return new TReturnStatus(TStatusCode.SRM_INVALID_PATH, "Not a directory");
+		}
+		if (!recursive && (dir.listFiles().length > 0)) {
+			return new TReturnStatus(TStatusCode.SRM_NON_EMPTY_DIRECTORY,
+				"Directory is not empty");
+		}
+
 		if (recursive) {
 			LocalFile[] list = dir.listFiles();
 			log.debug("srmRmdir: removing {} content", dir);
@@ -318,6 +305,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 		}
 		log.debug("srmRmdir: removing {}", dir);
 		removeEmptyDirectory(dir, size);
+		return new TReturnStatus(TStatusCode.SRM_SUCCESS, "Directory removed with success!");
 	}
 
 	private void removeEmptyDirectory(LocalFile directory, TSize size)

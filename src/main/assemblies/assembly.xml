@@ -68,6 +68,16 @@
       <directoryMode>0755</directoryMode>
     </fileSet>
 
+    <!-- CentOS 7 stuff-->
+    <fileSet>
+      <directory>etc/systemd/service.d</directory>
+      <outputDirectory>etc/systemd/system/storm-backend-server.service.d</outputDirectory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <directoryMode>0644</directoryMode>
+    </fileSet>
+
   </fileSets>
 
   <files>
@@ -84,19 +94,28 @@
     </file>
 
     <file>
+      <source>etc/logrotate.d/storm-backend-server</source>
+      <outputDirectory>etc/logrotate.d</outputDirectory>
+    </file>
+
+    <!-- CentOS 6 stuff-->
+    <file>
       <source>etc/init.d/storm-backend-server</source>
       <outputDirectory>etc/init.d</outputDirectory>
       <fileMode>0755</fileMode>
     </file>
 
     <file>
-      <source>etc/logrotate.d/storm-backend-server</source>
-      <outputDirectory>etc/logrotate.d</outputDirectory>
-    </file>
-
-    <file>
       <source>etc/sysconfig/storm-backend-server</source>
       <outputDirectory>etc/sysconfig</outputDirectory>
+    </file>
+
+    <!-- CentOS 7 stuff-->
+    <file>
+      <source>etc/systemd/storm-backend-server.service</source>
+      <outputDirectory>usr/lib/systemd/system</outputDirectory>
+      <destName>storm-backend-server.service</destName>
+      <fileMode>0644</fileMode>
     </file>
 
   </files>

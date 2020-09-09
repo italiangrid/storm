@@ -45,226 +45,163 @@ import org.slf4j.LoggerFactory;
  */
 public class ChunkScheduler implements Scheduler, Streets {
 
-	private static ChunkScheduler istance = null;
+  private static ChunkScheduler istance = null;
 
-	private static final Logger log = LoggerFactory
-		.getLogger(ChunkScheduler.class);
-	private SchedulerStatus[] schedStatus = null;
+  private static final Logger log = LoggerFactory.getLogger(ChunkScheduler.class);
 
-	/**
-	 * Default values for Pools
-	 */
-	// Value of "scheduler.chunksched.ptp.workerCorePoolSize"
-	private int ptp_workerCorePoolSize = Configuration.getInstance()
-		.getPtPCorePoolSize();
+  private SchedulerStatus ptgSchedulerStatus;
+  private SchedulerStatus ptpSchedulerStatus;
+  private SchedulerStatus bolSchedulerStatus;
 
-	// Value of "scheduler.chunksched.ptp.workerMaxPoolSize"
-	private int ptp_workerMaxPoolSize = Configuration.getInstance()
-		.getPtPMaxPoolSize();
+  private WorkerPool ptgWorkerPool;
+  private WorkerPool ptpWorkerPool;
+  private WorkerPool bolWorkerPool;
 
-	// Value of "scheduler.chunksched.ptp.queueSize"
-	private int ptp_queueSize = Configuration.getInstance().getPtPQueueSize();
+  private ChunkScheduler(Configuration configuration) {
 
-	// Value of "scheduler.chunksched.ptg.workerCorePoolSize"
-	private int ptg_workerCorePoolSize = Configuration.getInstance()
-		.getPtGCorePoolSize();
+    int ptgWorkerCorePoolSize = configuration.getPtGCorePoolSize();
+    int ptgWorkerMaxPoolSize = configuration.getPtGMaxPoolSize();
+    int ptgQueueSize = configuration.getPtGQueueSize();
 
-	// Value of "scheduler.chunksched.ptg.workerMaxPoolSize"
-	private int ptg_workerMaxPoolSize = Configuration.getInstance()
-		.getPtGMaxPoolSize();
+    ptgWorkerPool = new WorkerPool(ptgWorkerCorePoolSize, ptgWorkerMaxPoolSize, ptgQueueSize);
+    ptgSchedulerStatus = new SchedulerStatus("PtG_inner_scheduler");
+    ptgSchedulerStatus.setCorePoolSize(ptgWorkerCorePoolSize);
+    ptgSchedulerStatus.setMaxPoolSize(ptgWorkerMaxPoolSize);
+    ptgSchedulerStatus.setQueueSize(ptgQueueSize);
 
-	// Value of "scheduler.chunksched.ptg.queueSize"
-	private int ptg_queueSize = Configuration.getInstance().getPtGQueueSize();
+    int ptpWorkerCorePoolSize = configuration.getPtPCorePoolSize();
+    int ptpWorkerMaxPoolSize = configuration.getPtPMaxPoolSize();
+    int ptpQueueSize = configuration.getPtPQueueSize();
 
-	// Value of "scheduler.chunksched.copy.workerCorePoolSize"
-	private int copy_workerCorePoolSize = Configuration.getInstance()
-		.getCopyCorePoolSize();
+    ptpWorkerPool = new WorkerPool(ptpWorkerCorePoolSize, ptpWorkerMaxPoolSize, ptpQueueSize);
+    ptpSchedulerStatus = new SchedulerStatus("PtP_inner_scheduler");
+    ptpSchedulerStatus.setCorePoolSize(ptpWorkerCorePoolSize);
+    ptpSchedulerStatus.setMaxPoolSize(ptpWorkerMaxPoolSize);
+    ptpSchedulerStatus.setQueueSize(ptpQueueSize);
 
-	// Value of "scheduler.chunksched.copy.workerMaxPoolSize"
-	private int copy_workerMaxPoolSize = Configuration.getInstance()
-		.getCopyMaxPoolSize();
+    int bolWorkerCorePoolSize = configuration.getBoLCorePoolSize();
+    int bolWorkerMaxPoolSize = configuration.getBoLMaxPoolSize();
+    int bolQueueSize = configuration.getBoLQueueSize();
 
-	// Value of "scheduler.chunksched.copy.queueSize"
-	private int copy_queueSize = Configuration.getInstance().getCopyQueueSize();
+    bolWorkerPool = new WorkerPool(bolWorkerCorePoolSize, bolWorkerMaxPoolSize, bolQueueSize);
+    bolSchedulerStatus = new SchedulerStatus("BoL_inner_scheduler");
+    bolSchedulerStatus.setCorePoolSize(bolWorkerCorePoolSize);
+    bolSchedulerStatus.setMaxPoolSize(bolWorkerMaxPoolSize);
+    bolSchedulerStatus.setQueueSize(bolQueueSize);
 
-	// Value of "scheduler.chunksched.bol.workerCorePoolSize"
-	private int bol_workerCorePoolSize = Configuration.getInstance()
-		.getBoLCorePoolSize();
+  }
 
-	// Value of "scheduler.chunksched.bol.workerMaxPoolSize"
-	private int bol_workerMaxPoolSize = Configuration.getInstance()
-		.getBoLMaxPoolSize();
+  public static ChunkScheduler getInstance() {
 
-	// Value of "scheduler.chunksched.bol.queueSize"
-	private int bol_queueSize = Configuration.getInstance().getBoLQueueSize();
+    if (istance == null) {
+      istance = new ChunkScheduler(Configuration.getInstance());
+    }
+    return istance;
+  }
 
-	private WorkerPool ptg_workers = null; // new WorkerPool();
-	private WorkerPool ptp_workers = null; // new WorkerPool();
-	private WorkerPool copy_workers = null; // new WorkerPool();
-	private WorkerPool bol_workers = null; // new WorkerPool();
+  public void schedule(Delegable chunk) throws SchedulerException {
 
-	private ChunkScheduler() {
+    log.debug("Scheduling chunk: {}", chunk.getName());
+    Chooser c = (Chooser) chunk;
+    c.choose(this);
+  }
 
-		schedStatus = new SchedulerStatus[4];
-		schedStatus[0] = new SchedulerStatus("PtG_inner_scheduler");
-		schedStatus[1] = new SchedulerStatus("PtP_inner_scheduler");
-		schedStatus[2] = new SchedulerStatus("Copy_inner_scheduler");
-		schedStatus[3] = new SchedulerStatus("BoL_inner_scheduler");
+  private void updatePtgStatus() {
 
-		/**
-		 * @todo Read to Configuration the information about worker Pool structure
-		 *       of Crusher Scheduler
-		 */
+    ptgSchedulerStatus.setCompletedTaskCount(ptgWorkerPool.getCompletedTaskCount());
+    ptgSchedulerStatus.setActiveCount(ptgWorkerPool.getActiveCount());
+    ptgSchedulerStatus.setLargestPoolSize(ptgWorkerPool.getLargestPoolSize());
+    ptgSchedulerStatus.setPoolSize(ptgWorkerPool.getActualPoolSize());
+    ptgSchedulerStatus.setTaskCount(ptgWorkerPool.getTaskCount());
+    ptgSchedulerStatus.setRemainingCapacity(ptgWorkerPool.getRemainingCapacity());
+  }
 
-		// Setting for PrepareToGet pool of workers
-		ptg_workers = new WorkerPool(ptg_workerCorePoolSize, ptg_workerMaxPoolSize,
-			ptg_queueSize);
-		schedStatus[0].setCorePoolSize(ptg_workerCorePoolSize);
-		schedStatus[0].setMaxPoolSize(ptg_workerMaxPoolSize);
+  private void updatePtpStatus() {
 
-		// Setting for PrepareToPut pool of workers
-		ptp_workers = new WorkerPool(ptp_workerCorePoolSize, ptp_workerMaxPoolSize,
-			ptp_queueSize);
-		schedStatus[1].setCorePoolSize(ptp_workerCorePoolSize);
-		schedStatus[1].setMaxPoolSize(ptp_workerMaxPoolSize);
+    ptpSchedulerStatus.setCompletedTaskCount(ptpWorkerPool.getCompletedTaskCount());
+    ptpSchedulerStatus.setActiveCount(ptpWorkerPool.getActiveCount());
+    ptpSchedulerStatus.setLargestPoolSize(ptpWorkerPool.getLargestPoolSize());
+    ptpSchedulerStatus.setPoolSize(ptpWorkerPool.getActualPoolSize());
+    ptpSchedulerStatus.setTaskCount(ptpWorkerPool.getTaskCount());
+    ptpSchedulerStatus.setRemainingCapacity(ptpWorkerPool.getRemainingCapacity());
+  }
 
-		// Setting for Copy pool of workers
-		copy_workers = new WorkerPool(copy_workerCorePoolSize,
-			copy_workerMaxPoolSize, copy_queueSize);
-		schedStatus[2].setCorePoolSize(copy_workerCorePoolSize);
-		schedStatus[2].setMaxPoolSize(copy_workerMaxPoolSize);
+  private void updateBolStatus() {
 
-		// Setting for BoL pool of workers
-		bol_workers = new WorkerPool(bol_workerCorePoolSize, bol_workerMaxPoolSize,
-			bol_queueSize);
-		schedStatus[3].setCorePoolSize(bol_workerCorePoolSize);
-		schedStatus[3].setMaxPoolSize(bol_workerMaxPoolSize);
-	}
+    bolSchedulerStatus.setCompletedTaskCount(bolWorkerPool.getCompletedTaskCount());
+    bolSchedulerStatus.setActiveCount(bolWorkerPool.getActiveCount());
+    bolSchedulerStatus.setLargestPoolSize(bolWorkerPool.getLargestPoolSize());
+    bolSchedulerStatus.setPoolSize(bolWorkerPool.getActualPoolSize());
+    bolSchedulerStatus.setTaskCount(bolWorkerPool.getTaskCount());
+    bolSchedulerStatus.setRemainingCapacity(bolWorkerPool.getRemainingCapacity());
+  }
 
-	public static ChunkScheduler getInstance() {
+  public SchedulerStatus getPtgStatus() {
 
-		if (istance == null) {
-			istance = new ChunkScheduler();
-		}
-		return istance;
-	}
+    updatePtgStatus();
+    return ptgSchedulerStatus;
+  }
 
-	public void schedule(Delegable chunk) throws SchedulerException {
+  public SchedulerStatus getPtpStatus() {
 
-		log.debug("Scheduling chunk: {}", chunk.getName());
-		Chooser c = (Chooser) chunk;
-		c.choose(this);
-	}
+    updatePtpStatus();
+    return ptpSchedulerStatus;
+  }
 
-	public SchedulerStatus getStatus(int type) {
+  public SchedulerStatus getBolStatus() {
 
-		SchedulerStatus st = null;
-		switch (type) {
-		case 0:
-			schedStatus[0].setCompletedTaskCount(ptg_workers.getCompletedTaskCount());
-			schedStatus[0].setActiveCount(ptg_workers.getActiveCount());
-			schedStatus[0].setLargestPoolSize(ptg_workers.getLargestPoolSize());
-			schedStatus[0].setPoolSize(ptg_workers.getActualPoolSize());
-			schedStatus[0].setTaskCount(ptg_workers.getTaskCount());
-			schedStatus[0].setQueueSize(ptg_queueSize);
-			schedStatus[0].setRemainingCapacity(ptg_workers.getRemainingCapacity());
-			st = schedStatus[0];
-			break;
-		case 1:
-			schedStatus[1].setCompletedTaskCount(ptp_workers.getCompletedTaskCount());
-			schedStatus[1].setActiveCount(ptp_workers.getActiveCount());
-			schedStatus[1].setLargestPoolSize(ptp_workers.getLargestPoolSize());
-			schedStatus[1].setPoolSize(ptp_workers.getActualPoolSize());
-			schedStatus[1].setTaskCount(ptp_workers.getTaskCount());
-			schedStatus[1].setQueueSize(ptp_queueSize);
-			schedStatus[1].setRemainingCapacity(ptp_workers.getRemainingCapacity());
-			st = schedStatus[1];
-			break;
-		case 2:
-			schedStatus[2]
-				.setCompletedTaskCount(copy_workers.getCompletedTaskCount());
-			schedStatus[2].setActiveCount(copy_workers.getActiveCount());
-			schedStatus[2].setLargestPoolSize(copy_workers.getLargestPoolSize());
-			schedStatus[2].setPoolSize(copy_workers.getActualPoolSize());
-			schedStatus[2].setTaskCount(copy_workers.getTaskCount());
-			schedStatus[2].setQueueSize(copy_queueSize);
-			schedStatus[2].setRemainingCapacity(copy_workers.getRemainingCapacity());
-			st = schedStatus[2];
-			break;
-		case 3:
-			schedStatus[3].setCompletedTaskCount(bol_workers.getCompletedTaskCount());
-			schedStatus[3].setActiveCount(bol_workers.getActiveCount());
-			schedStatus[3].setLargestPoolSize(bol_workers.getLargestPoolSize());
-			schedStatus[3].setPoolSize(bol_workers.getActualPoolSize());
-			schedStatus[3].setTaskCount(bol_workers.getTaskCount());
-			schedStatus[3].setQueueSize(bol_queueSize);
-			schedStatus[3].setRemainingCapacity(bol_workers.getRemainingCapacity());
-			st = schedStatus[3];
-			break;
+    updateBolStatus();
+    return bolSchedulerStatus;
+  }
 
-		default:
-			st = null;
-			break;
+  public SchedulerStatus getStatus() {
 
-		}
-		return st;
-	}
+    return null;
+  }
 
-	public void ptgStreet(Delegable chunk) {
+  public void ptgStreet(Delegable chunk) {
 
-		// Debugging info logging
-		log.trace("ptgStreet got chunk: {}", chunk.getName());
+    // Debugging info logging
+    log.trace("ptgStreet got chunk: {}", chunk.getName());
 
-		ChunkTask chunkTask = new ChunkTask(chunk);
-		try {
-			ptg_workers.submit(chunkTask);
-		} catch (SchedulerException e) {
-		  log.error(e.getMessage(),e);
-		}
-	}
+    ChunkTask chunkTask = new ChunkTask(chunk);
+    try {
+      ptgWorkerPool.submit(chunkTask);
+    } catch (SchedulerException e) {
+      log.error(e.getMessage(), e);
+    }
+  }
 
-	public void ptpStreet(Delegable chunk) {
+  public void ptpStreet(Delegable chunk) {
 
-	  log.trace("ptpStreet got chunk: {}", chunk.getName());
-		ChunkTask chunkTask = new ChunkTask(chunk);
-		try {
-			ptp_workers.submit(chunkTask);
-		} catch (SchedulerException e) {
-		  log.error(e.getMessage(),e);
-		}
+    log.trace("ptpStreet got chunk: {}", chunk.getName());
+    ChunkTask chunkTask = new ChunkTask(chunk);
+    try {
+      ptpWorkerPool.submit(chunkTask);
+    } catch (SchedulerException e) {
+      log.error(e.getMessage(), e);
+    }
 
-	}
+  }
 
-	public void copyStreet(Delegable chunk) {
+  public void bolStreet(Delegable chunk) {
 
-	  log.trace("copyStreet got chunk: {}", chunk.getName());
+    log.trace("bolStret got chunk: {}", chunk.getName());
 
-		ChunkTask chunkTask = new ChunkTask(chunk);
-		try {
-			copy_workers.submit(chunkTask);
-		} catch (SchedulerException e) {
-		  log.error(e.getMessage(),e);
-		}
-	}
+    ChunkTask chunkTask = new ChunkTask(chunk);
+    try {
+      bolWorkerPool.submit(chunkTask);
+    } catch (SchedulerException e) {
+      log.error(e.getMessage(), e);
+    }
+  }
 
-	public void bolStreet(Delegable chunk) {
+  public void abort(Delegable task) throws SchedulerException {
+    log.warn("abort is not implemented");
+  }
 
-	  log.trace("bolStret got chunk: {}", chunk.getName());
-
-		ChunkTask chunkTask = new ChunkTask(chunk);
-		try {
-			bol_workers.submit(chunkTask);
-		} catch (SchedulerException e) {
-		  log.error(e.getMessage(),e);
-		}
-	}
-
-	public void abort(Delegable task) throws SchedulerException {
-	  log.warn("abort is not implemented");
-	}
-
-	public void suspend(Delegable task) throws SchedulerException {
-	  log.warn("suspend is not implemented");
-	}
+  public void suspend(Delegable task) throws SchedulerException {
+    log.warn("suspend is not implemented");
+  }
 
 }

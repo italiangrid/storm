@@ -29,39 +29,39 @@ import java.util.List;
  */
 public class SpaceAccessMask {
 
-	private List<SpaceOperation> spAccessMask;
+  private List<SpaceOperation> spAccessMask;
 
-	public SpaceAccessMask() {
+  public SpaceAccessMask() {
 
-		spAccessMask = new ArrayList<SpaceOperation>();
-	}
+    spAccessMask = new ArrayList<SpaceOperation>();
+  }
 
-	public void addSpaceOperation(SpaceOperation spOp) {
+  public void addSpaceOperation(SpaceOperation spOp) {
 
-		spAccessMask.add(spOp);
-	}
+    spAccessMask.add(spOp);
+  }
 
-	public boolean containsSpaceOperation(SpaceOperation spOp) {
+  public boolean containsSpaceOperation(SpaceOperation spOp) {
 
-		return spAccessMask.contains(spOp);
-	}
+    return spAccessMask.contains(spOp);
+  }
 
-	public List<SpaceOperation> getSpaceOperations() {
+  public List<SpaceOperation> getSpaceOperations() {
 
-		return spAccessMask;
-	}
+    return spAccessMask;
+  }
 
-	public String toString() {
+  public String toString() {
 
-		String spacePermissionStr = "";
-		for (SpaceOperation spOp : SpaceOperation.values()) {
-			if (spAccessMask.contains(spOp)) {
-				spacePermissionStr += spOp.getSpaceOperationValue();
-			} else {
-				spacePermissionStr += "-";
-			}
-		}
-		return spacePermissionStr;
-	}
+    String spacePermissionStr = "";
+    for (SpaceOperation spOp : SpaceOperation.values()) {
+      if (spAccessMask.contains(spOp)) {
+        spacePermissionStr += spOp.getSpaceOperationValue();
+      } else {
+        spacePermissionStr += "-";
+      }
+    }
+    return spacePermissionStr;
+  }
 
 }

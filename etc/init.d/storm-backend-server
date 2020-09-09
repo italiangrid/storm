@@ -123,12 +123,13 @@ setenv_if_not_set STORM_BE_LOGDIR "/var/log/storm"
 setenv_if_not_set STORM_BE_USER "storm"
 setenv_if_not_set STORM_BE_JARDIR "/usr/share/java/${prog}"
 setenv_if_not_set STORM_BE_JAR "${STORM_BE_JARDIR}/${prog}.jar"
-setenv_if_not_set STORM_BE_SUSPEND "n"
+setenv_if_not_set STORM_BE_DEBUG_SUSPEND "n"
 setenv_if_not_set STORM_BE_DEBUG_PORT "1044"
 setenv_if_not_set STORM_BE_JVM_OPTS "-server -Xms512m -Xmx512m"
+setenv_if_not_set STORM_BE_LIBDIR "/usr/lib64/"
 
 if [ ! -z "${STORM_BE_DEBUG}" ]; then
-  setenv_if_not_set STORM_BE_DEBUG_OPTS "-Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=${STORM_BE_DEBUG_PORT},suspend=${STORM_BE_SUSPEND}"
+  setenv_if_not_set STORM_BE_DEBUG_OPTS "-Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=${STORM_BE_DEBUG_PORT},suspend=${STORM_BE_DEBUG_SUSPEND}"
 fi
 
 if [ ! -z "${STORM_BE_JMX}" ]; then
@@ -140,7 +141,6 @@ classpath="${STORM_BE_JARDIR}/*"
 # log4j looks for its config file in the classpath...
 classpath="$classpath:$STORM_BE_CONFIGDIR"
 
-setenv_if_not_set STORM_BE_LIBDIR "/usr/lib64/"
 export LD_LIBRARY_PATH="/usr/lib64/modules":$STORM_BE_LIBDIR:$LD_LIBRARY_PATH
 
 # LCMAPS config file
@@ -154,25 +154,6 @@ setenv_if_not_set LCMAPS_LOG_FILE "$STORM_BE_LOGDIR/lcmaps.log"
 
 # LCMAPS log verbosity: 0 minimum (default), 5 maximum
 setenv_if_not_set LCMAPS_DEBUG_LEVEL 0
-
-
-# Set SSL options.
-if [ "$ENABLE_SSL"x == yesx ]; 
-    then
-    if [ -z "$SSL_TRUST_STORE_PWD" -o -z "$SSL_KEY_STORE_PWD" ]; then
-        die 6 "The SSL Keystore and Truststore need to be protected by password!"
-    fi
-    setenv_if_not_set SSL_TRUST_STORE "$STORM_BE_CONFIGDIR/ecar.ts"
-    setenv_if_not_set SSL_KEY_STORE "$STORM_BE_CONFIGDIR/ecar.p12"
-    setenv_if_not_set SSL_KEY_STORE_TYPE "PKCS12"
-    export STORM_SSL_OPTIONS="-Djavax.net.ssl.trustStore=\"$SSL_TRUST_STORE\" \
--Djavax.net.ssl.keyStore=\"$SSL_KEY_STORE\" \
--Djavax.net.ssl.keyStoreType=\"$SSL_KEY_STORE_TYPE\" \
--Djavax.net.ssl.trustStorePassword=\"$SSL_TRUST_STORE_PWD\" \
--Djavax.net.ssl.keyStorePassword=\"$SSL_KEY_STORE_PWD\" "
-else
-    export STORM_SSL_OPTIONS=""
-fi
 
 ## sanity checks
 
@@ -201,13 +182,6 @@ fi
 if ! user_exists "$STORM_BE_USER"; then
     die 1 "User '$STORM_BE_USER' not found in system database; cannot run storm-backend-server process - please set environment variable STORM_BE_USER to a sane value."
 fi
-
-#TODO dont do this here, do it in yaim!
-if ! su "$STORM_BE_USER" -s /bin/sh -c "test -w '$STORM_BE_LOGDIR'"; then
-    chown -R $STORM_BE_USER:$STORM_BE_USER $STORM_BE_LOGDIR
-#    echo 1>&2 "Log files directory '$STORM_BE_LOGDIR' is not writable by user '$STORM_BE_USER' - StoRM might not be able to *create* log files."
-fi
-
 
 # _current_status():
 #  tests if the storm-webdav-server process is running.

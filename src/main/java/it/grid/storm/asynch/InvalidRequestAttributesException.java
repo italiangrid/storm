@@ -20,32 +20,33 @@ import it.grid.storm.griduser.GridUserInterface;
  */
 public class InvalidRequestAttributesException extends Exception {
 
-	private static final long serialVersionUID = 2933131196386843154L;
+  private static final long serialVersionUID = 2933131196386843154L;
 
-	/**
-	 * true if GridUser is null
-	 */
-	protected boolean nullGu = true;
+  /**
+   * true if GridUser is null
+   */
+  protected final boolean nullGu;
 
-	/**
-	 * true if PtPChunkData is null
-	 */
-	protected boolean nullChunkData = true;
+  /**
+   * true if PtPChunkData is null
+   */
+  protected final boolean nullChunkData;
 
-	/**
-	 * Constructor that requires the GridUser, PtPChunkData and OverallRequest,
-	 * that caused the exception to be thrown.
-	 */
-	public InvalidRequestAttributesException(GridUserInterface gu,
-		RequestData chunkData) {
+  /**
+   * Constructor that requires the GridUser, PtPChunkData and OverallRequest, that caused the
+   * exception to be thrown.
+   */
+  public InvalidRequestAttributesException(GridUserInterface gu, RequestData chunkData) {
 
-		nullGu = (gu == null);
-		nullChunkData = (chunkData == null);
-	}
+    nullGu = (gu == null);
+    nullChunkData = (chunkData == null);
+  }
 
-	public String toString() {
+  @Override
+  public String toString() {
 
-		return String.format("Invalid attributes when creating Request: "
-			+ "nullGridUser=%b, nullChunkData=%b", nullGu, nullChunkData);
-	}
+    return String.format(
+        "Invalid attributes when creating Request: " + "nullGridUser=%b, nullChunkData=%b", nullGu,
+        nullChunkData);
+  }
 }

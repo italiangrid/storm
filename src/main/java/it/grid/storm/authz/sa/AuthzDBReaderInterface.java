@@ -17,8 +17,6 @@
 
 package it.grid.storm.authz.sa;
 
-import it.grid.storm.authz.sa.conf.AuthzDBReaderException;
-
 import java.util.List;
 
 public interface AuthzDBReaderInterface {

@@ -1,0 +1,19 @@
+[Unit]
+Description=StoRM Backend service
+
+[Service]
+WorkingDirectory=/etc/storm/backend-server
+User=storm
+Type=simple
+ExecStart=/bin/bash -ac "exec /usr/bin/java \
+    -server \
+    ${STORM_BE_JVM_OPTS} \
+    ${STORM_BE_JMX_OPTS} \
+    -cp '/usr/share/java/storm-backend-server/*:/etc/storm/backend-server' \
+    -Djava.library.path=/usr/lib64/ \
+    -Djna.library.path=/usr/lib64/modules:/usr/lib64/ \
+    it.grid.storm.Main > /var/log/storm/storm-backend.stdout 2> /var/log/storm/storm-backend.stderr"
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

@@ -24,8 +24,8 @@ import java.util.List;
 
 public interface AuthzDBInterface {
 
-	public SAAuthzType getAuthzDBType();
+  public SAAuthzType getAuthzDBType();
 
-	public List<SpaceACE> getOrderedListOfACE();
+  public List<SpaceACE> getOrderedListOfACE();
 
 }

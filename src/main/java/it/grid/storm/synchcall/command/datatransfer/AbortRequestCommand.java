@@ -37,6 +37,13 @@ import it.grid.storm.synchcall.data.datatransfer.AbortRequestOutputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
+import static it.grid.storm.srm.types.TStatusCode.SRM_ABORTED;
+import static it.grid.storm.srm.types.TStatusCode.SRM_AUTHORIZATION_FAILURE;
+import static it.grid.storm.srm.types.TStatusCode.SRM_INVALID_REQUEST;
+import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_QUEUED;
+import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_TIMED_OUT;
+import static it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +71,7 @@ public class AbortRequestCommand extends DataTransferCommand implements Command 
 
   public AbortRequestCommand() {
 
-  };
+  }
 
   public OutputData execute(InputData data) {
 
@@ -113,15 +120,13 @@ public class AbortRequestCommand extends DataTransferCommand implements Command 
 
         hasErrors = true;
         log.info("Unknown token: {}", e.getMessage());
-        globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-          "Invalid request token");
+        globalStatus = new TReturnStatus(SRM_INVALID_REQUEST, "Invalid request token");
 
       } catch (ExpiredTokenException e) {
 
         hasErrors = true;
         log.info("Expired token: {}. {}", requestToken, e.getMessage());
-        globalStatus = new TReturnStatus(TStatusCode.SRM_REQUEST_TIMED_OUT,
-          "Request expired"); 
+        globalStatus = new TReturnStatus(SRM_REQUEST_TIMED_OUT, "Request expired");
 
       } catch (AuthzException e) {
 
@@ -130,15 +135,13 @@ public class AbortRequestCommand extends DataTransferCommand implements Command 
         if (log.isDebugEnabled()) {
           log.debug(e.getMessage(), e);
         }
-        globalStatus = new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
-          e.getMessage());
+        globalStatus = new TReturnStatus(SRM_AUTHORIZATION_FAILURE, e.getMessage());
 
       } catch (IllegalArgumentException e) {
         
         hasErrors = true;
-        log.info("Invalid request error: {}", e);
-        globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-          e.getMessage());
+        log.info("Invalid request error: {}", e.getMessage());
+        globalStatus = new TReturnStatus(SRM_INVALID_REQUEST, e.getMessage());
         
       } finally {
         
@@ -149,13 +152,12 @@ public class AbortRequestCommand extends DataTransferCommand implements Command 
           CommandHelper.printRequestOutcome("srmAbortRequest", log, globalStatus,
             inputData, inputData.getRequestToken());
           return outputData;
-          
         }
       }
 
-      RequestSummaryCatalog.getInstance().updateFromPreviousGlobalStatus(
-        inputData.getRequestToken(), TStatusCode.SRM_REQUEST_QUEUED,
-        TStatusCode.SRM_ABORTED, "User aborted request!");
+      RequestSummaryCatalog.getInstance()
+        .updateFromPreviousGlobalStatus(inputData.getRequestToken(), SRM_REQUEST_QUEUED,
+            SRM_ABORTED, "User aborted request!");
 
       res = false;
 
@@ -190,8 +192,7 @@ public class AbortRequestCommand extends DataTransferCommand implements Command 
 
     if (rtype == TRequestType.EMPTY) {
 
-      globalStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS,
-        "Request aborted succesfully");
+      globalStatus = new TReturnStatus(SRM_SUCCESS, "Request aborted succesfully");
 
       CommandHelper.printRequestOutcome("srmAbortRequest", log, globalStatus,
         inputData, inputData.getRequestToken());
@@ -206,14 +207,11 @@ public class AbortRequestCommand extends DataTransferCommand implements Command 
     } else if (rtype == TRequestType.PREPARE_TO_PUT) {
       executor = new PtPAbortExecutor();
       return executor.doIt(inputData);
-    } else if (rtype == TRequestType.COPY) {
-      executor = new CopyAbortExecutor();
-      return executor.doIt(inputData);
     } else {
       log.debug("SrmAbortRequest : Invalid input parameter specified");
 
-      globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-        "Invalid request token. Abort only works for PtG, PtP and Copy.");
+      globalStatus = new TReturnStatus(SRM_INVALID_REQUEST,
+        "Invalid request token. Abort only works for PtG and PtP.");
 
       CommandHelper.printRequestOutcome("srmAbortRequest", log, globalStatus,
         inputData, inputData.getRequestToken());

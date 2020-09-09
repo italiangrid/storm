@@ -25,41 +25,39 @@ import java.util.regex.Pattern;
 
 public abstract class FQANPattern implements SubjectPattern {
 
-	protected static final String ADMIT_ALL = ".*";
-	protected String groupPatternString = null;
-	protected String rolePatternString = null;
-	protected Pattern groupPattern = null;
-	protected Pattern rolePattern = null;
+  protected static final String ADMIT_ALL = ".*";
+  protected String groupPatternString = null;
+  protected String rolePatternString = null;
+  protected Pattern groupPattern = null;
+  protected Pattern rolePattern = null;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * it.grid.storm.authz.sa.model.SubjectPattern#match(it.grid.storm.griduser
-	 * .FQAN)
-	 */
-	public boolean match(SubjectAttribute sa) {
+  /*
+   * (non-Javadoc)
+   * 
+   * @see it.grid.storm.authz.sa.model.SubjectPattern#match(it.grid.storm.griduser .FQAN)
+   */
+  public boolean match(SubjectAttribute sa) {
 
-		boolean result = false;
-		if (sa instanceof FQAN) {
-			FQAN fqan = (FQAN) sa;
-			CharSequence groupSequence = fqan.getGroup();
-			CharSequence roleSequence = fqan.getRole();
-			Matcher groupMatcher = groupPattern.matcher(groupSequence);
-			Matcher roleMatcher = rolePattern.matcher(roleSequence);
-			result = groupMatcher.matches() && roleMatcher.matches();
-		}
-		return result;
-	}
+    boolean result = false;
+    if (sa instanceof FQAN) {
+      FQAN fqan = (FQAN) sa;
+      CharSequence groupSequence = fqan.getGroup();
+      CharSequence roleSequence = fqan.getRole();
+      Matcher groupMatcher = groupPattern.matcher(groupSequence);
+      Matcher roleMatcher = rolePattern.matcher(roleSequence);
+      result = groupMatcher.matches() && roleMatcher.matches();
+    }
+    return result;
+  }
 
-	@Override
-	public String toString() {
+  @Override
+  public String toString() {
 
-	    StringBuilder result = new StringBuilder();
-		String sep = System.getProperty("line.separator");
-		result.append(" FQAN.GroupPatternMatchingRule = " + groupPatternString + sep);
-		result.append(" FQAN.RolePatternMatchinRule = " + rolePatternString + sep);
-		return result.toString();
-	}
+    StringBuilder result = new StringBuilder();
+    String sep = System.getProperty("line.separator");
+    result.append(" FQAN.GroupPatternMatchingRule = " + groupPatternString + sep);
+    result.append(" FQAN.RolePatternMatchinRule = " + rolePatternString + sep);
+    return result.toString();
+  }
 
 }

@@ -22,8 +22,8 @@ import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
 public interface Suspendedable {
 
-	public Boolean completeRequest(TapeRecallStatus recallStatus);
+  public Boolean completeRequest(TapeRecallStatus recallStatus);
 
-	public RequestData getRequestData();
+  public RequestData getRequestData();
 
 }

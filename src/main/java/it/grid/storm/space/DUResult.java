@@ -1,104 +1,126 @@
 package it.grid.storm.space;
 
-import java.util.Date;
+import java.time.Duration;
+import java.time.Instant;
 
 public class DUResult {
 
-    private long size;
-    private String absRootPath;
-    private long durationTime;
-    private Date startTime;
-    private ExitCode cmdResult;
+  private final long sizeInBytes;
+  private final String absRootPath;
+  private final Instant start;
+  private final Instant end;
+  private final ExitStatus status;
+  private final String detail;
+  
 
-    /**
-     * @param size
-     * @param absRootPath
-     * @param startTime
-     * @param durationTime
-     * @param cmdResult
-     */
-    public DUResult(long size, String absRootPath, Date startTime, long durationTime,
-            ExitCode cmdResult) {
+  /**
+   * @param size
+   * @param absRootPath
+   * @param startTime
+   * @param durationTime
+   * @param cmdResult
+   */
+  private DUResult(long sizeInBytes, String absRootPath, Instant start, Instant end,
+      ExitStatus status, String detail) {
 
-        super();
-        this.size = size;
-        this.absRootPath = absRootPath;
-        this.durationTime = durationTime;
-        this.startTime = startTime;
-        this.cmdResult = cmdResult;
-    }
+    this.sizeInBytes = sizeInBytes;
+    this.absRootPath = absRootPath;
+    this.start = start;
+    this.end = end;
+    this.status = status;
+    this.detail = detail;
+  }
 
-    public DUResult(DUResult duResult) {
-        this(duResult.getSize(), duResult.getAbsRootPath(), duResult.getStartTime(),
-                duResult.getDurationTime(), duResult.getCmdResult());
-    }
+  /**
+   * @return the size
+   */
+  public final long getSizeInBytes() {
 
-    /**
-     * @return the size
-     */
-    public final long getSize() {
+    return sizeInBytes;
+  }
 
-        return size;
-    }
+  /**
+   * @return the absRootPath
+   */
+  public final String getAbsRootPath() {
 
-    /**
-     * @return the absRootPath
-     */
-    public final String getAbsRootPath() {
+    return absRootPath;
+  }
 
-        return absRootPath;
-    }
+  /**
+   * @return the start @Instant
+   */
+  public final Instant getStart() {
 
-    /**
-     * @return the durationTime
-     */
-    public final long getDurationTime() {
+    return start;
+  }
 
-        return durationTime;
-    }
+  /**
+   * @return the end @Instant
+   */
+  public final Instant getEnd() {
 
-    /**
-     * @return the startTime
-     */
-    public final Date getStartTime() {
+    return end;
+  }
 
-        return startTime;
-    }
+  /**
+   * @return the end @Instant
+   */
+  public final long getDurationInMillis() {
 
-    public boolean isSuccess() {
+    return Duration.between(start, end).toMillis();
+  }
 
-        return (this.cmdResult.equals(ExitCode.SUCCESS));
-    }
+  public boolean isSuccess() {
 
-    public boolean isPoisoned() {
+    return ExitStatus.SUCCESS.equals(status);
+  }
 
-        return (this.cmdResult.equals(ExitCode.POISON_PILL));
-    }
+  /**
+   * @return the exit status
+   */
+  public final ExitStatus getStatus() {
 
-    /**
-     * @return the cmdResult
-     */
-    public final ExitCode getCmdResult() {
+    return status;
+  }
 
-        return cmdResult;
-    }
+  /**
+   * @return the exit status detailed message
+   */
+  public final String getDetail() {
 
-    @Override
-    public String toString() {
+    return detail;
+  }
 
-        StringBuilder builder = new StringBuilder();
-        builder.append("DUResult [size=");
-        builder.append(size);
-        builder.append(", absRootPath=");
-        builder.append(absRootPath);
-        builder.append(", durationTime=");
-        builder.append(durationTime);
-        builder.append(", startTime=");
-        builder.append(startTime);
-        builder.append(", cmdResult=");
-        builder.append(cmdResult);
-        builder.append("]");
-        return builder.toString();
-    }
+  @Override
+  public String toString() {
 
+    StringBuilder builder = new StringBuilder();
+    builder.append("DUResult [size=");
+    builder.append(sizeInBytes);
+    builder.append(", absRootPath=");
+    builder.append(absRootPath);
+    builder.append(", start=");
+    builder.append(start);
+    builder.append(", end=");
+    builder.append(end);
+    builder.append(", status=");
+    builder.append(status);
+    builder.append(", detail=");
+    builder.append(detail);
+    builder.append("]");
+    return builder.toString();
+  }
+
+  public static DUResult success(String absRootPath, Instant start, Instant end, long sizeInBytes) {
+    return get(absRootPath, start, end, sizeInBytes, ExitStatus.SUCCESS, "");
+  }
+
+  public static DUResult failure(String absRootPath, Instant start, Instant end, String errorMessage) {
+    return get(absRootPath, start, end, -1, ExitStatus.FAILURE, errorMessage);
+  }
+
+  public static DUResult get(String absRootPath, Instant start, Instant end, long sizeInBytes, ExitStatus status, String statusMessage) {
+    return new DUResult(sizeInBytes, absRootPath, start, end, status, statusMessage);
+  }
 }

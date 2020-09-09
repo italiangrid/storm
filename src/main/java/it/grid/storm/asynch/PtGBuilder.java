@@ -44,48 +44,45 @@ import org.slf4j.LoggerFactory;
  */
 public class PtGBuilder {
 
-	private static Logger log = LoggerFactory.getLogger(PtGBuilder.class);
+  private static Logger log = LoggerFactory.getLogger(PtGBuilder.class);
 
-	public static PtG build(FileTransferInputData inputData)
-		throws BuilderException {
+  private PtGBuilder() {}
 
-		TSURL toSURL = inputData.getSurl();
-		TLifeTimeInSeconds pinLifetime = inputData.getDesiredPinLifetime();
-		TURLPrefix transferProtocols = inputData.getTransferProtocols();
-		TDirOption dirOption = TDirOption.makeNotDirectory();
-		TSizeInBytes fileSize = TSizeInBytes.makeEmpty();
-		TReturnStatus status = new TReturnStatus(
-			TStatusCode.SRM_REQUEST_INPROGRESS, "Synchronous request created");
+  public static PtG build(FileTransferInputData inputData) throws BuilderException {
 
-		TTURL transferURL = TTURL.makeEmpty();
-		PtGData data;
-		try {
-			if (inputData instanceof IdentityInputData) {
-				data = new IdentityPtGData(((IdentityInputData) inputData).getUser(),
-					toSURL, pinLifetime, dirOption, transferProtocols, fileSize, status,
-					transferURL);
-			} else {
-				data = new AnonymousPtGData(toSURL, pinLifetime, dirOption,
-					transferProtocols, fileSize, status, transferURL);
-			}
-			data.store();
-		} catch (InvalidPtGDataAttributesException e) {
-			log.error("Unable to build PtGChunkData. "
-				+ "InvalidPtGChunkDataAttributesException: {}", e.getMessage(), e);
-			throw new BuilderException(
-				"Error building PtG PtGChunkData. Building failed");
-		} catch (InvalidFileTransferDataAttributesException e) {
-			log.error("Unable to build PtGChunkData. "
-				+ "InvalidFileTransferChunkDataAttributesException: {}", 
-				e.getMessage(), e);
-			throw new BuilderException(
-				"Error building PtG PtGChunkData. Building failed");
-		} catch (InvalidSurlRequestDataAttributesException e) {
-			log.error("Unable to build PtGChunkData. "
-				+ "InvalidSurlRequestDataAttributesException: {}", e.getMessage(), e);
-			throw new BuilderException(
-				"Error building PtG PtGChunkData. Building failed");
-		}
-		return new PtG(data);
-	}
+    TSURL toSURL = inputData.getSurl();
+    TLifeTimeInSeconds pinLifetime = inputData.getDesiredPinLifetime();
+    TURLPrefix transferProtocols = inputData.getTransferProtocols();
+    TDirOption dirOption = TDirOption.makeNotDirectory();
+    TSizeInBytes fileSize = TSizeInBytes.makeEmpty();
+    TReturnStatus status =
+        new TReturnStatus(TStatusCode.SRM_REQUEST_INPROGRESS, "Synchronous request created");
+
+    TTURL transferURL = TTURL.makeEmpty();
+    PtGData data;
+    try {
+      if (inputData instanceof IdentityInputData) {
+        data = new IdentityPtGData(((IdentityInputData) inputData).getUser(), toSURL, pinLifetime,
+            dirOption, transferProtocols, fileSize, status, transferURL);
+      } else {
+        data = new AnonymousPtGData(toSURL, pinLifetime, dirOption, transferProtocols, fileSize,
+            status, transferURL);
+      }
+      data.store();
+    } catch (InvalidPtGDataAttributesException e) {
+      log.error("Unable to build PtGChunkData. " + "InvalidPtGChunkDataAttributesException: {}",
+          e.getMessage(), e);
+      throw new BuilderException("Error building PtG PtGChunkData. Building failed");
+    } catch (InvalidFileTransferDataAttributesException e) {
+      log.error(
+          "Unable to build PtGChunkData. " + "InvalidFileTransferChunkDataAttributesException: {}",
+          e.getMessage(), e);
+      throw new BuilderException("Error building PtG PtGChunkData. Building failed");
+    } catch (InvalidSurlRequestDataAttributesException e) {
+      log.error("Unable to build PtGChunkData. " + "InvalidSurlRequestDataAttributesException: {}",
+          e.getMessage(), e);
+      throw new BuilderException("Error building PtG PtGChunkData. Building failed");
+    }
+    return new PtG(data);
+  }
 }

@@ -77,187 +77,6 @@ public class SpaceHelper {
 		config = Configuration.getInstance();
 	}
 
-
-
-	private void updateSpaceUsageForSA(Logger log, String funcName,
-		GridUserInterface user, TSURL surl, int operation, long filesize) {
-
-		log.debug("{}: Updating Storage Area free size on db", funcName);
-		
-		ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
-		StoRI stori = null;
-
-		
-		try {
-			// FIXME: should be fixed in NamespaceDirector to avoid having
-			// two distinct calls if user is null or not.
-			// The resolveStoRIBySURL(surl, user) should handle this.
-			if (user == null) {
-				stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
-			} else {
-				stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl, user);
-			}
-
-		} catch(Throwable e){
-		
-			log.error("Unable to build stori for surl {} and user {}: {}",
-					new Object[]{surl,user,e.getMessage()},e);
-			return;
-
-		}
-
-		VirtualFSInterface fs = stori.getVirtualFileSystem();
-		StorageSpaceData spaceData = catalog.getStorageSpaceByAlias(fs.getSpaceTokenDescription());
-		LocalFile localElement = stori.getLocalFile();
-
-		if (spaceData == null){
-			log.error("{}: StorageSpace not found from space token description: {}", 
-					funcName, 
-					fs.getSpaceTokenDescription());
-			return;
-		}
-		
-		TSizeInBytes availableSize = spaceData.getAvailableSpaceSize();
-		long usedSize = -1;
-		
-		if (operation == SpaceHelper.ADD_FREE_SPACE){
-
-			log.debug("Adding {} bytes of free space to Storage Area {}", 
-					filesize, fs.getAliasName());
-
-			long totalSize = spaceData.getTotalSpaceSize().value();
-			long newAvailableSize = availableSize.value() + filesize;
-			
-			// The new remaining size cannot be greater than the total size
-			if (newAvailableSize > totalSize) {
-				newAvailableSize = totalSize;
-			}
-			
-			long reservedSize = spaceData.getReservedSpaceSize().isEmpty() ? 0
-				: spaceData.getReservedSpaceSize().value();
-			
-			long unavailableSize = spaceData.getUnavailableSpaceSize().isEmpty() ? 0
-				: spaceData.getUnavailableSpaceSize().value();
-			
-			usedSize = totalSize - newAvailableSize - reservedSize
-				- unavailableSize;
-			
-		} else if (operation == SpaceHelper.REMOVE_FREE_SPACE){
-			
-			if (!localElement.exists()){
-				log.error("{}: Local file not found to compute space size change: {}", 
-					funcName,
-					localElement);
-				return;
-			}
-			
-			log.debug("Removing {} bytes of free space from Storage Area {}", 
-					filesize, fs.getAliasName());
-			
-			usedSize = spaceData.getUsedSpaceSize().value() + localElement.getSize();
-			
-		}
-		
-		// Prevent used size negative values.
-		if (usedSize < 0){
-			usedSize = 0;
-		}
-			
-		TSizeInBytes oldUsedSize = null, newUsedSize = null;
-		
-		// Update used size
-		try{
-
-			oldUsedSize = spaceData.getTotalSpaceSize();
-			newUsedSize = TSizeInBytes.make(usedSize, SizeUnit.BYTES);
-			spaceData.setUsedSpaceSize(newUsedSize);
-			
-		}catch(InvalidTSizeAttributesException e){
-			
-			log.error("Error creating new used size: {}.",e.getMessage(),e);
-			log.info("Falling back to old used size value: {}", oldUsedSize.value());
-			spaceData.setUsedSpaceSize(oldUsedSize);
-		}
-		
-		
-		try {
-
-			fs.storeSpaceByToken(spaceData);
-
-		} catch (NamespaceException e) {
-			log.error("Error storing updated space data: {}. {}", spaceData, e.getMessage(), e);
-			return;
-		}
-			
-		log.debug("{}: Starage Area used size updated to {}", spaceData.getUsedSpaceSize().value());
-	}
-
-	/**
-	 * This helper function is used to update the Free Size for certain Storage
-	 * Area. From a PtPReducedChunk array.
-	 * 
-	 * 
-	 * @param log
-	 * @param funcName
-	 * @param user
-	 * @param spaceAvailableSURLs
-	 */
-
-	public void consumeSpaceForSA(Logger log, String funcName,
-		GridUserInterface user, ArrayList spaceAvailableSURLs) {
-
-		// Update the Storage Area Free size into the DB for each
-		// PtPReducedChunkData specified
-
-		for (int i = 0; i < spaceAvailableSURLs.size(); i++) {
-
-			log.debug("srmPutDone: Updating Storage Area free size on db");
-
-			ReducedPtPChunkData chunkData = (ReducedPtPChunkData) spaceAvailableSURLs
-				.get(i);
-			TSURL surl = chunkData.toSURL();
-
-			updateSpaceUsageForSA(log, funcName, user, surl, SpaceHelper.REMOVE_FREE_SPACE, 0);
-
-		}
-
-	}
-
-	/**
-	 * @param log
-	 * @param funcName
-	 * @param user
-	 * @param surl
-	 */
-	public void decreaseFreeSpaceForSA(Logger log, String funcName,
-		GridUserInterface user, TSURL surl) {
-
-		updateSpaceUsageForSA(log, funcName, user, surl, SpaceHelper.REMOVE_FREE_SPACE, 0);
-
-	}
-
-	/**
-	 * Increase the free Storage Area free space in case of file removal The file
-	 * size have to be passed as parameter since the file does not exists anymore.
-	 * 
-	 * @param log
-	 * @param funcName
-	 * @param user
-	 * @param surl
-	 * @param fileSize
-	 */
-	public void increaseFreeSpaceForSA(Logger log, String funcName,
-		GridUserInterface user, TSURL surl, long fileSize) {
-
-		updateSpaceUsageForSA(log, funcName, user, surl, SpaceHelper.ADD_FREE_SPACE, fileSize);
-	}
-
-	public void increaseFreeSpaceForSA(Logger log, String funcName, TSURL surl,
-		long fileSize) {
-
-		updateSpaceUsageForSA(log, funcName, null, surl, SpaceHelper.ADD_FREE_SPACE, fileSize);
-	}
-
 	public boolean isSAFull(Logger log, StoRI stori) {
 
 		log.debug("Checking if the Storage Area is full");
@@ -266,11 +85,8 @@ public class SpaceHelper {
 		ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
 
 		// Get StorageSpaceData from the database
-		String SSDesc;
-		StorageSpaceData spaceData = null;
-
-		SSDesc = fs.getSpaceTokenDescription();
-		spaceData = catalog.getStorageSpaceByAlias(SSDesc);
+		String ssDesc = fs.getSpaceTokenDescription();
+		StorageSpaceData spaceData = catalog.getStorageSpaceByAlias(ssDesc);
 
 		if ((spaceData != null) && (spaceData.getAvailableSpaceSize().value() == 0)) {
 			log.debug("AvailableSize={}" , spaceData.getAvailableSpaceSize().value());
@@ -289,11 +105,8 @@ public class SpaceHelper {
 		ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
 
 		// Get StorageSpaceData from the database
-		String SSDesc;
-		StorageSpaceData spaceData = null;
-
-		SSDesc = fs.getSpaceTokenDescription();
-		spaceData = catalog.getStorageSpaceByAlias(SSDesc);
+		String ssDesc = fs.getSpaceTokenDescription();
+		StorageSpaceData spaceData = catalog.getStorageSpaceByAlias(ssDesc);
 
 		if (spaceData != null) {
 			return spaceData.getAvailableSpaceSize().value();
@@ -311,11 +124,10 @@ public class SpaceHelper {
 	 * @param stori
 	 * @return
 	 */
-	public boolean isSAInitialized(Logger log, StoRI stori)
-		throws IllegalArgumentException {
+	public boolean isSAInitialized(Logger log, StoRI stori) {
 
 		log.debug("Checking if the Storage Area is initialized");
-		if (stori == null || log == null) {
+		if (stori == null) {
 			throw new IllegalArgumentException(
 				"Unable to perform the SA initialization check, provided null parameters: log : "
 					+ log + " , stori : " + stori);
@@ -324,14 +136,14 @@ public class SpaceHelper {
 		VirtualFSInterface fs = stori.getVirtualFileSystem();
 		ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
 		// Get StorageSpaceData from the database
-		String SSDesc;
+		String ssDesc = fs.getSpaceTokenDescription();
 
-		SSDesc = fs.getSpaceTokenDescription();
+		StorageSpaceData spaceData = catalog.getStorageSpaceByAlias(ssDesc);
 
-		StorageSpaceData spaceData = catalog.getStorageSpaceByAlias(SSDesc);
-		if (spaceData != null && !(spaceData.getUsedSpaceSize() == null)
+		if (spaceData != null && spaceData.getUsedSpaceSize() != null
 			&& !spaceData.getUsedSpaceSize().isEmpty()
-			&& !(spaceData.getUsedSpaceSize().value() < 0)) {
+			&& spaceData.getUsedSpaceSize().value() >= 0) {
+
 			response = true;
 		}
 		log.debug("The storage area is initialized with token alias {} is {} initialized"
@@ -348,16 +160,8 @@ public class SpaceHelper {
 	public TSpaceToken getTokenFromStoRI(Logger log, StoRI stori) {
 
 		log.debug("SpaceHelper: getting space token from StoRI");
-		TSpaceToken token = TSpaceToken.makeEmpty();
 		VirtualFSInterface fs = stori.getVirtualFileSystem();
-
-		try {
-			token = fs.getSpaceToken();
-		} catch (NamespaceException e) {
-			log.warn("Unable to retrieve SpaceToken for stori:'{}'" , stori);
-		}
-
-		return token;
+		return fs.getSpaceToken();
 
 	}
 

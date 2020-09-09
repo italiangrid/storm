@@ -26,6 +26,6 @@ package it.grid.storm.authz.sa.model;
  */
 public interface Everyone {
 
-	public static final String EVERYONE = "EVERYONE";
+  public static final String EVERYONE = "EVERYONE";
 
 }
