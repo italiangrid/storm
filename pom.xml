@@ -5,7 +5,7 @@
   <name>StoRM Backend server</name>
   <groupId>org.italiangrid.storm</groupId>
   <artifactId>storm-backend-server</artifactId>
-  <version>1.11.18</version>
+  <version>1.11.19</version>
 
   <properties>
 
@@ -34,6 +34,9 @@
     <xalanVersion>2.7.1</xalanVersion>
     <mailVersion>1.4.6</mailVersion>
     <jakartaOroVersion>2.0.8</jakartaOroVersion>
+    <jakartaXmlBindVersion>2.3.3</jakartaXmlBindVersion>
+
+    <mysqlConnectorVersion>5.1.12</mysqlConnectorVersion>
 
     <guavaVersion>18.0</guavaVersion>
     <metrics.version>3.1.0</metrics.version>
@@ -502,7 +505,13 @@
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>5.1.12</version>
+      <version>${mysqlConnectorVersion}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+      <version>${jakartaXmlBindVersion}</version>
     </dependency>
 
   </dependencies>
