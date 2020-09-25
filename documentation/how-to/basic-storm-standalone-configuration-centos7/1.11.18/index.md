@@ -47,9 +47,13 @@ yum install -y puppet
 Install the needed puppet modules:
 
 ```bash
-# ntp service
+# EPEL repo
+puppet module install puppet-epel
+# UMD4 repo
+puppet module install cnafsd-umd4
+# NTP service
 puppet module install puppetlabs-ntp
-# fetch-crl and all ca certificates
+# fetch-crl and all CA certificates
 puppet module install puppet-fetchcrl
 # voms
 puppet module install lcgdm-voms
@@ -64,6 +68,8 @@ puppet module install cnafsd-storm
 Apply this **setup.pp**:
 
 ```puppet
+include epel
+include umd4
 include ntp
 include fetchcrl
 
@@ -75,10 +81,11 @@ include storm::users
 
 # storage root directories for all the storage areas
 file { '/storage':
-  ensure => directory,
-  mode   => '0755',
-  owner  => 'root',
-  group  => 'root',
+  ensure  => directory,
+  mode    => '0755',
+  owner   => 'root',
+  group   => 'root',
+  recurse => false,
 } -> class { 'storm::storage':
   root_directories => [
     '/storage/dteam',
@@ -89,8 +96,6 @@ file { '/storage':
 # install also UMD4 repo and EPEL
 class { 'storm::repo':
   enabled      => ['stable'],
-  install_umd  => true,
-  install_epel => true,
 }
 
 # This class installs LCMAPS and LCAS and configure them with some default files stored into the module.
@@ -99,16 +104,19 @@ class { 'storm::mapping':
   pools => [{
     'vo' => 'dteam',
     'group' => 'dteam',
+    'groups' => ['dteam'],
     'gid' => 7100,
     'pool_name' => 'dteam',
     'pool_size' => 20,
     'pool_base_uid' => 7100,
+    'role' => 'NULL',
   }],
 }
 
 # install bdii
 class { 'bdii':
-  firewall => false,
+  firewall   => false,
+  bdiipasswd => 'supersecretpassword', # avoid service reloading at each run of Puppet agent
 }
 
 Class['storm::users']
@@ -133,7 +141,10 @@ Example of **manifest.pp**:
 ```puppet
 $host='backend-test.example.org'
 
-Class['storm::backend']
+include storm::db
+
+Class['storm::db']
+-> Class['storm::backend']
 -> Class['storm::frontend']
 -> Class['storm::gridftp']
 -> Class['storm::webdav']
@@ -217,33 +228,20 @@ class { 'storm::backend':
 }
 ```
 
-### Custom MySQL server configuration
+### MySQL server configuration
 
-The installation of MySQL server on StoRM Backend class is disabled by default. The assumption is that a site administrator prefers to install and tune database as its needed.
+The installation of MySQL server is not done by StoRM Backend class. The assumption is that a site administrator prefers to install and tune database as its needed. Anyway, an utility class is provided by StoRM module to install a MariaDB server and add all the necessary grants and users.
 
-StoRM Backend Puppet module class can enable the installation of a MySQL server on the same host by adding:
+Examples of StoRM Database usage:
 
-```puppet
-class { 'storm::backend':
-  ...
-  mysql_server_install => true,
-  mysql_server_root_password => 'supersecretpassword',
-  mysql_server_override_options => {
-    'mysqld'      => {
-      'bind-address'    => '127.0.0.1',
-      'log-error'       => '/var/log/mysqld.log',
-      'max_connections' => 2048,
-    },
-    'mysqld_safe' => {
-      'log-error' => '/var/log/mysqld.log',
-    },
-  },
-  ...
+```
+class { 'storm::db':
+  root_password => 'supersupersecretword',
+  storm_password => 'supersecretword', # same of db_password (Backend) and db_passwd (Frontend)
 }
 ```
 
-The value of `mysql_server_override_options` showed in this example is the default value so you don't need to specify it if these values are enough for you. If you need to customize mode your options, please read the documentation of [puppetlabs/mysql](https://forge.puppet.com/puppetlabs/mysql) module.
-
+The whole list of StoRM Database class parameters can be found [here](https://italiangrid.github.io/storm-puppet-module/puppet_classes/storm_3A_3Adb.html).
 
 
 [INSTALL-PREREQ]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.18/index.html#installprereq
