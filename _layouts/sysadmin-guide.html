@@ -1,0 +1,14 @@
+---
+layout: service-guide
+---
+
+{% for element in page.menu %}
+
+<div style="width: 100vw; height: 30px; border-left: solid 3px cornflowerblue; border-bottom: solid 1px gray; margin-top: 4px; margin-bottom: 4px;">
+
+    <a style="float: left;" href="{{site.baseurl}}/{{element.link}}">{{element.label}}</a>
+</div>
+
+{% endfor %}
+
+{{content}}

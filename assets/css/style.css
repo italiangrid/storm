@@ -241,7 +241,7 @@ and make it centered */
     display: block;
     top: 60px;
     left: 5px;
-    width: 250px;
+    width: 300px;
   }
 
 @media (min-width: 768px) and (max-width: 1599px) {

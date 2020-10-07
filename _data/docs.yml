@@ -3,8 +3,10 @@ administrator-guides:
   - title: "System Administration Guide"
     relative-link: "/documentation/sysadmin-guide"
     description: "Guide to install and configure StoRM."
-    last-update: "07/08/2020"
+    last-update: "06/10/2020"
     older-versions:
+      - name: "1.11.18"
+        relative-link: "/documentation/sysadmin-guide/1.11.18"
       - name: "1.11.17"
         relative-link: "/documentation/sysadmin-guide/1.11.17"
       - name: "1.11.16"
@@ -27,7 +29,7 @@ administrator-guides:
   - title: "How-To"
     relative-link: "/documentation/how-to/"
     description: "Several StoRM advanced configuration examples."
-    last-update: "07/08/2020"
+    last-update: "06/10/2020"
     older-versions: []
 
 user-guides:

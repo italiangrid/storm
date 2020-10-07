@@ -7,9 +7,22 @@ title: StoRM releases
 
 The following is the list of last StoRM releases, with the released components list and a link to the release notes.
 
+## StoRM v.1.11.19
+
+<span class="label" style="margin-top: -20px;">29.10.2020</span> <span class="label label-info" style="margin-top: -20px;">current</span>
+
+This is the latest release for StoRM, available on StoRM repositories.
+
+| Component            | Version    | Platform
+|:---------------------|:-----------|:--------
+|StoRM Backend         |[1.11.19]({{site.baseurl}}/release-notes/storm-backend-server/1.11.19/) | <span class="label label-success ">centos6</span> <span class="label label-info ">centos7</span>
+|StoRM WebDAV          |[1.3.1]({{site.baseurl}}/release-notes/storm-webdav/1.3.1/) | <span class="label label-success ">centos6</span> <span class="label label-info ">centos7</span>
+
+See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.19.html).
+
 ## StoRM v.1.11.18
 
-<span class="label" style="margin-top: -20px;">07.08.2020</span> <span class="label label-info" style="margin-top: -20px;">current</span>
+<span class="label" style="margin-top: -20px;">07.08.2020</span>
 
 This is the latest release for StoRM, available on StoRM repositories.
 

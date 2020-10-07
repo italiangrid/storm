@@ -75,13 +75,11 @@ class { 'storm::webdav':
 
 Read more at:
 * [StoRM Puppet module forge page][stormpuppetmodule];
-* [StoRM Puppet module generated documentation][stormpuppetmoduledoc] forge page;
-* [Puppet Configuration][puppetconf] section of [System Administration Guide][storm-sysadmin-guide];
+* [StoRM Puppet module generated documentation][stormpuppetmoduledoc];
 * the [Quick deploy on CentOS7][quickdeploy] guide.
 
 [stormpuppetmodule]: https://forge.puppet.com/cnafsd/storm
 [stormpuppetmoduledoc]: https://italiangrid.github.io/storm-puppet-module/
-[puppetconf]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.18#puppetconfiguration
 [quickdeploy]: {{site.baseurl}}/documentation/how-to/basic-storm-standalone-configuration-centos7/1.11.18/
 
 [release-notes]: {{site.baseurl}}/release-notes/StoRM-v1.11.18.html
