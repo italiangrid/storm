@@ -24,7 +24,7 @@
     <xmlrpcVersion>3.0</xmlrpcVersion>
     <jaxrpcVersion>1.1</jaxrpcVersion>
     <jsonVersion>20080701</jsonVersion>
-    <junitVersion>4.8.1</junitVersion>
+    <junitVersion>4.13.1</junitVersion>
     <commonsCliVersion>1.0</commonsCliVersion>
     <commonsDiscoveryVersion>0.2</commonsDiscoveryVersion>
     <commonsHttpClientVersion>3.1</commonsHttpClientVersion>
