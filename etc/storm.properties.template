@@ -30,14 +30,6 @@ storm.service.FE-public.hostname =
 
 
 # ============================
-# Front End hosts
-# ============================
-# comma-separated list of hostnames composing the FE. 
-#   <!! managed by YAIM; please read the above NOTE !!>
-storm.service.FE-list.hostnames =  
-
-
-# ============================
 # Front End service port
 # ============================
 # The Front End binding port
