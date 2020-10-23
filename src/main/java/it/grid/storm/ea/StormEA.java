@@ -28,205 +28,214 @@ import it.grid.storm.checksum.ChecksumAlgorithm;
 
 public class StormEA {
 
-	private static final Logger log = LoggerFactory.getLogger(StormEA.class);
+  private static final Logger log = LoggerFactory.getLogger(StormEA.class);
 
-	public static final String EA_PINNED = "user.storm.pinned";
-	public static final String EA_PREMIGRATE = "user.storm.premigrate";
-	public static final String EA_CHECKSUM = "user.storm.checksum.";
-	public static final String EA_MIGRATED = "user.storm.migrated";
-	public static final String EA_TSMRECD = "user.TSMRecD";
-	public static final String EA_TSMRECR = "user.TSMRecR";
-	public static final String EA_TSMRECT = "user.TSMRecT";
+  public static final String EA_PINNED = "user.storm.pinned";
+  public static final String EA_PREMIGRATE = "user.storm.premigrate";
+  public static final String EA_CHECKSUM = "user.storm.checksum.";
+  public static final String EA_MIGRATED = "user.storm.migrated";
+  public static final String EA_TSMRECD = "user.TSMRecD";
+  public static final String EA_TSMRECR = "user.TSMRecR";
+  public static final String EA_TSMRECT = "user.TSMRecT";
 
-	public static final String EA_TEST_ONLINE = "user.storm.online";
+  public static final String EA_TEST_ONLINE = "user.storm.online";
 
-	private static ExtendedAttributes ea;
+  private static ExtendedAttributes ea;
 
-	public static void init(ExtendedAttributes extendedAttributes) {
-		ea = extendedAttributes;
-	}
+  public static void init(ExtendedAttributes extendedAttributes) {
+    ea = extendedAttributes;
+  }
 
-	static {
-		init(ExtendedAttributesFactory.getExtendedAttributes());
-	}
+  static {
+    init(ExtendedAttributesFactory.getExtendedAttributes());
+  }
 
-	public static Map<String, String> getChecksums(String filename) {
+  public static Map<String, String> getChecksums(String filename) {
 
-		Map<String, String> result = new HashMap<>();
+    Map<String, String> result = new HashMap<>();
 
-		for (ChecksumAlgorithm checksumAlgorithm : ChecksumAlgorithm.values()) {
+    for (ChecksumAlgorithm checksumAlgorithm : ChecksumAlgorithm.values()) {
 
-			String cksm = null;
+      String cksm = null;
 
-			try {
+      try {
 
-				cksm = getChecksum(filename, checksumAlgorithm.toString());
-				if (cksm != null) {
-					result.put(checksumAlgorithm.toString(), cksm);
-				}
+        cksm = getChecksum(filename, checksumAlgorithm.toString());
+        if (cksm != null) {
+          result.put(checksumAlgorithm.toString(), cksm);
+        }
 
-			} catch (ExtendedAttributesException e) {
-				log.warn("Cannot retrieve checksum EA for algorithm {}", checksumAlgorithm, e);
-			}
-		}
+      } catch (ExtendedAttributesException e) {
+        log.warn("Cannot retrieve checksum EA for algorithm {}", checksumAlgorithm, e);
+      }
+    }
 
-		return result;
-	}
+    return result;
+  }
 
-	public static String getChecksum(String fileName, String algorithm) {
+  public static String getChecksum(String fileName, String algorithm) {
 
-		if (ea.hasXAttr(fileName, EA_CHECKSUM + algorithm.toLowerCase())) {
-			return ea.getXAttr(fileName, EA_CHECKSUM + algorithm.toLowerCase());
-		}
+    if (ea.hasXAttr(fileName, EA_CHECKSUM + algorithm.toLowerCase())) {
+      return ea.getXAttr(fileName, EA_CHECKSUM + algorithm.toLowerCase());
+    }
 
-		return null;
+    return null;
 
-	}
+  }
 
-	public static boolean getMigrated(String fileName) {
+  public static boolean getMigrated(String fileName) {
 
-		return ea.hasXAttr(fileName, EA_MIGRATED);
-	}
+    return ea.hasXAttr(fileName, EA_MIGRATED);
+  }
 
-	public static boolean getPremigrated(String fileName) {
+  public static boolean getPremigrated(String fileName) {
 
-		return ea.hasXAttr(fileName, EA_PREMIGRATE);
-	}
+    return ea.hasXAttr(fileName, EA_PREMIGRATE);
+  }
 
-	public static long getPinned(String fileName) {
+  public static long getPinned(String fileName) {
 
-		if (!ea.hasXAttr(fileName, EA_PINNED)) {
-			return -1;
-		}
+    if (!ea.hasXAttr(fileName, EA_PINNED)) {
+      return -1;
+    }
 
-		String pinString = ea.getXAttr(fileName, EA_PINNED);
-		return Long.decode(pinString);
+    String pinString = ea.getXAttr(fileName, EA_PINNED);
+    return Long.decode(pinString);
 
-	}
+  }
 
-	public static String getTSMRecT(String fileName) {
+  public static String getTSMRecT(String fileName) {
 
-		if (!ea.hasXAttr(fileName, EA_TSMRECT)) {
-			return null;
-		}
+    if (!ea.hasXAttr(fileName, EA_TSMRECT)) {
+      return null;
+    }
 
-		return ea.getXAttr(fileName, EA_TSMRECT);
-	}
+    return ea.getXAttr(fileName, EA_TSMRECT);
+  }
 
-	public static Integer getTSMRecR(String fileName) {
+  public static Integer getTSMRecR(String fileName) {
 
-		if (!ea.hasXAttr(fileName, EA_TSMRECR)) {
-			return null;
-		}
+    if (!ea.hasXAttr(fileName, EA_TSMRECR)) {
+      return null;
+    }
 
-		String retryStr = ea.getXAttr(fileName, EA_TSMRECR);
-		return Integer.valueOf(retryStr);
-	}
+    String retryStr = ea.getXAttr(fileName, EA_TSMRECR);
+    return Integer.valueOf(retryStr);
+  }
 
-	public static Long getTSMRecD(String fileName) {
+  public static Long getTSMRecD(String fileName) {
 
-		if (!ea.hasXAttr(fileName, EA_TSMRECD)) {
-			return null;
-		}
+    if (!ea.hasXAttr(fileName, EA_TSMRECD)) {
+      return null;
+    }
 
-		String dateStr = ea.getXAttr(fileName, EA_TSMRECD);
-		return Long.valueOf(dateStr);
-	}
+    String dateStr = ea.getXAttr(fileName, EA_TSMRECD);
+    return Long.valueOf(dateStr);
+  }
 
-	public static void removeChecksum(String fileName) {
+  public static void removeChecksum(String fileName) {
 
-		if (!ea.hasXAttr(fileName, EA_CHECKSUM)) {
-			log.info("Cannot remove '{}' EA. Attribute not found for file: {}", EA_CHECKSUM, fileName);
-			return;
-		}
+    if (!ea.hasXAttr(fileName, EA_CHECKSUM)) {
+      log.info("Cannot remove '{}' EA. Attribute not found for file: {}", EA_CHECKSUM, fileName);
+      return;
+    }
 
-		ea.rmXAttr(fileName, EA_CHECKSUM);
-	}
+    try {
+      ea.rmXAttr(fileName, EA_CHECKSUM);
+    } catch (ExtendedAttributesException eae) {
+      log.warn("Cannot remove checksum attribute from file: {}", fileName, eae);
+    }
+  }
 
-	public static void removePinned(String fileName) {
+  public static void removePinned(String fileName) {
 
-		ea.rmXAttr(fileName, EA_PINNED);
+    try {
+      ea.rmXAttr(fileName, EA_PINNED);
+    } catch (ExtendedAttributesException eae) {
+      log.warn("Cannot remove pinned attribute from file: {}", fileName, eae);
+    }
 
-	}
+  }
 
-	public static void setChecksum(String fileName, String checksum, String algorithm) {
+  public static void setChecksum(String fileName, String checksum, String algorithm) {
 
-		ea.setXAttr(fileName, EA_CHECKSUM + algorithm.toLowerCase(), checksum);
-	}
+    ea.setXAttr(fileName, EA_CHECKSUM + algorithm.toLowerCase(), checksum);
+  }
 
-	/**
-	 * Set the Extended Attribute "pinned" ({@value StormEA#EA_PINNED}) to the given value.
-	 * 
-	 * @param fileName
-	 * @param expirationDateInSEC expiration time of the pin expressed as "seconds since the epoch".
-	 */
-	public static void setPinned(String fileName, long expirationDateInSEC) {
+  /**
+   * Set the Extended Attribute "pinned" ({@value StormEA#EA_PINNED}) to the given value.
+   * 
+   * @param fileName
+   * @param expirationDateInSEC expiration time of the pin expressed as "seconds since the epoch".
+   */
+  public static void setPinned(String fileName, long expirationDateInSEC) {
 
-		long existingPinValueInSEC = getPinned(fileName);
+    long existingPinValueInSEC = getPinned(fileName);
 
-		Format formatter = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+    Format formatter = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
 
-		if (existingPinValueInSEC >= expirationDateInSEC) {
-			log.debug("The file '{}' is already Pinned and the pre-existing PinLifeTime is greater "
-			    + "than the new one. Nothing is changed in EA. Expiration: {}",
-			    fileName, formatter.format(new Date(existingPinValueInSEC * 1000)));
-			return;
-		}
+    if (existingPinValueInSEC >= expirationDateInSEC) {
+      log.debug(
+          "The file '{}' is already Pinned and the pre-existing PinLifeTime is greater "
+              + "than the new one. Nothing is changed in EA. Expiration: {}",
+          fileName, formatter.format(new Date(existingPinValueInSEC * 1000)));
+      return;
+    }
 
-		String longString = String.valueOf(expirationDateInSEC);
+    String longString = String.valueOf(expirationDateInSEC);
 
-		try {
-			ea.setXAttr(fileName, EA_PINNED, longString);
+    try {
+      ea.setXAttr(fileName, EA_PINNED, longString);
 
-			if (log.isDebugEnabled()) {
-				if (existingPinValueInSEC == -1) {
-					log.debug("Added the Pinned EA to '" + fileName + "' with expiration: "
-							+ formatter.format(new Date(existingPinValueInSEC * 1000)));
-				} else {
-					log.debug("Updated the Pinned EA to '" + fileName + "' with expiration: "
-							+ formatter.format(new Date(existingPinValueInSEC * 1000)));
-				}
-			}
+      if (log.isDebugEnabled()) {
+        if (existingPinValueInSEC == -1) {
+          log.debug("Added the Pinned EA to '" + fileName + "' with expiration: "
+              + formatter.format(new Date(existingPinValueInSEC * 1000)));
+        } else {
+          log.debug("Updated the Pinned EA to '" + fileName + "' with expiration: "
+              + formatter.format(new Date(existingPinValueInSEC * 1000)));
+        }
+      }
 
-		} catch (ExtendedAttributesException e) {
-			log.warn("Cannot set pinned EA to file: {}", fileName, e);
-		}
-	}
+    } catch (ExtendedAttributesException e) {
+      log.warn("Cannot set pinned EA to file: {}", fileName, e);
+    }
+  }
 
-	public static void setPremigrate(String fileName) {
+  public static void setPremigrate(String fileName) {
 
-		try {
-			ea.setXAttr(fileName, EA_PREMIGRATE, null);
+    try {
+      ea.setXAttr(fileName, EA_PREMIGRATE, null);
 
-		} catch (ExtendedAttributesException e) {
-			log.warn("Cannot set pre-migrate EA to file: {}", fileName, e);
-		}
-	}
+    } catch (ExtendedAttributesException e) {
+      log.warn("Cannot set pre-migrate EA to file: {}", fileName, e);
+    }
+  }
 
-	/**
-	 * @param absoluteFileName
-	 * @return boolean: true if the file is pinned, false else.
-	 */
-	public static boolean isPinned(String absoluteFileName) {
+  /**
+   * @param absoluteFileName
+   * @return boolean: true if the file is pinned, false else.
+   */
+  public static boolean isPinned(String absoluteFileName) {
 
-		return ea.hasXAttr(absoluteFileName, EA_PINNED);
-	}
+    return ea.hasXAttr(absoluteFileName, EA_PINNED);
+  }
 
-	public static boolean getOnline(String fileName) {
+  public static boolean getOnline(String fileName) {
 
-		if (ea.hasXAttr(fileName, EA_TEST_ONLINE)) {
-			return Boolean.valueOf(ea.getXAttr(fileName, EA_TEST_ONLINE));
-		}
-		return true;
-	}
+    if (ea.hasXAttr(fileName, EA_TEST_ONLINE)) {
+      return Boolean.valueOf(ea.getXAttr(fileName, EA_TEST_ONLINE));
+    }
+    return true;
+  }
 
-	public static void setOnline(String fileName, boolean status) {
+  public static void setOnline(String fileName, boolean status) {
 
-		try {
-			ea.setXAttr(fileName, EA_TEST_ONLINE, String.valueOf(status));
+    try {
+      ea.setXAttr(fileName, EA_TEST_ONLINE, String.valueOf(status));
 
-		} catch (ExtendedAttributesException e) {
-			log.warn("Cannot set test-online EA to file: {}", fileName, e);
-		}
-	}
+    } catch (ExtendedAttributesException e) {
+      log.warn("Cannot set test-online EA to file: {}", fileName, e);
+    }
+  }
 }
