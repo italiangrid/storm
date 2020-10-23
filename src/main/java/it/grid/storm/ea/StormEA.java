@@ -142,7 +142,7 @@ public class StormEA {
   public static void removePinned(String fileName) {
 
     if (!ea.hasXAttr(fileName, EA_PINNED)) {
-      log.info("Cannot remove '{}' EA. Attribute not found for file: {}", EA_PINNED, fileName);
+      log.info("Cannot remove '{}'. Attribute not found for file: {}", EA_PINNED, fileName);
       return;
     }
 
