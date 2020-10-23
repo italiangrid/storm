@@ -18,11 +18,12 @@ package it.grid.storm.ea;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
 
 import it.grid.storm.checksum.ChecksumAlgorithm;
 
@@ -50,9 +51,14 @@ public class StormEA {
     init(ExtendedAttributesFactory.getExtendedAttributes());
   }
 
-  public static Map<String, String> getChecksums(String filename) {
+  public static String getChecksumAttributeName(ChecksumAlgorithm algorithm) {
 
-    Map<String, String> result = new HashMap<>();
+    return EA_CHECKSUM + algorithm.getValue().toLowerCase();
+  }
+
+  public static Map<ChecksumAlgorithm, String> getChecksums(String filename) {
+
+    Map<ChecksumAlgorithm, String> result = Maps.newHashMap();
 
     for (ChecksumAlgorithm checksumAlgorithm : ChecksumAlgorithm.values()) {
 
@@ -60,9 +66,9 @@ public class StormEA {
 
       try {
 
-        cksm = getChecksum(filename, checksumAlgorithm.toString());
+        cksm = getChecksum(filename, checksumAlgorithm);
         if (cksm != null) {
-          result.put(checksumAlgorithm.toString(), cksm);
+          result.put(checksumAlgorithm, cksm);
         }
 
       } catch (ExtendedAttributesException e) {
@@ -73,10 +79,10 @@ public class StormEA {
     return result;
   }
 
-  public static String getChecksum(String fileName, String algorithm) {
+  public static String getChecksum(String fileName, ChecksumAlgorithm algorithm) {
 
-    if (ea.hasXAttr(fileName, EA_CHECKSUM + algorithm.toLowerCase())) {
-      return ea.getXAttr(fileName, EA_CHECKSUM + algorithm.toLowerCase());
+    if (ea.hasXAttr(fileName, getChecksumAttributeName(algorithm))) {
+      return ea.getXAttr(fileName, getChecksumAttributeName(algorithm));
     }
 
     return null;
@@ -133,21 +139,12 @@ public class StormEA {
     return Long.valueOf(dateStr);
   }
 
-  public static void removeChecksum(String fileName) {
+  public static void removePinned(String fileName) {
 
-    if (!ea.hasXAttr(fileName, EA_CHECKSUM)) {
-      log.info("Cannot remove '{}' EA. Attribute not found for file: {}", EA_CHECKSUM, fileName);
+    if (!ea.hasXAttr(fileName, EA_PINNED)) {
+      log.info("Cannot remove '{}' EA. Attribute not found for file: {}", EA_PINNED, fileName);
       return;
     }
-
-    try {
-      ea.rmXAttr(fileName, EA_CHECKSUM);
-    } catch (ExtendedAttributesException eae) {
-      log.warn("Cannot remove checksum attribute from file: {}", fileName, eae);
-    }
-  }
-
-  public static void removePinned(String fileName) {
 
     try {
       ea.rmXAttr(fileName, EA_PINNED);
@@ -157,9 +154,15 @@ public class StormEA {
 
   }
 
-  public static void setChecksum(String fileName, String checksum, String algorithm) {
+  public static void setChecksum(String fileName, String checksum, ChecksumAlgorithm algorithm) {
 
-    ea.setXAttr(fileName, EA_CHECKSUM + algorithm.toLowerCase(), checksum);
+    String attributeName = getChecksumAttributeName(algorithm);
+    try {
+      ea.setXAttr(fileName, attributeName, checksum);
+      log.debug("Set {} = {} done on {}", attributeName, checksum, fileName);
+    } catch (ExtendedAttributesException eae) {
+      log.warn("Cannot set {} attribute on file: {}", attributeName, fileName, eae);
+    }
   }
 
   /**

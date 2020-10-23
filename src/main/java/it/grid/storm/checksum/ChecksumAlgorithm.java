@@ -18,30 +18,35 @@
 package it.grid.storm.checksum;
 
 public enum ChecksumAlgorithm {
-	CRC32("CRC32"), ADLER32("ADLER32"), MD2("MD2"), MD5("MD5"), SHA_1("SHA-1"), SHA_256(
-		"SHA-256"), SHA_384("SHA-384"), SHA_512("SHA-512");
+  CRC32("CRC32"), ADLER32("ADLER32"), MD2("MD2"), MD5("MD5"), SHA_1("SHA-1"), SHA_256(
+      "SHA-256"), SHA_384("SHA-384"), SHA_512("SHA-512");
 
-	public static ChecksumAlgorithm getChecksumAlgorithm(String algorithm) {
+  public static ChecksumAlgorithm getChecksumAlgorithm(String algorithm) {
 
-		algorithm = algorithm.toUpperCase();
+    algorithm = algorithm.toUpperCase();
 
-		for (ChecksumAlgorithm checksumAlgorithm : ChecksumAlgorithm.values()) {
-			if (checksumAlgorithm.toString().toUpperCase().equals(algorithm)) {
-				return checksumAlgorithm;
-			}
-		}
-		return null;
-	}
+    for (ChecksumAlgorithm checksumAlgorithm : ChecksumAlgorithm.values()) {
+      if (checksumAlgorithm.toString().toUpperCase().equals(algorithm)) {
+        return checksumAlgorithm;
+      }
+    }
+    return null;
+  }
 
-	private final String value;
+  private final String value;
 
-	ChecksumAlgorithm(String value) {
+  ChecksumAlgorithm(String value) {
 
-		this.value = value;
-	}
+    this.value = value;
+  }
 
-	public String toString() {
+  public String getValue() {
 
-		return value;
-	}
+    return value;
+  }
+
+  public String toString() {
+
+    return value;
+  }
 }

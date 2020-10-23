@@ -1,5 +1,6 @@
 package it.grid.storm.ea.remote.resource;
 
+import static it.grid.storm.checksum.ChecksumAlgorithm.ADLER32;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 import javax.ws.rs.GET;
@@ -56,7 +57,7 @@ public class StormEAResource {
 
 		String checksum;
 		try {
-			checksum = StormEA.getChecksum(parameters.getFilePathDecoded(), Constants.ADLER_32);
+			checksum = StormEA.getChecksum(parameters.getFilePathDecoded(), ADLER32);
 		} catch (ExtendedAttributesException e) {
 		  log.error(e.getMessage(), e);
 			throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)
@@ -83,8 +84,7 @@ public class StormEAResource {
 		  parameters.getChecksumDecoded());
 
 		try {
-			StormEA.setChecksum(parameters.getFilePathDecoded(), parameters.getChecksumDecoded(),
-					Constants.ADLER_32);
+			StormEA.setChecksum(parameters.getFilePathDecoded(), parameters.getChecksumDecoded(), ADLER32);
 		} catch (ExtendedAttributesException e) {
 		  log.error(e.getMessage(), e);
 			throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)

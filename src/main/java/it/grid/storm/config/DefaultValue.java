@@ -20,6 +20,8 @@ package it.grid.storm.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.grid.storm.checksum.ChecksumAlgorithm;
+
 public class DefaultValue {
 
 	private static final Logger log = LoggerFactory.getLogger(DefaultValue.class);
@@ -116,9 +118,9 @@ public class DefaultValue {
 	/**
 	 * Retrieve default Checksum Algorithm
 	 */
-	public static String getChecksumAlgorithm() {
+	public static ChecksumAlgorithm getChecksumAlgorithm() {
 		
-		return "Adler32";
+		return ChecksumAlgorithm.ADLER32;
 	}
 
 }
