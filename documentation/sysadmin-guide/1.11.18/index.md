@@ -2,8 +2,6 @@
 layout: toc
 title: StoRM Storage Resource Manager - System Administration Guide
 version: 1.11.18
-redirect_from:
-  - /documentation/sysadmin-guide/
 ---
 
 # StoRM System Administration Guide
@@ -16,7 +14,11 @@ version: {{ page.version }}
 * [Upgrade from StoRM v1.11.17 on RHEL6](#upgrading)
 * [Installation Prerequisites](#prerequisites)
   * [Platform](#platform)
-  * [Requirements](#requirements)
+  * [NTP service](#ntpservice)
+  * [FQDN Hostname](#fqdnhostname)
+  * [Host credentials](#x509host)
+  * [ACL support](#acl)
+  * [Extended Attribute support](#attr)
   * [System users and file limits](#limits)
   * [Storage Area's permissions](#sapermissions)
 * [Installation guide](#installation)
@@ -48,7 +50,7 @@ version: {{ page.version }}
 
 ------
 
-## Quick deploy on CentOS 7
+## Quick deploy on CentOS 7 <a name="quickdeploy">&nbsp;</a>
 
 In case you're installing on RHEL7, most of the components have been released for the first time.
 In this case you can follow the [How-to install and configure StoRM on RHEL7][centos7-install-guide] guide.
@@ -68,7 +70,7 @@ In case you're updating a RHEL6 deployment, the services that needs to be update
 
 #### Update packages
 
- ```bash
+```bash
 yum update storm-backend-server \
     storm-frontend-server \
     storm-webdav \
@@ -91,139 +93,175 @@ If you are upgrading from StoRM v1.11.16 or earlier versions please follow
 
 ### Platform <a name="platform">&nbsp;</a>
 
-All the StoRM components are certified to work on **Scientific Linux SL6/64** (x86_64) with an EPEL repository
+All the StoRM components are certified to work on **CentOS 6** or **CentOS 7** (x86_64) with an EPEL repository
 for external dependencies.
-
-All the information about the OS Scientific Linux can be found at [here][Scientific Linux].
 
 There are no specific minimum hardware requirements but it is advisable to have at least 1GB of RAM on Backend host.
 
-### Requirements <a name="requirements">&nbsp;</a>
-
-Each StoRM deployment requires some services and packages installed.
-
-#### NTP service <a name="ntpservice">&nbsp;</a>
+### NTP service <a name="ntpservice">&nbsp;</a>
 
 NTP service must be installed.
 
-    yum install ntp
-    chkconfig ntpd on
-    service ntpd restart
+```
+yum install ntp
+chkconfig ntpd on
+service ntpd restart
+```
 
-#### Hostname <a name="fqdnhostname">&nbsp;</a>
+You can also use a Puppet module to install and configure NTP service. Install the NTP Puppet module:
+
+```
+puppet module install puppetlabs-ntp
+```
+
+And apply the following manifest.pp:
+
+```
+include ntp
+```
+
+### FQDN Hostname <a name="fqdnhostname">&nbsp;</a>
 
 Hostname must be a *Fully Qualified Domain Name* (FQDN).
 
 To check if your hostname is a FQDN, run:
 
-    hostname -f
+```
+hostname -f
+```
 
 The command must return the host FQDN.
 
-If you need to correct it and you are using bind or NIS for host lookups, you can change the FQDN
-and the DNS domain name, which is part of the FQDN, in the /etc/hosts file.
+If you need to correct it and you are using bind or NIS for host lookups, you can change the FQDN and the DNS domain name, which is part of the FQDN, in the /etc/hosts file.
 
-    # Do not remove the following line, or various programs
-    # that require network functionality will fail.
-    127.0.0.1       MYHOSTNAME.MYDOMAIN MYHOSTNAME localhost.localdomain localhost
-    ::1             localhost6.localdomain6 localhost6
+```
+# Do not remove the following line, or various programs
+# that require network functionality will fail.
+127.0.0.1       MYHOSTNAME.MYDOMAIN MYHOSTNAME localhost.localdomain localhost
+::1             localhost6.localdomain6 localhost6
+```
 
 Set your own MYHOSTNAME and MYDOMAIN and restart the network service:
 
-    service network restart
+```
+service network restart
+```
 
-#### Host credentials <a name="x509host">&nbsp;</a>
+### Host credentials <a name="x509host">&nbsp;</a>
 
-Hosts participating to the StoRM-SE (Frontend, Backend, WebDAV and GridFTP hosts) service must be configured
-with X.509 certificates signed by a trusted Certification Authority (CA).
-Usually, the **hostcert.pem** and **hostkey.pem** certificates are located in the */etc/grid-security* directory,
-and they must have permission *0644* and *0400* respectively:
+Hosts participating to the StoRM-SE (Frontend, Backend, WebDAV and GridFTP hosts) service must be configured with X.509 certificates signed by a trusted Certification Authority (CA).
+Usually, the `hostcert.pem` and `hostkey.pem` certificate and private key are located in the `/etc/grid-security` directory. They must have permission *0644* and *0400* respectively:
 
-    ls -l /etc/grid-security/hostkey.pem
-    -r-------- 1 root root 887 Mar  1 17:08 /etc/grid-security/hostkey.pem
+```
+ls -l /etc/grid-security/hostkey.pem
+-r-------- 1 root root 887 Mar  1 17:08 /etc/grid-security/hostkey.pem
 
-    ls -l /etc/grid-security/hostcert.pem
-    -rw-r--r-- 1 root root 1440 Mar  1 17:08 /etc/grid-security/hostcert.pem
+ls -l /etc/grid-security/hostcert.pem
+-rw-r--r-- 1 root root 1440 Mar  1 17:08 /etc/grid-security/hostcert.pem
+```
 
-Check if certificate is expired as follow:
+Check if your certificate is expired as follow:
 
-    openssl x509 -checkend 0 -in /etc/grid-security/hostcert.pem
+```
+openssl x509 -checkend 0 -in /etc/grid-security/hostcert.pem
+```
 
 To change permissions, if necessary:
 
-    chmod 0400 /etc/grid-security/hostkey.pem
-    chmod 0644 /etc/grid-security/hostcert.pem
+```
+chmod 0400 /etc/grid-security/hostkey.pem
+chmod 0644 /etc/grid-security/hostcert.pem
+```
 
-#### ACL support <a name="acl">&nbsp;</a>
+### ACL support <a name="acl">&nbsp;</a>
 
 StoRM uses the ACLs on files and directories to implement the security model.
-In so doing, StoRM uses the native access to the file system. Therefore in order to ensure a proper running,
-ACLs need to be enabled on the underlying file-system (sometimes they are enabled by default) and work properly.
+In so doing, StoRM uses the native access to the file system. Therefore in order to ensure a proper running, ACLs need to be enabled on the underlying file-system (sometimes they are enabled by default) and work properly.
 
-If the *getfacl* and *setfacl* commands are not available on your host you have to **install** *acl* package:
+If the `getfacl` and `setfacl` commands are not available on your host you have to install `acl` package:
 
-    yum install acl
+```
+yum install acl
+```
 
-To check if all properly works, try to set an acl to a test file as follow:
+To check if all works properly, try to set an acl to a test file as follow:
 
-    touch test
-    setfacl -m u:storm:rw test
+```
+touch test
+setfacl -m u:storm:rw test
+```
 
-Note: the ```storm``` user adopted to set the ACL entry **MUST** exist.
+**Note**: `storm` user **must** exist of course.
 
-    getfacl test
+```
+getfacl test
+```
 
 Should return the following values:
 
-    # file: test
-    # owner: root
-    # group: root
-    user::rw-
-    user:storm:rw-
-    group::r--
-    mask::rw-
-    other::r--
+```
+# file: test
+# owner: root
+# group: root
+user::rw-
+user:storm:rw-
+group::r--
+mask::rw-
+other::r--
+```
 
-To enable ACLs (if needed), you must add the acl property to the relevant file system in your */etc/fstab* file.
+To enable ACLs (if needed), you must add the acl property to the relevant file system in your `/etc/fstab` file.
 For example:
 
-    /dev/hda3     /storage      ext3     defaults, acl     1 2
+```
+/dev/hda3     /storage      ext3     defaults, acl     1 2
+```
 
 Then you need to remount the affected partitions as follows:
 
-    mount -o remount /storage
+```
+mount -o remount /storage
+```
 
 This is valid for different file system types (i.e., ext3, xfs, gpfs and others).
 
-#### Extended Attribute support <a name="attr">&nbsp;</a>
+### Extended Attribute support <a name="attr">&nbsp;</a>
 
-StoRM uses the Extended Attributes (EA) on files to store some metadata related to the file (e.g. the checksum value);
-therefore in order to ensure a proper running, the EA support needs to be enabled on the underlying file system and
-work properly.
+StoRM uses the Extended Attributes (EA) on files to store some metadata related to the file (e.g. the checksum value); therefore in order to ensure a proper running, the EA support needs to be enabled on the underlying file system and work properly.
 
-If the *getfattr* and *setfattrl* commands are not available on your host, install ```attr``` package:
+If the `getfattr` and `setfattrl` commands are not available on your host, install `attr` package:
 
+```
     yum install attr
+```
 
 To check if all properly works, try to set an extendend attribute to a test file:
 
-    touch testfile
-    setfattr -n user.testea -v test testfile
-    getfattr -d testfile
+```
+touch testfile
+setfattr -n user.testea -v test testfile
+getfattr -d testfile
+```
 
 It should return:
 
-    # file: testfile
-    user.testea="test"
+```
+# file: testfile
+user.testea="test"
+```
 
-To enable EA (if needed) you must add the *user_xattr* property to the relevant file systems in your */etc/fstab* file.
+To enable EA (if needed) you must add the `user_xattr` property to the relevant file systems in your `/etc/fstab` file.
 For example:
 
-    /dev/hda3     /storage     ext3     defaults,acl,user_xattr     1 2
+```
+/dev/hda3     /storage     ext3     defaults,acl,user_xattr     1 2
+```
 
 Then you need to remount the affected partitions as follows:
 
-    mount -o remount /storage
+```
+mount -o remount /storage
+```
 
 ### System users and file limits <a name="limits">&nbsp;</a>
 

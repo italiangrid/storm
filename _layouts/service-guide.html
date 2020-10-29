@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>{{page.title}}</title>
+
+    <link href="{{site.baseurl}}/assets/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="{{site.baseurl}}/assets/css/bootstrap-responsive.min.css" rel="stylesheet"/>
+    <link href="{{site.baseurl}}/assets/css/style.css" rel="stylesheet"/>
+    <link href="{{site.baseurl}}/assets/css/pygments.css" rel="stylesheet"/>
+  </head>
+  <body>
+    <div id="wrap">
+        {% include github-ribbon.html %}
+        {% include navbar.html %}
+
+        <div class="container">
+            <div id="stormcontent">
+                <div class="hidden-phone hidden-tablet" id="toc"></div>
+                <div style="text-align: center; width: 100vw; height: 20px;">
+                  {% for element in page.navigation %}
+                  {% if forloop.index > 1 %} <span style="float:left; margin-left: 5px; margin-right: 5px;">/</span> {% endif %}
+                  <a style="float: left;" href="{{site.baseurl}}/{{element.link}}">{{element.label}}</a>
+                  {% endfor %}
+                </div>
+                {{content}}
+                <hr/>
+                <div style="text-align: center; width: 100vw; height: 20px; margin-top: 15px;">
+                  {% for element in page.navigation %}
+                  {% if forloop.index > 1 %} <span style="float:left; margin-left: 5px; margin-right: 5px;">/</span> {% endif %}
+                  <a style="float: left;" href="{{site.baseurl}}/{{element.link}}">{{element.label}}</a>
+                  {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div id="push"></div>
+    </div> <!-- wrap element -->
+
+    <!-- Footer -->
+    <div id="footer">
+      <div class="container">
+      </div>
+    </div>
+    {% include scripts.html %}
+  </body>
+</html>
