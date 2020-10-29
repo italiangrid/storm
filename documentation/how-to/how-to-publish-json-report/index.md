@@ -54,12 +54,12 @@ Run YAIM to apply configuration.
 
 ### Puppet configuration
 
-Add the `info` storage area only to `storm::webdav` class. You don't need to add this storage area to Backend configuration.
-Specify all the VOs that are allowed to read this SA.
+There's no need to add the `info` storage area to the ones managed by StoRM Backend. We can add the `info` storage area only to `storm::webdav` class in order to implicit say that this storage area will be accessed only through HTTP and not through SRM. 
+Configure this storage area with all the VOs for which users are allowed to read the report and set `authenticated_read_enabled` as true to allow browsing the report with your personal x509 certificate.
 
-```
+```puppet
 class { 'storm::webdav':
-  ...
+  # ...
   storage_areas => [{
     'name'                       => 'info',
     'root_path'                  => '/storage/info',
@@ -67,7 +67,7 @@ class { 'storm::webdav':
     'vos'                        => ['dteam', 'atlas', 'lhc'],
     'authenticated_read_enabled' => true,
   },
-  ...
+  # ...
   ]
 }
 ```
@@ -118,9 +118,9 @@ Read more info about cron jobs into the [man page](https://crontab.guru/crontab.
 
 The same update script has been added to Puppet module since version 0.4.4.
 
-You can add to your manifest the following resources:
+You can add to your manifest (where StoRM Backend is defined) the following resources:
 
-```
+```puppet
 file { '/root/update-site-report.sh':
   ensure => 'present',
   source => 'puppet:///modules/storm/update-site-report.sh',
@@ -128,9 +128,9 @@ file { '/root/update-site-report.sh':
 
 cron { 'update-site-report':
   ensure  => 'present',
-  command => '/bin/bash /root/update-report.sh',
+  command => '/bin/bash /root/update-site-report.sh',
   user    => 'root',
-  minute  => '*/30',
+  minute  => '*/20',
   require => File['/root/update-site-report.sh'],
 }
 
@@ -141,6 +141,17 @@ exec { 'create-site-report':
 ```
 
 This snippet executes the script and also creates the cron job.
+In alternative, you can use a defined type that does the same things:
+
+```puppet
+storm::backend::storage_site_report { 'storage-site-report':
+  report_path => '/storage/info/report.json',
+  minute      => '*/20',
+}
+```
+
+The `report_path` is the internal `info` storage area path where report has to be created.
+The `minute` can be used to customize the cron's minute parameter.
 
 ## Get JSON report through HTTP <a name="json">&nbsp;</a>
 
@@ -149,7 +160,7 @@ Acting as `test0` user of test.vo VO, we can access storage area with a simple h
 We need `test0` user's certificate `test0.cert.pem` and his unencrypted key `test0.ukey.pem`.
 
 
-```
+```shell
 $ curl https://omii006-vm03.cnaf.infn.it:8443/info/report.json \
     --cert ./test0.cert.pem \
     --key ./test0.ukey.pem \
@@ -158,7 +169,7 @@ $ curl https://omii006-vm03.cnaf.infn.it:8443/info/report.json \
 
 Output:
 
-```
+```json
 {
     "storageservice": {
         "capabilities": [
