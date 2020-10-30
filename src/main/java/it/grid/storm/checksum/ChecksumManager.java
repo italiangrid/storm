@@ -29,97 +29,90 @@ import org.slf4j.LoggerFactory;
 
 public class ChecksumManager {
 
-	private static final Logger log = LoggerFactory
-		.getLogger(ChecksumManager.class);
+  private static final Logger log = LoggerFactory.getLogger(ChecksumManager.class);
 
-	private static volatile ChecksumManager instance = null;
-	private String defaultAlgorithm;
+  private static volatile ChecksumManager instance = null;
+  private ChecksumAlgorithm defaultAlgorithm;
 
-	private ChecksumManager() {
+  private ChecksumManager() {
 
-		defaultAlgorithm = DefaultValue.getChecksumAlgorithm().toLowerCase();
-	}
+    defaultAlgorithm = DefaultValue.getChecksumAlgorithm();
+  }
 
-	public static synchronized ChecksumManager getInstance() {
+  public static synchronized ChecksumManager getInstance() {
 
-		if (instance == null) {
-			instance = new ChecksumManager();
-		}
-		return instance;
-	}
+    if (instance == null) {
+      instance = new ChecksumManager();
+    }
+    return instance;
+  }
 
-	/**
-	 * Return the algorithm used to compute checksums as well as retrieve the
-	 * value from extended attributes.
-	 * 
-	 * @return the algorithm used to compute checksums as well as retrieve the
-	 *         value from extended attributes.
-	 */
-	public String getDefaultAlgorithm() {
+  /**
+   * Return the algorithm used to compute checksums as well as retrieve the value from extended
+   * attributes.
+   * 
+   * @return the algorithm used to compute checksums as well as retrieve the value from extended
+   *         attributes.
+   */
+  public ChecksumAlgorithm getDefaultAlgorithm() {
 
-		return defaultAlgorithm;
-	}
+    return defaultAlgorithm;
+  }
 
-	/**
-	 * Return the computed checksum for the given file. If the checksum is already
-	 * stored in an extended attribute then that value is given back, otherwise: -
-	 * check if the computation of checksum is enabled. - if ENABLED then the
-	 * checksum is computed by an external service and stored in an extended
-	 * attribute. - if NOT ENABLED return with a NULL value. This method is
-	 * blocking (i.e. waits for the checksum to be computed, if it is enabled).
-	 * 
-	 * @param fileName
-	 *          file absolute path.
-	 * @return the computed checksum for the given file or <code>null</code> if
-	 *         some error occurred. The error is logged.
-	 * @throws FileNotFoundException
-	 */
-	public String getDefaultChecksum(String fileName)
-		throws FileNotFoundException {
+  /**
+   * Return the computed checksum for the given file. If the checksum is already stored in an
+   * extended attribute then that value is given back, otherwise: - check if the computation of
+   * checksum is enabled. - if ENABLED then the checksum is computed by an external service and
+   * stored in an extended attribute. - if NOT ENABLED return with a NULL value. This method is
+   * blocking (i.e. waits for the checksum to be computed, if it is enabled).
+   * 
+   * @param fileName file absolute path.
+   * @return the computed checksum for the given file or <code>null</code> if some error occurred.
+   *         The error is logged.
+   * @throws FileNotFoundException
+   */
+  public String getDefaultChecksum(String fileName) throws FileNotFoundException {
 
-		log.debug("Requesting checksum for file: {}", fileName);
+    log.debug("Requesting checksum for file: {}", fileName);
 
-		String checksum = null;
-		try {
-			checksum = StormEA.getChecksum(fileName, defaultAlgorithm);
-		} catch (ExtendedAttributesException e) {
-		  log.warn(e.getMessage(),e);
-		}
+    String checksum = null;
+    try {
+      checksum = StormEA.getChecksum(fileName, defaultAlgorithm);
+    } catch (ExtendedAttributesException e) {
+      log.warn(e.getMessage(), e);
+    }
 
-		return checksum;
-	}
+    return checksum;
+  }
 
-	/**
-	 * Checks whether the given file has a checksum stored in an extended
-	 * attribute.
-	 * 
-	 * @param fileName
-	 *          file absolute path.
-	 * @return <code>true</code> if an extended attribute storing the checksum was
-	 *         found, <code>false</code> otherwise.
-	 * @throws ExtendedAttributesException
-	 * @throws NotSupportedException
-	 * @throws FileNotFoundException
-	 */
-	public boolean hasChecksum(String fileName) throws FileNotFoundException {
+  /**
+   * Checks whether the given file has a checksum stored in an extended attribute.
+   * 
+   * @param fileName file absolute path.
+   * @return <code>true</code> if an extended attribute storing the checksum was found,
+   *         <code>false</code> otherwise.
+   * @throws ExtendedAttributesException
+   * @throws NotSupportedException
+   * @throws FileNotFoundException
+   */
+  public boolean hasDefaultChecksum(String fileName) throws FileNotFoundException {
 
-		String value = null;
+    String value = null;
 
-		try {
-			value = StormEA.getChecksum(fileName, defaultAlgorithm);
-		} catch (ExtendedAttributesException e) {
-			log.warn("Error manipulating EA for default algorithm "
-				+ defaultAlgorithm + " on file: " + fileName
-				+ " ExtendedAttributesException: " + e.getMessage());
-		}
+    try {
+      value = StormEA.getChecksum(fileName, defaultAlgorithm);
+    } catch (ExtendedAttributesException e) {
+      log.warn(
+          "Error manipulating EA for default algorithm {} on file: {} ExtendedAttributesException: {}",
+          defaultAlgorithm, fileName, e.getMessage());
+    }
 
-		return (value != null);
-	}
+    return (value != null);
+  }
 
-	public Map<String, String> getChecksums(String fileName)
-		throws FileNotFoundException {
+  public Map<ChecksumAlgorithm, String> getChecksums(String fileName) throws FileNotFoundException {
 
-		return StormEA.getChecksums(fileName);
-	}
+    return StormEA.getChecksums(fileName);
+  }
 
 }

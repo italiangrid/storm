@@ -37,10 +37,14 @@ import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 
 public class TapeRecallCatalog {
@@ -48,6 +52,8 @@ public class TapeRecallCatalog {
   private static final Logger log = LoggerFactory.getLogger(TapeRecallCatalog.class);
 
   private final TapeRecallDAO tapeRecallDAO;
+
+  private static Map<UUID, Collection<Suspendedable>> recallBuckets = new ConcurrentHashMap<>();
 
   /**
    * Default constructor
@@ -332,6 +338,13 @@ public class TapeRecallCatalog {
 
     synchronized (this) {
       groupTaskId = this.insertNewTask(task);
+
+      if (!recallBuckets.containsKey(groupTaskId)) {
+        Collection<Suspendedable> chunkBucket = new ConcurrentLinkedQueue<>();
+        recallBuckets.put(groupTaskId, chunkBucket);
+      }
+      // add to the bucket
+      recallBuckets.get(groupTaskId).add(chunk);
     }
     return groupTaskId;
   }
@@ -407,15 +420,37 @@ public class TapeRecallCatalog {
 
     synchronized (this) {
 
-      boolean response =
-          tapeRecallDAO.setGroupTaskStatus(groupTaskId, status.getStatusId(), timestamp);
-
-      if (!response) {
+      if (!tapeRecallDAO.setGroupTaskStatus(groupTaskId, status.getStatusId(), timestamp)) {
         log.debug("Updating to status {} at {} didn't affect groupTask {}", status, timestamp,
             groupTaskId);
+        return false;
       }
-      return response;
 
+      if (!status.isFinalStatus()) {
+        return true;
+      }
+
+      if (recallBuckets.containsKey(groupTaskId)) {
+        updateChuncksStatus(recallBuckets.remove(groupTaskId), status);
+      }
+      return true;
     }
   }
+
+  /**
+   * @param taskId @param recallTaskStatus @throws IllegalArgumentException
+   */
+  private void updateChuncksStatus(Collection<Suspendedable> chunkBucket,
+      TapeRecallStatus recallTaskStatus) {
+
+    if (chunkBucket == null || chunkBucket.isEmpty() || recallTaskStatus == null) {
+      log.error("Unable to perform the final status update. Provided invalid arguments");
+      throw new IllegalArgumentException(
+          "Unable to perform the final status update. Provided invalid arguments");
+    }
+    for (Suspendedable chunk : chunkBucket) {
+      chunk.completeRequest(recallTaskStatus);
+    }
+  }
+
 }

@@ -108,6 +108,8 @@ public class StormMetricsReporter extends ScheduledReporter {
     reportThreadPoolMetrics("xmlrpc-tp", gauges);
     reportThreadPoolMetrics("rest-tp", gauges);
 
+    reportJettyHandlerMetrics("xmlrpc-handler", meters);
+    reportJettyHandlerMetrics("rest-handler", meters);
   }
 
   private void reportMetric(String name, Timer timer) {
@@ -134,6 +136,26 @@ public class StormMetricsReporter extends ScheduledReporter {
 
     LOG.info("{} [active-threads={}, idle-threads={}, jobs={}, utilization-max={}, percent-idle={}]",
         tpName, activeThreads, idleThreads, jobs, utilizationMax, percentIdle);
+  }
+
+  private void reportJettyHandlerMetrics(String handlerName, SortedMap<String, Meter> meters) {
+
+    reportMetric(handlerName + ".2xx-responses", meters.get(handlerName + ".2xx-responses"));
+    reportMetric(handlerName + ".3xx-responses", meters.get(handlerName + ".3xx-responses"));
+    reportMetric(handlerName + ".4xx-responses", meters.get(handlerName + ".4xx-responses"));
+    reportMetric(handlerName + ".5xx-responses", meters.get(handlerName + ".5xx-responses"));
+    reportMetric(handlerName + ".requests", meters.get(handlerName + ".requests"));
+    reportMetric(handlerName + ".expires", meters.get(handlerName + ".expires"));
+
+  }
+
+  private void reportMetric(String name, Meter meter) {
+
+    LOG.info(
+        "{} [(count={}, m1_rate={}, m5_rate={}, m15_rate={}, mean_rate={})] rate_units={}",
+        name, meter.getCount(), convertRate(meter.getOneMinuteRate()),
+        convertRate(meter.getFiveMinuteRate()), convertRate(meter.getFifteenMinuteRate()),
+        convertRate(meter.getMeanRate()), getRateUnit());
   }
 
   @Override

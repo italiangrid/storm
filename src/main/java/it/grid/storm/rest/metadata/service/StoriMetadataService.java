@@ -1,5 +1,6 @@
 package it.grid.storm.rest.metadata.service;
 
+import static it.grid.storm.checksum.ChecksumAlgorithm.ADLER32;
 import static it.grid.storm.rest.metadata.model.StoriMetadata.ResourceStatus.NEARLINE;
 import static it.grid.storm.rest.metadata.model.StoriMetadata.ResourceStatus.ONLINE;
 import static it.grid.storm.rest.metadata.model.StoriMetadata.ResourceType.FILE;
@@ -74,7 +75,7 @@ public class StoriMetadataService {
       attributes = FileAttributes.builder().pinned(StormEA.isPinned(canonicalPath))
           .migrated(StormEA.getMigrated(canonicalPath))
           .premigrated(StormEA.getPremigrated(canonicalPath))
-          .checksum(StormEA.getChecksum(canonicalPath, "adler32"))
+          .checksum(StormEA.getChecksum(canonicalPath, ADLER32))
           .tsmRecD(StormEA.getTSMRecD(canonicalPath)).tsmRecR(StormEA.getTSMRecR(canonicalPath))
           .tsmRecT(StormEA.getTSMRecT(canonicalPath)).build();
     }
