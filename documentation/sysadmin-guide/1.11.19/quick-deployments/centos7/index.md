@@ -92,19 +92,13 @@ include storm::users
 
 # storage root directories for all the storage areas
 # Just for test purpose. In production you should not need this part.
-file { '/storage':
-  ensure  => directory,
-  mode    => '0755',
-  owner   => 'root',
-  group   => 'root',
-  recurse => false,
-} -> class { 'storm::storage':
-  root_directories => [
-    '/storage/dteam',
-    '/storage/dteam/disk',
-    '/storage/dteam/tape',
-  ],
-}
+$storage_area_root_directories = [
+  '/storage/dteam',
+  '/storage/dteam/disk',
+  '/storage/dteam/tape',
+]
+storm::rootdir { '/storage': }
+storm::sarootdir { $storage_area_root_directories: }
 
 # install all StoRM repositories and enable only stable repo
 # install also UMD4 repo and EPEL
@@ -134,7 +128,6 @@ class { 'bdii':
 }
 
 Class['storm::users']
--> Class['storm::storage']
 -> Class['storm::repo']
 -> Class['lcmaps']
 ```
@@ -253,6 +246,47 @@ class { 'storm::backend':
   # ...
 }
 ```
+
+### Enable HTTP as transfer protocol for SRM
+
+To enable HTTP as transfer protocol for SRM prepare-to-get and prepare-to-put requests, you must add `webdav` protocol to the list of your *transfer_protocols* and define at least one member for *webdav_pool_members*. You can re-define the default list of transfer protocols by adding your *storm::backend::transfer_protocols* variable and/or you can override this list by adding a specific *transfer_protocols* for each storage area:
+
+```puppet
+class { 'storm::backend':
+  # ...
+  'webdav_pool_members' => [
+    {
+      'hostname' => webdav.test.example,
+    },
+  ],
+  # defines the default list of transfer protocols for each storage area:
+  'transfer_protocols'  => ['file', 'gsiftp', 'webdav'], 
+  'storage_areas'       => [
+    {
+      'name'          => 'sa-http-enabled',
+      'root_path'     => '/storage/sa-http-enabled',
+      'access_points' => ['/sa-http-enabled'],
+      'vos'           => ['test.vo'],
+      'online_size'   => 40,
+    },
+    {
+      'name'               => 'sa-no-http-enabled',
+      'root_path'          => '/storage/sa-no-http-enabled',
+      'access_points'      => ['/sa-no-http-enabled'],
+      'vos'                => ['test.vo'],
+      'online_size'        => 40,
+      # disable webdav protocol for this storage area
+      'transfer_protocols' => ['file', 'gsiftp'],
+    },
+    # ...
+  ],
+  # ...
+}
+```
+
+The *manifest.pp* showed above includes the HTTP transfer protocol for all the storage area defined.
+By default, *storm::backend::transfer_protocols* includes only `file` and `gsiftp`.
+
 
 ### MariaDB server configuration
 
