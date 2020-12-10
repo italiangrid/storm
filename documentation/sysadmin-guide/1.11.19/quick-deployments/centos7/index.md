@@ -110,14 +110,14 @@ class { 'storm::repo':
 # LCMAPS class is used ONLY FOR TEST PURPOSE. In production, configure LCMAPS/LCAS and pool accounts on your own with YAIM.
 class { 'lcmaps':
   pools => [{
-    'vo' => 'dteam',
-    'group' => 'dteam',
-    'groups' => ['dteam'],
-    'gid' => 7100,
-    'pool_name' => 'dteam',
-    'pool_size' => 100,
-    'pool_base_uid' => 7100,
-    'role' => 'NULL',
+    'name'     => 'dteam',
+    'size'     => 100,
+    'vo'       => 'dteam',
+    'group'    => 'dteam',
+    'groups'   => ['dteam'],
+    'gid'      => 9100,
+    'base_uid' => 9100,
+    'role'     => 'NULL',
   }],
 }
 
