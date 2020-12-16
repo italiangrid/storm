@@ -58,14 +58,14 @@
       <outputDirectory>etc/storm/backend-server/db</outputDirectory>
     </fileSet>
 
-    <!-- an empty fileset to create an empty log directory -->
+    <!-- Empty fileset to create empty directory -->
     <fileSet>
       <directory>src</directory>
       <outputDirectory>var/log/storm</outputDirectory>
       <excludes>
         <exclude>**/*</exclude>
       </excludes>
-      <directoryMode>0755</directoryMode>
+      <directoryMode>0750</directoryMode>
     </fileSet>
 
     <!-- CentOS 7 stuff-->
@@ -96,18 +96,6 @@
     <file>
       <source>etc/logrotate.d/storm-backend-server</source>
       <outputDirectory>etc/logrotate.d</outputDirectory>
-    </file>
-
-    <!-- CentOS 6 stuff-->
-    <file>
-      <source>etc/init.d/storm-backend-server</source>
-      <outputDirectory>etc/init.d</outputDirectory>
-      <fileMode>0755</fileMode>
-    </file>
-
-    <file>
-      <source>etc/sysconfig/storm-backend-server</source>
-      <outputDirectory>etc/sysconfig</outputDirectory>
     </file>
 
     <!-- CentOS 7 stuff-->

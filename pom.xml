@@ -5,7 +5,7 @@
   <name>StoRM Backend server</name>
   <groupId>org.italiangrid.storm</groupId>
   <artifactId>storm-backend-server</artifactId>
-  <version>1.11.19</version>
+  <version>1.11.20</version>
 
   <properties>
 
@@ -145,32 +145,6 @@
             </configuration>
           </execution>
           <execution>
-            <id>upload-initd</id>
-            <phase>deploy</phase>
-            <goals>
-              <goal>upload</goal>
-            </goals>
-            <configuration>
-              <url>${remoteDeployment.url}</url>
-              <serverId>${remoteDeployment.serverId}</serverId>
-              <fromDir>etc/init.d</fromDir>
-              <toDir>/etc/init.d</toDir>
-            </configuration>
-          </execution>
-          <execution>
-            <id>upload-sysconfig</id>
-            <phase>deploy</phase>
-            <goals>
-              <goal>upload</goal>
-            </goals>
-            <configuration>
-              <url>${remoteDeployment.url}</url>
-              <serverId>${remoteDeployment.serverId}</serverId>
-              <fromDir>etc/sysconfig</fromDir>
-              <toDir>/etc/sysconfig</toDir>
-            </configuration>
-          </execution>
-          <execution>
             <id>upload-logrotated</id>
             <phase>deploy</phase>
             <goals>
@@ -181,6 +155,32 @@
               <serverId>${remoteDeployment.serverId}</serverId>
               <fromDir>etc/logrotate.d</fromDir>
               <toDir>/etc/logrotate.d</toDir>
+            </configuration>
+          </execution>
+          <execution>
+            <id>upload-systemd-unit</id>
+            <phase>deploy</phase>
+            <goals>
+              <goal>upload</goal>
+            </goals>
+            <configuration>
+              <url>${remoteDeployment.url}</url>
+              <serverId>${remoteDeployment.serverId}</serverId>
+              <fromDir>etc/systemd</fromDir>
+              <toDir>/usr/lib/systemd/system</toDir>
+            </configuration>
+          </execution>
+          <execution>
+            <id>upload-systemd-conf</id>
+            <phase>deploy</phase>
+            <goals>
+              <goal>upload</goal>
+            </goals>
+            <configuration>
+              <url>${remoteDeployment.url}</url>
+              <serverId>${remoteDeployment.serverId}</serverId>
+              <fromDir>etc/systemd/service.d</fromDir>
+              <toDir>/usr/lib/systemd/system/storm-backend-server.service.d</toDir>
             </configuration>
           </execution>
 
