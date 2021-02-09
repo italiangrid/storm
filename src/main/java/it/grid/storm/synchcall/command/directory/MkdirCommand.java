@@ -17,13 +17,29 @@
 
 package it.grid.storm.synchcall.command.directory;
 
+import static it.grid.storm.filesystem.FilesystemPermission.ListTraverse;
+import static it.grid.storm.filesystem.FilesystemPermission.ListTraverseWrite;
+import static it.grid.storm.srm.types.TStatusCode.SRM_AUTHORIZATION_FAILURE;
+import static it.grid.storm.srm.types.TStatusCode.SRM_DUPLICATION_ERROR;
+import static it.grid.storm.srm.types.TStatusCode.SRM_FAILURE;
+import static it.grid.storm.srm.types.TStatusCode.SRM_INTERNAL_ERROR;
+import static it.grid.storm.srm.types.TStatusCode.SRM_INVALID_PATH;
+import static it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS;
+import static it.grid.storm.synchcall.command.directory.MkdirException.srmAuthorizationFailure;
+import static it.grid.storm.synchcall.command.directory.MkdirException.srmFailure;
+import static it.grid.storm.synchcall.command.directory.MkdirException.srmInternalError;
+import static it.grid.storm.synchcall.command.directory.MkdirException.srmInvalidPath;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
+
 import it.grid.storm.acl.AclManager;
 import it.grid.storm.acl.AclManagerFS;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
-import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
-import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
@@ -42,7 +58,6 @@ import it.grid.storm.namespace.model.DefaultACL;
 import it.grid.storm.srm.types.SRMCommandException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.CommandHelper;
@@ -52,25 +67,6 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.MkdirInputData;
 import it.grid.storm.synchcall.data.directory.MkdirOutputData;
-
-import static it.grid.storm.filesystem.FilesystemPermission.ListTraverse;
-import static it.grid.storm.filesystem.FilesystemPermission.ListTraverseWrite;
-import static it.grid.storm.srm.types.TStatusCode.SRM_AUTHORIZATION_FAILURE;
-import static it.grid.storm.srm.types.TStatusCode.SRM_DUPLICATION_ERROR;
-import static it.grid.storm.srm.types.TStatusCode.SRM_FAILURE;
-import static it.grid.storm.srm.types.TStatusCode.SRM_INTERNAL_ERROR;
-import static it.grid.storm.srm.types.TStatusCode.SRM_INVALID_PATH;
-import static it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS;
-import static it.grid.storm.synchcall.command.directory.MkdirException.srmAuthorizationFailure;
-import static it.grid.storm.synchcall.command.directory.MkdirException.srmFailure;
-import static it.grid.storm.synchcall.command.directory.MkdirException.srmInternalError;
-import static it.grid.storm.synchcall.command.directory.MkdirException.srmInvalidPath;
-import static java.lang.String.format;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
 
 class MkdirException extends SRMCommandException {
 
@@ -83,10 +79,6 @@ class MkdirException extends SRMCommandException {
 
   public static MkdirException srmInvalidPath(String message) {
     return new MkdirException(SRM_INVALID_PATH, message);
-  }
-
-  public static MkdirException srmDuplicationError(String message) {
-    return new MkdirException(SRM_DUPLICATION_ERROR, message);
   }
 
   public static MkdirException srmInternalError(String message) {
@@ -237,22 +229,6 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 
   private void checkUserAuthorization(StoRI stori, GridUserInterface user) throws MkdirException {
 
-    TSpaceToken token = stori.getVirtualFileSystem().getSpaceToken();
-    SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
-
-    boolean isSpaceAuthorized;
-    if (isAnonymous(user)) {
-      isSpaceAuthorized = spaceAuth.authorizeAnonymous(SRMSpaceRequest.MD);
-    } else {
-      isSpaceAuthorized = spaceAuth.authorize(user, SRMSpaceRequest.MD);
-    }
-    if (!isSpaceAuthorized) {
-      String msg =
-          format("User not authorized to perform srmMkdir request on the storage area: %s", token);
-      log.debug("srmMkdir:{}", msg);
-      throw srmAuthorizationFailure(msg);
-    }
-
     AuthzDecision decision;
     if (isAnonymous(user)) {
       decision =
@@ -296,13 +272,10 @@ public class MkdirCommand extends DirectoryCommand implements Command {
         configuration.getEnableWritePermOnDirectory() ? ListTraverseWrite : ListTraverse;
 
     try {
-      if (isAnonymous(user)) {
-        manageDefaultACL(stori.getLocalFile(), permission);
-        setHttpsServiceAcl(stori.getLocalFile(), permission);
-      } else {
+      if (!isAnonymous(user)) {
         setAcl(user, stori.getLocalFile(), stori.hasJustInTimeACLs(), permission);
-        manageDefaultACL(stori.getLocalFile(), permission);
       }
+      manageDefaultACL(stori.getLocalFile(), permission);
     } catch (NamespaceException | CannotMapUserException e) {
       log.error("srmMkdir: Unable to set ACL [{}]", e.getMessage());
     }
@@ -348,12 +321,6 @@ public class MkdirCommand extends DirectoryCommand implements Command {
       LocalUser user = new LocalUser(ace.getGroupID(), ace.getGroupID());
       aclManager.grantGroupPermission(dir, user, permission);
     }
-  }
-
-  private void setHttpsServiceAcl(LocalFile file, FilesystemPermission permission) {
-
-    log.debug("SrmMkdir: Adding default ACL for directory {}: {}", file, permission);
-    aclManager.grantHttpsServiceGroupPermission(file, permission);
   }
 
   private void printRequestOutcome(TReturnStatus status, MkdirInputData inputData) {

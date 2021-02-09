@@ -35,6 +35,8 @@ import org.slf4j.LoggerFactory;
  */
 public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
 
+  private static PathAuthzAlgBestMatch instance;
+
   public static PathAuthzEvaluationAlgorithm getInstance() {
 
     if (instance == null) {

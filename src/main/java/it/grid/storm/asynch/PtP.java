@@ -22,10 +22,7 @@ import org.slf4j.LoggerFactory;
 import it.grid.storm.acl.AclManagerFS;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
-import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
-import it.grid.storm.authz.sa.model.SRMSpaceRequest;
-import it.grid.storm.catalogs.PtPData;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
@@ -49,6 +46,7 @@ import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
 import it.grid.storm.persistence.exceptions.DataAccessException;
+import it.grid.storm.persistence.model.PtPData;
 import it.grid.storm.persistence.model.TransferObjectDecodingException;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
@@ -332,24 +330,6 @@ public class PtP implements Delegable, Chooser, Request {
    */
   private void managePermit(StoRI fileStoRI) {
 
-    TSpaceToken token = new SpaceHelper().getTokenFromStoRI(PtP.log, fileStoRI);
-    SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
-
-    boolean isSpaceAuthorized;
-    if (requestData instanceof IdentityInputData) {
-      isSpaceAuthorized =
-          spaceAuth.authorize(((IdentityInputData) requestData).getUser(), SRMSpaceRequest.PTP);
-    } else {
-      isSpaceAuthorized = spaceAuth.authorizeAnonymous(SRMSpaceRequest.PTP);
-    }
-    if (!isSpaceAuthorized) {
-      requestData.changeStatusSRM_AUTHORIZATION_FAILURE("Create/Write access for "
-          + requestData.getSURL() + " in Storage Area: " + token + " denied!");
-      failure = true;
-      log.debug("Create/Write access for {} in Storage Area: {} denied!", requestData.getSURL(),
-          token);
-      return;
-    }
     TTURL auxTURL;
     try {
       auxTURL = fileStoRI.getTURL(requestData.getTransferProtocols());
@@ -445,7 +425,6 @@ public class PtP implements Delegable, Chooser, Request {
       return setParentAcl(fileStoRI, user);
     }
 
-    setHttpsServiceParentAcl(fileStoRI);
     return true;
   }
 
@@ -559,7 +538,6 @@ public class PtP implements Delegable, Chooser, Request {
 
     setDefaultAcl(fileStoRI);
     setTapeManagementAcl(fileStoRI);
-    setHttpsServiceAcl(fileStoRI.getLocalFile(), FilesystemPermission.ReadWrite);
     return true;
   }
 
@@ -672,29 +650,6 @@ public class PtP implements Delegable, Chooser, Request {
       response = false;
     }
     return response;
-  }
-
-  private void setHttpsServiceParentAcl(StoRI fileStoRI) {
-
-    log.debug("SrmMkdir: Adding parent https ACL for directory: '{}' parents",
-        fileStoRI.getAbsolutePath());
-    for (StoRI parentStoRI : fileStoRI.getParents()) {
-      setHttpsServiceAcl(parentStoRI.getLocalFile(), FilesystemPermission.Traverse);
-    }
-  }
-
-  private void setHttpsServiceAcl(LocalFile file, FilesystemPermission permission) {
-
-    log.debug("SrmMkdir: Adding https ACL {} for directory : '{}'", permission, file);
-
-    try {
-      AclManagerFS.getInstance().grantHttpsServiceGroupPermission(file, permission);
-    } catch (IllegalArgumentException e) {
-      log.error("Unable to grant user permission on the created folder. "
-          + "IllegalArgumentException: {}", e.getMessage(), e);
-      requestData.getStatus()
-        .extendExplaination("Unable to grant group permission on the created folder");
-    }
   }
 
   /**
@@ -868,7 +823,7 @@ public class PtP implements Delegable, Chooser, Request {
 
     StorageSpaceData spaceData = null;
     try {
-      spaceData = new ReservedSpaceCatalog().getStorageSpace(spaceToken);
+      spaceData = ReservedSpaceCatalog.getInstance().getStorageSpace(spaceToken);
     } catch (TransferObjectDecodingException e) {
       log.error("Unable to build StorageSpaceData from StorageSpaceTO."
           + " TransferObjectDecodingException: {}", e.getMessage());

@@ -17,7 +17,7 @@
 
 package it.grid.storm.asynch;
 
-import it.grid.storm.catalogs.RequestData;
+import it.grid.storm.persistence.model.RequestData;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
 public interface Suspendedable {

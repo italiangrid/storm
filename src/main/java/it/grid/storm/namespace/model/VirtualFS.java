@@ -606,7 +606,7 @@ public class VirtualFS implements VirtualFSInterface {
 
   private Boolean isVOSAToken(TSpaceToken token) throws NamespaceException {
 
-    ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
+    ReservedSpaceCatalog catalog = ReservedSpaceCatalog.getInstance();
 
     StorageSpaceData ssd = null;
     try {
@@ -723,7 +723,7 @@ public class VirtualFS implements VirtualFSInterface {
     // Use of Reserve Space Manager
     StorageSpaceData spaceData = null;
     try {
-      spaceData = new ReservedSpaceCatalog().getStorageSpace(token);
+      spaceData = ReservedSpaceCatalog.getInstance().getStorageSpace(token);
     } catch (TransferObjectDecodingException e) {
       log.error(
         "Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
@@ -892,7 +892,7 @@ public class VirtualFS implements VirtualFSInterface {
     // Use of Reserve Space Manager
     StorageSpaceData spaceData = null;
     try {
-      spaceData = new ReservedSpaceCatalog().getStorageSpace(token);
+      spaceData = ReservedSpaceCatalog.getInstance().getStorageSpace(token);
     } catch (TransferObjectDecodingException e) {
       log.error(
         "Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
@@ -1299,7 +1299,7 @@ public class VirtualFS implements VirtualFSInterface {
     throws NamespaceException {
 
     // Retrieve Storage Space from Persistence
-    ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
+    ReservedSpaceCatalog catalog = ReservedSpaceCatalog.getInstance();
     StorageSpaceData spaceData = catalog.getStorageSpaceByAlias(desc);
     return spaceData;
   }
@@ -1308,7 +1308,7 @@ public class VirtualFS implements VirtualFSInterface {
     throws NamespaceException {
 
     // Retrieve Storage Space from Persistence
-    ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
+    ReservedSpaceCatalog catalog = ReservedSpaceCatalog.getInstance();
     try {
       catalog.updateStorageSpace(spaceData);
     } catch (DataAccessException e) {

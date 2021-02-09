@@ -36,9 +36,8 @@ import it.grid.storm.synchcall.data.space.IdentityGetSpaceTokensInputData;
 import it.grid.storm.synchcall.data.space.GetSpaceTokensOutputData;
 
 /**
- * This class is part of the StoRM project. Copyright: Copyright (c) 2008
- * Company: INFN-CNAF and ICTP/EGRID project * Execute the GetSpaceTokens
- * request.
+ * This class is part of the StoRM project. Copyright: Copyright (c) 2008 Company: INFN-CNAF and
+ * ICTP/EGRID project * Execute the GetSpaceTokens request.
  * 
  * @author lucamag
  * @author Alberto Forti
@@ -49,16 +48,10 @@ import it.grid.storm.synchcall.data.space.GetSpaceTokensOutputData;
 
 public class GetSpaceTokensCommand extends SpaceCommand implements Command {
 
-  public static final Logger log = LoggerFactory
-    .getLogger(GetSpaceTokensCommand.class);
+  public static final Logger log = LoggerFactory.getLogger(GetSpaceTokensCommand.class);
 
   private static final String SRM_COMMAND = "srmGetSpaceTokens";
-  private ReservedSpaceCatalog catalog = null;
-
-  public GetSpaceTokensCommand() {
-
-    catalog = new ReservedSpaceCatalog();
-  };
+  private ReservedSpaceCatalog catalog = ReservedSpaceCatalog.getInstance();
 
   public OutputData execute(InputData data) {
 
@@ -68,11 +61,9 @@ public class GetSpaceTokensCommand extends SpaceCommand implements Command {
       inputData = (IdentityGetSpaceTokensInputData) data;
     } else {
       outputData = new GetSpaceTokensOutputData();
-      outputData.setStatus(CommandHelper.buildStatus(
-        TStatusCode.SRM_NOT_SUPPORTED, "Anonymous user can not perform"
-          + SRM_COMMAND));
-      printRequestOutcome(outputData.getStatus(),
-        (GetSpaceTokensInputData) data);
+      outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_NOT_SUPPORTED,
+          "Anonymous user can not perform" + SRM_COMMAND));
+      printRequestOutcome(outputData.getStatus(), (GetSpaceTokensInputData) data);
       return outputData;
     }
 
@@ -84,13 +75,12 @@ public class GetSpaceTokensCommand extends SpaceCommand implements Command {
     if (user == null) {
       log.debug("GetSpaceTokens: the user field is NULL");
       status = new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE,
-      	"Unable to get user credential!");
+          "Unable to get user credential!");
 
-      log.error("srmGetSpaceTokens: <{}> "
-        + "Request for [spaceTokenDescription:{}] failed with: [status: {}]",
-        user,
-        inputData.getSpaceTokenAlias(),
-        status);
+      log.error(
+          "srmGetSpaceTokens: <{}> "
+              + "Request for [spaceTokenDescription:{}] failed with: [status: {}]",
+          user, inputData.getSpaceTokenAlias(), status);
 
       outputData = new GetSpaceTokensOutputData(status, null);
       return outputData;
@@ -98,39 +88,33 @@ public class GetSpaceTokensCommand extends SpaceCommand implements Command {
 
     String spaceAlias = inputData.getSpaceTokenAlias();
     log.debug("spaceAlias= {}", spaceAlias);
-    
-    ArrayOfTSpaceToken arrayOfSpaceTokens = catalog.getSpaceTokens(user,
-      spaceAlias);
+
+    ArrayOfTSpaceToken arrayOfSpaceTokens = catalog.getSpaceTokens(user, spaceAlias);
 
     if (arrayOfSpaceTokens.size() == 0) {
       arrayOfSpaceTokens = catalog.getSpaceTokensByAlias(spaceAlias);
     }
 
-		if (arrayOfSpaceTokens.size() == 0) {
-			if (spaceAlias != null) {
-				status = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-					"'userSpaceTokenDescription' does not refer to an existing space");
-			} else {
-				status = new TReturnStatus(TStatusCode.SRM_FAILURE,
-					"No space tokens owned by this user");
-			}
-			arrayOfSpaceTokens = null;
-		} else {
-			status = new TReturnStatus(TStatusCode.SRM_SUCCESS, "");
-		}
+    if (arrayOfSpaceTokens.size() == 0) {
+      if (spaceAlias != null) {
+        status = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
+            "'userSpaceTokenDescription' does not refer to an existing space");
+      } else {
+        status = new TReturnStatus(TStatusCode.SRM_FAILURE, "No space tokens owned by this user");
+      }
+      arrayOfSpaceTokens = null;
+    } else {
+      status = new TReturnStatus(TStatusCode.SRM_SUCCESS, "");
+    }
 
     if (status.isSRM_SUCCESS()) {
-      log.info("srmGetSpaceTokens: <{}> Request for [spaceTokenDescription: {}] "
-        + "succesfully done with: [status: {}]",
-        user,
-        inputData.getSpaceTokenAlias(),
-        status);
+      log.info(
+          "srmGetSpaceTokens: <{}> Request for [spaceTokenDescription: {}] "
+              + "succesfully done with: [status: {}]",
+          user, inputData.getSpaceTokenAlias(), status);
     } else {
       log.error("srmGetSpaceTokens: <{}> Request for [spaceTokenDescription: {}] "
-        + "failed with: [status: {}]",
-        user,
-        inputData.getSpaceTokenAlias(),
-        status);
+          + "failed with: [status: {}]", user, inputData.getSpaceTokenAlias(), status);
     }
 
     outputData = new GetSpaceTokensOutputData(status, arrayOfSpaceTokens);
@@ -139,8 +123,7 @@ public class GetSpaceTokensCommand extends SpaceCommand implements Command {
 
   }
 
-  private void printRequestOutcome(TReturnStatus status,
-    GetSpaceTokensInputData data) {
+  private void printRequestOutcome(TReturnStatus status, GetSpaceTokensInputData data) {
 
     if (data != null) {
       CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, data);

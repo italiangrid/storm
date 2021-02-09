@@ -217,14 +217,14 @@ public enum GPFSQuotaManager {
 
     private StorageSpaceData getStorageSpaceDataForVFS(VirtualFSInterface vfs) {
 
-      ReservedSpaceCatalog rsc = new ReservedSpaceCatalog();
+      ReservedSpaceCatalog rsc = ReservedSpaceCatalog.getInstance();
       String spaceToken = vfs.getSpaceTokenDescription();
       return rsc.getStorageSpaceByAlias(spaceToken);
     }
 
     private void persistStorageSpaceData(StorageSpaceData ssd) throws DataAccessException {
 
-      ReservedSpaceCatalog rsc = new ReservedSpaceCatalog();
+      ReservedSpaceCatalog rsc = ReservedSpaceCatalog.getInstance();
       rsc.updateStorageSpace(ssd);
     }
 

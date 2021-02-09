@@ -21,7 +21,6 @@
 package it.grid.storm.authz.path.model;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -160,55 +159,6 @@ public enum SRMFileRequest {
   private final String description;
   private final String srmOp;
   private final PathAccessMask requestedPathOps;
-
-  private static HashMap<String, SRMFileRequest> ops = new HashMap<String, SRMFileRequest>() {
-
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
-
-    {
-      put("PTP-Over", PTP_Overwrite);
-      put("srmPrepareToPut-overwrite", PTP_Overwrite);
-      put("PTP", PTP);
-      put("srmPrepareToPut", PTP);
-      put("PTG", PTG);
-      put("srmPrepareToGet", PTG);
-      put("CPto_Over", CPto_Overwrite);
-      put("srmCopy to-overwrite", CPto_Overwrite);
-      put("CPto", CPto);
-      put("srmCopy to", CPto);
-      put("CPFrom", CPfrom);
-      put("srmCopy from", CPfrom);
-      put("RM", RM);
-      put("srmRm", RM);
-      put("RMD", RMD);
-      put("srmRemoveDir", RM);
-      put("MD", MD);
-      put("srmMakeDir", MD);
-      put("LS", LS);
-      put("srmLs", LS);
-      put("MV-source", MV_source);
-      put("srmMove-source", MV_source);
-      put("MV-dest-Over", MV_dest_Overwrite);
-      put("srmMove-dest-overwrite", MV_dest_Overwrite);
-      put("MV-dest", MV_dest);
-      put("srmMove-dest", MV_dest);
-    }
-  };
-
-  /*
-   * Used only for testing
-   */
-  public static SRMFileRequest buildFromString(String srmOp) {
-
-    if (ops.containsKey(srmOp)) {
-      return ops.get(srmOp);
-    } else {
-      return null;
-    }
-  }
 
   /**
    * SRMOperation

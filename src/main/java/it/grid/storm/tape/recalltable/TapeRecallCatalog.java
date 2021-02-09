@@ -24,13 +24,13 @@ import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.PTG;
 import com.google.common.collect.Lists;
 
 import it.grid.storm.asynch.Suspendedable;
-import it.grid.storm.catalogs.BoLPersistentChunkData;
-import it.grid.storm.catalogs.PersistentChunkData;
-import it.grid.storm.catalogs.PtGData;
-import it.grid.storm.catalogs.RequestData;
-import it.grid.storm.persistence.PersistenceDirector;
 import it.grid.storm.persistence.dao.TapeRecallDAO;
 import it.grid.storm.persistence.exceptions.DataAccessException;
+import it.grid.storm.persistence.impl.mysql.TapeRecallDAOMySql;
+import it.grid.storm.persistence.model.BoLPersistentChunkData;
+import it.grid.storm.persistence.model.PersistentChunkData;
+import it.grid.storm.persistence.model.PtGData;
+import it.grid.storm.persistence.model.RequestData;
 import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
@@ -42,6 +42,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -51,9 +52,18 @@ public class TapeRecallCatalog {
 
   private static final Logger log = LoggerFactory.getLogger(TapeRecallCatalog.class);
 
-  private final TapeRecallDAO tapeRecallDAO;
+  private static TapeRecallCatalog instance;
 
   private static Map<UUID, Collection<Suspendedable>> recallBuckets = new ConcurrentHashMap<>();
+
+  public static synchronized TapeRecallCatalog getInstance() {
+    if (instance == null) {
+      instance = new TapeRecallCatalog();
+    }
+    return instance;
+  }
+
+  private TapeRecallDAO tapeRecallDAO;
 
   /**
    * Default constructor
@@ -62,7 +72,7 @@ public class TapeRecallCatalog {
    */
   public TapeRecallCatalog() {
 
-    tapeRecallDAO = PersistenceDirector.getDAOFactory().getTapeRecallDAO();
+    tapeRecallDAO = TapeRecallDAOMySql.getInstance();
   }
 
   /**
@@ -99,25 +109,6 @@ public class TapeRecallCatalog {
   }
 
   /**
-   * Determines how many task rows have an in-progress state given a certain VO
-   *
-   * @param voName @return @throws DataAccessException
-   */
-  public int getNumberTaskInProgress(String voName) throws DataAccessException {
-
-    int result = -1;
-    try {
-      result = tapeRecallDAO.getNumberInProgress(voName);
-    } catch (DataAccessException e) {
-      log.error(
-          "Unable to retrieve the number of tasks currently in progress. DataAccessException: {}",
-          e.getMessage(), e);
-      throw e;
-    }
-    return result;
-  }
-
-  /**
    * Determines how many task rows have a queued state
    *
    * @return @throws DataAccessException
@@ -127,24 +118,6 @@ public class TapeRecallCatalog {
     int result = -1;
     try {
       result = tapeRecallDAO.getNumberQueued();
-    } catch (DataAccessException e) {
-      log.error("Unable to retrieve the number of tasks queued. DataAccessException: {}",
-          e.getMessage(), e);
-      throw e;
-    }
-    return result;
-  }
-
-  /**
-   * Determines how many task rows have a queued state given a certain VO
-   *
-   * @return @throws DataAccessException
-   */
-  public int getNumberTaskQueued(String voName) throws DataAccessException {
-
-    int result = -1;
-    try {
-      result = tapeRecallDAO.getNumberQueued(voName);
     } catch (DataAccessException e) {
       log.error("Unable to retrieve the number of tasks queued. DataAccessException: {}",
           e.getMessage(), e);
@@ -174,29 +147,9 @@ public class TapeRecallCatalog {
   }
 
   /**
-   * Determines how many task rows given a certain VO have a queued state and their deferred start
-   * time is elapsed
-   *
-   * @return @throws DataAccessException
-   */
-  public int getReadyForTakeOver(String voName) throws DataAccessException {
-
-    int result = -1;
-    try {
-      result = tapeRecallDAO.getReadyForTakeOver(voName);
-    } catch (DataAccessException e) {
-      log.error(
-          "Unable to retrieve the number of tasks ready for the take-over. DataAccessException: {}",
-          e.getMessage(), e);
-      throw e;
-    }
-    return result;
-  }
-
-  /**
    * @param taskId @param requestToken @return @throws DataAccessException
    */
-  public TapeRecallTO getTask(UUID taskId, String requestToken) throws DataAccessException {
+  public Optional<TapeRecallTO> getTask(UUID taskId, String requestToken) throws DataAccessException {
 
     return tapeRecallDAO.getTask(taskId, requestToken);
   }
@@ -276,48 +229,6 @@ public class TapeRecallCatalog {
       taskList = Collections.emptyList();
     }
 
-    return taskList;
-  }
-
-  /**
-   * @return
-   */
-  public TapeRecallTO takeoverTask() {
-
-    TapeRecallTO task = null;
-    try {
-      task = tapeRecallDAO.takeoverTask();
-    } catch (DataAccessException e) {
-      log.error("Unable to takeove a task.", e);
-    }
-    return task;
-  }
-
-  /**
-   * @param voName @return
-   */
-  public TapeRecallTO takeoverTask(String voName) {
-
-    TapeRecallTO task = null;
-    try {
-      task = tapeRecallDAO.takeoverTask(voName);
-    } catch (DataAccessException e) {
-      log.error("Unable to takeover a task for vo {}", voName, e);
-    }
-    return task;
-  }
-
-  /**
-   * @param numberOfTaks @param voName @return
-   */
-  public List<TapeRecallTO> takeoverTasks(int numberOfTaks, String voName) {
-
-    List<TapeRecallTO> taskList = Lists.newArrayList();
-    try {
-      taskList.addAll(tapeRecallDAO.takeoverTasksWithDoubles(numberOfTaks, voName));
-    } catch (DataAccessException e) {
-      log.error("Unable to takeover {} tasks for vo {}", numberOfTaks, voName, e);
-    }
     return taskList;
   }
 

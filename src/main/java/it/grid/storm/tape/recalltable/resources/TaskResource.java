@@ -254,8 +254,13 @@ public class TaskResource {
 
         try {
 
-          recallCatalog.changeGroupTaskStatus(groupTaskId,
-              TapeRecallStatus.getRecallTaskStatus(intValue), new Date());
+          TapeRecallStatus updatedStatus = TapeRecallStatus.getRecallTaskStatus(intValue);
+          recallCatalog.changeGroupTaskStatus(groupTaskId, updatedStatus, new Date());
+          // Update all PtG or BoL related
+          if (updatedStatus.isFinalStatus()) {
+            
+          }
+          
 
         } catch (DataAccessException e) {
 

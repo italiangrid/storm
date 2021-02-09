@@ -52,7 +52,7 @@ public class SpaceInfoManager {
   private static final Logger log = LoggerFactory.getLogger(SpaceInfoManager.class);
 
   // Reference to the Catalog
-  private final ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
+  private final ReservedSpaceCatalog spaceCatalog = ReservedSpaceCatalog.getInstance();
   // Reference to the NamespaceDirector
   private final NamespaceInterface namespace = NamespaceDirector.getNamespace();
 

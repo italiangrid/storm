@@ -17,10 +17,10 @@
 
 package it.grid.storm.synchcall.data.datatransfer;
 
-import it.grid.storm.catalogs.OverwriteModeConverter;
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.persistence.converter.OverwriteModeConverter;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TSURL;

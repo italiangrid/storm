@@ -46,7 +46,7 @@ public class SpaceStatusResource {
 
   private static final Logger log = LoggerFactory.getLogger(SpaceStatusResource.class);
 
-  private static final ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
+  private static final ReservedSpaceCatalog catalog = ReservedSpaceCatalog.getInstance();
 
   @GET
   @Produces("application/json")

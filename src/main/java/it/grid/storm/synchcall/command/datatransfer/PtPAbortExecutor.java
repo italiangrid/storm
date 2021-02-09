@@ -27,7 +27,6 @@ package it.grid.storm.synchcall.command.datatransfer;
 
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.catalogs.PtPChunkCatalog;
-import it.grid.storm.catalogs.PtPPersistentChunkData;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
@@ -40,6 +39,7 @@ import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
+import it.grid.storm.persistence.model.PtPPersistentChunkData;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.TRequestToken;

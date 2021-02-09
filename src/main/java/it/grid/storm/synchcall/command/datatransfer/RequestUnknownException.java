@@ -15,15 +15,4 @@ public class RequestUnknownException extends Exception {
 
 		super(message);
 	}
-
-	public RequestUnknownException(Throwable cause) {
-
-		super(cause);
-	}
-
-	public RequestUnknownException(String message, Throwable cause) {
-
-		super(message, cause);
-	}
-
 }

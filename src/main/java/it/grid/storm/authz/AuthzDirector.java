@@ -17,159 +17,44 @@
 
 package it.grid.storm.authz;
 
-import it.grid.storm.authz.path.PathAuthz;
-import it.grid.storm.authz.path.conf.PathAuthzDBReader;
-import it.grid.storm.authz.sa.SpaceDBAuthz;
-import it.grid.storm.authz.sa.test.MockSpaceAuthz;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
-import it.grid.storm.namespace.VirtualFSInterface;
-import it.grid.storm.namespace.model.SAAuthzType;
-import it.grid.storm.srm.types.TSpaceToken;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.grid.storm.authz.path.PathAuthz;
+import it.grid.storm.authz.path.conf.PathAuthzDBReader;
+
 public class AuthzDirector {
 
-	private static final Logger log = LoggerFactory
-		.getLogger(AuthzDirector.class);
-	private static String configurationPATH;
+  private static final Logger log = LoggerFactory.getLogger(AuthzDirector.class);
 
-	// Map between 'SpaceToken' and the related 'SpaceAuthz'
-	private static Map<TSpaceToken, SpaceAuthzInterface> spaceAuthzs = null;
+  // PathAuthz is only one, shared by all SAs
+  private static PathAuthzInterface pathAuthz = null;
 
-	// PathAuthz is only one, shared by all SAs
-	private static PathAuthzInterface pathAuthz = null;
+  /**
+   * Initialize the Path Authorization engine
+   * 
+   * @param pathAuthz2
+   */
+  public static void initializePathAuthz(String pathAuthzDBFileName) throws DirectorException {
 
-	/**
-	 * Scan the Namespace.xml to retrieve the list of file AuthZDB to digest
-	 */
-	private static Map<TSpaceToken, SpaceAuthzInterface> buildSpaceAuthzsMAP() {
+    PathAuthzDBReader authzDBReader;
+    try {
+      authzDBReader = new PathAuthzDBReader(pathAuthzDBFileName);
+    } catch (Exception e) {
+      log.error("Unable to build a PathAuthzDBReader: {}", e.getMessage(), e);
+      throw new DirectorException("Unable to build a PathAuthzDBReader");
+    }
+    AuthzDirector.pathAuthz = new PathAuthz(authzDBReader.getPathAuthzDB());
+  }
 
-		HashMap<TSpaceToken, SpaceAuthzInterface> spaceAuthzMap = new HashMap<TSpaceToken, SpaceAuthzInterface>();
+  /**
+   * Retrieve the Path Authorization module
+   * 
+   * @todo: To implement this.
+   */
+  public static PathAuthzInterface getPathAuthz() {
 
-		// Retrieve the list of VFS from Namespace
-		NamespaceInterface ns = NamespaceDirector.getNamespace();
-		ArrayList<VirtualFSInterface> vfss;
-		try {
-			vfss = new ArrayList<VirtualFSInterface>(ns.getAllDefinedVFS());
-			for (VirtualFSInterface vfs : vfss) {
-				String vfsName = vfs.getAliasName();
-				SAAuthzType authzTp = vfs.getStorageAreaAuthzType();
-				String authzName = "";
-				if (authzTp.equals(SAAuthzType.AUTHZDB)) {
-					// The Space Authz is based on Authz DB
-					authzName = vfs.getStorageAreaAuthzDB();
-					log.debug("Loading AuthzDB '{}'", authzName);
-					if (existsAuthzDBFile(authzName)) {
-						// Digest the Space AuthzDB File
-						TSpaceToken spaceToken = vfs.getSpaceToken();
-						SpaceAuthzInterface spaceAuthz = new SpaceDBAuthz(authzName);
-						spaceAuthzMap.put(spaceToken, spaceAuthz);
-					} else {
-						log.error("File AuthzDB '{}' related to '{}' does not exists.", 
-							authzName, vfsName);
-					}
-				} else {
-					authzName = vfs.getStorageAreaAuthzFixed();
-				}
-				log.debug("VFS ['{}'] = {} : {}", vfsName, authzTp, authzName);
-			}
-		} catch (NamespaceException e) {
-			log.error("Unable to initialize AUTHZ DB! Error: {}", e.getMessage(), e);
-		}
-
-		return spaceAuthzMap;
-	}
-
-	/**
-	 * Utility method
-	 * 
-	 * @param dbFileName
-	 * @return
-	 * @throws AuthzDBReaderException
-	 */
-	private static boolean existsAuthzDBFile(String dbFileName) {
-
-		String fileName = configurationPATH + File.separator + dbFileName;
-		boolean exists = (new File(fileName)).exists();
-		if (!exists) {
-			log.warn("The AuthzDB File '{}' does not exists", dbFileName);
-		}
-		return exists;
-	}
-
-	// ****************************************
-	// PUBLIC METHODS
-	// ****************************************
-
-	/******************************
-	 * SPACE AUTHORIZATION ENGINE
-	 ******************************/
-	public static void initializeSpaceAuthz() {
-
-		// Build Space Authzs MAP
-		spaceAuthzs = buildSpaceAuthzsMAP();
-	}
-
-	/**
-	 * Retrieve the Space Authorization module related to the Space Token
-	 * 
-	 * @param token
-	 * @return
-	 */
-	public static SpaceAuthzInterface getSpaceAuthz(TSpaceToken token) {
-
-		SpaceAuthzInterface spaceAuthz = new MockSpaceAuthz();
-		// Retrieve the SpaceAuthz related to the Space Token
-		if ((spaceAuthzs != null) && (spaceAuthzs.containsKey(token))) {
-			spaceAuthz = spaceAuthzs.get(token);
-			log.debug("Space Authz related to S.Token ='{}' is '{}'", token, 
-				spaceAuthz.getSpaceAuthzID());
-		} else {
-			log.debug("Space Authz related to S.Token ='{}' does not exists. "
-				+ "Use the MOCK one.", token);
-		}
-		return spaceAuthz;
-	}
-
-	/******************************
-	 * PATH AUTHORIZATION ENGINE
-	 ******************************/
-
-	/**
-	 * Initializating the Path Authorization engine
-	 * 
-	 * @param pathAuthz2
-	 */
-	public static void initializePathAuthz(String pathAuthzDBFileName)
-		throws DirectorException {
-
-		PathAuthzDBReader authzDBReader;
-		try {
-			authzDBReader = new PathAuthzDBReader(pathAuthzDBFileName);
-		} catch (Exception e) {
-			log.error("Unable to build a PathAuthzDBReader: {}", e.getMessage(), e);
-			throw new DirectorException("Unable to build a PathAuthzDBReader");
-		}
-		AuthzDirector.pathAuthz = new PathAuthz(authzDBReader.getPathAuthzDB());
-	}
-
-	/**
-	 * Retrieve the Path Authorization module
-	 * 
-	 * @todo: To implement this.
-	 */
-	public static PathAuthzInterface getPathAuthz() {
-
-		return AuthzDirector.pathAuthz;
-	}
+    return AuthzDirector.pathAuthz;
+  }
 
 }

@@ -5,7 +5,7 @@
   <name>StoRM Backend server</name>
   <groupId>org.italiangrid.storm</groupId>
   <artifactId>storm-backend-server</artifactId>
-  <version>1.11.19</version>
+  <version>1.12.0</version>
 
   <properties>
 
@@ -18,13 +18,13 @@
     <nettyVersion>3.5.0.Final</nettyVersion>
     <jnaVersion>3.3.0</jnaVersion>
     <jettisonVersion>1.1</jettisonVersion>
-    <commonsDbcpVersion>1.2.1</commonsDbcpVersion>
+    <commonsDbcpVersion>2.8.0</commonsDbcpVersion>
     <commonsIoVersion>2.0.1</commonsIoVersion>
     <ini4jVersion>0.5.2</ini4jVersion>
     <xmlrpcVersion>3.0</xmlrpcVersion>
     <jaxrpcVersion>1.1</jaxrpcVersion>
     <jsonVersion>20080701</jsonVersion>
-    <junitVersion>4.8.1</junitVersion>
+    <junitVersion>4.13.1</junitVersion>
     <commonsCliVersion>1.0</commonsCliVersion>
     <commonsDiscoveryVersion>0.2</commonsDiscoveryVersion>
     <commonsHttpClientVersion>3.1</commonsHttpClientVersion>
@@ -35,7 +35,7 @@
     <mailVersion>1.4.6</mailVersion>
     <jakartaXmlBindVersion>2.3.3</jakartaXmlBindVersion>
 
-    <mysqlConnectorVersion>5.1.12</mysqlConnectorVersion>
+    <mysqlConnectorVersion>8.0.16</mysqlConnectorVersion>
 
     <guavaVersion>18.0</guavaVersion>
     <metrics.version>3.1.0</metrics.version>
@@ -376,8 +376,8 @@
     </dependency>
 
     <dependency>
-      <groupId>commons-dbcp</groupId>
-      <artifactId>commons-dbcp</artifactId>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-dbcp2</artifactId>
       <version>${commonsDbcpVersion}</version>
     </dependency>
 

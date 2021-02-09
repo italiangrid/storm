@@ -30,8 +30,8 @@ import org.slf4j.LoggerFactory;
 
 import it.grid.storm.asynch.AdvancedPicker;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.catalogs.StoRMDataSource;
-import it.grid.storm.catalogs.timertasks.ExpiredPutRequestsAgent;
+import it.grid.storm.catalogs.executors.RequestFinalizerService;
+import it.grid.storm.catalogs.timertasks.RequestsGarbageCollector;
 import it.grid.storm.check.CheckManager;
 import it.grid.storm.check.CheckResponse;
 import it.grid.storm.check.CheckStatus;
@@ -72,12 +72,15 @@ public class StoRM {
   private boolean isSpaceGCRunning = false;
 
   /*
-   * Timer object in charge of transit expired put requests from SRM_SPACE_AVAILABLE to
-   * SRM_FILE_LIFETIME_EXPIRED and from SRM_REQUEST_INPROGRESS to SRM_FAILURE
+   * Agent in charge of transit expired ptg/ptp/bol requests to final statuses
    */
-  private final Timer transiter = new Timer();
-  private TimerTask expiredAgent;
+  private RequestFinalizerService expiredAgent;
   private boolean isExpiredAgentRunning = false;
+
+  /* Requests Garbage Collector */
+  private final Timer rgc = new Timer();
+  private TimerTask rgcTask;
+  private boolean isRequestGCRunning = false;
 
   private boolean isDiskUsageServiceEnabled = false;
   private DiskUsageService duService;
@@ -96,7 +99,7 @@ public class StoRM {
 
     config = Configuration.getInstance();
     picker = new AdvancedPicker();
-    spaceCatalog = new ReservedSpaceCatalog();
+    spaceCatalog = ReservedSpaceCatalog.getInstance();
 
   }
 
@@ -107,8 +110,6 @@ public class StoRM {
     configureSecurity();
 
     configureMetricsReporting();
-
-    configureStoRMDataSource();
 
     loadNamespaceConfiguration();
 
@@ -216,11 +217,6 @@ public class StoRM {
 
   }
 
-  private void configureStoRMDataSource() {
-
-    StoRMDataSource.init();
-  }
-
   /**
    * Method used to start the picker.
    */
@@ -245,14 +241,6 @@ public class StoRM {
     }
     picker.stopIt();
     isPickerRunning = false;
-  }
-
-  /**
-   * @return
-   */
-  public synchronized boolean pickerIsRunning() {
-
-    return isPickerRunning;
   }
 
   /**
@@ -383,14 +371,6 @@ public class StoRM {
   }
 
   /**
-   * @return
-   */
-  public synchronized boolean spaceGCIsRunning() {
-
-    return isSpaceGCRunning;
-  }
-
-  /**
    * Starts the internal timer needed to periodically check and transit requests whose pinLifetime
    * has expired and are in SRM_SPACE_AVAILABLE, to SRM_FILE_LIFETIME_EXPIRED. Moreover, the
    * physical file corresponding to the SURL gets removed; then any JiT entry gets removed, except
@@ -405,16 +385,8 @@ public class StoRM {
       return;
     }
 
-    /* Delay time before starting cleaning thread! Set to 1 minute */
-    final long delay = config.getTransitInitialDelay() * 1000L;
-    /* Period of execution of cleaning! Set to 1 hour */
-    final long period = config.getTransitTimeInterval() * 1000L;
-    /* Expiration time before starting move in-progress requests to failure */
-    final long inProgressExpirationTime = config.getInProgressPutRequestExpirationTime();
-
     log.debug("Starting Expired Agent.");
-    expiredAgent = new ExpiredPutRequestsAgent(inProgressExpirationTime);
-    transiter.scheduleAtFixedRate(expiredAgent, delay, period);
+    expiredAgent = new RequestFinalizerService(config);
     isExpiredAgentRunning = true;
     log.debug("Expired Agent started.");
   }
@@ -428,7 +400,7 @@ public class StoRM {
 
     log.debug("Stopping Expired Agent.");
     if (expiredAgent != null) {
-      expiredAgent.cancel();
+      expiredAgent.stop();
     }
     log.debug("Expired Agent stopped.");
     isExpiredAgentRunning = false;
@@ -498,6 +470,40 @@ public class StoRM {
     }
   }
 
+  public synchronized void startRequestGarbageCollector() {
+
+    if (isRequestGCRunning) {
+      log.debug("Requests Garbage Collector is already running.");
+      return;
+    }
+
+    /* Delay time before starting cleaning thread */
+    final long delay = config.getRequestPurgerDelay() * 1000L;
+    /* Period of execution of cleaning */
+    final long period = config.getRequestPurgerPeriod() * 1000L;
+
+    log.debug("Starting Requests Garbage Collector .");
+    rgcTask = new RequestsGarbageCollector(rgc, period);
+    rgc.schedule(rgcTask, delay);
+    isRequestGCRunning = true;
+    log.debug("Requests Garbage Collector started.");
+  }
+
+  public synchronized void stopRequestGarbageCollector() {
+
+    if (!isRequestGCRunning) {
+      log.debug("Requests Garbage Collector is not running.");
+      return;
+    }
+
+    log.debug("Stopping Requests Garbage Collector.");
+    if (rgcTask != null) {
+      rgcTask.cancel();
+    }
+    log.debug("Requests Garbage Collector stopped.");
+    isRequestGCRunning = false;
+  }
+
   public void startServices() throws Exception {
 
     startPicker();
@@ -505,6 +511,7 @@ public class StoRM {
     startRestServer();
     startSpaceGC();
     startExpiredAgent();
+    startRequestGarbageCollector();
     startDiskUsageService();
   }
 
@@ -515,6 +522,7 @@ public class StoRM {
     stopRestServer();
     stopSpaceGC();
     stopExpiredAgent();
+    stopRequestGarbageCollector();
     stopDiskUsageService();
 
     GPFSQuotaManager.INSTANCE.shutdown();

@@ -28,17 +28,6 @@ import java.util.List;
  */
 public abstract class PathAuthzEvaluationAlgorithm {
 
-  public static PathAuthzEvaluationAlgorithm instance = null;
-
-  public static PathAuthzEvaluationAlgorithm getInstance() throws Exception {
-
-    if (instance == null) {
-      throw new Exception(
-          "Unable to provide the instance, my comcrete subclass as not provided any");
-    }
-    return instance;
-  }
-
   public abstract AuthzDecision evaluate(String subject, StFN fileName,
       SRMFileRequest pathOperation, List<PathACE> acl);
 

@@ -35,7 +35,6 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.path.model.PathOperation;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.remote.Constants;
-import it.grid.storm.catalogs.OverwriteModeConverter;
 import it.grid.storm.common.types.InvalidStFNAttributeException;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.config.Configuration;
@@ -47,6 +46,7 @@ import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.Protocol;
+import it.grid.storm.persistence.converter.OverwriteModeConverter;
 import it.grid.storm.srm.types.TOverwriteMode;
 
 class PermissionEvaluator {
