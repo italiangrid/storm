@@ -29,29 +29,24 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 
-import it.grid.storm.config.Configuration;
-
 public class DBConnectionPool {
 
   private static final Logger log = LoggerFactory.getLogger(DBConnectionPool.class);
 
-  private static final DataBaseStrategy MYSQL =
-      new DataBaseStrategy("mysql", "com.mysql.jdbc.Driver", "jdbc:mysql://", new MySqlFormat());
-
   private BasicDataSource bds;
 
-  public DBConnectionPool(String dbUrl, int maxTotal, int minIdle, int maxConnLifetimeMillis,
-      boolean isTestOnBorrow, boolean isTestWhileIdle) {
+  public DBConnectionPool(DatabaseStrategy dbs, int maxTotal, int minIdle,
+      int maxConnLifetimeMillis, boolean isTestOnBorrow, boolean isTestWhileIdle) {
 
     bds = new BasicDataSource();
     // Set database driver name
-    bds.setDriverClassName(MYSQL.getDriverName());
+    bds.setDriverClassName(dbs.getDriverName());
     // Set database URL
-    bds.setUrl(dbUrl);
+    bds.setUrl(dbs.getDbHostname());
     // Set database user
-    bds.setUsername(MYSQL.getDbUsr());
+    bds.setUsername(dbs.getDbUsername());
     // Set database password
-    bds.setPassword(MYSQL.getDbPwd());
+    bds.setPassword(dbs.getDbPassword());
     // Set the connection pool size
     bds.setMaxTotal(maxTotal);
     bds.setInitialSize(minIdle);
@@ -61,18 +56,13 @@ public class DBConnectionPool {
     bds.setTestWhileIdle(isTestWhileIdle);
     log.info(
         "Connection pool for '{}' init with [max-total: {}, min-idle: {}, max-conn-lifetime-millis: {}, test-on-borrow: {}, test-while-idle: {}]",
-        MYSQL.getDbUrl(), maxTotal, minIdle, maxConnLifetimeMillis, isTestOnBorrow,
+        dbs.getDbHostname(), maxTotal, minIdle, maxConnLifetimeMillis, isTestOnBorrow,
         isTestWhileIdle);
   }
 
   public Connection getConnection() throws SQLException {
 
     return bds.getConnection();
-  }
-
-  public DataBaseStrategy getDatabaseStrategy() {
-
-    return MYSQL;
   }
 
   public Map<String, String> getMetrics() {

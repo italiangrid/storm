@@ -20,7 +20,6 @@ package it.grid.storm.config;
 import static it.grid.storm.info.du.DiskUsageService.DEFAULT_INITIAL_DELAY;
 import static it.grid.storm.info.du.DiskUsageService.DEFAULT_TASKS_INTERVAL;
 import static it.grid.storm.info.du.DiskUsageService.DEFAULT_TASKS_PARALLEL;
-import static java.lang.String.format;
 import static java.lang.System.getProperty;
 
 import java.io.File;
@@ -312,23 +311,12 @@ public class Configuration {
   }
 
   /**
-   * Get storm_db URL.
+   * Get database host
    */
-  public String getStormDbURL() {
+  public String getDBHostname() {
 
-    String host = cr.getConfiguration().getString(DB_HOSTNAME_KEY, "localhost");
-    return format("jdbc:mysql://%s/storm_db", host);
+    return cr.getConfiguration().getString(DB_HOSTNAME_KEY, "localhost");
   }
-
-  /**
-   * Get storm_be_ISAM URL.
-   */
-  public String getStormBeIsamURL() {
-
-    String host = cr.getConfiguration().getString(DB_HOSTNAME_KEY, "localhost");
-    return format("jdbc:mysql://%s/storm_be_ISAM", host);
-  }
-
 
   /**
    * Method used by all DAO Objects to get the DB username. If no value is found in the

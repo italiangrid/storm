@@ -4,14 +4,17 @@ import it.grid.storm.config.Configuration;
 
 public class StormBeIsamConnectionPool {
 
+  private static final String DATABASE_NAME = "storm_be_ISAM";
+
   private static DBConnectionPool instance;
 
   public static synchronized DBConnectionPool getInstance() {
     if (instance == null) {
       Configuration c = Configuration.getInstance();
-      instance =
-          new DBConnectionPool(c.getStormBeIsamURL(), c.getDbPoolSize(), c.getDbPoolMinIdle(),
-              c.getDbPoolMaxWaitMillis(), c.isDbPoolTestOnBorrow(), c.isDbPoolTestWhileIdle());
+      MySQLDatabaseStrategy dbs = new MySQLDatabaseStrategy(DATABASE_NAME, c.getDBHostname(),
+          c.getDBUserName(), c.getDBPassword());
+      instance = new DBConnectionPool(dbs, c.getDbPoolSize(), c.getDbPoolMinIdle(),
+          c.getDbPoolMaxWaitMillis(), c.isDbPoolTestOnBorrow(), c.isDbPoolTestWhileIdle());
     }
     return instance;
   }
