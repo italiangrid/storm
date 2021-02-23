@@ -48,6 +48,7 @@ public class DBConnectionPool {
   public DBConnectionPool(int maxTotal, int minIdle, int maxConnLifetimeMillis,
       boolean isTestOnBorrow, boolean isTestWhileIdle) {
 
+    bds = new BasicDataSource();
     // Set database driver name
     bds.setDriverClassName(MYSQL.getDriverName());
     // Set database URL
