@@ -40,19 +40,14 @@ public class DBConnectionPool {
 
   private BasicDataSource bds;
 
-  public DBConnectionPool(Configuration c) {
-    this(c.getDbPoolSize(), c.getDbPoolMinIdle(), c.getDbPoolMaxWaitMillis(),
-        c.isDbPoolTestOnBorrow(), c.isDbPoolTestWhileIdle());
-  }
-
-  public DBConnectionPool(int maxTotal, int minIdle, int maxConnLifetimeMillis,
+  public DBConnectionPool(String dbUrl, int maxTotal, int minIdle, int maxConnLifetimeMillis,
       boolean isTestOnBorrow, boolean isTestWhileIdle) {
 
     bds = new BasicDataSource();
     // Set database driver name
     bds.setDriverClassName(MYSQL.getDriverName());
     // Set database URL
-    bds.setUrl(MYSQL.getDbUrl());
+    bds.setUrl(dbUrl);
     // Set database user
     bds.setUsername(MYSQL.getDbUsr());
     // Set database password

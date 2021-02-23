@@ -8,7 +8,10 @@ public class StormBeIsamConnectionPool {
 
   public static synchronized DBConnectionPool getInstance() {
     if (instance == null) {
-      instance = new DBConnectionPool(Configuration.getInstance());
+      Configuration c = Configuration.getInstance();
+      instance =
+          new DBConnectionPool(c.getStormBeIsamURL(), c.getDbPoolSize(), c.getDbPoolMinIdle(),
+              c.getDbPoolMaxWaitMillis(), c.isDbPoolTestOnBorrow(), c.isDbPoolTestWhileIdle());
     }
     return instance;
   }
