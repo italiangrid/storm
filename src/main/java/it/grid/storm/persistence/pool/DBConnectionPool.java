@@ -42,7 +42,7 @@ public class DBConnectionPool {
     // Set database driver name
     bds.setDriverClassName(dbs.getDriverName());
     // Set database URL
-    bds.setUrl(dbs.getDbHostname());
+    bds.setUrl(dbs.getConnectionString());
     // Set database user
     bds.setUsername(dbs.getDbUsername());
     // Set database password
