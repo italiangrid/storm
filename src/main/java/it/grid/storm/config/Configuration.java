@@ -319,19 +319,15 @@ public class Configuration {
   }
 
   /**
-   * Method used by all DAO Objects to get the DB username. If no value is found in the
-   * configuration medium, then the default value is returned instead. Default value = "storm"; key
-   * searched in medium = "asynch.picker.db.username".
+   * Get database username.
    */
-  public String getDBUserName() {
+  public String getDBUsername() {
 
     return cr.getConfiguration().getString(DB_USERNAME_KEY, "storm");
   }
 
   /**
-   * Method used by all DAO Objects to get the DB password. If no value is found in the
-   * configuration medium, then the default value is returned instead. Default value = "storm"; key
-   * searched in medium = "asynch.picker.db.passwd".
+   * Get database password.
    */
   public String getDBPassword() {
 

@@ -2,21 +2,26 @@ package it.grid.storm.persistence.pool;
 
 import it.grid.storm.config.Configuration;
 
-public class StormDbConnectionPool {
+public class StormDbConnectionPool extends DBConnectionPool {
 
   private static final String DATABASE_NAME = "storm_db";
 
-  private static DBConnectionPool instance;
+  private static StormDbConnectionPool instance;
 
-  public static synchronized DBConnectionPool getInstance() {
+  public static synchronized StormDbConnectionPool getInstance() {
     if (instance == null) {
-      Configuration c = Configuration.getInstance();
-      MySQLDatabaseStrategy dbs = new MySQLDatabaseStrategy(DATABASE_NAME, c.getDBHostname(),
-          c.getDBUserName(), c.getDBPassword());
-      instance = new DBConnectionPool(dbs, c.getDbPoolSize(), c.getDbPoolMinIdle(),
-          c.getDbPoolMaxWaitMillis(), c.isDbPoolTestOnBorrow(), c.isDbPoolTestWhileIdle());
+      instance = new StormDbConnectionPool();
     }
     return instance;
   }
 
+  private static Configuration c = Configuration.getInstance();
+  private static DatabaseStrategy dbs = new MySQLDatabaseStrategy(DATABASE_NAME, c.getDBHostname(),
+      c.getDBUsername(), c.getDBPassword());
+
+  private StormDbConnectionPool() {
+
+    super(dbs, c.getDbPoolSize(), c.getDbPoolMinIdle(), c.getDbPoolMaxWaitMillis(),
+        c.isDbPoolTestOnBorrow(), c.isDbPoolTestWhileIdle());
+  }
 }
