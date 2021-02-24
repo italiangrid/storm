@@ -39,25 +39,22 @@ public class DBConnectionPool {
       int maxConnLifetimeMillis, boolean isTestOnBorrow, boolean isTestWhileIdle) {
 
     bds = new BasicDataSource();
-    // Set database driver name
+
     bds.setDriverClassName(dbs.getDriverName());
-    // Set database URL
     bds.setUrl(dbs.getConnectionString());
-    // Set database user
     bds.setUsername(dbs.getDbUsername());
-    // Set database password
     bds.setPassword(dbs.getDbPassword());
-    // Set the connection pool size
     bds.setMaxTotal(maxTotal);
     bds.setInitialSize(minIdle);
     bds.setMinIdle(minIdle);
     bds.setMaxConnLifetimeMillis(maxConnLifetimeMillis);
     bds.setTestOnBorrow(isTestOnBorrow);
     bds.setTestWhileIdle(isTestWhileIdle);
-    log.info(
-        "Connection pool for '{}' init with [max-total: {}, min-idle: {}, max-conn-lifetime-millis: {}, test-on-borrow: {}, test-while-idle: {}]",
-        dbs.getDbHostname(), maxTotal, minIdle, maxConnLifetimeMillis, isTestOnBorrow,
-        isTestWhileIdle);
+
+    log.info("Connected to '{}'@'{}' with '{}' "
+        + "[max-total: {}, min-idle: {}, max-conn-lifetime-millis: {}, test-on-borrow: {}, test-while-idle: {}]",
+        dbs.getDbName(), dbs.getDbHostname(), maxTotal, minIdle, maxConnLifetimeMillis,
+        isTestOnBorrow, isTestWhileIdle);
   }
 
   public Connection getConnection() throws SQLException {

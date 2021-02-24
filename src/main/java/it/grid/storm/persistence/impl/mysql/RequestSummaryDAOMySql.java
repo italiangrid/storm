@@ -63,9 +63,6 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
       "SELECT ID, config_RequestTypeID, r_token, timeStamp, client_dn, proxy "
           + "FROM request_queue WHERE status=? LIMIT ?";
 
-  private static final String UPDATE_REQUEST_STATUS_WHERE_ID_IN =
-      "UPDATE request_queue SET status=?, errstring=? WHERE ID IN ?";
-
   private static final String UPDATE_REQUEST_STATUS_WHERE_ID_IS =
       "UPDATE request_queue SET status=?, errstring=? WHERE ID=?";
 
@@ -101,17 +98,20 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
       + "JOIN (request_queue r, request_BoL t) ON (s.request_BoLID=t.ID AND t.request_queueID=r.ID) "
       + "SET s.statusCode=?, s.explanation=? WHERE r.ID=?";
 
-  private static final String UPDATE_REQUEST_GET_STATUS_WHERE_ID_IS_AND_SURL_IN = "UPDATE status_Get s "
-      + "JOIN (request_queue r, request_Get t) ON (s.request_GetID=t.ID AND t.request_queueID=r.ID) "
-      + "SET s.statusCode=?, s.explanation=? WHERE r.ID=? AND sourceSURL IN ?";
+  private static final String UPDATE_REQUEST_GET_STATUS_WHERE_ID_IS_AND_SURL_IN =
+      "UPDATE status_Get s "
+          + "JOIN (request_queue r, request_Get t) ON (s.request_GetID=t.ID AND t.request_queueID=r.ID) "
+          + "SET s.statusCode=?, s.explanation=? WHERE r.ID=? AND sourceSURL IN ?";
 
-  private static final String UPDATE_REQUEST_PUT_STATUS_WHERE_ID_IS_AND_SURL_IN = "UPDATE status_Put s "
-      + "JOIN (request_queue r, request_Put t) ON (s.request_PutID=t.ID AND t.request_queueID=r.ID) "
-      + "SET s.statusCode=?, s.explanation=? WHERE r.ID=? AND targetSURL IN ?";
+  private static final String UPDATE_REQUEST_PUT_STATUS_WHERE_ID_IS_AND_SURL_IN =
+      "UPDATE status_Put s "
+          + "JOIN (request_queue r, request_Put t) ON (s.request_PutID=t.ID AND t.request_queueID=r.ID) "
+          + "SET s.statusCode=?, s.explanation=? WHERE r.ID=? AND targetSURL IN ?";
 
-  private static final String UPDATE_REQUEST_BOL_STATUS_WHERE_ID_IS_AND_SURL_IN = "UPDATE status_BoL s "
-      + "JOIN (request_queue r, request_BoL t) ON (s.request_BoLID=t.ID AND t.request_queueID=r.ID) "
-      + "SET s.statusCode=?, s.explanation=? WHERE r.ID=? AND sourceSURL IN ?";
+  private static final String UPDATE_REQUEST_BOL_STATUS_WHERE_ID_IS_AND_SURL_IN =
+      "UPDATE status_BoL s "
+          + "JOIN (request_queue r, request_BoL t) ON (s.request_BoLID=t.ID AND t.request_queueID=r.ID) "
+          + "SET s.statusCode=?, s.explanation=? WHERE r.ID=? AND sourceSURL IN ?";
 
   private static final String SELECT_PURGEABLE_REQUESTS_WITH_LIMIT =
       "SELECT ID, r_token FROM request_queue "
@@ -205,10 +205,11 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
 
       // transit state from SRM_REQUEST_QUEUED to SRM_REQUEST_INPROGRESS
       if (!results.isEmpty()) {
-        update = con.prepareStatement(UPDATE_REQUEST_STATUS_WHERE_ID_IN);
+        String updateQuery =
+            "UPDATE request_queue SET status=?, errstring=? WHERE ID IN " + makeWhereString(rowids);
+        update = con.prepareStatement(updateQuery);
         update.setInt(1, statusCodeConverter.toDB(SRM_REQUEST_INPROGRESS));
         update.setString(2, "Request handled!");
-        update.setString(3, makeWhereString(rowids));
         log.trace("REQUEST SUMMARY DAO - findNew: executing {}", update);
         update.executeUpdate();
       }
@@ -697,7 +698,7 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
       log.trace("REQUEST SUMMARY DAO - typeOf - {}", query);
       rs = query.executeQuery();
       if (rs.next()) {
-        result = TRequestType.valueOf(rs.getString("config_RequestTypeID"));
+        result = requestTypeConverter.toSTORM(rs.getString("config_RequestTypeID"));
       }
     } catch (SQLException e) {
       log.error("REQUEST SUMMARY DAO - typeOf - {}", e.getMessage(), e);
