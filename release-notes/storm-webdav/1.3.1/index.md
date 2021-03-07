@@ -13,6 +13,8 @@ features:
 ## StoRM WebDAV v. 1.3.1
 
 Released on **{{ page.release_date }}** as an update of [StoRM v. 1.11.19][release-notes].
+<span style="float: right; margin-left: 8px;" class="label label-success">centos6</span>
+<span style="float: right; margin-left: 8px;" class="label label-info">centos7</span>
 
 ### Description
 

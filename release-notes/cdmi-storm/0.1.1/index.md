@@ -8,6 +8,8 @@ release_date: "07.08.2020"
 
 Released on **{{ page.release_date }}** with [StoRM v. 1.11.18]({{ site.baseurl }}/release-notes/StoRM-v1.11.18.html).
 
+<span style="float: right; margin-left: 8px;" class="label label-info">centos7</span>
+
 ### Description
 
 CDMI StoRM implements the Java Service Provider Interface [cdmi-spi][cdmi-spi] to provide a plugin 

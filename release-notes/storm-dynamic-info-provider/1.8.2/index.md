@@ -14,6 +14,8 @@ rfcs:
 ## StoRM Info Provider v. 1.8.2
 
 Released on **{{ page.release_date }}** with [StoRM v. 1.11.18][release-notes].
+<span style="float: right; margin-left: 8px;" class="label label-success">centos6</span>
+<span style="float: right; margin-left: 8px;" class="label label-info">centos7</span>
 
 ### Description
 

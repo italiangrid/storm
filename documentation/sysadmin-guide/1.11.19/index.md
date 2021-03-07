@@ -10,8 +10,6 @@ menu:
     label: upgrading
   - link: documentation/sysadmin-guide/1.11.19/index.html#upgrading
     label: upgrading
-redirect_from:
-  - /documentation/sysadmin-guide/
 ---
 
 # StoRM System Administration Guide
