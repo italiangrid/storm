@@ -101,17 +101,17 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
   private static final String UPDATE_REQUEST_GET_STATUS_WHERE_ID_IS_AND_SURL_IN =
       "UPDATE status_Get s "
           + "JOIN (request_queue r, request_Get t) ON (s.request_GetID=t.ID AND t.request_queueID=r.ID) "
-          + "SET s.statusCode=?, s.explanation=? WHERE r.ID=? AND sourceSURL IN ?";
+          + "SET s.statusCode=?, s.explanation=? WHERE r.ID=? AND sourceSURL IN ";
 
   private static final String UPDATE_REQUEST_PUT_STATUS_WHERE_ID_IS_AND_SURL_IN =
       "UPDATE status_Put s "
           + "JOIN (request_queue r, request_Put t) ON (s.request_PutID=t.ID AND t.request_queueID=r.ID) "
-          + "SET s.statusCode=?, s.explanation=? WHERE r.ID=? AND targetSURL IN ?";
+          + "SET s.statusCode=?, s.explanation=? WHERE r.ID=? AND targetSURL IN ";
 
   private static final String UPDATE_REQUEST_BOL_STATUS_WHERE_ID_IS_AND_SURL_IN =
       "UPDATE status_BoL s "
           + "JOIN (request_queue r, request_BoL t) ON (s.request_BoLID=t.ID AND t.request_queueID=r.ID) "
-          + "SET s.statusCode=?, s.explanation=? WHERE r.ID=? AND sourceSURL IN ?";
+          + "SET s.statusCode=?, s.explanation=? WHERE r.ID=? AND sourceSURL IN ";
 
   private static final String SELECT_PURGEABLE_REQUESTS_WITH_LIMIT =
       "SELECT ID, r_token FROM request_queue "
@@ -119,9 +119,6 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
 
   private static final String COUNT_PURGEABLE_REQUESTS = "SELECT count(*) FROM request_queue "
       + "WHERE UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(timeStamp) > ? AND status <> ? AND status <> ? ";
-
-  private static final String DELETE_REQUEST_WHERE_ID_IN =
-      "DELETE FROM request_queue WHERE ID in ?";
 
   private static final String DELETE_ORPHANS_DIR_OPTION =
       "DELETE request_DirOption FROM request_DirOption "
@@ -630,19 +627,19 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
               + "not be translated from the DB!");
           con.rollback();
         } else {
+          String updateQuery;
           if (PREPARE_TO_GET.equals(rtyp)) {
-            update = con.prepareStatement(UPDATE_REQUEST_GET_STATUS_WHERE_ID_IS_AND_SURL_IN);
+            updateQuery = UPDATE_REQUEST_GET_STATUS_WHERE_ID_IS_AND_SURL_IN + makeInString(surls);
           } else if (PREPARE_TO_PUT.equals(rtyp)) {
-            update = con.prepareStatement(UPDATE_REQUEST_PUT_STATUS_WHERE_ID_IS_AND_SURL_IN);
+            updateQuery = UPDATE_REQUEST_PUT_STATUS_WHERE_ID_IS_AND_SURL_IN + makeInString(surls);
           } else {
-            update = con.prepareStatement(UPDATE_REQUEST_BOL_STATUS_WHERE_ID_IS_AND_SURL_IN);
+            updateQuery = UPDATE_REQUEST_BOL_STATUS_WHERE_ID_IS_AND_SURL_IN + makeInString(surls);
           }
+          update = con.prepareStatement(updateQuery);
         }
-
         update.setInt(1, statusCodeConverter.toDB(SRM_ABORTED));
         update.setString(2, "User aborted request!");
         update.setLong(3, id);
-        update.setString(4, makeInString(surls));
         log.trace("REQUEST SUMMARY DAO - abortChunksOfInProgressRequest - {}", update);
         update.executeUpdate();
         con.commit();
@@ -812,8 +809,8 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
       if (!ids.isEmpty()) {
         // REMOVE BATCH OF EXPIRED REQUESTS!
 
-        deleteReq = con.prepareStatement(DELETE_REQUEST_WHERE_ID_IN);
-        deleteReq.setString(1, makeWhereString(ids));
+        String deleteQuery = "DELETE FROM request_queue WHERE ID in " + makeWhereString(ids);
+        deleteReq = con.prepareStatement(deleteQuery);
         log.trace("REQUEST SUMMARY DAO - purgeExpiredRequests - {}", deleteReq);
 
         int deleted = deleteReq.executeUpdate();
