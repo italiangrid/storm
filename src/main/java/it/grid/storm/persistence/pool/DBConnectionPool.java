@@ -51,10 +51,10 @@ public class DBConnectionPool {
     bds.setTestOnBorrow(isTestOnBorrow);
     bds.setTestWhileIdle(isTestWhileIdle);
 
-    log.info("Connected to '{}'@'{}' with '{}' "
-        + "[max-total: {}, min-idle: {}, max-conn-lifetime-millis: {}, test-on-borrow: {}, test-while-idle: {}]",
-        dbs.getDbName(), dbs.getDbHostname(), maxTotal, minIdle, maxConnLifetimeMillis,
-        isTestOnBorrow, isTestWhileIdle);
+    log.info(
+        "Connected as {} to '{}'@'{}' [max-total: {}, min-idle: {}, max-conn-lifetime-millis: {}, test-on-borrow: {}, test-while-idle: {}]",
+        dbs.getDbUsername(), dbs.getDbName(), dbs.getDbHostname(), maxTotal, minIdle,
+        maxConnLifetimeMillis, isTestOnBorrow, isTestWhileIdle);
   }
 
   public Connection getConnection() throws SQLException {
