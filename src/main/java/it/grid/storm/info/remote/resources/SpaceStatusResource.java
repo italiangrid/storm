@@ -11,6 +11,7 @@
 
 package it.grid.storm.info.remote.resources;
 
+import static it.grid.storm.common.types.SizeUnit.BYTES;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
@@ -31,21 +32,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.info.SpaceInfoManager;
 import it.grid.storm.info.model.SpaceStatusSummary;
-import it.grid.storm.info.remote.Constants;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
 
-@Path("/" + Constants.RESOURCE)
+@Path("/info/status")
 public class SpaceStatusResource {
 
-  private static final Logger log = LoggerFactory.getLogger(SpaceStatusResource.class);
+  public static final String ENCODING_SCHEME = "UTF-8";
 
+  public static final String TOTAL_SPACE_KEY = "total";
+  public static final String USED_SPACE_KEY = "used";
+  public static final String RESERVED_SPACE_KEY = "reserved";
+  public static final String UNAVALILABLE_SPACE_KEY = "unavailable";
+
+  private static final Logger log = LoggerFactory.getLogger(SpaceStatusResource.class);
   private static final ReservedSpaceCatalog catalog = ReservedSpaceCatalog.getInstance();
 
   @GET
@@ -79,24 +84,21 @@ public class SpaceStatusResource {
   }
 
   @PUT
-  @Path("/{alias}/" + Constants.UPDATE_OPERATION)
+  @Path("/{alias}/update")
   @Consumes("text/plain")
   public void putStatusSummary(@PathParam("alias") String saAlias,
-      @QueryParam(Constants.TOTAL_SPACE_KEY) Long totalSpace,
-      @QueryParam(Constants.USED_SPACE_KEY) Long usedSpace,
-      @QueryParam(Constants.RESERVED_SPACE_KEY) Long reservedSpace,
-      @QueryParam(Constants.UNAVALILABLE_SPACE_KEY) Long unavailableSpace)
-      throws WebApplicationException {
+      @QueryParam(TOTAL_SPACE_KEY) Long totalSpace, @QueryParam(USED_SPACE_KEY) Long usedSpace,
+      @QueryParam(RESERVED_SPACE_KEY) Long reservedSpace,
+      @QueryParam(UNAVALILABLE_SPACE_KEY) Long unavailableSpace) throws WebApplicationException {
 
     // Decode received parameters
     String saAliasDecoded;
     try {
-      saAliasDecoded = URLDecoder.decode(saAlias.trim(), Constants.ENCODING_SCHEME);
+      saAliasDecoded = URLDecoder.decode(saAlias.trim(), ENCODING_SCHEME);
     } catch (UnsupportedEncodingException e) {
-      log.error("Unable to decode parameters. UnsupportedEncodingException : " + e.getMessage());
+      log.error("Unable to decode parameters. UnsupportedEncodingException: {}", e.getMessage());
       throw new WebApplicationException(Response.status(BAD_REQUEST)
-        .entity("Unable to decode paramethesr, unsupported encoding \'" + Constants.ENCODING_SCHEME
-            + "\'")
+        .entity("Unable to decode paramethesr, unsupported encoding \'" + ENCODING_SCHEME + "\'")
         .build());
     }
     log.debug("Decoded saAlias = " + saAliasDecoded);
@@ -105,9 +107,10 @@ public class SpaceStatusResource {
      */
     if (saAliasDecoded == null || saAliasDecoded.equals("") || (totalSpace != null
         && (usedSpace == null || reservedSpace == null || unavailableSpace == null))) {
-      log.error("Unable to update space alias status. Some parameters are missing : saAlias "
-          + saAliasDecoded + " totalSpace " + totalSpace + " usedSpace " + usedSpace
-          + " reservedSpace " + reservedSpace + " unavailableSpace " + unavailableSpace);
+      log.error(
+          "Unable to update space alias status. Some parameters are missing:"
+              + " saAlias {} totalSpace {} usedSpace {} reservedSpace {} unavailableSpace {}",
+          saAliasDecoded, totalSpace, usedSpace, reservedSpace, unavailableSpace);
       throw new WebApplicationException(Response.status(BAD_REQUEST)
         .entity("Unable to evaluate permissions. Some parameters are missing")
         .build());
@@ -172,19 +175,19 @@ public class SpaceStatusResource {
     try {
       if (updateTotalSpace && spaceStatusSummary.getTotalSpace() >= 0) {
         storageSpaceData
-          .setTotalSpaceSize(TSizeInBytes.make(spaceStatusSummary.getTotalSpace(), SizeUnit.BYTES));
+          .setTotalSpaceSize(TSizeInBytes.make(spaceStatusSummary.getTotalSpace(), BYTES));
       }
       if (spaceStatusSummary.getUsedSpace() >= 0) {
         storageSpaceData
-          .setUsedSpaceSize(TSizeInBytes.make(spaceStatusSummary.getUsedSpace(), SizeUnit.BYTES));
+          .setUsedSpaceSize(TSizeInBytes.make(spaceStatusSummary.getUsedSpace(), BYTES));
       }
       if (spaceStatusSummary.getReservedSpace() >= 0) {
-        storageSpaceData.setReservedSpaceSize(
-            TSizeInBytes.make(spaceStatusSummary.getReservedSpace(), SizeUnit.BYTES));
+        storageSpaceData
+          .setReservedSpaceSize(TSizeInBytes.make(spaceStatusSummary.getReservedSpace(), BYTES));
       }
       if (spaceStatusSummary.getUnavailableSpace() >= 0) {
         storageSpaceData.setUnavailableSpaceSize(
-            TSizeInBytes.make(spaceStatusSummary.getUnavailableSpace(), SizeUnit.BYTES));
+            TSizeInBytes.make(spaceStatusSummary.getUnavailableSpace(), BYTES));
       }
     } catch (InvalidTSizeAttributesException e) {
       throw new IllegalArgumentException(
