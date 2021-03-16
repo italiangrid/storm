@@ -79,13 +79,13 @@ class PermissionEvaluator {
     if (!fileVFS.getCapabilities().getAllManagedProtocols().contains(Protocol.HTTPS)) {
       log.debug("User '{}' is not authorized to access the requeste file '{}' via " + "HTTPS", gu,
           filePathDecoded);
-      return new Boolean(false);
+      return Boolean.valueOf(false);
     }
     if (!fileVFS.isApproachableByUser(gu)) {
       log.debug(
           "User '{}' is not authorized to approach the requested " + "Storage Area '{}' via HTTPS",
           gu, fileVFS.getAliasName());
-      return new Boolean(false);
+      return Boolean.valueOf(false);
     }
     StFN fileStFN = buildStFN(filePathDecoded, fileVFS);
     AuthzDecision decision = AuthzDirector.getPathAuthz().authorize(gu, operation, fileStFN);
@@ -121,7 +121,7 @@ class PermissionEvaluator {
     if (!fileVFS.isApproachableByUser(gu)) {
       log.debug("User '{}' is not authorized to approach the requeste Storage " + "Area '{}'", gu,
           fileVFS.getAliasName());
-      return new Boolean(false);
+      return Boolean.valueOf(false);
     }
     StFN fileStFN = buildStFN(filePathDecoded, fileVFS);
     AuthzDecision decision = AuthzDirector.getPathAuthz().authorize(gu, request, fileStFN);
@@ -168,7 +168,7 @@ class PermissionEvaluator {
         && !(request.isReadOnly() && fileVFS.isHttpWorldReadable())) {
       log.debug("The requeste Storage Area '{}' is not approachable by " + "anonymous users",
           fileVFS.getAliasName());
-      return new Boolean(false);
+      return Boolean.valueOf(false);
     }
     StFN fileStFN = buildStFN(filePathDecoded, fileVFS);
     AuthzDecision decision = AuthzDirector.getPathAuthz().authorizeAnonymous(request, fileStFN);
@@ -180,21 +180,21 @@ class PermissionEvaluator {
   private static Boolean evaluateDecision(AuthzDecision decision) {
 
     if (decision.equals(AuthzDecision.PERMIT)) {
-      return new Boolean(true);
+      return Boolean.valueOf(true);
     } else {
       if (decision.equals(AuthzDecision.DENY)) {
-        return new Boolean(false);
+        return Boolean.valueOf(false);
       } else {
         if (decision.equals(AuthzDecision.INDETERMINATE)) {
           log.warn("Authorization decision is INDETERMINATE! Unable to "
               + "determine authorization of the user to perform requested "
               + "operation on the resource");
-          return new Boolean(false);
+          return Boolean.valueOf(false);
         } else {
           log.warn("Authorization decision has an unknown value '{}'! "
               + "Unable to determine authorization of the user to perform "
               + "requested operation on the resource", decision);
-          return new Boolean(false);
+          return Boolean.valueOf(false);
         }
       }
     }

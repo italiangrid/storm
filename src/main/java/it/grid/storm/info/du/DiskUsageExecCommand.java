@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.time.Instant;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +60,7 @@ public class DiskUsageExecCommand {
       output.add(line);
     }
 
-    IOUtils.closeQuietly(reader);
+    reader.close();
     return output;
   }
 }

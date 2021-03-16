@@ -303,11 +303,11 @@ public class Configuration {
   /**
    * Method used by all DAO Objects to get the DataBase Driver.
    * Deprecated property: "storm.service.request-db.dbms-vendor"
-   * @return "com.mysql.jdbc.Driver"
+   * @return "com.mysql.cj.jdbc.Driver"
    */
   public String getDBDriver() {
 
-    return "com.mysql.jdbc.Driver";
+    return "com.mysql.cj.jdbc.Driver";
   }
 
   /**

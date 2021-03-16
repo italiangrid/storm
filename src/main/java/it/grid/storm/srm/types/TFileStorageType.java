@@ -122,11 +122,11 @@ public class TFileStorageType {
 
 		Integer value = null;
 		if (this.equals(TFileStorageType.VOLATILE))
-			value = new Integer(0);
+			value = Integer.valueOf(0);
 		if (this.equals(TFileStorageType.DURABLE))
-			value = new Integer(1);
+			value = Integer.valueOf(1);
 		if (this.equals(TFileStorageType.PERMANENT))
-			value = new Integer(2);
+			value = Integer.valueOf(2);
 		param.put(name, value);
 	}
 

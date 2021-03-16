@@ -260,7 +260,7 @@ public class TaskResourceTest {
       recallEndpoint.postNewTask(request);
       fail();
     } catch (WebApplicationException e) {
-      assertTrue(e.getCause().getClass().equals(NamespaceException.class));
+      assertTrue(e.getCause() instanceof NamespaceException);
       assertEquals(e.getResponse().getStatus(), INTERNAL_SERVER_ERROR.getStatusCode());
     }
   }
@@ -296,7 +296,7 @@ public class TaskResourceTest {
       recallEndpoint.postNewTask(request);
       fail();
     } catch (WebApplicationException e) {
-      assertTrue(e.getCause().getClass().equals(ResourceNotFoundException.class));
+      assertTrue(e.getCause() instanceof ResourceNotFoundException);
       assertEquals(e.getResponse().getStatus(), NOT_FOUND.getStatusCode());
     }
   }

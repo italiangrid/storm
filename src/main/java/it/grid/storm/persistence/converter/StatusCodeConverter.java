@@ -75,40 +75,40 @@ public class StatusCodeConverter {
 
   private StatusCodeConverter() {
 
-    DBtoSTORM.put(new Integer(0), SRM_SUCCESS);
-    DBtoSTORM.put(new Integer(1), SRM_FAILURE);
-    DBtoSTORM.put(new Integer(2), SRM_AUTHENTICATION_FAILURE);
-    DBtoSTORM.put(new Integer(3), SRM_AUTHORIZATION_FAILURE);
-    DBtoSTORM.put(new Integer(4), SRM_INVALID_REQUEST);
-    DBtoSTORM.put(new Integer(5), SRM_INVALID_PATH);
-    DBtoSTORM.put(new Integer(6), SRM_FILE_LIFETIME_EXPIRED);
-    DBtoSTORM.put(new Integer(7), SRM_SPACE_LIFETIME_EXPIRED);
-    DBtoSTORM.put(new Integer(8), SRM_EXCEED_ALLOCATION);
-    DBtoSTORM.put(new Integer(9), SRM_NO_USER_SPACE);
-    DBtoSTORM.put(new Integer(10), SRM_NO_FREE_SPACE);
-    DBtoSTORM.put(new Integer(11), SRM_DUPLICATION_ERROR);
-    DBtoSTORM.put(new Integer(12), SRM_NON_EMPTY_DIRECTORY);
-    DBtoSTORM.put(new Integer(13), SRM_TOO_MANY_RESULTS);
-    DBtoSTORM.put(new Integer(14), SRM_INTERNAL_ERROR);
-    DBtoSTORM.put(new Integer(15), SRM_FATAL_INTERNAL_ERROR);
-    DBtoSTORM.put(new Integer(16), SRM_NOT_SUPPORTED);
-    DBtoSTORM.put(new Integer(17), SRM_REQUEST_QUEUED);
-    DBtoSTORM.put(new Integer(18), SRM_REQUEST_INPROGRESS);
-    DBtoSTORM.put(new Integer(19), SRM_REQUEST_SUSPENDED);
-    DBtoSTORM.put(new Integer(20), SRM_ABORTED);
-    DBtoSTORM.put(new Integer(21), SRM_RELEASED);
-    DBtoSTORM.put(new Integer(22), SRM_FILE_PINNED);
-    DBtoSTORM.put(new Integer(23), SRM_FILE_IN_CACHE);
-    DBtoSTORM.put(new Integer(24), SRM_SPACE_AVAILABLE);
-    DBtoSTORM.put(new Integer(25), SRM_LOWER_SPACE_GRANTED);
-    DBtoSTORM.put(new Integer(26), SRM_DONE);
-    DBtoSTORM.put(new Integer(27), SRM_PARTIAL_SUCCESS);
-    DBtoSTORM.put(new Integer(28), SRM_REQUEST_TIMED_OUT);
-    DBtoSTORM.put(new Integer(29), SRM_LAST_COPY);
-    DBtoSTORM.put(new Integer(30), SRM_FILE_BUSY);
-    DBtoSTORM.put(new Integer(31), SRM_FILE_LOST);
-    DBtoSTORM.put(new Integer(32), SRM_FILE_UNAVAILABLE);
-    DBtoSTORM.put(new Integer(33), SRM_CUSTOM_STATUS);
+    DBtoSTORM.put(Integer.valueOf(0), SRM_SUCCESS);
+    DBtoSTORM.put(Integer.valueOf(1), SRM_FAILURE);
+    DBtoSTORM.put(Integer.valueOf(2), SRM_AUTHENTICATION_FAILURE);
+    DBtoSTORM.put(Integer.valueOf(3), SRM_AUTHORIZATION_FAILURE);
+    DBtoSTORM.put(Integer.valueOf(4), SRM_INVALID_REQUEST);
+    DBtoSTORM.put(Integer.valueOf(5), SRM_INVALID_PATH);
+    DBtoSTORM.put(Integer.valueOf(6), SRM_FILE_LIFETIME_EXPIRED);
+    DBtoSTORM.put(Integer.valueOf(7), SRM_SPACE_LIFETIME_EXPIRED);
+    DBtoSTORM.put(Integer.valueOf(8), SRM_EXCEED_ALLOCATION);
+    DBtoSTORM.put(Integer.valueOf(9), SRM_NO_USER_SPACE);
+    DBtoSTORM.put(Integer.valueOf(10), SRM_NO_FREE_SPACE);
+    DBtoSTORM.put(Integer.valueOf(11), SRM_DUPLICATION_ERROR);
+    DBtoSTORM.put(Integer.valueOf(12), SRM_NON_EMPTY_DIRECTORY);
+    DBtoSTORM.put(Integer.valueOf(13), SRM_TOO_MANY_RESULTS);
+    DBtoSTORM.put(Integer.valueOf(14), SRM_INTERNAL_ERROR);
+    DBtoSTORM.put(Integer.valueOf(15), SRM_FATAL_INTERNAL_ERROR);
+    DBtoSTORM.put(Integer.valueOf(16), SRM_NOT_SUPPORTED);
+    DBtoSTORM.put(Integer.valueOf(17), SRM_REQUEST_QUEUED);
+    DBtoSTORM.put(Integer.valueOf(18), SRM_REQUEST_INPROGRESS);
+    DBtoSTORM.put(Integer.valueOf(19), SRM_REQUEST_SUSPENDED);
+    DBtoSTORM.put(Integer.valueOf(20), SRM_ABORTED);
+    DBtoSTORM.put(Integer.valueOf(21), SRM_RELEASED);
+    DBtoSTORM.put(Integer.valueOf(22), SRM_FILE_PINNED);
+    DBtoSTORM.put(Integer.valueOf(23), SRM_FILE_IN_CACHE);
+    DBtoSTORM.put(Integer.valueOf(24), SRM_SPACE_AVAILABLE);
+    DBtoSTORM.put(Integer.valueOf(25), SRM_LOWER_SPACE_GRANTED);
+    DBtoSTORM.put(Integer.valueOf(26), SRM_DONE);
+    DBtoSTORM.put(Integer.valueOf(27), SRM_PARTIAL_SUCCESS);
+    DBtoSTORM.put(Integer.valueOf(28), SRM_REQUEST_TIMED_OUT);
+    DBtoSTORM.put(Integer.valueOf(29), SRM_LAST_COPY);
+    DBtoSTORM.put(Integer.valueOf(30), SRM_FILE_BUSY);
+    DBtoSTORM.put(Integer.valueOf(31), SRM_FILE_LOST);
+    DBtoSTORM.put(Integer.valueOf(32), SRM_FILE_UNAVAILABLE);
+    DBtoSTORM.put(Integer.valueOf(33), SRM_CUSTOM_STATUS);
 
     Object aux;
     for (Iterator<Integer> i = DBtoSTORM.keySet().iterator(); i.hasNext();) {
@@ -143,7 +143,7 @@ public class StatusCodeConverter {
    */
   public TStatusCode toSTORM(int n) {
 
-    TStatusCode aux = DBtoSTORM.get(new Integer(n));
+    TStatusCode aux = DBtoSTORM.get(Integer.valueOf(n));
     if (aux == null)
       return TStatusCode.EMPTY;
     return aux;

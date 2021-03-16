@@ -941,7 +941,7 @@ public class XMLParserUtil implements XMLConst {
 
 	private List<String> getListValue(String collectionElement) {
 
-		List<String> propList = configuration.getList(collectionElement);
+		List<Object> propList = configuration.getList(collectionElement);
 		List<String> prop = Lists.newArrayList();
 		// For a set or list
 		for (Object element2 : propList) {
