@@ -112,7 +112,7 @@ public class TSizeInBytes implements Serializable {
 	public double getSizeIn(SizeUnit unit) {
 
 		if ((unit != null) && (!empty)) {
-			Long l_size = new Long(size);
+			Long l_size = Long.valueOf(size);
 			double result = l_size.doubleValue()
 				* (this.unit.conversionFactor() / unit.conversionFactor());
 			return result;
@@ -159,7 +159,7 @@ public class TSizeInBytes implements Serializable {
 			return;
 
 		long size_out;
-		Long sizeInBytes = new Long(this.value());
+		Long sizeInBytes = Long.valueOf(this.value());
 		if (sizeInBytes != null)
 			size_out = sizeInBytes.longValue();
 		else
@@ -196,7 +196,7 @@ public class TSizeInBytes implements Serializable {
 		if (empty)
 			return 0;
 		int hash = 17;
-		hash = 37 * hash + (new Long(size)).hashCode();
+		hash = 37 * hash + (Long.valueOf(size)).hashCode();
 		hash = 37 * hash + unit.hashCode();
 		return hash;
 	}

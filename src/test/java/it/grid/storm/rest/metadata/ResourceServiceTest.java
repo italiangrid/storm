@@ -2,9 +2,8 @@ package it.grid.storm.rest.metadata;
 
 import static it.grid.storm.namespace.model.StoRIType.FILE;
 import static it.grid.storm.namespace.model.StoRIType.FOLDER;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -27,172 +26,172 @@ import it.grid.storm.rest.metadata.service.ResourceService;
 
 public class ResourceServiceTest {
 
-	private static final String VFS_NAME = "test.vo";
-	private static final String VFS_ROOTPATH = "/tmp/test.vo";
-	private static final String VFS_ROOTPATH_ENDING_SLASH = "/tmp/test.vo/";
+  private static final String VFS_NAME = "test.vo";
+  private static final String VFS_ROOTPATH = "/tmp/test.vo";
+  private static final String VFS_ROOTPATH_ENDING_SLASH = "/tmp/test.vo/";
 
-	private static final String RULE_NAME = "test.vo-rule";
-	private static final String RULE_STFNROOT = "/test.vo";
-	private static final String RULE_STFNROOT_ENDING_SLASH = "/test.vo/";
+  private static final String RULE_NAME = "test.vo-rule";
+  private static final String RULE_STFNROOT = "/test.vo";
+  private static final String RULE_STFNROOT_ENDING_SLASH = "/test.vo/";
 
-	private static final String FILE_STFN_PATH = "/test.vo/dir/filename.dat";
-	private static final String FILE_PATH = "/tmp/test.vo/dir/filename.dat";
+  private static final String FILE_STFN_PATH = "/test.vo/dir/filename.dat";
+  private static final String FILE_PATH = "/tmp/test.vo/dir/filename.dat";
 
-	private static final String DIR_STFN_PATH = "/test.vo/dir";
-	private static final String DIR_STFN_PATH_ENDING_SLASH = "/test.vo/dir/";
-	private static final String DIR_PATH = "/tmp/test.vo/dir";
+  private static final String DIR_STFN_PATH = "/test.vo/dir";
+  private static final String DIR_STFN_PATH_ENDING_SLASH = "/test.vo/dir/";
+  private static final String DIR_PATH = "/tmp/test.vo/dir";
 
-	private static final String NOT_FOUND_STFNPATH = "/test.vo2/dir/filename.dat";
+  private static final String NOT_FOUND_STFNPATH = "/test.vo2/dir/filename.dat";
 
-	private VirtualFSInterface getVirtualFS(String name, String rootPath) throws NamespaceException {
+  private VirtualFSInterface getVirtualFS(String name, String rootPath) throws NamespaceException {
 
-		VirtualFSInterface vfs = Mockito.mock(VirtualFSInterface.class);
-		Mockito.when(vfs.getAliasName()).thenReturn(name);
-		Mockito.when(vfs.getRootPath()).thenReturn(rootPath);
-		StoRI fileStori = Mockito.mock(StoRI.class);
-		Mockito.when(fileStori.getAbsolutePath()).thenReturn(FILE_PATH);
-		Mockito
-			.when(vfs.createFile(Mockito.anyString(), Mockito.eq(FILE), Mockito.any(MappingRule.class)))
-			.thenReturn(fileStori);
-		StoRI dirStori = Mockito.mock(StoRI.class);
-		Mockito.when(dirStori.getAbsolutePath()).thenReturn(DIR_PATH);
-		Mockito
-			.when(vfs.createFile(Mockito.anyString(), Mockito.eq(FOLDER), Mockito.any(MappingRule.class)))
-			.thenReturn(dirStori);
-		return vfs;
-	}
+    VirtualFSInterface vfs = Mockito.mock(VirtualFSInterface.class);
+    Mockito.when(vfs.getAliasName()).thenReturn(name);
+    Mockito.when(vfs.getRootPath()).thenReturn(rootPath);
+    StoRI fileStori = Mockito.mock(StoRI.class);
+    Mockito.when(fileStori.getAbsolutePath()).thenReturn(FILE_PATH);
+    Mockito
+      .when(vfs.createFile(Mockito.anyString(), Mockito.eq(FILE), Mockito.any(MappingRule.class)))
+      .thenReturn(fileStori);
+    StoRI dirStori = Mockito.mock(StoRI.class);
+    Mockito.when(dirStori.getAbsolutePath()).thenReturn(DIR_PATH);
+    Mockito
+      .when(vfs.createFile(Mockito.anyString(), Mockito.eq(FOLDER), Mockito.any(MappingRule.class)))
+      .thenReturn(dirStori);
+    return vfs;
+  }
 
-	private MappingRule getMappingRule(String name, String stfnRoot, VirtualFSInterface vfs) {
+  private MappingRule getMappingRule(String name, String stfnRoot, VirtualFSInterface vfs) {
 
-		return new MappingRule(name, stfnRoot, vfs);
-	}
+    return new MappingRule(name, stfnRoot, vfs);
+  }
 
-	private ResourceService getStoRIResourceService() throws NamespaceException {
+  private ResourceService getStoRIResourceService() throws NamespaceException {
 
-		VirtualFSInterface vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
-		MappingRule rule = getMappingRule(RULE_NAME, RULE_STFNROOT, vfs);
-		return new ResourceService(Lists.newArrayList(vfs), Lists.newArrayList(rule));
-	}
+    VirtualFSInterface vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
+    MappingRule rule = getMappingRule(RULE_NAME, RULE_STFNROOT, vfs);
+    return new ResourceService(Lists.newArrayList(vfs), Lists.newArrayList(rule));
+  }
 
-	private ResourceService getStoRIResourceServiceStfnRootEndingSlash() throws NamespaceException {
+  private ResourceService getStoRIResourceServiceStfnRootEndingSlash() throws NamespaceException {
 
-		VirtualFSInterface vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH_ENDING_SLASH);
-		MappingRule rule = getMappingRule(RULE_NAME, RULE_STFNROOT_ENDING_SLASH, vfs);
-		return new ResourceService(Lists.newArrayList(vfs), Lists.newArrayList(rule));
-	}
+    VirtualFSInterface vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH_ENDING_SLASH);
+    MappingRule rule = getMappingRule(RULE_NAME, RULE_STFNROOT_ENDING_SLASH, vfs);
+    return new ResourceService(Lists.newArrayList(vfs), Lists.newArrayList(rule));
+  }
 
-	private ResourceService getStoRIResourceServiceNoRules() throws NamespaceException {
+  private ResourceService getStoRIResourceServiceNoRules() throws NamespaceException {
 
-		VirtualFSInterface vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
-		return new ResourceService(Lists.newArrayList(vfs), Collections.<MappingRule>emptyList());
-	}
+    VirtualFSInterface vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
+    return new ResourceService(Lists.newArrayList(vfs), Collections.<MappingRule>emptyList());
+  }
 
-	private ResourceService getStoRIResourceServiceRulesNULL() throws NamespaceException {
+  private ResourceService getStoRIResourceServiceRulesNULL() throws NamespaceException {
 
-		VirtualFSInterface vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
-		return new ResourceService(Lists.newArrayList(vfs), null);
-	}
+    VirtualFSInterface vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
+    return new ResourceService(Lists.newArrayList(vfs), null);
+  }
 
-	private ResourceService getStoRIResourceServiceVfsListNULL() throws NamespaceException {
+  private ResourceService getStoRIResourceServiceVfsListNULL() throws NamespaceException {
 
-		return new ResourceService(null, Collections.<MappingRule>emptyList());
-	}
+    return new ResourceService(null, Collections.<MappingRule>emptyList());
+  }
 
-	private ResourceService getStoRIResourceServiceNoVFSs() throws NamespaceException {
+  private ResourceService getStoRIResourceServiceNoVFSs() throws NamespaceException {
 
-		VirtualFSInterface vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
-		MappingRule rule = getMappingRule(RULE_NAME, RULE_STFNROOT, vfs);
-		return new ResourceService(Collections.<VirtualFSInterface>emptyList(),
-				Lists.newArrayList(rule));
-	}
+    VirtualFSInterface vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
+    MappingRule rule = getMappingRule(RULE_NAME, RULE_STFNROOT, vfs);
+    return new ResourceService(Collections.<VirtualFSInterface>emptyList(),
+        Lists.newArrayList(rule));
+  }
 
-	@Before
-	public void initLocalTmpDirectory() throws IOException {
-		new File(DIR_PATH).mkdirs();
-		new File(FILE_PATH).createNewFile();
-	}
+  @Before
+  public void initLocalTmpDirectory() throws IOException {
+    new File(DIR_PATH).mkdirs();
+    new File(FILE_PATH).createNewFile();
+  }
 
-	@After
-	public void clearLocalTmpDirectory() {
-		new File(VFS_ROOTPATH).delete();
-	}
+  @After
+  public void clearLocalTmpDirectory() {
+    new File(VFS_ROOTPATH).delete();
+  }
 
-	@Test
-	public void testMappingSuccessFile() throws NamespaceException, ResourceNotFoundException {
+  @Test
+  public void testMappingSuccessFile() throws NamespaceException, ResourceNotFoundException {
 
-		ResourceService service = getStoRIResourceService();
-		StoRI stori = service.getResource(FILE_STFN_PATH);
-		assertThat(stori.getAbsolutePath(), equalTo(FILE_PATH));
-	}
+    ResourceService service = getStoRIResourceService();
+    StoRI stori = service.getResource(FILE_STFN_PATH);
+    assertEquals(stori.getAbsolutePath(), FILE_PATH);
+  }
 
-	@Test
-	public void testMappingSuccessDirectory() throws NamespaceException, ResourceNotFoundException {
+  @Test
+  public void testMappingSuccessDirectory() throws NamespaceException, ResourceNotFoundException {
 
-		ResourceService service = getStoRIResourceService();
-		StoRI stori = service.getResource(DIR_STFN_PATH);
-		assertThat(stori.getAbsolutePath(), equalTo(DIR_PATH));
-	}
+    ResourceService service = getStoRIResourceService();
+    StoRI stori = service.getResource(DIR_STFN_PATH);
+    assertEquals(stori.getAbsolutePath(), DIR_PATH);
+  }
 
-	@Test
-	public void testMappingSuccessDirectoryEndingSlash()
-			throws NamespaceException, ResourceNotFoundException {
+  @Test
+  public void testMappingSuccessDirectoryEndingSlash()
+      throws NamespaceException, ResourceNotFoundException {
 
-		ResourceService service = getStoRIResourceServiceStfnRootEndingSlash();
-		StoRI stori = service.getResource(DIR_STFN_PATH_ENDING_SLASH);
-		assertThat(stori.getAbsolutePath(), equalTo(DIR_PATH));
-	}
+    ResourceService service = getStoRIResourceServiceStfnRootEndingSlash();
+    StoRI stori = service.getResource(DIR_STFN_PATH_ENDING_SLASH);
+    assertEquals(stori.getAbsolutePath(), DIR_PATH);
+  }
 
-	@Test
-	public void testMappingFailBadRequest() throws NamespaceException {
+  @Test
+  public void testMappingFailBadRequest() throws NamespaceException {
 
-		ResourceService service = getStoRIResourceService();
-		try {
-			service.getResource(NOT_FOUND_STFNPATH);
-			fail();
-		} catch (ResourceNotFoundException e) {
-			assertThat(e.getMessage(),
-					containsString("Unable to map " + NOT_FOUND_STFNPATH + " to a rule"));
-		}
-	}
+    ResourceService service = getStoRIResourceService();
+    try {
+      service.getResource(NOT_FOUND_STFNPATH);
+      fail();
+    } catch (ResourceNotFoundException e) {
+      assertTrue(
+          e.getMessage().indexOf("Unable to map " + NOT_FOUND_STFNPATH + " to a rule") != -1);
+    }
+  }
 
-	@Test
-	public void testMappingFailInternalErrorEmptyRules()
-			throws ResourceNotFoundException, NamespaceException {
+  @Test
+  public void testMappingFailInternalErrorEmptyRules()
+      throws ResourceNotFoundException, NamespaceException {
 
-		ResourceService service = getStoRIResourceServiceNoRules();
-		try {
-			service.getResource(FILE_STFN_PATH);
-			fail();
-		} catch (ResourceNotFoundException e) {
-			assertThat(e.getMessage(), containsString("Unable to map " + FILE_STFN_PATH + " to a rule"));
-		}
-	}
+    ResourceService service = getStoRIResourceServiceNoRules();
+    try {
+      service.getResource(FILE_STFN_PATH);
+      fail();
+    } catch (ResourceNotFoundException e) {
+      assertTrue(e.getMessage().indexOf("Unable to map " + FILE_STFN_PATH + " to a rule") != -1);
+    }
+  }
 
-	@Test(expected = NullPointerException.class)
-	public void testMappingFailInternalErrorNullRules()
-			throws NamespaceException, ResourceNotFoundException {
+  @Test(expected = NullPointerException.class)
+  public void testMappingFailInternalErrorNullRules()
+      throws NamespaceException, ResourceNotFoundException {
 
-		getStoRIResourceServiceRulesNULL();
-	}
+    getStoRIResourceServiceRulesNULL();
+  }
 
-	@Test(expected = NullPointerException.class)
-	public void testMappingFailInternalErrorNullVfsList()
-			throws NamespaceException, ResourceNotFoundException {
+  @Test(expected = NullPointerException.class)
+  public void testMappingFailInternalErrorNullVfsList()
+      throws NamespaceException, ResourceNotFoundException {
 
-		getStoRIResourceServiceVfsListNULL();
-	}
+    getStoRIResourceServiceVfsListNULL();
+  }
 
-	@Test
-	public void testMappingFailInternalErrorEmptyVFSs()
-			throws NamespaceException, ResourceNotFoundException {
+  @Test
+  public void testMappingFailInternalErrorEmptyVFSs()
+      throws NamespaceException, ResourceNotFoundException {
 
-		ResourceService service = getStoRIResourceServiceNoVFSs();
-		try {
-			service.getResource(FILE_STFN_PATH);
-			fail();
-		} catch (ResourceNotFoundException e) {
-			assertThat(e.getMessage(), containsString("Unable to map " + FILE_STFN_PATH + " to a rule"));
-		}
-	}
+    ResourceService service = getStoRIResourceServiceNoVFSs();
+    try {
+      service.getResource(FILE_STFN_PATH);
+      fail();
+    } catch (ResourceNotFoundException e) {
+      assertTrue(e.getMessage().indexOf("Unable to map " + FILE_STFN_PATH + " to a rule") != -1);
+    }
+  }
 
 }

@@ -7,10 +7,9 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
-import static junit.framework.Assert.assertNotNull;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -173,7 +172,7 @@ public class TaskResourceTest {
 
     // ask for task info
     res = recallEndpoint.getGroupTaskInfo(groupTaskId, requestTokenValue);
-    assertThat(res.getStatus(), equalTo(OK.getStatusCode()));
+    assertEquals(res.getStatus(), OK.getStatusCode());
     ObjectMapper mapper = new ObjectMapper();
     TapeRecallTO t = mapper.readValue(res.getEntity().toString(), TapeRecallTO.class);
     assertNotNull(t);
@@ -194,7 +193,7 @@ public class TaskResourceTest {
       .build();
     Response res = recallEndpoint.postNewTask(request);
     assertNotNull(res.getHeaderString("Location"));
-    assertThat(res.getStatus(), equalTo(CREATED.getStatusCode()));
+    assertEquals(res.getStatus(), CREATED.getStatusCode());
 
     testGETTaskInfo(res);
   }
@@ -214,7 +213,7 @@ public class TaskResourceTest {
       .build();
     Response res = recallEndpoint.postNewTask(request);
     assertNotNull(res.getHeaderString("Location"));
-    assertThat(res.getStatus(), equalTo(CREATED.getStatusCode()));
+    assertEquals(res.getStatus(), CREATED.getStatusCode());
 
     testGETTaskInfo(res);
   }
@@ -236,8 +235,8 @@ public class TaskResourceTest {
       recallEndpoint.postNewTask(request);
       fail();
     } catch (WebApplicationException e) {
-      assertThat(e.getCause(), instanceOf(NamespaceException.class));
-      assertThat(e.getResponse().getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
+      assertTrue(e.getCause() instanceof NamespaceException);
+      assertEquals(e.getResponse().getStatus(), INTERNAL_SERVER_ERROR.getStatusCode());
     }
   }
 
@@ -257,7 +256,7 @@ public class TaskResourceTest {
       recallEndpoint.postNewTask(request);
       fail();
     } catch (WebApplicationException e) {
-      assertThat(e.getResponse().getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+      assertEquals(e.getResponse().getStatus(), BAD_REQUEST.getStatusCode());
     }
   }
 
@@ -272,8 +271,8 @@ public class TaskResourceTest {
       recallEndpoint.postNewTask(request);
       fail();
     } catch (WebApplicationException e) {
-      assertThat(e.getCause(), instanceOf(ResourceNotFoundException.class));
-      assertThat(e.getResponse().getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+      assertTrue(e.getCause() instanceof ResourceNotFoundException);
+      assertEquals(e.getResponse().getStatus(), NOT_FOUND.getStatusCode());
     }
   }
 
@@ -294,7 +293,7 @@ public class TaskResourceTest {
       recallEndpoint.postNewTask(request);
       fail();
     } catch (WebApplicationException e) {
-      assertThat(e.getResponse().getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
+      assertEquals(e.getResponse().getStatus(), INTERNAL_SERVER_ERROR.getStatusCode());
     }
   }
 
@@ -309,8 +308,8 @@ public class TaskResourceTest {
       recallEndpoint.postNewTask(request);
       fail();
     } catch (WebApplicationException e) {
-      assertThat(e.getResponse().getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
-      assertThat(e.getResponse().getEntity().toString(), equalTo("Request must contain a STFN"));
+      assertEquals(e.getResponse().getStatus(), BAD_REQUEST.getStatusCode());
+      assertEquals(e.getResponse().getEntity().toString(), "Request must contain a STFN");
     }
   }
 
@@ -325,8 +324,8 @@ public class TaskResourceTest {
       recallEndpoint.postNewTask(request);
       fail();
     } catch (WebApplicationException e) {
-      assertThat(e.getResponse().getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
-      assertThat(e.getResponse().getEntity().toString(), equalTo("Request must contain a userId"));
+      assertEquals(e.getResponse().getStatus(), BAD_REQUEST.getStatusCode());
+      assertEquals(e.getResponse().getEntity().toString(), "Request must contain a userId");
     }
   }
 
@@ -342,9 +341,9 @@ public class TaskResourceTest {
       recallEndpoint.postNewTask(request);
       fail();
     } catch (WebApplicationException e) {
-      assertThat(e.getResponse().getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
-      assertThat(e.getResponse().getEntity().toString(),
-          equalTo("Retry attempts must be more or equal than zero."));
+      assertEquals(e.getResponse().getStatus(), BAD_REQUEST.getStatusCode());
+      assertEquals(e.getResponse().getEntity().toString(),
+          "Retry attempts must be more or equal than zero.");
     }
   }
 
@@ -363,9 +362,9 @@ public class TaskResourceTest {
       recallEndpoint.postNewTask(request);
       fail();
     } catch (WebApplicationException e) {
-      assertThat(e.getResponse().getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
-      assertThat(e.getResponse().getEntity().toString(),
-          equalTo("Retry attempts must be less or equal than " + MAX_RETRY_ATTEMPTS + "."));
+      assertEquals(e.getResponse().getStatus(), BAD_REQUEST.getStatusCode());
+      assertEquals(e.getResponse().getEntity().toString(),
+          "Retry attempts must be less or equal than " + MAX_RETRY_ATTEMPTS + ".");
     }
   }
 
@@ -385,7 +384,7 @@ public class TaskResourceTest {
     TaskResource recallEndpoint =
         getTaskResource(getResourceService(STORI), getTapeRecallCatalogInProgressNotEmpty());
     Response res = recallEndpoint.getTasks(10);
-    assertThat(res.getStatus(), equalTo(OK.getStatusCode()));
+    assertEquals(res.getStatus(), OK.getStatusCode());
   }
 
 

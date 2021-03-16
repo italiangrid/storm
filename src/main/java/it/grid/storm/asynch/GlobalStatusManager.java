@@ -85,13 +85,13 @@ public class GlobalStatusManager {
       return;
     }
 
-    if (chunks.contains(new Long(c.getIdentifier()))) {
+    if (chunks.contains(Long.valueOf(c.getIdentifier()))) {
       log.warn("GlobalStatusManager: chunkData NOT added because of another "
           + "chunkData already added with the same identifier");
       return;
     }
 
-    chunks.add(new Long(c.getIdentifier()));
+    chunks.add(Long.valueOf(c.getIdentifier()));
     log.debug("GlobalStatusManager: chunkData added.");
   }
 
@@ -152,7 +152,7 @@ public class GlobalStatusManager {
       return;
     }
 
-    boolean removed = chunks.remove(new Long(c.getIdentifier()));
+    boolean removed = chunks.remove(Long.valueOf(c.getIdentifier()));
 
     if (!removed) {
       log.error("ERROR IN GLOBAL STATUS EVALUATION! There was an attempt to "
@@ -272,7 +272,7 @@ public class GlobalStatusManager {
       return;
     }
 
-    boolean removed = chunks.remove(new Long(c.getIdentifier()));
+    boolean removed = chunks.remove(Long.valueOf(c.getIdentifier()));
 
     if (!removed) {
       log.error("ERROR IN GLOBAL STATUS EVALUATION! There was an attempt to "
@@ -392,7 +392,7 @@ public class GlobalStatusManager {
       return;
     }
 
-    boolean removed = chunks.remove(new Long(c.getIdentifier()));
+    boolean removed = chunks.remove(Long.valueOf(c.getIdentifier()));
 
     if (!removed) {
       log.error("ERROR IN GLOBAL STATUS EVALUATION! There was an attempt to "
