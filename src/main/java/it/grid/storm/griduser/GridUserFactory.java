@@ -31,8 +31,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -43,11 +41,6 @@ public class GridUserFactory {
 	private MapperInterface defaultMapperClass = null;
 
 	private static GridUserFactory instance = null;
-
-	protected static Logger getLogger() {
-
-		return log;
-	}
 
 	private GridUserFactory() throws GridUserException {
 
@@ -64,18 +57,6 @@ public class GridUserFactory {
 			}
 		}
 		return instance;
-	}
-
-	/**
-	 * Used to modify the Mapper used to retrieve the Local User The Mapper setted
-	 * will be referenceable by any GridUser built.
-	 * 
-	 * @param mapper
-	 *          MapperInterface
-	 */
-	void setUserMapper(String mapperClassName) throws GridUserException {
-
-		defaultMapperClass = makeMapperClass(mapperClassName);
 	}
 
 	/**
@@ -185,37 +166,6 @@ public class GridUserFactory {
 			}
 		}
 		return null;
-	}
-
-	MapperInterface makeMapperInstance(Class mapperClass)
-		throws CannotMapUserException {
-
-		MapperInterface mapperInstance = null;
-
-		if (mapperClass == null) {
-			throw new CannotMapUserException(
-				"Cannot build Mapper Driver instance without a valid Mapper Driver Class!");
-		}
-
-		if (!MapperInterface.class.isAssignableFrom(mapperClass)) {
-			throw new CannotMapUserException(
-				"Unable to instantiate the Mapper Driver. "
-					+ "The provided MapperClass does not implements MapperInterface");
-		}
-		try {
-			mapperInstance = (MapperInterface) mapperClass.newInstance();
-		} catch (IllegalAccessException ex) {
-			log.error("Unable to instantiate the Mapper Driver. Illegal Access.", ex);
-			throw new CannotMapUserException(
-				"Unable to instantiate the Mapper Driver. Illegal Access.", ex);
-		} catch (InstantiationException ex) {
-			log.error("Unable to instantiate the Mapper Driver. Generic problem..",
-				ex);
-			throw new CannotMapUserException(
-				"Unable to instantiate the Mapper Driver", ex);
-		}
-
-		return mapperInstance;
 	}
 
 	private MapperInterface makeMapperClass(String mapperClassName)

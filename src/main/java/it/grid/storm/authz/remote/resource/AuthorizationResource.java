@@ -124,9 +124,11 @@ public class AuthorizationResource {
     log.info("Serving prepareToPut Overwrite operation authorization on "
         + "file '{}'. User provides a VOMS proxy", filePath);
     RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
-    return new Boolean(PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(),
-        parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), SRMFileRequest.PTP_Overwrite)
-        && PermissionEvaluator.isOverwriteAllowed()).toString();
+    return Boolean
+      .valueOf(PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(),
+          parameters.getFQANSDecoded(), parameters.getFilePathDecoded(),
+          SRMFileRequest.PTP_Overwrite) && PermissionEvaluator.isOverwriteAllowed())
+      .toString();
   }
 
   /**
@@ -272,9 +274,11 @@ public class AuthorizationResource {
     log.info("Serving cpTo Overwrite operation authorization on file '{}'. "
         + "User provides a VOMS proxy", filePath);
     RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
-    return new Boolean(PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(),
-        parameters.getFQANSDecoded(), parameters.getFilePathDecoded(),
-        SRMFileRequest.CPto_Overwrite) && PermissionEvaluator.isOverwriteAllowed()).toString();
+    return Boolean
+      .valueOf(PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(),
+          parameters.getFQANSDecoded(), parameters.getFilePathDecoded(),
+          SRMFileRequest.CPto_Overwrite) && PermissionEvaluator.isOverwriteAllowed())
+      .toString();
   }
 
   /**
@@ -335,9 +339,11 @@ public class AuthorizationResource {
     log.info("Serving mvTo operation authorization on file '{}'. " + "User provides a VOMS proxy",
         filePath);
     RequestParameters parameters = new RequestParameters(filePath, DN, FQANS);
-    return new Boolean(PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(),
-        parameters.getFQANSDecoded(), parameters.getFilePathDecoded(),
-        SRMFileRequest.MV_dest_Overwrite) && PermissionEvaluator.isOverwriteAllowed()).toString();
+    return Boolean
+      .valueOf(PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(),
+          parameters.getFQANSDecoded(), parameters.getFilePathDecoded(),
+          SRMFileRequest.MV_dest_Overwrite) && PermissionEvaluator.isOverwriteAllowed())
+      .toString();
   }
 
   /**
@@ -413,9 +419,11 @@ public class AuthorizationResource {
 
     log.info("Serving prepareToPut Overwrite operation authorization on " + "file '{}'", filePath);
     RequestParameters parameters = new RequestParameters(filePath, DN);
-    return new Boolean(PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(),
-        parameters.getFQANSDecoded(), parameters.getFilePathDecoded(), SRMFileRequest.PTP_Overwrite)
-        && PermissionEvaluator.isOverwriteAllowed()).toString();
+    return Boolean
+      .valueOf(PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(),
+          parameters.getFQANSDecoded(), parameters.getFilePathDecoded(),
+          SRMFileRequest.PTP_Overwrite) && PermissionEvaluator.isOverwriteAllowed())
+      .toString();
   }
 
   /**
@@ -568,9 +576,11 @@ public class AuthorizationResource {
 
     log.info("Serving cpTo Overwrite operation authorization on file '{}'", filePath);
     RequestParameters parameters = new RequestParameters(filePath, DN);
-    return new Boolean(PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(),
-        parameters.getFQANSDecoded(), parameters.getFilePathDecoded(),
-        SRMFileRequest.CPto_Overwrite) && PermissionEvaluator.isOverwriteAllowed()).toString();
+    return Boolean
+      .valueOf(PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(),
+          parameters.getFQANSDecoded(), parameters.getFilePathDecoded(),
+          SRMFileRequest.CPto_Overwrite) && PermissionEvaluator.isOverwriteAllowed())
+      .toString();
   }
 
   /**
@@ -628,9 +638,11 @@ public class AuthorizationResource {
 
     log.info("Serving mvTo operation authorization on file '{}'", filePath);
     RequestParameters parameters = new RequestParameters(filePath, DN);
-    return new Boolean(PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(),
-        parameters.getFQANSDecoded(), parameters.getFilePathDecoded(),
-        SRMFileRequest.MV_dest_Overwrite) && PermissionEvaluator.isOverwriteAllowed()).toString();
+    return Boolean
+      .valueOf(PermissionEvaluator.evaluateVomsGridUserPermission(parameters.getDNDecoded(),
+          parameters.getFQANSDecoded(), parameters.getFilePathDecoded(),
+          SRMFileRequest.MV_dest_Overwrite) && PermissionEvaluator.isOverwriteAllowed())
+      .toString();
   }
 
   /**
@@ -701,9 +713,10 @@ public class AuthorizationResource {
     log.info("Serving Anonymous prepareToPut Overwrite operation " + "authorization on file '{}'",
         filePath);
     RequestParameters parameters = new RequestParameters(filePath);
-    return new Boolean(
-        PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(),
-            SRMFileRequest.PTP_Overwrite) && PermissionEvaluator.isOverwriteAllowed()).toString();
+    return Boolean
+      .valueOf(PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(),
+          SRMFileRequest.PTP_Overwrite) && PermissionEvaluator.isOverwriteAllowed())
+      .toString();
   }
 
   /**
@@ -871,9 +884,10 @@ public class AuthorizationResource {
     log.info("Serving Anonymous cpTo Overwrite operation authorization on" + " file '{}'",
         filePath);
     RequestParameters parameters = new RequestParameters(filePath);
-    return new Boolean(
-        PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(),
-            SRMFileRequest.CPto_Overwrite) && PermissionEvaluator.isOverwriteAllowed()).toString();
+    return Boolean
+      .valueOf(PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(),
+          SRMFileRequest.CPto_Overwrite) && PermissionEvaluator.isOverwriteAllowed())
+      .toString();
   }
 
   /**
@@ -911,10 +925,10 @@ public class AuthorizationResource {
 
     log.info("Serving Anonymous mvTo operation authorization on " + "file '{}'", filePath);
     RequestParameters parameters = new RequestParameters(filePath);
-    return new Boolean(
-        PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(),
-            SRMFileRequest.MV_dest_Overwrite) && PermissionEvaluator.isOverwriteAllowed())
-              .toString();
+    return Boolean
+      .valueOf(PermissionEvaluator.evaluateAnonymousPermission(parameters.getFilePathDecoded(),
+          SRMFileRequest.MV_dest_Overwrite) && PermissionEvaluator.isOverwriteAllowed())
+      .toString();
   }
 
   /**

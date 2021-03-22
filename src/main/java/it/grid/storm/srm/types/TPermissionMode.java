@@ -88,21 +88,21 @@ public class TPermissionMode {
 
 		switch (type) {
 		case 0:
-			return TPermissionMode.NONE;
+			return NONE;
 		case 1:
-			return TPermissionMode.X;
+			return X;
 		case 2:
-			return TPermissionMode.W;
+			return W;
 		case 3:
-			return TPermissionMode.WX;
+			return WX;
 		case 4:
-			return TPermissionMode.R;
+			return R;
 		case 5:
-			return TPermissionMode.RX;
+			return RX;
 		case 6:
-			return TPermissionMode.RW;
+			return RW;
 		case 7:
-			return TPermissionMode.RWX;
+			return RWX;
 		default:
 			return NONE;
 		}
@@ -134,22 +134,22 @@ public class TPermissionMode {
 	public void encode(Map param, String name) {
 
 		Integer permissionInt = null;
-		if (this.equals(TPermissionMode.NONE))
-			permissionInt = new Integer(0);
-		if (this.equals(TPermissionMode.X))
-			permissionInt = new Integer(1);
-		if (this.equals(TPermissionMode.W))
-			permissionInt = new Integer(2);
-		if (this.equals(TPermissionMode.WX))
-			permissionInt = new Integer(3);
-		if (this.equals(TPermissionMode.R))
-			permissionInt = new Integer(4);
-		if (this.equals(TPermissionMode.RX))
-			permissionInt = new Integer(5);
-		if (this.equals(TPermissionMode.RW))
-			permissionInt = new Integer(6);
-		if (this.equals(TPermissionMode.RWX))
-			permissionInt = new Integer(7);
+		if (this.equals(NONE))
+			permissionInt = Integer.valueOf(0);
+		if (this.equals(X))
+			permissionInt = Integer.valueOf(1);
+		if (this.equals(W))
+			permissionInt = Integer.valueOf(2);
+		if (this.equals(WX))
+			permissionInt = Integer.valueOf(3);
+		if (this.equals(R))
+			permissionInt = Integer.valueOf(4);
+		if (this.equals(RX))
+			permissionInt = Integer.valueOf(5);
+		if (this.equals(RW))
+			permissionInt = Integer.valueOf(6);
+		if (this.equals(RWX))
+			permissionInt = Integer.valueOf(7);
 
 		param.put(name, permissionInt);
 	}
