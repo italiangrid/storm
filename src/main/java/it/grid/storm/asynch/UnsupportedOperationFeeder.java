@@ -6,7 +6,7 @@ public class UnsupportedOperationFeeder implements Delegable {
 
   @Override
   public void doIt() {
-    
+
     throw new UnsupportedOperationException();
 
   }

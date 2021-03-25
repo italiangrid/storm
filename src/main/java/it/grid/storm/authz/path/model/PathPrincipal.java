@@ -26,46 +26,45 @@ package it.grid.storm.authz.path.model;
  */
 public class PathPrincipal {
 
-	public static final String prefix = "@";
+  public static final String prefix = "@";
 
-	private String localGroupName;
-	private boolean principalCategory = false;
+  private String localGroupName;
+  private boolean principalCategory = false;
 
-	public PathPrincipal(String principal) {
+  public PathPrincipal(String principal) {
 
-		principalCategory = principal.startsWith(prefix);
-		localGroupName = principal;
-	}
+    principalCategory = principal.startsWith(prefix);
+    localGroupName = principal;
+  }
 
-	public boolean isLocalGroup() {
+  public boolean isLocalGroup() {
 
-		return !principalCategory;
-	}
+    return !principalCategory;
+  }
 
-	public String getLocalGroupName() {
+  public String getLocalGroupName() {
 
-		return localGroupName;
-	}
+    return localGroupName;
+  }
 
-	public boolean equals(Object o) {
+  public boolean equals(Object o) {
 
-		if (o instanceof PathPrincipal) {
-			PathPrincipal op = (PathPrincipal) o;
-			if (op.isLocalGroup() && (isLocalGroup())) {
-				return (op.getLocalGroupName().equals(getLocalGroupName()));
-			}
-		}
-		return false;
-	}
+    if (o instanceof PathPrincipal) {
+      PathPrincipal op = (PathPrincipal) o;
+      if (op.isLocalGroup() && (isLocalGroup())) {
+        return (op.getLocalGroupName().equals(getLocalGroupName()));
+      }
+    }
+    return false;
+  }
 
-	@Override
-	public int hashCode() {
+  @Override
+  public int hashCode() {
 
-		int result = 17;
-		result = 31 * result
-			+ (localGroupName != null ? localGroupName.hashCode() : 0);
-		result = 31 * result + (principalCategory ? 1 : 0);
-		return result;
-	}
+    int result = 17;
+    result = 31 * result + (localGroupName != null ? localGroupName.hashCode() : 0);
+    result = 31 * result + (principalCategory ? 1 : 0);
+    return result;
+  }
 
 }

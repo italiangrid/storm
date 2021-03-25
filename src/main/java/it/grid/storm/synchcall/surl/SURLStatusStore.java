@@ -6,7 +6,6 @@ import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
-import jersey.repackaged.com.google.common.collect.Maps;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +24,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 public enum SURLStatusStore implements SURLStatusStoreIF {
 

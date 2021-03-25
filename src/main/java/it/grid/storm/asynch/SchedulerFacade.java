@@ -17,7 +17,8 @@
 
 package it.grid.storm.asynch;
 
-import it.grid.storm.scheduler.Scheduler;
+import it.grid.storm.scheduler.ChunkScheduler;
+import it.grid.storm.scheduler.CrusherScheduler;
 
 /**
  * This is a Facade to the Schedulers.
@@ -29,41 +30,38 @@ import it.grid.storm.scheduler.Scheduler;
  */
 public class SchedulerFacade {
 
-	private static SchedulerFacade sf = new SchedulerFacade();
-	private Scheduler crusherSched = SchedulerFactory.crusherSched(); // Scheduler
-																																		// that
-																																		// manages
-																																		// Feeder
-																																		// tasks
-	private Scheduler chunkSched = SchedulerFactory.chunkSched(); // Scheduler
-																																// that manages
-																																// Chunk tasks
+  private static SchedulerFacade sf = new SchedulerFacade();
 
-	private SchedulerFacade() {
+  // Scheduler that manages Feeder tasks
+  private CrusherScheduler crusherSched = SchedulerFactory.crusherSched();
+  // Scheduler that manages Chunck tasks
+  private ChunkScheduler chunkSched = SchedulerFactory.chunkSched();
 
-	}
+  private SchedulerFacade() {
 
-	/**
-	 * Method that returns the only instance of SchedulerFacade.
-	 */
-	public static SchedulerFacade getInstance() {
+  }
 
-		return sf;
-	}
+  /**
+   * Method that returns the only instance of SchedulerFacade.
+   */
+  public static SchedulerFacade getInstance() {
 
-	/**
-	 * Method that returns the Scheduler in charge of handling Chunk.
-	 */
-	public Scheduler chunkScheduler() {
+    return sf;
+  }
 
-		return chunkSched;
-	}
+  /**
+   * Method that returns the Scheduler in charge of handling Chunk.
+   */
+  public ChunkScheduler chunkScheduler() {
 
-	/**
-	 * Method that returns the Scheduler in charge of handling Feeder
-	 */
-	public Scheduler crusherScheduler() {
+    return chunkSched;
+  }
 
-		return crusherSched;
-	}
+  /**
+   * Method that returns the Scheduler in charge of handling Feeder
+   */
+  public CrusherScheduler crusherScheduler() {
+
+    return crusherSched;
+  }
 }

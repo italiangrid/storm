@@ -22,12 +22,13 @@ public class TimingThreadPool extends ThreadPoolExecutor {
 			threadFactory);
 	}
 
-	private final ThreadLocal<Long> startTime = new ThreadLocal<Long>();
+	private final ThreadLocal<Long> startTime = new ThreadLocal<>();
 	private static final Logger log = LoggerFactory
 		.getLogger(TimingThreadPool.class);
 	private final AtomicLong numTasks = new AtomicLong();
 	private final AtomicLong totalTime = new AtomicLong();
 
+	@Override
 	protected void beforeExecute(Thread t, Runnable r) {
 
 		super.beforeExecute(t, r);
@@ -35,11 +36,13 @@ public class TimingThreadPool extends ThreadPoolExecutor {
 		startTime.set(System.nanoTime());
 	}
 
+	@Override
 	protected void afterExecute(Runnable r, Throwable t) {
 
 		try {
 			long endTime = System.nanoTime();
 			long taskTime = endTime - startTime.get();
+			startTime.remove();
 			numTasks.incrementAndGet();
 			totalTime.addAndGet(taskTime);
 			if (t == null && r instanceof Future<?>) {

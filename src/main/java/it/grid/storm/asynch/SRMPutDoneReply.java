@@ -28,30 +28,29 @@ import it.grid.storm.srm.types.TReturnStatus;
  */
 public class SRMPutDoneReply {
 
-	private TReturnStatus overallRetStat = null; // overall request return status
+  private TReturnStatus overallRetStat = null; // overall request return status
 
-	/**
-	 * Constructor that requires the overall TReturnStatus of the reply.
-	 */
-	public SRMPutDoneReply(TReturnStatus overallRetStat)
-		throws InvalidPutDoneReplyAttributeException {
+  /**
+   * Constructor that requires the overall TReturnStatus of the reply.
+   */
+  public SRMPutDoneReply(TReturnStatus overallRetStat)
+      throws InvalidPutDoneReplyAttributeException {
 
-		if (overallRetStat == null)
-			throw new InvalidPutDoneReplyAttributeException();
-		this.overallRetStat = overallRetStat;
-	}
+    if (overallRetStat == null)
+      throw new InvalidPutDoneReplyAttributeException();
+    this.overallRetStat = overallRetStat;
+  }
 
-	/**
-	 * Method that returns the overll status of the request.
-	 */
-	public TReturnStatus overallRetStat() {
+  /**
+   * Method that returns the overll status of the request.
+   */
+  public TReturnStatus overallRetStat() {
 
-		return overallRetStat;
-	}
+    return overallRetStat;
+  }
 
-	public String toString() {
+  public String toString() {
 
-		return "SRMPutDoneReply: overall TReturnStatus is "
-			+ overallRetStat.toString();
-	}
+    return "SRMPutDoneReply: overall TReturnStatus is " + overallRetStat.toString();
+  }
 }

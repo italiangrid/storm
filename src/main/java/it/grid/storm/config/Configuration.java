@@ -17,6 +17,9 @@
 
 package it.grid.storm.config;
 
+import static it.grid.storm.info.du.DiskUsageService.DEFAULT_INITIAL_DELAY;
+import static it.grid.storm.info.du.DiskUsageService.DEFAULT_TASKS_INTERVAL;
+import static it.grid.storm.info.du.DiskUsageService.DEFAULT_TASKS_PARALLEL;
 import static java.lang.System.getProperty;
 
 import java.io.File;
@@ -32,9 +35,10 @@ import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.grid.storm.rest.RestService;
+import com.google.common.collect.Lists;
+
+import it.grid.storm.rest.RestServer;
 import it.grid.storm.xmlrpc.XMLRPCHttpServer;
-import jersey.repackaged.com.google.common.collect.Lists;
 
 /**
  * Singleton holding all configuration values that any other object in the StoRM backend reads from
@@ -63,7 +67,6 @@ public class Configuration {
   private static final String MANAGED_SURL_DEFAULT_PORTS_KEY = "storm.service.SURL.default-ports";
   private static final String SERVICE_HOSTNAME_KEY = "storm.service.FE-public.hostname";
   private static final String SERVICE_PORT_KEY = "storm.service.port";
-  private static final String LIST_OF_MACHINE_NAMES_KEY = "storm.service.FE-list.hostnames";
   private static final String LIST_OF_MACHINE_IPS_KEY = "storm.service.FE-list.IPs";
   private static final String DB_DRIVER_KEY = "storm.service.request-db.dbms-vendor";
   private static final String DB_URL_1KEY = "storm.service.request-db.protocol";
@@ -87,9 +90,7 @@ public class Configuration {
   private static final String XMLRPC_MAX_THREAD_KEY = "synchcall.xmlrpc.maxthread";
   private static final String XMLRPC_MAX_QUEUE_SIZE_KEY = "synchcall.xmlrpc.max_queue_size";
   private static final String LIST_OF_DEFAULT_SPACE_TOKEN_KEY = "storm.service.defaultSpaceTokens";
-  private static final String GRIDFTP_TRANSFER_CLIENT_KEY = "asynch.gridftpclient";
   private static final String COMMAND_SERVER_BINDING_PORT_KEY = "storm.commandserver.port";
-  private static final String SERIAL_SCHEDULER_KEY = "scheduler.serial";
   private static final String BE_PERSISTENCE_DB_VENDOR_KEY = "persistence.internal-db.dbms-vendor";
   private static final String BE_PERSISTENCE_DBMS_URL_1KEY = "persistence.internal-db.host";
   private static final String BE_PERSISTENCE_DBMS_URL_2KEY = "" + DB_URL_2KEY;
@@ -118,11 +119,6 @@ public class Configuration {
       "scheduler.chunksched.ptg.workerCorePoolSize";
   private static final String PTG_MAX_POOL_SIZE_KEY = "scheduler.chunksched.ptg.workerMaxPoolSize";
   private static final String PTG_QUEUE_SIZE_KEY = "scheduler.chunksched.ptg.queueSize";
-  private static final String COPY_CORE_POOL_SIZE_KEY =
-      "scheduler.chunksched.copy.workerCorePoolSize";
-  private static final String COPY_MAX_POOL_SIZE_KEY =
-      "scheduler.chunksched.copy.workerMaxPoolSize";
-  private static final String COPY_QUEUE_SIZE_KEY = "scheduler.chunksched.copy.queueSize";
   private static final String BOL_CORE_POOL_SIZE_KEY =
       "scheduler.chunksched.bol.workerCorePoolSize";
   private static final String BOL_MAX_POOL_SIZE_KEY = "scheduler.chunksched.bol.workerMaxPoolSize";
@@ -137,7 +133,6 @@ public class Configuration {
   private static final String NAMESPACE_AUTOMATIC_RELOADING_KEY =
       "namespace.automatic-config-reload";
   private static final String GRIDFTP_TIME_OUT_KEY = "asynch.srmcopy.gridftp.timeout";
-  private static final String SRM22CLIENT_PIN_LIFE_TIME_KEY = "SRM22Client.PinLifeTime";
   private static final String AUTOMATIC_DIRECTORY_CREATION_KEY = "directory.automatic-creation";
   private static final String DEFAULT_OVERWRITE_MODE_KEY = "default.overwrite";
   private static final String DEFAULT_FILE_STORAGE_TYPE_KEY = "default.storagetype";
@@ -184,6 +179,11 @@ public class Configuration {
   private static final String NETWORKADDRESS_CACHE_TTL = "networkaddress.cache.ttl";
   private static final String NETWORKADDRESS_CACHE_NEGATIVE_TTL =
       "networkaddress.cache.negative.ttl";
+
+  public static final String DISKUSAGE_SERVICE_ENABLED = "storm.service.du.enabled";
+  private static final String DISKUSAGE_SERVICE_INITIAL_DELAY = "storm.service.du.delaySecs";
+  private static final String DISKUSAGE_SERVICE_TASKS_INTERVAL = "storm.service.du.periodSecs";
+  private static final String DISKUSAGE_SERVICE_TASKS_PARALLEL = "storm.service.du.parallelTasks";
 
   static {
     try {
@@ -276,13 +276,7 @@ public class Configuration {
    */
   public String getServiceHostname() {
 
-    String defaultValue = "UNDEFINED_STORM_HOSTNAME";
-    if (!cr.getConfiguration().containsKey(SERVICE_HOSTNAME_KEY)) {
-      return defaultValue;
-    } else {
-      // load from external source
-      return cr.getConfiguration().getString(SERVICE_HOSTNAME_KEY);
-    }
+    return cr.getConfiguration().getString(SERVICE_HOSTNAME_KEY, "UNDEFINED_STORM_HOSTNAME");
   }
 
   /**
@@ -291,34 +285,7 @@ public class Configuration {
    */
   public int getServicePort() {
 
-    int defaultValue = 8444;
-    if (!cr.getConfiguration().containsKey(SERVICE_PORT_KEY)) {
-      return defaultValue;
-    } else {
-      // load from external source
-      return cr.getConfiguration().getInt(SERVICE_PORT_KEY);
-    }
-  }
-
-  /**
-   * Method used to get a List of Strings of the names of the machine hosting the FE for _this_
-   * StoRM instance! Used in srmCopy to understand if the fromSURL/toSURL refer to the server itself
-   * or to some other foreign server! The List contains Strings in _lower_case_!!! If no value is
-   * found in the configuration medium, then the default value is returned instead.
-   * key="storm.machinenames"; default value={"testbed006.cnaf.infn.it"};
-   */
-  public List<String> getListOfMachineNames() {
-
-    if (cr.getConfiguration().containsKey(LIST_OF_MACHINE_NAMES_KEY)) {
-      String[] names = cr.getConfiguration().getStringArray(LIST_OF_MACHINE_NAMES_KEY);
-
-      for (int i = 0; i < names.length; i++) {
-        names[i] = names[i].trim().toLowerCase();
-      }
-      return Arrays.asList(names);
-    } else {
-      return Arrays.asList(new String[] {"localhost"});
-    }
+    return cr.getConfiguration().getInt(SERVICE_PORT_KEY, 8444);
   }
 
   /**
@@ -341,7 +308,7 @@ public class Configuration {
       return Arrays.asList(names);
 
     } else {
-      return Arrays.asList(new String[] {"127.0.0.1"});
+      return Arrays.asList("127.0.0.1");
     }
   }
 
@@ -607,19 +574,6 @@ public class Configuration {
   }
 
   /**
-   * Method used by Factory invoked in CopyChunk subclasses, to instantiate a GridFTPTransferClient.
-   * The String returned specifies the name of the class to instantiate; for now, there are two
-   * classes: NaiveGridFTPTransferClient and StubGridFTPTransferClient. If no value is found in the
-   * configuration medium, then the default value is returned instead. key="asynch.gridftpclient";
-   * default value="it.grid.storm.asynch.NaiveGridFTPTransferClient";
-   */
-  public String getGridFTPTransferClient() {
-
-    final String def = "it.grid.storm.asynch.NaiveGridFTPTransferClient";
-    return cr.getConfiguration().getString(GRIDFTP_TRANSFER_CLIENT_KEY, def);
-  }
-
-  /**
    * Method used by StoRMCommandServer to establish the listening port to which it should bind. If
    * no value is found in the configuration medium, then the default value is returned instead.
    * key="storm.commandserver.port"; default value=4444;
@@ -627,16 +581,6 @@ public class Configuration {
   public int getCommandServerBindingPort() {
 
     return cr.getConfiguration().getInt(COMMAND_SERVER_BINDING_PORT_KEY, 4444);
-  }
-
-  /**
-   * Method used by Dispatcher and Feeder objects to check if a serial scheduler must be used, or
-   * not. If no value is found in the configuration medium, then the default value is returned
-   * instead. key="scheduler.serial"; default value=false;
-   */
-  public boolean getSerialScheduler() {
-
-    return cr.getConfiguration().getBoolean(SERIAL_SCHEDULER_KEY, false);
   }
 
   /**
@@ -909,58 +853,6 @@ public class Configuration {
 
   /**
    * Method used by the Scheduler Component to get the QuotaJobResultsHandler Core Pool Size for the
-   * srmCopy management. If no value is found in the configuration medium, then the default value is
-   * returned instead. Scheduler component uses a thread pool. Scheduler pool will automatically
-   * adjust the pool size according to the bounds set by corePoolSize and maximumPoolSize. When a
-   * new task is submitted in method execute, and fewer than corePoolSize threads are running, a new
-   * thread is created to handle the request, even if other worker threads are idle. If there are
-   * more than corePoolSize but less than maximumPoolSize threads running, a new thread will be
-   * created only if the queue is full. By setting corePoolSize and maximumPoolSize the same, you
-   * create a fixed-size thread pool. corePoolSize - the number of threads to keep in the pool, even
-   * if they are idle. key="scheduler.chunksched.copy.workerCorePoolSize"; default value=10;
-   */
-  public int getCopyCorePoolSize() {
-
-    return cr.getConfiguration().getInt(COPY_CORE_POOL_SIZE_KEY, 10);
-  }
-
-  /**
-   * Method used by the Scheduler Component to get the QuotaJobResultsHandler Max Pool Size for the
-   * srmCopy management. If no value is found in the configuration medium, then the default value is
-   * returned instead. Scheduler component uses a thread pool. Scheduler pool will automatically
-   * adjust the pool size according to the bounds set by corePoolSize and maximumPoolSize. When a
-   * new task is submitted in method execute, and fewer than corePoolSize threads are running, a new
-   * thread is created to handle the request, even if other worker threads are idle. If there are
-   * more than corePoolSize but less than maximumPoolSize threads running, a new thread will be
-   * created only if the queue is full. By setting corePoolSize and maximumPoolSize the same, you
-   * create a fixed-size thread pool. maxPoolSize - the maximum number of threads to allow in the
-   * pool. key="scheduler.chunksched.copy.workerMaxPoolSize"; default value=50;
-   */
-  public int getCopyMaxPoolSize() {
-
-    return cr.getConfiguration().getInt(COPY_MAX_POOL_SIZE_KEY, 50);
-  }
-
-  /**
-   * Method used by the Scheduler Component to get the Queue Size for the srmCopy management. If no
-   * value is found in the configuration medium, then the default value is returned instead.
-   * Scheduler hold a blocking priority queue used to transfer and hols submitted tasks. The use of
-   * this queue interacts with pool sizing: - If fewer than corePoolSize threads are running, the
-   * Scheduler always prefers adding a new thread rather than queuing. - If corePoolSize or more
-   * threads are running, the Scheduler always prefers queuing a request rather than adding a new
-   * thread. - If a request cannot be queued, a new thread is created unless this would exceed
-   * maxPoolSize, in which case, the task will be rejected. QueueSize - The initial capacity for
-   * this priority queue used for holding tasks before they are executed. The queue will hold only
-   * the Runnable tasks submitted by the execute method. key="scheduler.chunksched.copy.queueSize";
-   * default value=500;
-   */
-  public int getCopyQueueSize() {
-
-    return cr.getConfiguration().getInt(COPY_QUEUE_SIZE_KEY, 500);
-  }
-
-  /**
-   * Method used by the Scheduler Component to get the QuotaJobResultsHandler Core Pool Size for the
    * srmBoL management. If no value is found in the configuration medium, then the default value is
    * returned instead. Scheduler component uses a thread pool. Scheduler pool will automatically
    * adjust the pool size according to the bounds set by corePoolSize and maximumPoolSize. When a
@@ -1108,16 +1000,6 @@ public class Configuration {
   public int getGridFTPTimeOut() {
 
     return cr.getConfiguration().getInt(GRIDFTP_TIME_OUT_KEY, 15000);
-  }
-
-  /**
-   * Method used by SRM22Client in srmCopy to establish the PinLifeTime in seconds when issuing
-   * srmPtP. If no value is found in the configuration medium, then the default one is used instead.
-   * key="SRM22Client.PinLifeTime"; default value="259200"
-   */
-  public int getSRM22ClientPinLifeTime() {
-
-    return cr.getConfiguration().getInt(SRM22CLIENT_PIN_LIFE_TIME_KEY, 259200);
   }
 
   /**
@@ -1372,18 +1254,17 @@ public class Configuration {
    */
   public int getRestServicesPort() {
 
-    return cr.getConfiguration().getInt(REST_SERVICES_PORT_KEY, RestService.DEFAULT_PORT);
+    return cr.getConfiguration().getInt(REST_SERVICES_PORT_KEY, 9998);
   }
 
   public int getRestServicesMaxThreads() {
 
-    return cr.getConfiguration().getInt(REST_SERVICES_MAX_THREAD, RestService.DEFAULT_MAX_THREADS);
+    return cr.getConfiguration().getInt(REST_SERVICES_MAX_THREAD, RestServer.DEFAULT_MAX_THREAD_NUM);
   }
 
   public int getRestServicesMaxQueueSize() {
 
-    return cr.getConfiguration()
-      .getInt(REST_SERVICES_MAX_QUEUE_SIZE, RestService.DEFAULT_MAX_QUEUE_SIZE);
+    return cr.getConfiguration().getInt(REST_SERVICES_MAX_QUEUE_SIZE, RestServer.DEFAULT_MAX_QUEUE_SIZE);
   }
 
   /**
@@ -1545,5 +1426,26 @@ public class Configuration {
 
   public int getNetworkAddressCacheNegativeTtl() {
     return cr.getConfiguration().getInt(NETWORKADDRESS_CACHE_NEGATIVE_TTL, 0);
+  }
+
+  public boolean getDiskUsageServiceEnabled() {
+
+    return cr.getConfiguration().getBoolean(DISKUSAGE_SERVICE_ENABLED, false);
+  }
+
+  public int getDiskUsageServiceInitialDelay() {
+
+    return cr.getConfiguration().getInt(DISKUSAGE_SERVICE_INITIAL_DELAY, DEFAULT_INITIAL_DELAY);
+  }
+
+  public int getDiskUsageServiceTasksInterval() {
+
+    // default: 604800 s => 1 week
+    return cr.getConfiguration().getInt(DISKUSAGE_SERVICE_TASKS_INTERVAL, DEFAULT_TASKS_INTERVAL);
+  }
+
+  public boolean getDiskUsageServiceTasksParallel() {
+
+    return cr.getConfiguration().getBoolean(DISKUSAGE_SERVICE_TASKS_PARALLEL, DEFAULT_TASKS_PARALLEL);
   }
 }

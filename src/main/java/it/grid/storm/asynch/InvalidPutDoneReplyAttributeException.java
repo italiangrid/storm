@@ -17,12 +17,9 @@
 
 package it.grid.storm.asynch;
 
-import it.grid.storm.srm.types.TTURL;
-import it.grid.storm.srm.types.TReturnStatus;
-
 /**
- * Class that represents an exception thrown when an SRMPutDoneReply cannot be
- * created because the supplied TReturnStatus is null.
+ * Class that represents an exception thrown when an SRMPutDoneReply cannot be created because the
+ * supplied TReturnStatus is null.
  * 
  * @author EGRID - ICTP Trieste
  * @version 1.0
@@ -30,8 +27,14 @@ import it.grid.storm.srm.types.TReturnStatus;
  */
 public class InvalidPutDoneReplyAttributeException extends Exception {
 
-	public String toString() {
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-		return "null supplied TReturnStatus";
-	}
+  @Override
+  public String toString() {
+
+    return "null supplied TReturnStatus";
+  }
 }

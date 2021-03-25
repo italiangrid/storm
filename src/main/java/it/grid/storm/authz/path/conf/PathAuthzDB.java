@@ -29,91 +29,87 @@ import java.util.List;
  */
 public class PathAuthzDB {
 
-	public final static String MOCK_ID = "mock-PathAuthzDB";
+  public static final String MOCK_ID = "mock-PathAuthzDB";
 
-	private final PathAuthzEvaluationAlgorithm DEFAULT_ALGORITHM = PathAuthzAlgBestMatch
-		.getInstance();
+  private final PathAuthzEvaluationAlgorithm DEFAULT_ALGORITHM =
+      PathAuthzAlgBestMatch.getInstance();
 
-	private final String pathAuthzDBID;
-	private final PathAuthzEvaluationAlgorithm evaluationAlg;
-	private final LinkedList<PathACE> authzDB = new LinkedList<PathACE>();
+  private final String pathAuthzDBID;
+  private final PathAuthzEvaluationAlgorithm evaluationAlg;
+  private final LinkedList<PathACE> authzDB = new LinkedList<PathACE>();
 
-	public PathAuthzDB(String pathAuthzDBID,
-		PathAuthzEvaluationAlgorithm algorithm, List<PathACE> aces) {
+  public PathAuthzDB(String pathAuthzDBID, PathAuthzEvaluationAlgorithm algorithm,
+      List<PathACE> aces) {
 
-		this.pathAuthzDBID = pathAuthzDBID;
-		this.evaluationAlg = algorithm;
-		this.authzDB.addAll(aces);
-	}
+    this.pathAuthzDBID = pathAuthzDBID;
+    this.evaluationAlg = algorithm;
+    this.authzDB.addAll(aces);
+  }
 
-	public PathAuthzDB(String pathAuthzDBID, List<PathACE> aces) {
+  public PathAuthzDB(String pathAuthzDBID, List<PathACE> aces) {
 
-		this.pathAuthzDBID = pathAuthzDBID;
-		this.evaluationAlg = DEFAULT_ALGORITHM;
-		this.authzDB.addAll(aces);
-	}
+    this.pathAuthzDBID = pathAuthzDBID;
+    this.evaluationAlg = DEFAULT_ALGORITHM;
+    this.authzDB.addAll(aces);
+  }
 
-	/**
-	 * Empty constructor. Use it only if there is not
-	 */
-	public PathAuthzDB() {
+  /**
+   * Empty constructor. Use it only if there is not
+   */
+  public PathAuthzDB() {
 
-		this.pathAuthzDBID = MOCK_ID;
-		this.evaluationAlg = DEFAULT_ALGORITHM;
-		this.authzDB.add(PathACE.PERMIT_ALL);
-	}
+    this.pathAuthzDBID = MOCK_ID;
+    this.evaluationAlg = DEFAULT_ALGORITHM;
+    this.authzDB.add(PathACE.PERMIT_ALL);
+  }
 
-	public void addPathACE(PathACE pathAce) {
+  public void addPathACE(PathACE pathAce) {
 
-		authzDB.add(pathAce);
-	}
+    authzDB.add(pathAce);
+  }
 
-	public List<PathACE> getACL() {
+  public List<PathACE> getACL() {
 
-		return authzDB;
-	}
+    return authzDB;
+  }
 
-	public String getPathAuthzDBID() {
+  public String getPathAuthzDBID() {
 
-		return pathAuthzDBID;
-	}
+    return pathAuthzDBID;
+  }
 
-	@Override
-	public String toString() {
+  @Override
+  public String toString() {
 
-		String result = "=== Path Authorizaton DataBase === \n";
-		result += "path-authz.db Name: '" + pathAuthzDBID + "'\n";
-		result += PathACE.ALGORITHM + "=" + this.evaluationAlg.getClass() + "\n \n";
-		int count = 0;
-		for (PathACE ace : authzDB) {
-			result += "ace[" + count + "]: " + ace.toString() + "\n";
-			count++;
-		}
-		return result;
-	}
+    String result = "=== Path Authorizaton DataBase === \n";
+    result += "path-authz.db Name: '" + pathAuthzDBID + "'\n";
+    result += PathACE.ALGORITHM + "=" + this.evaluationAlg.getClass() + "\n \n";
+    int count = 0;
+    for (PathACE ace : authzDB) {
+      result += "ace[" + count + "]: " + ace.toString() + "\n";
+      count++;
+    }
+    return result;
+  }
 
-	public AuthzDecision evaluate(String groupName, StFN fileStFN,
-		SRMFileRequest pathOperation) {
+  public AuthzDecision evaluate(String groupName, StFN fileStFN, SRMFileRequest pathOperation) {
 
-		return evaluationAlg.evaluate(groupName, fileStFN, pathOperation, authzDB);
-	}
+    return evaluationAlg.evaluate(groupName, fileStFN, pathOperation, authzDB);
+  }
 
-	public AuthzDecision evaluate(String groupName, StFN fileStFN,
-		PathOperation pathOperation) {
+  public AuthzDecision evaluate(String groupName, StFN fileStFN, PathOperation pathOperation) {
 
-		return evaluationAlg.evaluate(groupName, fileStFN, pathOperation, authzDB);
-	}
+    return evaluationAlg.evaluate(groupName, fileStFN, pathOperation, authzDB);
+  }
 
-	public AuthzDecision evaluateAnonymous(StFN fileStFN,
-		PathOperation pathOperation) {
+  public AuthzDecision evaluateAnonymous(StFN fileStFN, PathOperation pathOperation) {
 
-		return evaluationAlg.evaluateAnonymous(fileStFN, pathOperation, authzDB);
-	}
+    return evaluationAlg.evaluateAnonymous(fileStFN, pathOperation, authzDB);
+  }
 
-	public AuthzDecision evaluateAnonymous(StFN fileStFN,
-		SRMFileRequest pathOperation) {
+  public AuthzDecision evaluateAnonymous(StFN fileStFN, SRMFileRequest pathOperation) {
 
-		return evaluationAlg.evaluateAnonymous(fileStFN, pathOperation, authzDB);
-	}
+    return evaluationAlg.evaluateAnonymous(fileStFN, pathOperation, authzDB);
+  }
 
 }

@@ -1,35 +1,32 @@
 # /etc/sysconfig/storm-backend
 #
 
-# user that will own the StoRM BE process
-STORM_BE_USER=storm
-
 # library path, if you don't set this in /etc/ld.so.conf
 # LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/globus/lib:/opt/glite/lib:/opt/glite/lib/modules
 
 # absolute path to configuration dir
-STORM_BE_CONFIGDIR="/etc/storm/backend-server"
+# STORM_BE_CONFIGDIR="/etc/storm/backend-server"
 
 # absolute path to configuration file
-STORM_BE_CONFIG_FILE="/etc/storm/backend-server/storm.properties"
+# STORM_BE_CONFIG_FILE="/etc/storm/backend-server/storm.properties"
 
 # how often to reload configuration file; set to 0 to disable 
 # automatic configuration file reloading.
-STORM_BE_CONFIG_REFRESH=0
+# STORM_BE_CONFIG_REFRESH=0
 
 # where native code libraries are kept
-STORM_BE_LIBDIR="/usr/lib64/"
+# STORM_BE_LIBDIR="/usr/lib64/"
 
 # where the 3rd-party .jar files reside
-STORM_BE_JARDIR="/usr/share/java/storm-backend-server"
+# STORM_BE_JARDIR="/usr/share/java/storm-backend-server"
 
 # name of the StoRM backend classes bundle file
 # (If this is a relative path, $STORM_BE_LIBDIR
 #  will be prepended)
-STORM_BE_JAR="$STORM_BE_JARDIR/storm-backend-server.jar"
+# STORM_BE_JAR="/usr/share/java/storm-backend-server/storm-backend-server.jar"
 
 # where StoRM puts logfiles
-STORM_BE_LOGDIR="/var/log/storm"
+# STORM_BE_LOGDIR="/var/log/storm"
 
 # StoRM Backend server debug option. Uncomment this (and restart the service)
 # if you want to attach a java debugger to the running server process
@@ -45,26 +42,26 @@ STORM_BE_DEBUG_PORT=1044
 STORM_BE_DEBUG_SUSPEND="n"
 
 # options for the JVM running the StoRM BE server to use in case STORM_BE_DEBUG is "y"
-STORM_BE_DEBUG_OPTS="-Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=${STORM_BE_DEBUG_PORT},suspend=${STORM_BE_DEBUG_SUSPEND}"
+# STORM_BE_DEBUG_OPTS="-Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=${STORM_BE_DEBUG_PORT},suspend=${STORM_BE_DEBUG_SUSPEND}"
 
 # StoRM Backend server jmx option. Uncomment this (and restart the service)
 # if you want to attach a java jmx monitor to the running server process
 # STORM_BE_JMX="y"
 
 # options for the JVM running the StoRM BE server
-STORM_BE_JMX_OPTS="-Dcom.sun.management.jmxremote.port=8501 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+# STORM_BE_JMX_OPTS="-Dcom.sun.management.jmxremote.port=8501 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
 
 # options for the JVM running the StoRM BE server
-STORM_BE_JVM_OPTS="-server -Xms512m -Xmx512m"
+# STORM_BE_JVM_OPTS="-server -Xms512m -Xmx512m"
 
 # LCMAPS config file
-LCMAPS_DB_FILE="$STORM_BE_CONFIGDIR/lcmaps.db"
+# LCMAPS_DB_FILE="/etc/storm/backend-server/lcmaps.db"
 
 # LCMAPS user mapping policy (defined in $LCMAPS_DB_FILE)
-LCMAPS_POLICY_NAME=standard
+# LCMAPS_POLICY_NAME=standard
 
 # LCMAPS log file
-LCMAPS_LOG_FILE="$STORM_BE_LOGDIR/lcmaps.log"
+# LCMAPS_LOG_FILE="/var/log/storm/lcmaps.log"
 
 # LCMAPS log verbosity: 0 minimum (default), 5 maximum
-LCMAPS_DEBUG_LEVEL=0
+# LCMAPS_DEBUG_LEVEL=0

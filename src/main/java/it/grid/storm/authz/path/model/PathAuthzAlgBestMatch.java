@@ -35,297 +35,286 @@ import org.slf4j.LoggerFactory;
  */
 public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
 
-	public static PathAuthzEvaluationAlgorithm getInstance() {
+  public static PathAuthzEvaluationAlgorithm getInstance() {
 
-		if (instance == null) {
-			instance = new PathAuthzAlgBestMatch();
-		}
-		return instance;
-	}
+    if (instance == null) {
+      instance = new PathAuthzAlgBestMatch();
+    }
+    return instance;
+  }
 
-	private PathAuthzAlgBestMatch() {
+  private PathAuthzAlgBestMatch() {
 
-	}
+  }
 
-	private static final Logger log = LoggerFactory.getLogger(PathAuthzAlgBestMatch.class);
+  private static final Logger log = LoggerFactory.getLogger(PathAuthzAlgBestMatch.class);
 
-	@Override
-	public String getDescription() {
+  @Override
+  public String getDescription() {
 
-		return "< Best Match Path Authorization Algorithm >";
-	}
+    return "< Best Match Path Authorization Algorithm >";
+  }
 
-	/**
-     * 
-     */
-	@Override
-	public AuthzDecision evaluate(String subject, StFN fileName,
-		SRMFileRequest pathOperation, List<PathACE> acl) {
+  /**
+   * 
+   */
+  @Override
+  public AuthzDecision evaluate(String subject, StFN fileName, SRMFileRequest pathOperation,
+      List<PathACE> acl) {
 
-		AuthzDecision result = AuthzDecision.INDETERMINATE;
+    AuthzDecision result = AuthzDecision.INDETERMINATE;
 
-		List<PathACE> compACE = getCompatibleACE(subject, acl);
-		if ((compACE == null) || (compACE.isEmpty())) {
-			return AuthzDecision.NOT_APPLICABLE;
-		}
+    List<PathACE> compACE = getCompatibleACE(subject, acl);
+    if ((compACE == null) || (compACE.isEmpty())) {
+      return AuthzDecision.NOT_APPLICABLE;
+    }
 
-		List<OrderedACE> orderedACEs = getOrderedACEs(fileName, compACE);
-		log.debug("There are '{}' ACEs regarding the subject '{}'", 
-			orderedACEs.size(), subject);
-		// Retrieve the list of Path Operation needed to authorize the SRM request
-		PathAccessMask requestedOps = pathOperation.getSRMPathAccessMask();
-		ArrayList<PathOperation> ops = new ArrayList<PathOperation>(
-			requestedOps.getPathOperations());
-		log.trace("<Best-Match> Operation to authorize: {}", ops);
-		HashMap<PathOperation, AuthzDecision> decision = new HashMap<PathOperation, AuthzDecision>();
+    List<OrderedACE> orderedACEs = getOrderedACEs(fileName, compACE);
+    log.debug("There are '{}' ACEs regarding the subject '{}'", orderedACEs.size(), subject);
+    // Retrieve the list of Path Operation needed to authorize the SRM request
+    PathAccessMask requestedOps = pathOperation.getSRMPathAccessMask();
+    ArrayList<PathOperation> ops = new ArrayList<PathOperation>(requestedOps.getPathOperations());
+    log.trace("<Best-Match> Operation to authorize: {}", ops);
+    HashMap<PathOperation, AuthzDecision> decision = new HashMap<PathOperation, AuthzDecision>();
 
-		String explanation = "Operations to authorize to '" + subject + "' are :"
-			+ ops + "\n";
-		// Check iterativly every needed Path Operation
-		for (PathOperation op : ops) {
-			explanation += " op('" + op + "') is ";
-			for (OrderedACE oAce : orderedACEs) {
-				if (oAce.ace.getPathAccessMask().containsPathOperation(op)) {
-					if (oAce.ace.isPermitAce()) {
-						// Path Operation is PERMIT
-						explanation += "PERMIT, thanks to ACE: '" + oAce + "'\n";
-						log.trace("Path Operation '{}' is PERMIT", op);
-						decision.put(op, AuthzDecision.PERMIT);
-						break;
-					} else {
-						// Path Operation is DENY
-						explanation += "DENY, thanks to ACE: '" + oAce + "'\n";
-						log.trace("Path Operation '{}' is DENY", op);
-						decision.put(op, AuthzDecision.DENY);
-						break;
-					}
-				}
-			}
-			if (!(decision.containsKey(op))) {
-				decision.put(op, AuthzDecision.INDETERMINATE);
-			}
-		}
+    String explanation = "Operations to authorize to '" + subject + "' are :" + ops + "\n";
+    // Check iterativly every needed Path Operation
+    for (PathOperation op : ops) {
+      explanation += " op('" + op + "') is ";
+      for (OrderedACE oAce : orderedACEs) {
+        if (oAce.ace.getPathAccessMask().containsPathOperation(op)) {
+          if (oAce.ace.isPermitAce()) {
+            // Path Operation is PERMIT
+            explanation += "PERMIT, thanks to ACE: '" + oAce + "'\n";
+            log.trace("Path Operation '{}' is PERMIT", op);
+            decision.put(op, AuthzDecision.PERMIT);
+            break;
+          } else {
+            // Path Operation is DENY
+            explanation += "DENY, thanks to ACE: '" + oAce + "'\n";
+            log.trace("Path Operation '{}' is DENY", op);
+            decision.put(op, AuthzDecision.DENY);
+            break;
+          }
+        }
+      }
+      if (!(decision.containsKey(op))) {
+        decision.put(op, AuthzDecision.INDETERMINATE);
+      }
+    }
 
-		// Print the decision
-		log.debug("Decision explanation : \n --------------{}--------------", explanation);
+    // Print the decision
+    log.debug("Decision explanation : \n --------------{}--------------", explanation);
 
-		// Make the final results
-		// - PERMIT if and only if ALL the permissions are PERMIT
-		// - DENY if there is at least one DENY
-		// - INDETERMINATE if there is at lease one INDETERMINATE
-		if (decision.containsValue(AuthzDecision.DENY)) {
-			result = AuthzDecision.DENY;
-		} else if (decision.containsValue(AuthzDecision.INDETERMINATE)) {
-			result = AuthzDecision.INDETERMINATE;
-		} else {
-			result = AuthzDecision.PERMIT;
-		}
-		return result;
+    // Make the final results
+    // - PERMIT if and only if ALL the permissions are PERMIT
+    // - DENY if there is at least one DENY
+    // - INDETERMINATE if there is at lease one INDETERMINATE
+    if (decision.containsValue(AuthzDecision.DENY)) {
+      result = AuthzDecision.DENY;
+    } else if (decision.containsValue(AuthzDecision.INDETERMINATE)) {
+      result = AuthzDecision.INDETERMINATE;
+    } else {
+      result = AuthzDecision.PERMIT;
+    }
+    return result;
 
-	}
+  }
 
-	public AuthzDecision evaluate(String subject, StFN fileName,
-		PathOperation op, List<PathACE> acl) {
+  public AuthzDecision evaluate(String subject, StFN fileName, PathOperation op,
+      List<PathACE> acl) {
 
-		// Retrieve the list of compatible ACE
-		List<PathACE> compACE = getCompatibleACE(subject, acl);
-		// if noone ACE is compatible with the requestor subject
-		if ((compACE == null) || (compACE.isEmpty())) {
-			return AuthzDecision.NOT_APPLICABLE;
-		}
+    // Retrieve the list of compatible ACE
+    List<PathACE> compACE = getCompatibleACE(subject, acl);
+    // if noone ACE is compatible with the requestor subject
+    if ((compACE == null) || (compACE.isEmpty())) {
+      return AuthzDecision.NOT_APPLICABLE;
+    }
 
-		// Retrieve the best ACE within compatible ones.
-		List<OrderedACE> orderedACEs = getOrderedACEs(fileName, compACE);
-		log.debug("There are '{}' ACEs regarding the subject '{}'", 
-			orderedACEs.size(), subject);
+    // Retrieve the best ACE within compatible ones.
+    List<OrderedACE> orderedACEs = getOrderedACEs(fileName, compACE);
+    log.debug("There are '{}' ACEs regarding the subject '{}'", orderedACEs.size(), subject);
 
-		log.trace("<Best-Match> Operation to authorize to '{}' is : {}", subject, op);
+    log.trace("<Best-Match> Operation to authorize to '{}' is : {}", subject, op);
 
-		for (OrderedACE oAce : orderedACEs) {
-			if (oAce.ace.getPathAccessMask().containsPathOperation(op)) {
-				if (oAce.ace.isPermitAce()) {
-					log.trace("Path Operation '{}' is PERMIT", op);
-					return AuthzDecision.PERMIT;
-				} else {
-					log.trace("Path Operation '{}' is DENY", op);
-					return AuthzDecision.DENY;
-				}
-			}
-		}
-		return AuthzDecision.INDETERMINATE;
-	}
+    for (OrderedACE oAce : orderedACEs) {
+      if (oAce.ace.getPathAccessMask().containsPathOperation(op)) {
+        if (oAce.ace.isPermitAce()) {
+          log.trace("Path Operation '{}' is PERMIT", op);
+          return AuthzDecision.PERMIT;
+        } else {
+          log.trace("Path Operation '{}' is DENY", op);
+          return AuthzDecision.DENY;
+        }
+      }
+    }
+    return AuthzDecision.INDETERMINATE;
+  }
 
-	@Override
-	public AuthzDecision evaluateAnonymous(StFN fileName,
-		PathOperation pathOperation, LinkedList<PathACE> authzDB) {
+  @Override
+  public AuthzDecision evaluateAnonymous(StFN fileName, PathOperation pathOperation,
+      LinkedList<PathACE> authzDB) {
 
-		if ((authzDB == null) || (authzDB.isEmpty())) {
-			return AuthzDecision.NOT_APPLICABLE;
-		}
+    if ((authzDB == null) || (authzDB.isEmpty())) {
+      return AuthzDecision.NOT_APPLICABLE;
+    }
 
-		// Retrieve the best ACE within compatible ones.
-		List<OrderedACE> orderedACEs = getOrderedACEs(fileName, authzDB);
-		log.debug("There are '{}' ACEs regarding file '{}'", orderedACEs.size(), 
-			fileName);
+    // Retrieve the best ACE within compatible ones.
+    List<OrderedACE> orderedACEs = getOrderedACEs(fileName, authzDB);
+    log.debug("There are '{}' ACEs regarding file '{}'", orderedACEs.size(), fileName);
 
-		log.trace("<Best-Match> Operation that needs anonymous authorization "
-			+ "is: {}", pathOperation);
+    log.trace("<Best-Match> Operation that needs anonymous authorization " + "is: {}",
+        pathOperation);
 
-		for (OrderedACE oAce : orderedACEs) {
-			if (oAce.ace.isAllGroupsACE()
-				&& oAce.ace.getPathAccessMask().containsPathOperation(pathOperation)) {
-				if (oAce.ace.isPermitAce()) {
-					log.trace("Path Operation '{}' is PERMIT", pathOperation);
-					return AuthzDecision.PERMIT;
-				} else {
-					log.trace("Path Operation '{}' is DENY", pathOperation);
-					return AuthzDecision.DENY;
-				}
-			}
-		}
-		return AuthzDecision.INDETERMINATE;
-	}
+    for (OrderedACE oAce : orderedACEs) {
+      if (oAce.ace.isAllGroupsACE()
+          && oAce.ace.getPathAccessMask().containsPathOperation(pathOperation)) {
+        if (oAce.ace.isPermitAce()) {
+          log.trace("Path Operation '{}' is PERMIT", pathOperation);
+          return AuthzDecision.PERMIT;
+        } else {
+          log.trace("Path Operation '{}' is DENY", pathOperation);
+          return AuthzDecision.DENY;
+        }
+      }
+    }
+    return AuthzDecision.INDETERMINATE;
+  }
 
-	@Override
-	public AuthzDecision evaluateAnonymous(StFN fileName,
-		SRMFileRequest pathOperation, LinkedList<PathACE> authzDB) {
+  @Override
+  public AuthzDecision evaluateAnonymous(StFN fileName, SRMFileRequest pathOperation,
+      LinkedList<PathACE> authzDB) {
 
-		if ((authzDB == null) || (authzDB.isEmpty())) {
-			return AuthzDecision.NOT_APPLICABLE;
-		}
+    if ((authzDB == null) || (authzDB.isEmpty())) {
+      return AuthzDecision.NOT_APPLICABLE;
+    }
 
-		// Retrieve the best ACE within compatible ones.
-		List<OrderedACE> orderedACEs = getOrderedACEs(fileName, authzDB);
-		log.debug("There are '' ACEs regarding file '{}'", orderedACEs.size(), 
-			fileName);
+    // Retrieve the best ACE within compatible ones.
+    List<OrderedACE> orderedACEs = getOrderedACEs(fileName, authzDB);
+    log.debug("There are '' ACEs regarding file '{}'", orderedACEs.size(), fileName);
 
-		log.trace("<Best-Match> Operation that needs anonymous authorization "
-			+ "is: {}", pathOperation);
-		PathAccessMask requestedOps = pathOperation.getSRMPathAccessMask();
-		ArrayList<PathOperation> ops = new ArrayList<PathOperation>(
-			requestedOps.getPathOperations());
-		HashMap<PathOperation, AuthzDecision> decision = new HashMap<PathOperation, AuthzDecision>();
-		for (PathOperation op : ops) {
-			for (OrderedACE oAce : orderedACEs) {
-				if (oAce.ace.isAllGroupsACE()
-					&& oAce.ace.getPathAccessMask().containsPathOperation(op)) {
-					if (oAce.ace.isPermitAce()) {
-						log.trace("Path Operation '{}' is PERMIT", pathOperation);
-						decision.put(op, AuthzDecision.PERMIT);
-					} else {
-						log.trace("Path Operation '{}' is DENY", pathOperation);
-						decision.put(op, AuthzDecision.DENY);
-					}
-				}
-			}
-		}
-		AuthzDecision result;
-		if (decision.containsValue(AuthzDecision.DENY)) {
-			result = AuthzDecision.DENY;
-		} else if (decision.containsValue(AuthzDecision.INDETERMINATE)) {
-			result = AuthzDecision.INDETERMINATE;
-		} else {
-			result = AuthzDecision.PERMIT;
-		}
-		return result;
-	}
+    log.trace("<Best-Match> Operation that needs anonymous authorization " + "is: {}",
+        pathOperation);
+    PathAccessMask requestedOps = pathOperation.getSRMPathAccessMask();
+    ArrayList<PathOperation> ops = new ArrayList<PathOperation>(requestedOps.getPathOperations());
+    HashMap<PathOperation, AuthzDecision> decision = new HashMap<PathOperation, AuthzDecision>();
+    for (PathOperation op : ops) {
+      for (OrderedACE oAce : orderedACEs) {
+        if (oAce.ace.isAllGroupsACE() && oAce.ace.getPathAccessMask().containsPathOperation(op)) {
+          if (oAce.ace.isPermitAce()) {
+            log.trace("Path Operation '{}' is PERMIT", pathOperation);
+            decision.put(op, AuthzDecision.PERMIT);
+          } else {
+            log.trace("Path Operation '{}' is DENY", pathOperation);
+            decision.put(op, AuthzDecision.DENY);
+          }
+        }
+      }
+    }
+    AuthzDecision result;
+    if (decision.containsValue(AuthzDecision.DENY)) {
+      result = AuthzDecision.DENY;
+    } else if (decision.containsValue(AuthzDecision.INDETERMINATE)) {
+      result = AuthzDecision.INDETERMINATE;
+    } else {
+      result = AuthzDecision.PERMIT;
+    }
+    return result;
+  }
 
-	/**
-	 * @param subjectGroup
-	 * @return List<PathACE> : the list contains all the ACE compatible with the
-	 *         requestor subject
-	 */
-	private List<PathACE> getCompatibleACE(String subjectGroup, List<PathACE> acl) {
+  /**
+   * @param subjectGroup
+   * @return List<PathACE> : the list contains all the ACE compatible with the requestor subject
+   */
+  private List<PathACE> getCompatibleACE(String subjectGroup, List<PathACE> acl) {
 
-		log.debug("<BestMatch>-compatibleACE: subject='" + subjectGroup + "'");
-		ArrayList<PathACE> compatibleACE = new ArrayList<PathACE>();
-		if ((acl != null) && (!(acl.isEmpty()))) {
-			for (PathACE pathACE : acl) {
-				if (pathACE.subjectMatch(subjectGroup)) {
-					log.trace("<BestMatch>-compatibleACE: ACE:'{}' match with "
-						+ "subject='{}'", pathACE, subjectGroup);
-					compatibleACE.add(pathACE);
-				} else {
-					log.trace("<BestMatch>-compatibleACE: ACE:'{}' DOESN'T match with "
-						+ "subject='{}'", pathACE, subjectGroup);
-				}
-			}
-		} else {
-			log.debug("<BestMatch>-compatibleACE: ACL db is empty");
-		}
-		return compatibleACE;
-	}
+    log.debug("<BestMatch>-compatibleACE: subject='" + subjectGroup + "'");
+    ArrayList<PathACE> compatibleACE = new ArrayList<PathACE>();
+    if ((acl != null) && (!(acl.isEmpty()))) {
+      for (PathACE pathACE : acl) {
+        if (pathACE.subjectMatch(subjectGroup)) {
+          log.trace("<BestMatch>-compatibleACE: ACE:'{}' match with " + "subject='{}'", pathACE,
+              subjectGroup);
+          compatibleACE.add(pathACE);
+        } else {
+          log.trace("<BestMatch>-compatibleACE: ACE:'{}' DOESN'T match with " + "subject='{}'",
+              pathACE, subjectGroup);
+        }
+      }
+    } else {
+      log.debug("<BestMatch>-compatibleACE: ACL db is empty");
+    }
+    return compatibleACE;
+  }
 
-	/**
-	 * @param fileName
-	 * @param compatibleACE
-	 * @return null if there are not ACE.
-	 */
-	private List<OrderedACE> getOrderedACEs(StFN fileName,
-		List<PathACE> compatibleACE) {
+  /**
+   * @param fileName
+   * @param compatibleACE
+   * @return null if there are not ACE.
+   */
+  private List<OrderedACE> getOrderedACEs(StFN fileName, List<PathACE> compatibleACE) {
 
-		ArrayList<OrderedACE> bestACEs = new ArrayList<OrderedACE>();
-		int distance = 0;
-		for (PathACE pathAce : compatibleACE) {
-			// Compute distance from Resource target (fileName) and Resource into ACE
-			StFN aceStFN = pathAce.getStorageFileName();
-			distance = NamespaceUtil.computeDistanceFromPath(aceStFN.getValue(),
-				fileName.getValue());
-			bestACEs.add(new OrderedACE(pathAce, distance));
+    ArrayList<OrderedACE> bestACEs = new ArrayList<OrderedACE>();
+    int distance = 0;
+    for (PathACE pathAce : compatibleACE) {
+      // Compute distance from Resource target (fileName) and Resource into ACE
+      StFN aceStFN = pathAce.getStorageFileName();
+      distance = NamespaceUtil.computeDistanceFromPath(aceStFN.getValue(), fileName.getValue());
+      bestACEs.add(new OrderedACE(pathAce, distance));
 
-		} // End of cycle
-			// Sort the BestACE in base of distance
-		Collections.sort(bestACEs);
-		return bestACEs;
-	}
+    } // End of cycle
+      // Sort the BestACE in base of distance
+    Collections.sort(bestACEs);
+    return bestACEs;
+  }
 
-	/**
-	 * @author ritz
-	 */
-	private class OrderedACE implements Comparable<OrderedACE> {
+  /**
+   * @author ritz
+   */
+  private class OrderedACE implements Comparable<OrderedACE> {
 
-		private final PathACE ace;
-		private final int distance;
+    private final PathACE ace;
+    private final int distance;
 
-		OrderedACE(PathACE ace, int distance) {
+    OrderedACE(PathACE ace, int distance) {
 
-			this.ace = ace;
-			this.distance = distance;
-		}
+      this.ace = ace;
+      this.distance = distance;
+    }
 
-		// @Override
-		public int compareTo(OrderedACE other) {
+    // @Override
+    public int compareTo(OrderedACE other) {
 
-			int result = -1;
-			OrderedACE otherACE = other;
-			if (distance < otherACE.distance) {
-				result = -1;
-			} else if (distance == otherACE.distance) {
-				result = 0;
-			} else {
-				result = 1;
-			}
-			return result;
-		}
+      int result = -1;
+      OrderedACE otherACE = other;
+      if (distance < otherACE.distance) {
+        result = -1;
+      } else if (distance == otherACE.distance) {
+        result = 0;
+      } else {
+        result = 1;
+      }
+      return result;
+    }
 
-		@Override
-		public boolean equals(Object other) {
+    @Override
+    public boolean equals(Object other) {
 
-			boolean result = false;
-			if (other instanceof OrderedACE) {
-				OrderedACE otherACE = (OrderedACE) other;
-				if (distance == otherACE.distance) {
-					result = true;
-				}
-			}
-			return result;
-		}
+      boolean result = false;
+      if (other instanceof OrderedACE) {
+        OrderedACE otherACE = (OrderedACE) other;
+        if (distance == otherACE.distance) {
+          result = true;
+        }
+      }
+      return result;
+    }
 
-		@Override
-		public String toString() {
+    @Override
+    public String toString() {
 
-			return "[" + ace.toString() + "]  distance:" + distance;
-		}
+      return "[" + ace.toString() + "]  distance:" + distance;
+    }
 
-	}
+  }
 }

@@ -20,7 +20,6 @@
  */
 package it.grid.storm.authz.sa;
 
-import it.grid.storm.authz.sa.conf.AuthzDBReaderException;
 import it.grid.storm.authz.sa.model.AuthzDBFixed;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.griduser.GridUserInterface;

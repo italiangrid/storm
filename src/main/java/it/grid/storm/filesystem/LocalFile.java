@@ -32,19 +32,21 @@
 
 package it.grid.storm.filesystem;
 
-import it.grid.storm.checksum.ChecksumManager;
-import it.grid.storm.ea.StormEA;
-import it.grid.storm.griduser.CannotMapUserException;
-import it.grid.storm.griduser.LocalUser;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
+
+import it.grid.storm.checksum.ChecksumAlgorithm;
+import it.grid.storm.checksum.ChecksumManager;
+import it.grid.storm.ea.StormEA;
+import it.grid.storm.griduser.CannotMapUserException;
+import it.grid.storm.griduser.LocalUser;
 
 /**
  * Façade for operations on a filesystem entry (file or directory). All
@@ -237,14 +239,14 @@ public class LocalFile {
 
 	}
 
-	public Map<String, String> getChecksums() {
+	public Map<ChecksumAlgorithm, String> getChecksums() {
 
 		try {
 			return ChecksumManager.getInstance().getChecksums(
 				localFile.getAbsolutePath());
 		} catch (FileNotFoundException e) {
 		  log.error(e.getMessage(), e);
-			return new HashMap<>(0);
+			return Maps.newHashMap();
 		}
 
 	}
@@ -255,7 +257,7 @@ public class LocalFile {
 	 * 
 	 * @return
 	 */
-	public String getChecksumAlgorithm() {
+	public ChecksumAlgorithm getChecksumAlgorithm() {
 
 		return ChecksumManager.getInstance().getDefaultAlgorithm();
 	}
@@ -475,9 +477,9 @@ public class LocalFile {
 	 * @return <code>true</code> if the checksum attribute is set,
 	 *         <code>false</code> otherwise.
 	 */
-	public boolean hasChecksum() {
+	public boolean hasDefaultChecksum() {
 		try {
-			return ChecksumManager.getInstance().hasChecksum(
+			return ChecksumManager.getInstance().hasDefaultChecksum(
 				localFile.getAbsolutePath());
 		} catch (FileNotFoundException e) {
 		  log.warn("File not found when checking checksum: {}", e.getMessage(), e);

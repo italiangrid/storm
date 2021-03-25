@@ -123,7 +123,7 @@ public interface VirtualFSInterface {
 
 	public long getCreationTime();
 
-	public TSpaceToken getSpaceToken() throws NamespaceException;
+	public TSpaceToken getSpaceToken();
 
 	public SAAuthzType getStorageAreaAuthzType() throws NamespaceException;
 

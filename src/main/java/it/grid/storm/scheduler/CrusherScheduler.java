@@ -23,13 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
  * 
  * <p>
  * Copyright: Copyright (c) 2005
@@ -45,115 +38,82 @@ import org.slf4j.LoggerFactory;
  * 
  */
 
-public class CrusherScheduler implements Scheduler
+public class CrusherScheduler implements Scheduler {
 
-{
+  private static final Logger log = LoggerFactory.getLogger(CrusherScheduler.class);
 
-	private static int clients = 0;
-	private WorkerPool crusherPool = null;
-	private static final Logger log = LoggerFactory
-		.getLogger(CrusherScheduler.class);
-	private SchedulerStatus[] schedStatus = null;
+  private WorkerPool crusherPool;
 
-	/**
-	 * Default values for Pools
-	 */
-	// Value of "scheduler.crusher.workerCorePoolSize"
-	private int workerCorePoolSize = Configuration.getInstance()
-		.getCorePoolSize();
+  private int workerCorePoolSize;
+  private int workerMaxPoolSize;
+  private int queueSize;
 
-	// Value of "scheduler.crusher.workerMaxPoolSize"
-	private int workerMaxPoolSize = Configuration.getInstance().getMaxPoolSize();
+  private static CrusherScheduler istance = null;
 
-	// Value of "scheduler.crusher.queueSize"
-	private int queueSize = Configuration.getInstance().getQueueSize();
+  private CrusherScheduler(Configuration configuration) {
 
-	private static CrusherScheduler istance = null;
+    workerCorePoolSize = configuration.getCorePoolSize();
+    workerMaxPoolSize = configuration.getMaxPoolSize();
+    queueSize = configuration.getQueueSize();
 
-	private CrusherScheduler() {
+    crusherPool = new WorkerPool(workerCorePoolSize, workerMaxPoolSize, queueSize);
+  }
 
-		schedStatus = new SchedulerStatus[1];
-		schedStatus[0] = new SchedulerStatus("CrusherScheduler");
+  public static CrusherScheduler getInstance() {
 
-		/**
-		 * @todo Read to Configuration the information about worker Pool structure
-		 *       of Crusher Scheduler
-		 */
+    log.trace("CrusherScheduler.getInstance");
 
-		crusherPool = new WorkerPool(workerCorePoolSize, workerMaxPoolSize,
-			queueSize);
-		schedStatus[0].setCorePoolSize(workerCorePoolSize);
-		schedStatus[0].setMaxPoolSize(workerMaxPoolSize);
-		schedStatus[0].setQueueSize(queueSize);
-	}
+    if (istance == null) {
+      istance = new CrusherScheduler(Configuration.getInstance());
+    }
+    return istance;
+  }
 
-	public static CrusherScheduler getInstance() {
-	  
-	  log.trace("CrusherScheduler.getInstance");
+  public void schedule(Delegable cruncherTask) throws SchedulerException {
 
-		if (istance == null) {
-			istance = new CrusherScheduler();
-		}
-		return istance;
-	}
+    log.trace("CrusherScheduler.schedule() - cruncherTask: {}", cruncherTask.getName());
 
-	public void schedule(Delegable cruncherTask) throws SchedulerException {
+    try {
+      Task task = new CruncherTask(cruncherTask);
+      crusherPool.submit(task);
+      log.debug("Feed task nr. = {}", crusherPool.getTaskCount());
+      log.debug("Scheduled feed {}", cruncherTask.getName());
+    } catch (SchedulerException se) {
+      log.error(se.getMessage(), se);
+      throw se;
+    }
+  }
 
-	  log.trace("CrusherScheduler.schedule() - cruncherTask: {}", 
-	    cruncherTask.getName());
+  public SchedulerStatus getStatus() {
 
-		try {
-			Task task = new CruncherTask(cruncherTask);
-			crusherPool.submit(task);
-			log.debug("Feed task nr. = {}" , crusherPool.getTaskCount());
-			log.debug("Scheduled feed {}" , cruncherTask.getName());
-		} catch (SchedulerException se) {
-			log.error(se.getMessage(), se);
-			throw se;
-		}
-	}
+    SchedulerStatus schedStatus = new SchedulerStatus("CrusherScheduler");
+    schedStatus.setCorePoolSize(workerCorePoolSize);
+    schedStatus.setMaxPoolSize(workerMaxPoolSize);
+    schedStatus.setQueueSize(queueSize);
+    schedStatus.setCompletedTaskCount(crusherPool.getCompletedTaskCount());
+    schedStatus.setActiveCount(crusherPool.getActiveCount());
+    schedStatus.setLargestPoolSize(crusherPool.getLargestPoolSize());
+    schedStatus.setPoolSize(crusherPool.getActualPoolSize());
+    schedStatus.setTaskCount(crusherPool.getTaskCount());
+    schedStatus.setRemainingCapacity(crusherPool.getRemainingCapacity());
+    return schedStatus;
+  }
 
-	public SchedulerStatus getStatus(int workerPoolType) {
+  /**
+   * @param task Delegable
+   * @throws SchedulerException
+   */
+  public void abort(Delegable task) throws SchedulerException {
 
-		SchedulerStatus st = null;
-		switch (workerPoolType) {
-		case 0:
-			schedStatus[0].setCompletedTaskCount(crusherPool.getCompletedTaskCount());
-			schedStatus[0].setActiveCount(crusherPool.getActiveCount());
-			schedStatus[0].setLargestPoolSize(crusherPool.getLargestPoolSize());
-			schedStatus[0].setPoolSize(crusherPool.getActualPoolSize());
-			schedStatus[0].setTaskCount(crusherPool.getTaskCount());
-			schedStatus[0].setRemainingCapacity(crusherPool.getRemainingCapacity());
-			st = schedStatus[0];
-			break;
-		default:
-			st = null;
-			break;
-		}
-		return st;
-	}
+  }
 
-	/**
-	 * 
-	 * @param task
-	 *          Delegable
-	 * @throws SchedulerException
-	 */
-	public void abort(Delegable task) throws SchedulerException {
+  /**
+   * @param task Delegable
+   * @throws SchedulerException
+   */
+  public void suspend(Delegable task) throws SchedulerException {
 
-		// crusherPool.remove(task);
-	}
-
-	/**
-	 * 
-	 * @param task
-	 *          Delegable
-	 * @throws SchedulerException
-	 */
-	public void suspend(Delegable task) throws SchedulerException {
-
-		throw new SchedulerException("CruscherScheduler",
-			"Suspend request not implemented yet!");
-	}
+    throw new SchedulerException("CruscherScheduler", "Suspend request not implemented yet!");
+  }
 
 }

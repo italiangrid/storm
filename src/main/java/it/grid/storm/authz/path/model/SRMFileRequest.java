@@ -29,223 +29,219 @@ import java.util.List;
  */
 public enum SRMFileRequest {
 
-	/**
-	 * WRITE_FILE 'W' READ_FILE 'R' RENAME 'F' DELETE 'D' TRAVERSE_DIRECTORY 'T'
-	 * LIST_DIRECTORY 'L' MAKE_DIRECTORY 'M' CREATE_FILE 'N' UNDEFINED '?'
-	 **/
+  /**
+   * WRITE_FILE 'W' READ_FILE 'R' RENAME 'F' DELETE 'D' TRAVERSE_DIRECTORY 'T' LIST_DIRECTORY 'L'
+   * MAKE_DIRECTORY 'M' CREATE_FILE 'N' UNDEFINED '?'
+   **/
 
-	// Operations to SURL
-	PTP_Overwrite("srmPrepareToPut-overwrite", "PTP-Over",
-		new ArrayList<PathOperation>() {
+  // Operations to SURL
+  PTP_Overwrite("srmPrepareToPut-overwrite", "PTP-Over", new ArrayList<PathOperation>() {
 
-			private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-			{
-				add(PathOperation.WRITE_FILE);
-			}
-		}),
+    {
+      add(PathOperation.WRITE_FILE);
+    }
+  }),
 
-	PTP("srmPrepareToPut", "PTP", new ArrayList<PathOperation>() {
+  PTP("srmPrepareToPut", "PTP", new ArrayList<PathOperation>() {
 
-		private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-		{
-			add(PathOperation.CREATE_FILE);
-			add(PathOperation.WRITE_FILE);
-		}
-	}),
+    {
+      add(PathOperation.CREATE_FILE);
+      add(PathOperation.WRITE_FILE);
+    }
+  }),
 
-	PTG("srmPrepareToGet", "PTG", new ArrayList<PathOperation>() {
+  PTG("srmPrepareToGet", "PTG", new ArrayList<PathOperation>() {
 
-		private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-		{
-			add(PathOperation.READ_FILE);
-		}
-	}),
+    {
+      add(PathOperation.READ_FILE);
+    }
+  }),
 
-	CPto("srmCopy to", "CPto", new ArrayList<PathOperation>() {
+  CPto("srmCopy to", "CPto", new ArrayList<PathOperation>() {
 
-		private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-		{
-			add(PathOperation.WRITE_FILE);
-			add(PathOperation.CREATE_FILE);
-		}
-	}),
+    {
+      add(PathOperation.WRITE_FILE);
+      add(PathOperation.CREATE_FILE);
+    }
+  }),
 
-	CPto_Overwrite("srmCopy to-overwrite", "CPto_Over",
-		new ArrayList<PathOperation>() {
+  CPto_Overwrite("srmCopy to-overwrite", "CPto_Over", new ArrayList<PathOperation>() {
 
-			private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-			{
-				add(PathOperation.WRITE_FILE);
-			}
-		}),
+    {
+      add(PathOperation.WRITE_FILE);
+    }
+  }),
 
-	CPfrom("srmCopy from", "CPfrom", new ArrayList<PathOperation>() {
+  CPfrom("srmCopy from", "CPfrom", new ArrayList<PathOperation>() {
 
-		private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-		{
-			add(PathOperation.READ_FILE);
-		}
-	}),
+    {
+      add(PathOperation.READ_FILE);
+    }
+  }),
 
-	// OVERLOAD with OP
-	RM("srmRemove", "RM", new ArrayList<PathOperation>() {
+  // OVERLOAD with OP
+  RM("srmRemove", "RM", new ArrayList<PathOperation>() {
 
-		private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-		{
-			add(PathOperation.DELETE);
-		}
-	}),
+    {
+      add(PathOperation.DELETE);
+    }
+  }),
 
-	RMD("srmRemoveDir", "RMD", new ArrayList<PathOperation>() {
+  RMD("srmRemoveDir", "RMD", new ArrayList<PathOperation>() {
 
-		private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-		{
-			add(PathOperation.DELETE);
-		}
-	}),
+    {
+      add(PathOperation.DELETE);
+    }
+  }),
 
-	MD("srmMakeDir", "MD", new ArrayList<PathOperation>() {
+  MD("srmMakeDir", "MD", new ArrayList<PathOperation>() {
 
-		private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-		{
-			add(PathOperation.MAKE_DIRECTORY);
-		}
-	}),
+    {
+      add(PathOperation.MAKE_DIRECTORY);
+    }
+  }),
 
-	LS("srmLS", "LS", new ArrayList<PathOperation>() {
+  LS("srmLS", "LS", new ArrayList<PathOperation>() {
 
-		private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-		{
-			add(PathOperation.LIST_DIRECTORY);
-		}
-	}),
+    {
+      add(PathOperation.LIST_DIRECTORY);
+    }
+  }),
 
-	MV_source("srmMove-source", "MV-source", new ArrayList<PathOperation>() {
+  MV_source("srmMove-source", "MV-source", new ArrayList<PathOperation>() {
 
-		private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-		{
-			add(PathOperation.READ_FILE);
-			add(PathOperation.DELETE);
-		}
-	}),
+    {
+      add(PathOperation.READ_FILE);
+      add(PathOperation.DELETE);
+    }
+  }),
 
-	MV_dest_Overwrite("srmMove-dest-overwrite", "MV-dest-Over",
-		new ArrayList<PathOperation>() {
+  MV_dest_Overwrite("srmMove-dest-overwrite", "MV-dest-Over", new ArrayList<PathOperation>() {
 
-			private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-			{
-				add(PathOperation.WRITE_FILE);
-			}
-		}),
+    {
+      add(PathOperation.WRITE_FILE);
+    }
+  }),
 
-	MV_dest("srmMove-dest-overwrite", "MV-dest", new ArrayList<PathOperation>() {
+  MV_dest("srmMove-dest-overwrite", "MV-dest", new ArrayList<PathOperation>() {
 
-		private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-		{
-			add(PathOperation.CREATE_FILE);
-			add(PathOperation.WRITE_FILE);
-		}
-	});
+    {
+      add(PathOperation.CREATE_FILE);
+      add(PathOperation.WRITE_FILE);
+    }
+  });
 
-	private final String description;
-	private final String srmOp;
-	private final PathAccessMask requestedPathOps;
+  private final String description;
+  private final String srmOp;
+  private final PathAccessMask requestedPathOps;
 
-	private static HashMap<String, SRMFileRequest> ops = new HashMap<String, SRMFileRequest>() {
+  private static HashMap<String, SRMFileRequest> ops = new HashMap<String, SRMFileRequest>() {
 
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
 
-		{
-			put("PTP-Over", PTP_Overwrite);
-			put("srmPrepareToPut-overwrite", PTP_Overwrite);
-			put("PTP", PTP);
-			put("srmPrepareToPut", PTP);
-			put("PTG", PTG);
-			put("srmPrepareToGet", PTG);
-			put("CPto_Over", CPto_Overwrite);
-			put("srmCopy to-overwrite", CPto_Overwrite);
-			put("CPto", CPto);
-			put("srmCopy to", CPto);
-			put("CPFrom", CPfrom);
-			put("srmCopy from", CPfrom);
-			put("RM", RM);
-			put("srmRm", RM);
-			put("RMD", RMD);
-			put("srmRemoveDir", RM);
-			put("MD", MD);
-			put("srmMakeDir", MD);
-			put("LS", LS);
-			put("srmLs", LS);
-			put("MV-source", MV_source);
-			put("srmMove-source", MV_source);
-			put("MV-dest-Over", MV_dest_Overwrite);
-			put("srmMove-dest-overwrite", MV_dest_Overwrite);
-			put("MV-dest", MV_dest);
-			put("srmMove-dest", MV_dest);
-		}
-	};
+    {
+      put("PTP-Over", PTP_Overwrite);
+      put("srmPrepareToPut-overwrite", PTP_Overwrite);
+      put("PTP", PTP);
+      put("srmPrepareToPut", PTP);
+      put("PTG", PTG);
+      put("srmPrepareToGet", PTG);
+      put("CPto_Over", CPto_Overwrite);
+      put("srmCopy to-overwrite", CPto_Overwrite);
+      put("CPto", CPto);
+      put("srmCopy to", CPto);
+      put("CPFrom", CPfrom);
+      put("srmCopy from", CPfrom);
+      put("RM", RM);
+      put("srmRm", RM);
+      put("RMD", RMD);
+      put("srmRemoveDir", RM);
+      put("MD", MD);
+      put("srmMakeDir", MD);
+      put("LS", LS);
+      put("srmLs", LS);
+      put("MV-source", MV_source);
+      put("srmMove-source", MV_source);
+      put("MV-dest-Over", MV_dest_Overwrite);
+      put("srmMove-dest-overwrite", MV_dest_Overwrite);
+      put("MV-dest", MV_dest);
+      put("srmMove-dest", MV_dest);
+    }
+  };
 
-	/*
-	 * Used only for testing
-	 */
-	public static SRMFileRequest buildFromString(String srmOp) {
+  /*
+   * Used only for testing
+   */
+  public static SRMFileRequest buildFromString(String srmOp) {
 
-		if (ops.containsKey(srmOp)) {
-			return ops.get(srmOp);
-		} else {
-			return null;
-		}
-	}
+    if (ops.containsKey(srmOp)) {
+      return ops.get(srmOp);
+    } else {
+      return null;
+    }
+  }
 
-	/**
-	 * SRMOperation
-	 */
-	private SRMFileRequest(String description, String srmOp,
-		List<PathOperation> pathOps) {
+  /**
+   * SRMOperation
+   */
+  private SRMFileRequest(String description, String srmOp, List<PathOperation> pathOps) {
 
-		this.description = description;
-		this.srmOp = srmOp;
-		requestedPathOps = new PathAccessMask();
-		for (PathOperation pathOp : pathOps) {
-			requestedPathOps.addPathOperation(pathOp);
-		}
-	}
+    this.description = description;
+    this.srmOp = srmOp;
+    requestedPathOps = new PathAccessMask();
+    for (PathOperation pathOp : pathOps) {
+      requestedPathOps.addPathOperation(pathOp);
+    }
+  }
 
-	public PathAccessMask getSRMPathAccessMask() {
+  public PathAccessMask getSRMPathAccessMask() {
 
-		return requestedPathOps;
-	}
+    return requestedPathOps;
+  }
 
-	@Override
-	public String toString() {
+  @Override
+  public String toString() {
 
-		return String.format("%s : %s = %s", srmOp, description, requestedPathOps);
-	}
+    return String.format("%s : %s = %s", srmOp, description, requestedPathOps);
+  }
 
-	public boolean isReadOnly() {
+  public boolean isReadOnly() {
 
-		for (PathOperation operation : requestedPathOps.getPathOperations()) {
-			if (!operation.isReadOnly()) {
-				return false;
-			}
-		}
-		return true;
-	}
+    for (PathOperation operation : requestedPathOps.getPathOperations()) {
+      if (!operation.isReadOnly()) {
+        return false;
+      }
+    }
+    return true;
+  }
 
 }

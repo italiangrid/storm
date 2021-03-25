@@ -87,8 +87,8 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
   protected boolean failure = false;
 
   /**
-   * variables used to backup values in case the request is suspended waiting
-   * for the file to be recalled from the tape
+   * variables used to backup values in case the request is suspended waiting for the file to be
+   * recalled from the tape
    */
   private StoRI bupFileStori;
   private LocalFile bupLocalFile;
@@ -99,9 +99,8 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
   private boolean setupACLs = true;
 
   /**
-   * Constructor requiring the GridUser, the RequestSummaryData and the
-   * PtGChunkData about this chunk. If the supplied attributes are null, an
-   * InvalidPtGChunkAttributesException is thrown.
+   * Constructor requiring the GridUser, the RequestSummaryData and the PtGChunkData about this
+   * chunk. If the supplied attributes are null, an InvalidPtGChunkAttributesException is thrown.
    */
   public PtG(PtGData reqData) throws IllegalArgumentException {
 
@@ -121,8 +120,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
   }
 
   /**
-   * Method that handles a chunk. It is invoked by the scheduler to carry out
-   * the task.
+   * Method that handles a chunk. It is invoked by the scheduler to carry out the task.
    */
   @Override
   public void doIt() {
@@ -136,9 +134,8 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 
     if (checker.isSURLBusy(surl)) {
 
-      requestData
-        .changeStatusSRM_FILE_BUSY("Requested file is busy ( ongoing put"
-            + "request on the same file");
+      requestData.changeStatusSRM_FILE_BUSY(
+          "Requested file is busy ( ongoing put" + "request on the same file");
       log.info("Unable to perform the PTG request, surl busy");
       printRequestOutcome(requestData);
       return;
@@ -149,80 +146,77 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
     try {
       if (!downgradedToAnonymous && requestData instanceof IdentityInputData) {
         try {
-          fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl,
-              ((IdentityInputData) requestData).getUser());
+          fileStoRI = NamespaceDirector.getNamespace()
+            .resolveStoRIbySURL(surl, ((IdentityInputData) requestData).getUser());
         } catch (UnapprochableSurlException e) {
           unapprochableSurl = true;
           log.info("Unable to build a stori for surl {} for user {}. "
               + "UnapprochableSurlException: {}" + surl, user, e.getMessage());
         } catch (NamespaceException e) {
           failure = true;
-          log.error("Unable to build a stori for surl {} for user {}. "
-              + "NamespaceException: {}", surl, user, e.getMessage());
+          log.error("Unable to build a stori for surl {} for user {}. " + "NamespaceException: {}",
+              surl, user, e.getMessage());
           requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
         } catch (InvalidSURLException e) {
           failure = true;
-          log.info("Unable to build a stori for surl {} for user {}. "
-              + "InvalidSURLException: {}", surl, user, e.getMessage());
+          log.info("Unable to build a stori for surl {} for user {}. " + "InvalidSURLException: {}",
+              surl, user, e.getMessage());
           requestData.changeStatusSRM_INVALID_PATH(e.getMessage());
         }
       } else {
         try {
-          fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(
-              requestData.getSURL());
+          fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL());
         } catch (UnapprochableSurlException e) {
           failure = true;
-          log.info("Unable to build a stori for surl {}. "
-              + "UnapprochableSurlException: {}", surl, e.getMessage());
+          log.info("Unable to build a stori for surl {}. " + "UnapprochableSurlException: {}", surl,
+              e.getMessage());
           requestData.changeStatusSRM_AUTHORIZATION_FAILURE(e.getMessage());
         } catch (NamespaceException e) {
           failure = true;
-          log.error("Unable to build a stori for surl {}. "
-              + "NamespaceException: {}", surl, e.getMessage());
+          log.error("Unable to build a stori for surl {}. " + "NamespaceException: {}", surl,
+              e.getMessage());
           requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
         } catch (InvalidSURLException e) {
           failure = true;
-          log.info("Unable to build a stori for surl {}. "
-              + "InvalidSURLException: {}", surl, e.getMessage());
+          log.info("Unable to build a stori for surl {}. " + "InvalidSURLException: {}", surl,
+              e.getMessage());
           requestData.changeStatusSRM_INVALID_PATH(e.getMessage());
         }
       }
     } catch (IllegalArgumentException e) {
       failure = true;
-      log.error("Unable to get StoRI for surl {}. IllegalArgumentException: ",
-          surl, e.getMessage());
+      log.error("Unable to get StoRI for surl {}. IllegalArgumentException: ", surl,
+          e.getMessage());
       requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
     }
     if (!failure) {
       AuthzDecision ptgAuthz;
       if (!unapprochableSurl) {
         if (!downgradedToAnonymous && requestData instanceof IdentityInputData) {
-          ptgAuthz = AuthzDirector.getPathAuthz().authorize(
-              ((IdentityInputData) requestData).getUser(), SRMFileRequest.PTG,
-              fileStoRI);
+          ptgAuthz = AuthzDirector.getPathAuthz()
+            .authorize(((IdentityInputData) requestData).getUser(), SRMFileRequest.PTG, fileStoRI);
         } else {
-          ptgAuthz = AuthzDirector.getPathAuthz().authorizeAnonymous(
-              SRMFileRequest.PTG, fileStoRI.getStFN());
+          ptgAuthz = AuthzDirector.getPathAuthz()
+            .authorizeAnonymous(SRMFileRequest.PTG, fileStoRI.getStFN());
         }
       } else {
         if (requestData.getTransferProtocols().allows(Protocol.HTTP)) {
           try {
-            fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(
-                requestData.getSURL());
+            fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL());
           } catch (UnapprochableSurlException e) {
             failure = true;
-            log.info("Unable to build a stori for surl {}. "
-                + "UnapprochableSurlException: {}", surl, e.getMessage());
+            log.info("Unable to build a stori for surl {}. " + "UnapprochableSurlException: {}",
+                surl, e.getMessage());
             requestData.changeStatusSRM_AUTHORIZATION_FAILURE(e.getMessage());
           } catch (InvalidSURLException e) {
             failure = true;
-            log.info("Unable to build a stori for surl {}. "
-                + "InvalidSURLException: {}", surl, e.getMessage());
+            log.info("Unable to build a stori for surl {}. " + "InvalidSURLException: {}", surl,
+                e.getMessage());
             requestData.changeStatusSRM_INVALID_PATH(e.getMessage());
           } catch (Throwable e) {
             failure = true;
-            log.error("Unable to build a stori for surl {} {}: {}", surl, e
-                .getClass().getCanonicalName(), e.getMessage());
+            log.error("Unable to build a stori for surl {} {}: {}", surl,
+                e.getClass().getCanonicalName(), e.getMessage());
             requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
           }
           if (!failure) {
@@ -262,8 +256,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 
     this.downgradedToAnonymous = true;
     this.requestData.getTransferProtocols().getDesiredProtocols().clear();
-    this.requestData.getTransferProtocols().getDesiredProtocols()
-      .add(Protocol.HTTP);
+    this.requestData.getTransferProtocols().getDesiredProtocols().add(Protocol.HTTP);
   }
 
   /**
@@ -278,26 +271,23 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 
     boolean isSpaceAuthorized;
     if (!downgradedToAnonymous && requestData instanceof IdentityInputData) {
-      isSpaceAuthorized = spaceAuth.authorize(
-          ((IdentityInputData) requestData).getUser(), SRMSpaceRequest.PTG);
+      isSpaceAuthorized =
+          spaceAuth.authorize(((IdentityInputData) requestData).getUser(), SRMSpaceRequest.PTG);
     } else {
       isSpaceAuthorized = spaceAuth.authorizeAnonymous(SRMSpaceRequest.PTG);
     }
     if (isSpaceAuthorized) {
       try {
-        if ((!fileStoRI.getLocalFile().exists())
-            || (fileStoRI.getLocalFile().isDirectory())) {
+        if ((!fileStoRI.getLocalFile().exists()) || (fileStoRI.getLocalFile().isDirectory())) {
           /*
-           * File does not exist, or it is a directory! Fail request with
-           * SRM_INVALID_PATH!
+           * File does not exist, or it is a directory! Fail request with SRM_INVALID_PATH!
            */
-          requestData.changeStatusSRM_INVALID_PATH("The requested file either"
-              + " does not exist, or it is a directory!");
+          requestData.changeStatusSRM_INVALID_PATH(
+              "The requested file either" + " does not exist, or it is a directory!");
           failure = true;
-          log
-            .debug("ANOMALY in PtGChunk! PolicyCollector confirms read rights on"
-                + " file, yet file does not exist physically! Or, an srmPrepareToGet"
-                + " was attempted on a directory!");
+          log.debug("ANOMALY in PtGChunk! PolicyCollector confirms read rights on"
+              + " file, yet file does not exist physically! Or, an srmPrepareToGet"
+              + " was attempted on a directory!");
         } else {
           /* File exists and it is not a directory */
           /* Sets traverse permissions on file parent folders */
@@ -305,12 +295,12 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
           try {
             canTraverse = managePermitTraverseStep(fileStoRI);
           } catch (CannotMapUserException e) {
-            requestData
-              .changeStatusSRM_FAILURE("Unable to find local user for "
-                  + DataHelper.getRequestor(requestData));
+            requestData.changeStatusSRM_FAILURE(
+                "Unable to find local user for " + DataHelper.getRequestor(requestData));
             failure = true;
-            log.error("ERROR in PtGChunk! Unable to find LocalUser for {}! "
-                + "CannotMapUserException: {}",
+            log.error(
+                "ERROR in PtGChunk! Unable to find LocalUser for {}! "
+                    + "CannotMapUserException: {}",
                 DataHelper.getRequestor(requestData), e.getMessage(), e);
             return;
           }
@@ -319,107 +309,94 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
             try {
               turl = fileStoRI.getTURL(requestData.getTransferProtocols());
             } catch (TURLBuildingException e) {
-              requestData
-                .changeStatusSRM_FAILURE("Unable to build the TURL for the provided transfer protocol");
+              requestData.changeStatusSRM_FAILURE(
+                  "Unable to build the TURL for the provided transfer protocol");
               failure = true;
               log.error("ERROR in PtGChunk! There was a failure building the "
                   + "TURL. : TURLBuildingException {}", e.getMessage(), e);
               return;
             } catch (IllegalArgumentException e) {
               /*
-               * Handle null TURL prefix! This is a programming error: it should
-               * not occur!
+               * Handle null TURL prefix! This is a programming error: it should not occur!
                */
               requestData.changeStatusSRM_FAILURE("Unable to decide TURL!");
               failure = true;
-              log.error(
-                  "ERROR in PtGChunk! invalid TURLPrefix in PtGChunkData "
+              log.error("ERROR in PtGChunk! invalid TURLPrefix in PtGChunkData "
                   + "caused StoRI to be unable to establish TTURL! "
                   + "IllegalArgumentException: {}", e.getMessage(), e);
               return;
             } catch (InvalidGetTURLProtocolException e) {
               requestData.changeStatusSRM_FAILURE("Unable to decide TURL!");
               failure = true;
-              log.error(
-                  "ERROR in PtGChunk! invalid TURL Protocol in PtGChunkData "
+              log.error("ERROR in PtGChunk! invalid TURL Protocol in PtGChunkData "
                   + "caused StoRI to be unable to establish TTURL! "
                   + "InvalidGetTURLProtocolException: {}", e.getMessage(), e);
               return;
             }
-            if (fileStoRI.getVirtualFileSystem().getStorageClassType()
-                .isTapeEnabled()) {
+            if (fileStoRI.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
               /* Compute the Expiration Time in seconds */
-              long expDate = (System.currentTimeMillis() / 1000 + requestData
-                  .getPinLifeTime().value());
-              StormEA.setPinned(fileStoRI.getLocalFile().getAbsolutePath(),
-                  expDate);
+              long expDate =
+                  (System.currentTimeMillis() / 1000 + requestData.getPinLifeTime().value());
+              StormEA.setPinned(fileStoRI.getLocalFile().getAbsolutePath(), expDate);
 
-              
+
               try {
-                TSizeInBytes fileSize = TSizeInBytes.make(fileStoRI
-                    .getLocalFile().length(), SizeUnit.BYTES);
+                TSizeInBytes fileSize =
+                    TSizeInBytes.make(fileStoRI.getLocalFile().length(), SizeUnit.BYTES);
 
                 requestData.setFileSize(fileSize);
                 log.debug("File size: {}", fileSize);
 
               } catch (InvalidTSizeAttributesException e) {
-                requestData
-                  .changeStatusSRM_FAILURE("Unable to determine file size");
+                requestData.changeStatusSRM_FAILURE("Unable to determine file size");
                 failure = true;
                 log.error("ERROR in PtGChunk! error in file size computation! "
                     + "InvalidTSizeAttributesException: {}", e.getMessage(), e);
                 return;
               }
-                }
+            }
             boolean isOnDisk;
             try {
               isOnDisk = isStoriOndisk(fileStoRI);
             } catch (FSException e) {
-              requestData
-                .changeStatusSRM_FAILURE("Unable to verify file disk status");
+              requestData.changeStatusSRM_FAILURE("Unable to verify file disk status");
               failure = true;
-              log.error("ERROR in PtGChunk! error in file on disk check! "
-                  + "FSException: {}", e.getMessage(), e);
+              log.error("ERROR in PtGChunk! error in file on disk check! " + "FSException: {}",
+                  e.getMessage(), e);
               return;
             }
             if (!isOnDisk
-                && fileStoRI.getVirtualFileSystem().getStorageClassType()
-                .isTapeEnabled()) {
-              requestData.changeStatusSRM_REQUEST_INPROGRESS("Recalling"
-                  + " file from tape");
+                && fileStoRI.getVirtualFileSystem().getStorageClassType().isTapeEnabled()) {
+              requestData.changeStatusSRM_REQUEST_INPROGRESS("Recalling" + " file from tape");
               String voName = null;
-              if (!downgradedToAnonymous
-                  && requestData instanceof IdentityInputData) {
+              if (!downgradedToAnonymous && requestData instanceof IdentityInputData) {
                 if (((IdentityInputData) requestData).getUser() instanceof AbstractGridUser) {
-                  voName = ((AbstractGridUser) ((IdentityInputData) requestData)
-                      .getUser()).getVO().getValue();
+                  voName = ((AbstractGridUser) ((IdentityInputData) requestData).getUser()).getVO()
+                    .getValue();
                 }
-                  }
+              }
               try {
-                new TapeRecallCatalog().insertTask(this, voName, fileStoRI
-                    .getLocalFile().getAbsolutePath());
+                new TapeRecallCatalog().insertTask(this, voName,
+                    fileStoRI.getLocalFile().getAbsolutePath());
               } catch (DataAccessException e) {
-                requestData
-                  .changeStatusSRM_FAILURE("Unable to request file recall from tape");
+                requestData.changeStatusSRM_FAILURE("Unable to request file recall from tape");
                 failure = true;
                 log.error("ERROR in PtGChunk! error in tape recall task "
                     + "insertion! DataAccessException: {}", e.getMessage(), e);
                 return;
               }
               /* Stores the parameters in this object */
-              if (!downgradedToAnonymous
-                  && requestData instanceof IdentityInputData) {
+              if (!downgradedToAnonymous && requestData instanceof IdentityInputData) {
                 try {
                   backupData(fileStoRI, fileStoRI.getLocalFile(),
-                      ((IdentityInputData) requestData).getUser().getLocalUser(),
-                      turl);
+                      ((IdentityInputData) requestData).getUser().getLocalUser(), turl);
                 } catch (CannotMapUserException e) {
-                  requestData
-                    .changeStatusSRM_FAILURE("Unable to find local user for "
-                        + DataHelper.getRequestor(requestData));
+                  requestData.changeStatusSRM_FAILURE(
+                      "Unable to find local user for " + DataHelper.getRequestor(requestData));
                   failure = true;
-                  log.error("ERROR in PtGChunk! Unable to find LocalUser "
-                      + "for {}! CannotMapUserException: {}",
+                  log.error(
+                      "ERROR in PtGChunk! Unable to find LocalUser "
+                          + "for {}! CannotMapUserException: {}",
                       DataHelper.getRequestor(requestData), e.getMessage(), e);
                   return;
                 }
@@ -428,57 +405,50 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
               }
 
               /*
-               * The request now ends by saving in the DB the IN_PROGRESS status
-               * information. The effective PtG will be accomplished when the
-               * setTaskStatus() method of the tapeRecallDAO calls the
-               * completeRequest() method.
+               * The request now ends by saving in the DB the IN_PROGRESS status information. The
+               * effective PtG will be accomplished when the setTaskStatus() method of the
+               * tapeRecallDAO calls the completeRequest() method.
                */
             } else {
               /*
-               * Set the read permission for the user on the localfile and any
-               * default ace specified in the story files
+               * Set the read permission for the user on the localfile and any default ace specified
+               * in the story files
                */
               boolean canRead;
               try {
                 canRead = managePermitReadFileStep(fileStoRI, turl);
               } catch (CannotMapUserException e) {
-                requestData
-                  .changeStatusSRM_FAILURE("Unable to find local user for "
-                      + DataHelper.getRequestor(requestData));
+                requestData.changeStatusSRM_FAILURE(
+                    "Unable to find local user for " + DataHelper.getRequestor(requestData));
                 failure = true;
                 log.error(
                     "ERROR in PtGChunk! Unable to find LocalUser for {}! "
-                    + "CannotMapUserException: {}",
+                        + "CannotMapUserException: {}",
                     DataHelper.getRequestor(requestData), e.getMessage(), e);
                 return;
               }
               if (canRead) {
 
                 try {
-                  TSizeInBytes fileSize = TSizeInBytes.make(fileStoRI
-                      .getLocalFile().length(), SizeUnit.BYTES);
+                  TSizeInBytes fileSize =
+                      TSizeInBytes.make(fileStoRI.getLocalFile().length(), SizeUnit.BYTES);
 
                   requestData.setFileSize(fileSize);
                   log.debug("File size: {}", fileSize);
 
                 } catch (InvalidTSizeAttributesException e) {
-                  requestData
-                    .changeStatusSRM_FAILURE("Unable to determine file size");
+                  requestData.changeStatusSRM_FAILURE("Unable to determine file size");
                   failure = true;
-                  log.error(
-                      "ERROR in PtGChunk! error in file size computation! "
-                      + "InvalidTSizeAttributesException: {}", e.getMessage(),
-                      e);
+                  log.error("ERROR in PtGChunk! error in file size computation! "
+                      + "InvalidTSizeAttributesException: {}", e.getMessage(), e);
                   return;
                 }
 
                 requestData.setTransferURL(turl);
-                requestData
-                  .changeStatusSRM_FILE_PINNED("srmPrepareToGet successfully handled!");
+                requestData.changeStatusSRM_FILE_PINNED("srmPrepareToGet successfully handled!");
               } else {
-                requestData
-                  .changeStatusSRM_FAILURE("Local filesystem mask does not allow"
-                      + " setting up correct ACLs for PtG!");
+                requestData.changeStatusSRM_FAILURE(
+                    "Local filesystem mask does not allow" + " setting up correct ACLs for PtG!");
               }
             }
           } else {
@@ -487,24 +457,20 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
         }
       } catch (SecurityException e) {
         /*
-         * The check for existence of the File failed because there is a
-         * SecurityManager installed that denies read privileges for that File!
-         * Perhaps the local system administrator of StoRM set up Java policies
-         * that contrast policies described by the PolicyCollector! There is a
-         * conflict here!
+         * The check for existence of the File failed because there is a SecurityManager installed
+         * that denies read privileges for that File! Perhaps the local system administrator of
+         * StoRM set up Java policies that contrast policies described by the PolicyCollector! There
+         * is a conflict here!
          */
-        requestData.changeStatusSRM_FAILURE("StoRM is not allowed to work on "
-            + "requested file!");
+        requestData.changeStatusSRM_FAILURE("StoRM is not allowed to work on " + "requested file!");
         failure = true;
-        log.error(
-            "ATTENTION in PtGChunk! PtGChunk received a SecurityException "
+        log.error("ATTENTION in PtGChunk! PtGChunk received a SecurityException "
             + "from Java SecurityManager; StoRM cannot check-existence or "
-            + "check-if-directory for: {}",
-            fileStoRI.getLocalFile().toString(), e);
+            + "check-if-directory for: {}", fileStoRI.getLocalFile().toString(), e);
       }
     } else {
-      String emsg = String.format("Read access to %s in Storage Area: %s "
-          + "denied!", requestData.getSURL(), token);
+      String emsg = String.format("Read access to %s in Storage Area: %s " + "denied!",
+          requestData.getSURL(), token);
       requestData.changeStatusSRM_AUTHORIZATION_FAILURE(emsg);
       failure = true;
       log.debug(emsg);
@@ -512,8 +478,8 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
   }
 
   /**
-   * Private method used to setup the right traverse permissions. Returns false
-   * if something goes wrong!
+   * Private method used to setup the right traverse permissions. Returns false if something goes
+   * wrong!
    *
    * @param fileStoRI
    *
@@ -523,8 +489,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
    * @throws CannotMapUserException
    */
 
-  private boolean managePermitTraverseStep(StoRI fileStoRI)
-    throws CannotMapUserException {
+  private boolean managePermitTraverseStep(StoRI fileStoRI) throws CannotMapUserException {
 
     if (!downgradedToAnonymous && requestData instanceof IdentityInputData) {
 
@@ -532,8 +497,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
         return verifyPath(fileStoRI);
 
       return verifyPath(fileStoRI)
-        && setParentsAcl(fileStoRI, ((IdentityInputData) requestData).getUser()
-            .getLocalUser());
+          && setParentsAcl(fileStoRI, ((IdentityInputData) requestData).getUser().getLocalUser());
     }
 
     if (verifyPath(fileStoRI)) {
@@ -559,13 +523,12 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
       failure = true;
       String errorString;
       if (!exists) {
-        errorString = String.format(
-            "The requested SURL is: %s, but its parent %s does not exist!",
+        errorString = String.format("The requested SURL is: %s, but its parent %s does not exist!",
             fileStoRI.getSURL().toString(), parentStoRI.getSURL().toString());
       } else {
-        errorString = String.format(
-            "The requested SURL is: %s, but its parent %s is not a directory!",
-            fileStoRI.getSURL().toString(), parentStoRI.getSURL().toString());
+        errorString =
+            String.format("The requested SURL is: %s, but its parent %s is not a directory!",
+                fileStoRI.getSURL().toString(), parentStoRI.getSURL().toString());
       }
       requestData.changeStatusSRM_INVALID_PATH(errorString);
       log.error(errorString);
@@ -577,21 +540,19 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 
   private boolean setParentsAcl(StoRI fileStoRI, LocalUser localUser) {
 
-    log.debug("Adding parent user ACL for directory : '{}' parents",
-        fileStoRI.getAbsolutePath());
+    log.debug("Adding parent user ACL for directory : '{}' parents", fileStoRI.getAbsolutePath());
 
     for (StoRI parentStoRI : fileStoRI.getParents()) {
       try {
         if (!setAcl(parentStoRI, localUser, FilesystemPermission.Traverse,
-              fileStoRI.hasJustInTimeACLs())) {
-          requestData.changeStatusSRM_FAILURE("Local filesystem mask does "
-              + "not allow setting up correct ACLs for PtG!");
+            fileStoRI.hasJustInTimeACLs())) {
+          requestData.changeStatusSRM_FAILURE(
+              "Local filesystem mask does " + "not allow setting up correct ACLs for PtG!");
           failure = true;
           return false;
         }
       } catch (Exception e) {
-        requestData.changeStatusSRM_FAILURE("Local filesystem has"
-            + " problems manipulating ACE!");
+        requestData.changeStatusSRM_FAILURE("Local filesystem has" + " problems manipulating ACE!");
         failure = true;
         return false;
       }
@@ -600,14 +561,14 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
   }
 
   private boolean managePermitReadFileStep(StoRI fileStoRI, TTURL turl)
-    throws CannotMapUserException {
+      throws CannotMapUserException {
 
     if (!downgradedToAnonymous && requestData instanceof IdentityInputData) {
 
       if (setupACLs) {
 
         if (managePermitReadFileStep(fileStoRI, fileStoRI.getLocalFile(),
-              ((IdentityInputData) requestData).getUser().getLocalUser(), turl)) {
+            ((IdentityInputData) requestData).getUser().getLocalUser(), turl)) {
 
           setDefaultAcl(fileStoRI, fileStoRI.getLocalFile());
 
@@ -628,8 +589,8 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
   }
 
   /**
-   * Private method used to set Read Permission on existing file. Returns false
-   * if something goes wrong
+   * Private method used to set Read Permission on existing file. Returns false if something goes
+   * wrong
    *
    * @param fileStoRI
    * @param localFile
@@ -637,32 +598,29 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
    * @param turl
    * @return
    */
-  private boolean managePermitReadFileStep(StoRI fileStoRI,
-      LocalFile localFile, LocalUser localUser, TTURL turl) {
+  private boolean managePermitReadFileStep(StoRI fileStoRI, LocalFile localFile,
+      LocalUser localUser, TTURL turl) {
 
     try {
-      if (!setAcl(fileStoRI, localUser, FilesystemPermission.Read,
-            fileStoRI.hasJustInTimeACLs())) {
-        requestData.changeStatusSRM_FAILURE("Local filesystem mask does "
-            + "not allow setting up correct ACLs for PtG!");
+      if (!setAcl(fileStoRI, localUser, FilesystemPermission.Read, fileStoRI.hasJustInTimeACLs())) {
+        requestData.changeStatusSRM_FAILURE(
+            "Local filesystem mask does " + "not allow setting up correct ACLs for PtG!");
         failure = true;
         return false;
       }
     } catch (Exception e) {
-      requestData.changeStatusSRM_INTERNAL_ERROR("Local filesystem has"
-          + " problems manipulating ACE!");
+      requestData
+        .changeStatusSRM_INTERNAL_ERROR("Local filesystem has" + " problems manipulating ACE!");
       failure = true;
       return false;
     }
 
-    log
-      .debug("PTG CHUNK DAO. Addition of Read ACL on file successfully completed.");
+    log.debug("PTG CHUNK DAO. Addition of Read ACL on file successfully completed.");
     return true;
   }
 
-  private boolean setAcl(StoRI parentStoRI, LocalUser localUser,
-      FilesystemPermission permission, boolean hasJustInTimeACLs)
-    throws Exception {
+  private boolean setAcl(StoRI parentStoRI, LocalUser localUser, FilesystemPermission permission,
+      boolean hasJustInTimeACLs) throws Exception {
 
     if (hasJustInTimeACLs) {
       return setJiTAcl(parentStoRI, localUser, permission);
@@ -670,74 +628,72 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
     return setAoTAcl(parentStoRI, localUser, permission);
   }
 
-  private boolean setJiTAcl(StoRI fileStori, LocalUser localUser,
-      FilesystemPermission permission) throws Exception {
+  private boolean setJiTAcl(StoRI fileStori, LocalUser localUser, FilesystemPermission permission)
+      throws Exception {
 
-    log.debug("Adding JiT ACL {} to user {} for directory : '{}'", permission,
-        localUser, fileStori.getAbsolutePath());
+    log.debug("Adding JiT ACL {} to user {} for directory : '{}'", permission, localUser,
+        fileStori.getAbsolutePath());
 
     try {
-      AclManagerFS.getInstance().grantUserPermission(
-          fileStori.getLocalFile(), localUser, permission);
+      AclManagerFS.getInstance()
+        .grantUserPermission(fileStori.getLocalFile(), localUser, permission);
     } catch (IllegalArgumentException e) {
       log.error("Unable to grant user traverse permission on parent file. "
           + "IllegalArgumentException: {}", e.getMessage(), e);
       return false;
     }
 
-    FilesystemPermission fp = fileStori.getLocalFile()
-      .getEffectiveUserPermission(localUser);
+    FilesystemPermission fp = fileStori.getLocalFile().getEffectiveUserPermission(localUser);
 
     if (fp == null) {
-      log.error("ERROR in PTGChunk! A {} User-ACL was set on {} for user {} "
-          + "but when subsequently verifying its effectivity, a null ACE was "
-          + "found!", permission, fileStori.getAbsolutePath(),
-          localUser.toString());
+      log.error(
+          "ERROR in PTGChunk! A {} User-ACL was set on {} for user {} "
+              + "but when subsequently verifying its effectivity, a null ACE was " + "found!",
+          permission, fileStori.getAbsolutePath(), localUser.toString());
       throw new Exception("Unable to verify user ACL");
     }
 
     if (!fp.allows(permission)) {
-      log.error("ATTENTION in PtGChunk! The local filesystem has a mask that "
-          + "does not allow {} User-ACL to be set up on!", permission, fileStori
-          .getLocalFile().toString());
+      log.error(
+          "ATTENTION in PtGChunk! The local filesystem has a mask that "
+              + "does not allow {} User-ACL to be set up on!",
+          permission, fileStori.getLocalFile().toString());
       return false;
     }
 
-    VolatileAndJiTCatalog.getInstance().trackJiT(fileStori.getPFN(), localUser,
-        permission, start, requestData.getPinLifeTime());
+    VolatileAndJiTCatalog.getInstance()
+      .trackJiT(fileStori.getPFN(), localUser, permission, start, requestData.getPinLifeTime());
     return true;
   }
 
-  private boolean setAoTAcl(StoRI fileStori, LocalUser localUser,
-      FilesystemPermission permission) throws Exception {
+  private boolean setAoTAcl(StoRI fileStori, LocalUser localUser, FilesystemPermission permission)
+      throws Exception {
 
-    log.debug("Adding AoT ACL {} to user {} for directory : '{}'", permission,
-        localUser, fileStori.getAbsolutePath());
+    log.debug("Adding AoT ACL {} to user {} for directory : '{}'", permission, localUser,
+        fileStori.getAbsolutePath());
 
     try {
-      AclManagerFS.getInstance().grantGroupPermission(
-          fileStori.getLocalFile(), localUser, permission);
+      AclManagerFS.getInstance()
+        .grantGroupPermission(fileStori.getLocalFile(), localUser, permission);
     } catch (IllegalArgumentException e) {
       log.error("Unable to grant user traverse permission on parent file. "
           + "IllegalArgumentException: {}", e.getMessage(), e);
       return false;
     }
 
-    FilesystemPermission fp = fileStori.getLocalFile()
-      .getEffectiveGroupPermission(localUser);
+    FilesystemPermission fp = fileStori.getLocalFile().getEffectiveGroupPermission(localUser);
 
     if (fp == null) {
-      log
-        .error(
-            "ERROR in PtGChunk! A Traverse Group-ACL was set on {} for "
-            + "user {} but when subsequently verifying its effectivity, a null ACE "
-            + "was found!", fileStori.getAbsolutePath(), localUser.toString());
+      log.error("ERROR in PtGChunk! A Traverse Group-ACL was set on {} for "
+          + "user {} but when subsequently verifying its effectivity, a null ACE " + "was found!",
+          fileStori.getAbsolutePath(), localUser.toString());
       return false;
     }
     if (!fp.allows(permission)) {
-      log.error("ATTENTION in PtGChunk! The local filesystem has a mask that "
-          + "does not allow Traverse Group-ACL to be set up on {}!", fileStori
-          .getLocalFile().toString());
+      log.error(
+          "ATTENTION in PtGChunk! The local filesystem has a mask that "
+              + "does not allow Traverse Group-ACL to be set up on {}!",
+          fileStori.getLocalFile().toString());
       return false;
     }
     return true;
@@ -745,28 +701,24 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 
   private void setHttpsServiceParentAcl(StoRI fileStoRI) {
 
-    log.debug("Adding parent https ACL for directory : '{}' parents",
-        fileStoRI.getAbsolutePath());
+    log.debug("Adding parent https ACL for directory : '{}' parents", fileStoRI.getAbsolutePath());
 
     for (StoRI parentStoRI : fileStoRI.getParents()) {
-      setHttpsServiceAcl(parentStoRI.getLocalFile(),
-          FilesystemPermission.Traverse);
+      setHttpsServiceAcl(parentStoRI.getLocalFile(), FilesystemPermission.Traverse);
     }
   }
 
-  private void setHttpsServiceAcl(LocalFile file,
-      FilesystemPermission permission) {
+  private void setHttpsServiceAcl(LocalFile file, FilesystemPermission permission) {
 
     log.debug("Adding https ACL {} for directory : '{}'", permission, file);
 
     try {
-      AclManagerFS.getInstance().grantHttpsServiceGroupPermission(file,
-          permission);
+      AclManagerFS.getInstance().grantHttpsServiceGroupPermission(file, permission);
     } catch (IllegalArgumentException e) {
       log.error("Unable to grant user permission on the created folder. "
           + "IllegalArgumentException: {}", e.getMessage(), e);
-      requestData.getStatus().extendExplaination(
-          "Unable to grant group permission on the created folder");
+      requestData.getStatus()
+        .extendExplaination("Unable to grant group permission on the created folder");
     }
   }
 
@@ -789,19 +741,20 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
         log.debug("ACE {} is not valid!", ace.toString());
         continue;
       }
-      log.debug("Adding DefaultACL for the gid: {} with permission: {}",
-          ace.getGroupID(), ace.getFilePermissionString());
+      log.debug("Adding DefaultACL for the gid: {} with permission: {}", ace.getGroupID(),
+          ace.getFilePermissionString());
       LocalUser u = new LocalUser(ace.getGroupID(), ace.getGroupID());
       if (ace.getFilesystemPermission() == null) {
         log.warn("Unable to setting up the ACL. ACl entry permission is null!");
         continue;
       }
       try {
-        AclManagerFS.getInstance().grantGroupPermission(localFile, u,
-            ace.getFilesystemPermission());
+        AclManagerFS.getInstance()
+          .grantGroupPermission(localFile, u, ace.getFilesystemPermission());
       } catch (IllegalArgumentException e) {
-        log.error("Unable to grant group permissions on the file. "
-            + "IllegalArgumentException: {}", e.getMessage(), e);
+        log.error(
+            "Unable to grant group permissions on the file. " + "IllegalArgumentException: {}",
+            e.getMessage(), e);
       }
     }
 
@@ -813,8 +766,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
    * @param localUser
    * @param turl
    */
-  private void backupData(StoRI fileStoRI, LocalFile localFile,
-      LocalUser localUser, TTURL turl) {
+  private void backupData(StoRI fileStoRI, LocalFile localFile, LocalUser localUser, TTURL turl) {
 
     bupFileStori = fileStoRI;
     bupLocalFile = localFile;
@@ -836,8 +788,8 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
   }
 
   /**
-   * Method that supplies a String describing this PtGChunk - for scheduler Log
-   * purposes! It returns the request token and the SURL that was asked for.
+   * Method that supplies a String describing this PtGChunk - for scheduler Log purposes! It returns
+   * the request token and the SURL that was asked for.
    */
   @Override
   public String getName() {
@@ -846,8 +798,8 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
   }
 
   /**
-   * Method used in a callback fashion in the scheduler for separately handling
-   * PtG, PtP and Copy chunks.
+   * Method used in a callback fashion in the scheduler for separately handling PtG, PtP and Copy
+   * chunks.
    */
   @Override
   public void choose(Streets s) {
@@ -874,8 +826,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
       log.error("Unable to determine if file {} is on disk. FSException: ",
           bupLocalFile.getAbsolutePath(), e.getMessage(), e);
       requestData
-        .changeStatusSRM_FAILURE("Internal error: unable to determine "
-            + "if the file is on disk");
+        .changeStatusSRM_FAILURE("Internal error: unable to determine " + "if the file is on disk");
       return false;
     }
     if (!isOnDisk) {
@@ -884,22 +835,19 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
       requestData.changeStatusSRM_FAILURE("Error recalling file from tape");
       return false;
     }
-    Boolean success = managePermitReadFileStep(bupFileStori, bupLocalFile,
-        bupLocalUser, bupTURL);
+    Boolean success = managePermitReadFileStep(bupFileStori, bupLocalFile, bupLocalUser, bupTURL);
     if (bupLocalUser != null) {
-      success = managePermitReadFileStep(bupFileStori, bupLocalFile,
-          bupLocalUser, bupTURL);
+      success = managePermitReadFileStep(bupFileStori, bupLocalFile, bupLocalUser, bupTURL);
     } else {
       success = true;
       setDefaultAcl(bupFileStori, bupLocalFile);
     }
     if (success) {
       requestData.setTransferURL(bupTURL);
-      requestData.changeStatusSRM_FILE_PINNED("srmPrepareToGet successfully "
-          + "handled!");
+      requestData.changeStatusSRM_FILE_PINNED("srmPrepareToGet successfully " + "handled!");
     } else {
-      requestData.changeStatusSRM_FAILURE("Local filesystem mask does not "
-          + "allow setting up correct ACLs for PtG!");
+      requestData.changeStatusSRM_FAILURE(
+          "Local filesystem mask does not " + "allow setting up correct ACLs for PtG!");
     }
     return success;
   }
@@ -934,8 +882,8 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
   public boolean isResultSuccess() {
 
     TStatusCode statusCode = requestData.getStatus().getStatusCode();
-    return ((statusCode.equals(TStatusCode.SRM_FILE_PINNED)) || requestData
-        .getStatus().isSRM_SUCCESS());
+    return ((statusCode.equals(TStatusCode.SRM_FILE_PINNED))
+        || requestData.getStatus().isSRM_SUCCESS());
   }
 
   /**
@@ -943,43 +891,36 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
    */
   private void manageIsDeny() {
 
-    String emsg = String.format("Read access to %s denied!",
-        requestData.getSURL());
+    String emsg = String.format("Read access to %s denied!", requestData.getSURL());
     log.debug(emsg);
     requestData.changeStatusSRM_AUTHORIZATION_FAILURE(emsg);
     failure = true;
   }
 
   /**
-   * Manager of the IsIndeterminate state: this state indicates that an error in
-   * the PolicySource occured and so the policy Collector does not know what do
-   * to!
+   * Manager of the IsIndeterminate state: this state indicates that an error in the PolicySource
+   * occured and so the policy Collector does not know what do to!
    */
   private void manageIsIndeterminate(AuthzDecision ad) {
 
     requestData.changeStatusSRM_FAILURE("Failure in PolicySource prevented"
         + " PolicyCollector from establishing access rights! Processing failed!");
     failure = true;
-    log.error("ERROR in PtGChunk! PolicyCollector received an error from "
-        + "PolicySource!");
+    log.error("ERROR in PtGChunk! PolicyCollector received an error from " + "PolicySource!");
     log.error("Received state: {}", ad);
     log.error("Requested SURL: {}", requestData.getSURL());
   }
 
   /**
-   * Manager of the IsNotApplicable state: this state indicates that the
-   * PolicyCollector has not got any info on the requested file, so it does not
-   * know what to answer.
+   * Manager of the IsNotApplicable state: this state indicates that the PolicyCollector has not got
+   * any info on the requested file, so it does not know what to answer.
    */
   private void manageIsNotApplicabale(AuthzDecision ad) {
 
-    requestData
-      .changeStatusSRM_FAILURE("No policies found for the requested "
-          + "SURL! Therefore access rights cannot be established! Processing cannot "
-          + "continue!");
+    requestData.changeStatusSRM_FAILURE("No policies found for the requested "
+        + "SURL! Therefore access rights cannot be established! Processing cannot " + "continue!");
     failure = true;
-    log
-      .warn("PtGChunk: PolicyCollector found no policy for the supplied SURL!");
+    log.warn("PtGChunk: PolicyCollector found no policy for the supplied SURL!");
     log.warn("Received state: {}", ad);
     log.warn("Requested SURL: {}", requestData.getSURL());
   }
@@ -989,28 +930,25 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
     if (inputData != null) {
       if (inputData.getSURL() != null) {
         if (inputData.getRequestToken() != null) {
-          CommandHelper.printRequestOutcome(SRM_COMMAND, log,
-              inputData.getStatus(), inputData, inputData.getRequestToken(),
-              Arrays.asList(inputData.getSURL().toString()));
+          CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData,
+              inputData.getRequestToken(), Arrays.asList(inputData.getSURL().toString()));
         } else {
-          CommandHelper.printRequestOutcome(SRM_COMMAND, log,
-              inputData.getStatus(), inputData,
+          CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData,
               Arrays.asList(inputData.getSURL().toString()));
         }
 
       } else {
         if (inputData.getRequestToken() != null) {
-          CommandHelper.printRequestOutcome(SRM_COMMAND, log,
-              inputData.getStatus(), inputData, inputData.getRequestToken());
+          CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData,
+              inputData.getRequestToken());
         } else {
-          CommandHelper.printRequestOutcome(SRM_COMMAND, log,
-              inputData.getStatus(), inputData);
+          CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData);
         }
       }
 
     } else {
-      CommandHelper.printRequestOutcome(SRM_COMMAND, log, CommandHelper
-          .buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "No input available"));
+      CommandHelper.printRequestOutcome(SRM_COMMAND, log,
+          CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "No input available"));
     }
   }
 }

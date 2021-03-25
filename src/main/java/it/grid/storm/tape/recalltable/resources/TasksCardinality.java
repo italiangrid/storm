@@ -99,5 +99,4 @@ public class TasksCardinality {
 		log.debug("Number of tasks queued = {}", nReadyForTakeover);
 		return Response.ok().entity(Integer.toString(nReadyForTakeover)).build();
 	}
-
 }

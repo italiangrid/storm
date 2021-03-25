@@ -28,27 +28,27 @@ import java.util.TimerTask;
  */
 public abstract class ConfigurationWatcher extends TimerTask {
 
-	private long timeStamp;
-	private final File file;
+  private long timeStamp;
+  private final File file;
 
-	public ConfigurationWatcher(File file) {
+  public ConfigurationWatcher(File file) {
 
-		this.file = file;
-		timeStamp = file.lastModified();
-	}
+    this.file = file;
+    timeStamp = file.lastModified();
+  }
 
-	@Override
-	public final void run() {
+  @Override
+  public final void run() {
 
-		long timeStamp = file.lastModified();
+    long timeStamp = file.lastModified();
 
-		if (this.timeStamp != timeStamp) {
-			this.timeStamp = timeStamp;
-			onChange();
-		}
-	}
+    if (this.timeStamp != timeStamp) {
+      this.timeStamp = timeStamp;
+      onChange();
+    }
+  }
 
-	// Take some actions on file changed
-	protected abstract void onChange();
+  // Take some actions on file changed
+  protected abstract void onChange();
 
 }

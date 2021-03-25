@@ -17,6 +17,7 @@
 
 package it.grid.storm.synchcall.command.directory;
 
+import it.grid.storm.acl.AclManager;
 import it.grid.storm.acl.AclManagerFS;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
@@ -52,21 +53,24 @@ import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.MkdirInputData;
 import it.grid.storm.synchcall.data.directory.MkdirOutputData;
 
+import static it.grid.storm.filesystem.FilesystemPermission.ListTraverse;
+import static it.grid.storm.filesystem.FilesystemPermission.ListTraverseWrite;
 import static it.grid.storm.srm.types.TStatusCode.SRM_AUTHORIZATION_FAILURE;
 import static it.grid.storm.srm.types.TStatusCode.SRM_DUPLICATION_ERROR;
 import static it.grid.storm.srm.types.TStatusCode.SRM_FAILURE;
 import static it.grid.storm.srm.types.TStatusCode.SRM_INTERNAL_ERROR;
 import static it.grid.storm.srm.types.TStatusCode.SRM_INVALID_PATH;
+import static it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS;
 import static it.grid.storm.synchcall.command.directory.MkdirException.srmAuthorizationFailure;
 import static it.grid.storm.synchcall.command.directory.MkdirException.srmFailure;
 import static it.grid.storm.synchcall.command.directory.MkdirException.srmInternalError;
 import static it.grid.storm.synchcall.command.directory.MkdirException.srmInvalidPath;
 import static java.lang.String.format;
 
-import java.util.Arrays;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 class MkdirException extends SRMCommandException {
 
@@ -112,11 +116,16 @@ public class MkdirCommand extends DirectoryCommand implements Command {
   public static final Logger log = LoggerFactory.getLogger(MkdirCommand.class);
 
   private static final String SRM_COMMAND = "SrmMkdir";
+
   private final NamespaceInterface namespace;
+  private final Configuration configuration;
+  private final AclManager aclManager;
 
   public MkdirCommand() {
 
     namespace = NamespaceDirector.getNamespace();
+    configuration = Configuration.getInstance();
+    aclManager = AclManagerFS.getInstance();
   }
 
   /**
@@ -138,33 +147,20 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 
   private MkdirOutputData doMkdir(MkdirInputData data) {
 
-    TSURL surl = null;
-    GridUserInterface user = null;
-    StoRI stori = null;
     TReturnStatus returnStatus = null;
     try {
-      surl = getSURL(data);
-      user = getUser(data);
-      stori = resolveStoRI(surl, user);
+      TSURL surl = getSURL(data);
+      GridUserInterface user = getUser(data);
+      StoRI stori = resolveStoRI(surl, user);
       checkUserAuthorization(stori, user);
       log.debug("srmMkdir authorized for {} for directory = {}", userToString(user),
           stori.getPFN());
       returnStatus = createFolder(stori.getLocalFile());
       if (returnStatus.isSRM_SUCCESS()) {
         log.debug("srmMkdir: updating used space info ...");
-        try {
-          increaseUsedSpaceInfo(stori.getLocalFile());
-        } catch (NamespaceException e) {
-          log.error("srmMkdir: {}", e.getMessage());
-          returnStatus.extendExplaination("Unable to increase used space info: " + e.getMessage());
-        }
+        increaseUsedSpaceInfo(stori.getLocalFile());
         log.debug("srmMkdir: managing ACL ...");
-        try {
-          manageAcl(stori, user, returnStatus);
-        } catch (Exception e) {
-          log.error("srmMkdir: {}", e.getMessage());
-          returnStatus.extendExplaination("Unable to set ACL: " + e.getMessage());
-        }
+        manageAcl(stori, user);
       }
     } catch (MkdirException e) {
       log.error("srmMkdir: {}", e.getMessage());
@@ -174,27 +170,32 @@ public class MkdirCommand extends DirectoryCommand implements Command {
     return new MkdirOutputData(returnStatus);
   }
 
-  private TReturnStatus createFolder(LocalFile file) throws MkdirException {
+  private TReturnStatus createFolder(LocalFile file) {
 
     LocalFile parent = file.getParentFile();
-    log.debug("srmMkdir: Parent directory is {}", parent);
-    if (parent == null) {
-      return new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
-          "Parent directory does not exists. Recursive directory creation Not Allowed");
+    log.debug("srmMkdir: Parent directory is {}.", parent);
+    if (parent != null) {
+      if (!parent.exists()) {
+        return new TReturnStatus(SRM_INVALID_PATH,
+            "Parent directory does not exists. Recursive directory creation Not Allowed");
+      }
+      log.debug("srmMkdir: Parent directory {} exists.", parent);
+    } else {
+      srmInvalidPath("Null parent directory");
     }
     if (!file.mkdir()) {
       if (file.isDirectory()) {
         log.debug("srmMkdir: The specified path is an existent directory.");
-        return new TReturnStatus(TStatusCode.SRM_DUPLICATION_ERROR, "Directory specified exists!");
+        return new TReturnStatus(SRM_DUPLICATION_ERROR, "Path exists and it's a directory.");
       }
       log.debug("srmMkdir: The specified path is an existent file.");
-      return new TReturnStatus(TStatusCode.SRM_INVALID_PATH, "Path specified exists as a file");
+      return new TReturnStatus(SRM_INVALID_PATH, "Path specified exists as a file.");
     }
     log.debug("SrmMkdir: Request success!");
-    return new TReturnStatus(TStatusCode.SRM_SUCCESS, "Directory created with success");
+    return new TReturnStatus(SRM_SUCCESS, "Directory created with success");
   }
 
-  private void checkInputData(InputData data) throws IllegalArgumentException {
+  private void checkInputData(InputData data) {
 
     if (data == null) {
       throw new IllegalArgumentException("Invalid input data: NULL");
@@ -221,17 +222,11 @@ public class MkdirCommand extends DirectoryCommand implements Command {
     try {
       return namespace.resolveStoRIbySURL(surl, user);
     } catch (UnapprochableSurlException e) {
-      log.error(e.getMessage());
       throw srmAuthorizationFailure(e.getMessage());
-    } catch (NamespaceException e) {
-      log.error(e.getMessage());
+    } catch (IllegalArgumentException | NamespaceException e) {
       throw srmInternalError(e.getMessage());
     } catch (InvalidSURLException e) {
-      log.error(e.getMessage());
       throw srmInvalidPath(e.getMessage());
-    } catch (IllegalArgumentException e) {
-      log.error(e.getMessage());
-      throw srmInternalError(e.getMessage());
     }
   }
 
@@ -242,13 +237,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 
   private void checkUserAuthorization(StoRI stori, GridUserInterface user) throws MkdirException {
 
-    TSpaceToken token;
-    try {
-      token = stori.getVirtualFileSystem().getSpaceToken();
-    } catch (NamespaceException e) {
-      log.error(e.getMessage());
-      throw srmInternalError(e.getMessage());
-    }
+    TSpaceToken token = stori.getVirtualFileSystem().getSpaceToken();
     SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
 
     boolean isSpaceAuthorized;
@@ -291,31 +280,36 @@ public class MkdirCommand extends DirectoryCommand implements Command {
     return null;
   }
 
-  private void increaseUsedSpaceInfo(LocalFile dir) throws NamespaceException {
+  private boolean increaseUsedSpaceInfo(LocalFile dir) {
 
-    NamespaceDirector.getNamespace().resolveVFSbyLocalFile(dir).increaseUsedSpace(dir.getSize());
+    try {
+      return namespace.resolveVFSbyLocalFile(dir).increaseUsedSpace(dir.getSize());
+    } catch (NamespaceException e) {
+      log.error("srmMkdir: Unable to increase used space info [{}]", e.getMessage());
+      return false;
+    }
   }
 
-  private void manageAcl(StoRI stori, GridUserInterface user, TReturnStatus returnStatus)
-      throws Exception {
+  private void manageAcl(StoRI stori, GridUserInterface user) {
 
-    FilesystemPermission permission;
-    if (Configuration.getInstance().getEnableWritePermOnDirectory()) {
-      permission = FilesystemPermission.ListTraverseWrite;
-    } else {
-      permission = FilesystemPermission.ListTraverse;
-    }
-    if (isAnonymous(user)) {
-      manageDefaultACL(stori.getLocalFile(), permission);
-      setHttpsServiceAcl(stori.getLocalFile(), permission);
-    } else {
-      setAcl(user, stori.getLocalFile(), stori.hasJustInTimeACLs(), permission);
-      manageDefaultACL(stori.getLocalFile(), permission);
+    FilesystemPermission permission =
+        configuration.getEnableWritePermOnDirectory() ? ListTraverseWrite : ListTraverse;
+
+    try {
+      if (isAnonymous(user)) {
+        manageDefaultACL(stori.getLocalFile(), permission);
+        setHttpsServiceAcl(stori.getLocalFile(), permission);
+      } else {
+        setAcl(user, stori.getLocalFile(), stori.hasJustInTimeACLs(), permission);
+        manageDefaultACL(stori.getLocalFile(), permission);
+      }
+    } catch (NamespaceException | CannotMapUserException e) {
+      log.error("srmMkdir: Unable to set ACL [{}]", e.getMessage());
     }
   }
 
   private void setAcl(GridUserInterface user, LocalFile file, boolean hasJiTACL,
-      FilesystemPermission permission) throws Exception {
+      FilesystemPermission permission) throws CannotMapUserException {
 
     /*
      * Add Acces Control List (ACL) in directory created. ACL allow user to read-write-list the new
@@ -330,52 +324,36 @@ public class MkdirCommand extends DirectoryCommand implements Command {
       // Jit Case: with JiT Model the ACL for directory is not needed.
       return;
     }
-    LocalUser localUser = null;
-    try {
-      localUser = user.getLocalUser();
-    } catch (CannotMapUserException e) {
-      log.warn("SrmMkdir: ACL setup error. {}", e.getMessage(), e);
-      throw new Exception("ACL setup error. Local mapping error.");
-    } finally {
-      if (localUser == null) {
-        log.warn("SrmMkdir: Unable to setting up the ACL. LocalUser is null!");
-        throw new Exception("ACL setup error. Invalid local user.");
-      }
+    LocalUser localUser = user.getLocalUser();
+    if (localUser == null) {
+      log.warn("SrmMkdir: Unable to setting up the ACL. LocalUser is null!");
+      throw new CannotMapUserException("ACL setup error. Invalid local user: null.");
     }
-    AclManagerFS.getInstance().grantGroupPermission(file, localUser, permission);
+    aclManager.grantGroupPermission(file, localUser, permission);
   }
 
-  private void manageDefaultACL(LocalFile dir, FilesystemPermission permission) throws Exception {
+  private void manageDefaultACL(LocalFile dir, FilesystemPermission permission)
+      throws NamespaceException {
 
-    VirtualFSInterface vfs;
-    try {
-      vfs = NamespaceDirector.getNamespace().resolveVFSbyLocalFile(dir);
-    } catch (NamespaceException e) {
-      log.error("srmMkdir: {}", e.getMessage());
-      throw new Exception("Default ACL setup error: " + e.getMessage());
-    }
+    VirtualFSInterface vfs = namespace.resolveVFSbyLocalFile(dir);
     DefaultACL dacl = vfs.getCapabilities().getDefaultACL();
     if ((dacl == null) || (dacl.isEmpty())) {
       log.debug("srmMkdir: default acl NULL or empty");
       return;
     }
     for (ACLEntry ace : dacl.getACL()) {
-      /*
-       * TODO ATTENTION: here we never set the acl contained in the ACE, we just add xr or xrw in
-       * respect to getEnableWritePermOnDirectory
-       */
       log.debug("Adding DefaultACL for the gid: {} with permission: {}", ace.getGroupID(),
           ace.getFilePermissionString());
 
       LocalUser user = new LocalUser(ace.getGroupID(), ace.getGroupID());
-      AclManagerFS.getInstance().grantGroupPermission(dir, user, permission);
+      aclManager.grantGroupPermission(dir, user, permission);
     }
   }
 
   private void setHttpsServiceAcl(LocalFile file, FilesystemPermission permission) {
 
     log.debug("SrmMkdir: Adding default ACL for directory {}: {}", file, permission);
-    AclManagerFS.getInstance().grantHttpsServiceGroupPermission(file, permission);
+    aclManager.grantHttpsServiceGroupPermission(file, permission);
   }
 
   private void printRequestOutcome(TReturnStatus status, MkdirInputData inputData) {
@@ -383,7 +361,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
     if (inputData != null) {
       if (inputData.getSurl() != null) {
         CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData,
-            Arrays.asList(inputData.getSurl().toString()));
+            Lists.newArrayList(inputData.getSurl().toString()));
       } else {
         CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData);
       }

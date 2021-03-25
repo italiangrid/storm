@@ -71,7 +71,7 @@ public class AbortRequestCommand extends DataTransferCommand implements Command 
 
   public AbortRequestCommand() {
 
-  };
+  }
 
   public OutputData execute(InputData data) {
 
