@@ -28,6 +28,7 @@ then we can procede with the StoRM components installation and configuration gui
 * [Custom application.yml configuration](webdav/custom-webdav-configuration/index.html)
 * [Storage area configuration](webdav/storage-area-configuration/index.html)
 * [Support for Third Party Copy transfers](webdav/tpc/index.html)
+* [Externalized session support](webdav/external-sessions/index.html)
 
 ### StoRM GridFTP DSI plugin <a name="gridftp">&nbsp;</a>
 
