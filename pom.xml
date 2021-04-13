@@ -5,12 +5,12 @@
   <name>StoRM Backend server</name>
   <groupId>org.italiangrid.storm</groupId>
   <artifactId>storm-backend-server</artifactId>
-  <version>1.11.19</version>
+  <version>1.11.20</version>
 
   <properties>
 
     <!-- versions of the project dependencies -->
-    <commonsConfigurationVersion>1.4</commonsConfigurationVersion>
+    <commonsConfigurationVersion>1.10</commonsConfigurationVersion>
     <jerseyVersion>2.25.1</jerseyVersion>
     <jettyVersion>8.1.9.v20130131</jettyVersion>
     <slf4jVersion>1.7.2</slf4jVersion>
@@ -18,27 +18,28 @@
     <nettyVersion>3.5.0.Final</nettyVersion>
     <jnaVersion>3.3.0</jnaVersion>
     <jettisonVersion>1.1</jettisonVersion>
-    <commonsDbcpVersion>1.2.1</commonsDbcpVersion>
-    <commonsIoVersion>2.0.1</commonsIoVersion>
+    <commonsDbcpVersion>2.8.0</commonsDbcpVersion>
+    <commonsIoVersion>2.8.0</commonsIoVersion>
     <ini4jVersion>0.5.2</ini4jVersion>
-    <xmlrpcVersion>3.0</xmlrpcVersion>
+    <xmlrpcVersion>3.1.3</xmlrpcVersion>
     <jaxrpcVersion>1.1</jaxrpcVersion>
     <jsonVersion>20080701</jsonVersion>
-    <junitVersion>4.8.1</junitVersion>
-    <commonsCliVersion>1.0</commonsCliVersion>
-    <commonsDiscoveryVersion>0.2</commonsDiscoveryVersion>
+    <junitVersion>4.13.2</junitVersion>
+    <commonsCliVersion>1.4</commonsCliVersion>
+    <commonsDiscoveryVersion>0.5</commonsDiscoveryVersion>
     <commonsHttpClientVersion>3.1</commonsHttpClientVersion>
     <activationVersion>1.1.1</activationVersion>
-    <commonsValidatorVersion>1.3.0</commonsValidatorVersion>
+    <commonsValidatorVersion>1.7</commonsValidatorVersion>
     <wsdl4jVersion>1.5.1</wsdl4jVersion>
     <xalanVersion>2.7.1</xalanVersion>
     <mailVersion>1.4.6</mailVersion>
     <jakartaXmlBindVersion>2.3.3</jakartaXmlBindVersion>
 
-    <mysqlConnectorVersion>5.1.12</mysqlConnectorVersion>
+    <mysqlConnectorVersion>8.0.16</mysqlConnectorVersion>
 
     <guavaVersion>18.0</guavaVersion>
     <metrics.version>3.1.0</metrics.version>
+    <xercesImplVersion>2.11.0</xercesImplVersion>
 
     <mockitoVersion>1.10.19</mockitoVersion>
     <hamcrestVersion>1.3</hamcrestVersion>
@@ -62,6 +63,9 @@
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
+          <compilerArgs>
+            <arg>-Xlint:deprecation</arg>
+          </compilerArgs>
         </configuration>
       </plugin>
 
@@ -145,32 +149,6 @@
             </configuration>
           </execution>
           <execution>
-            <id>upload-initd</id>
-            <phase>deploy</phase>
-            <goals>
-              <goal>upload</goal>
-            </goals>
-            <configuration>
-              <url>${remoteDeployment.url}</url>
-              <serverId>${remoteDeployment.serverId}</serverId>
-              <fromDir>etc/init.d</fromDir>
-              <toDir>/etc/init.d</toDir>
-            </configuration>
-          </execution>
-          <execution>
-            <id>upload-sysconfig</id>
-            <phase>deploy</phase>
-            <goals>
-              <goal>upload</goal>
-            </goals>
-            <configuration>
-              <url>${remoteDeployment.url}</url>
-              <serverId>${remoteDeployment.serverId}</serverId>
-              <fromDir>etc/sysconfig</fromDir>
-              <toDir>/etc/sysconfig</toDir>
-            </configuration>
-          </execution>
-          <execution>
             <id>upload-logrotated</id>
             <phase>deploy</phase>
             <goals>
@@ -181,6 +159,32 @@
               <serverId>${remoteDeployment.serverId}</serverId>
               <fromDir>etc/logrotate.d</fromDir>
               <toDir>/etc/logrotate.d</toDir>
+            </configuration>
+          </execution>
+          <execution>
+            <id>upload-systemd-unit</id>
+            <phase>deploy</phase>
+            <goals>
+              <goal>upload</goal>
+            </goals>
+            <configuration>
+              <url>${remoteDeployment.url}</url>
+              <serverId>${remoteDeployment.serverId}</serverId>
+              <fromDir>etc/systemd</fromDir>
+              <toDir>/usr/lib/systemd/system</toDir>
+            </configuration>
+          </execution>
+          <execution>
+            <id>upload-systemd-conf</id>
+            <phase>deploy</phase>
+            <goals>
+              <goal>upload</goal>
+            </goals>
+            <configuration>
+              <url>${remoteDeployment.url}</url>
+              <serverId>${remoteDeployment.serverId}</serverId>
+              <fromDir>etc/systemd/service.d</fromDir>
+              <toDir>/usr/lib/systemd/system/storm-backend-server.service.d</toDir>
             </configuration>
           </execution>
 
@@ -376,8 +380,8 @@
     </dependency>
 
     <dependency>
-      <groupId>commons-dbcp</groupId>
-      <artifactId>commons-dbcp</artifactId>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-dbcp2</artifactId>
       <version>${commonsDbcpVersion}</version>
     </dependency>
 
@@ -502,6 +506,12 @@
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
       <version>${jakartaXmlBindVersion}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>xerces</groupId>
+      <artifactId>xercesImpl</artifactId>
+      <version>${xercesImplVersion}</version>
     </dependency>
 
   </dependencies>

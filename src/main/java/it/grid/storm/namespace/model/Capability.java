@@ -109,7 +109,7 @@ public class Capability implements CapabilityInterface {
 	public void addTransportProtocolByID(int protocolIndex,
 		TransportProtocol trasfProt) {
 
-		transpProtocolsByID.put(new Integer(protocolIndex), trasfProt);
+		transpProtocolsByID.put(Integer.valueOf(protocolIndex), trasfProt);
 	}
 
 	public void addTransportProtocol(TransportProtocol trasfProt) {

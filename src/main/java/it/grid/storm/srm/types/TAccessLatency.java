@@ -33,9 +33,9 @@ public class TAccessLatency {
 
 	private String accessLatency = null;
 
-	public static final TAccessLatency ONLINE = new TAccessLatency("ONLINE"),
-		NEARLINE = new TAccessLatency("NEARLINE"), EMPTY = new TAccessLatency(
-			"EMPTY");
+	public static final TAccessLatency ONLINE = new TAccessLatency("ONLINE");
+	public static final TAccessLatency NEARLINE = new TAccessLatency("NEARLINE");
+	public static final TAccessLatency EMPTY = new TAccessLatency("EMPTY");
 
 	private TAccessLatency(String accessLatency) {
 
@@ -88,10 +88,10 @@ public class TAccessLatency {
 
 		Integer value = null;
 
-		if (this.equals(TAccessLatency.ONLINE))
-			value = new Integer(0);
-		if (this.equals(TAccessLatency.NEARLINE))
-			value = new Integer(1);
+		if (this.equals(ONLINE))
+			value = Integer.valueOf(0);
+		if (this.equals(NEARLINE))
+			value = Integer.valueOf(1);
 
 		outputParam.put(fieldName, value);
 	}

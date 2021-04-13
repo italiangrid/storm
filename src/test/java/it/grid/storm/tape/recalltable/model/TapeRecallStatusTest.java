@@ -8,152 +8,153 @@ import static it.grid.storm.tape.recalltable.model.TapeRecallStatus.SUCCESS;
 import static it.grid.storm.tape.recalltable.model.TapeRecallStatus.UNDEFINED;
 import static it.grid.storm.tape.recalltable.model.TapeRecallStatus.getRecallTaskStatus;
 import static it.grid.storm.tape.recalltable.model.TapeRecallStatus.isFinalStatus;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
 public class TapeRecallStatusTest {
 
-	@Test
-	public void testStatusId() {
+  @Test
+  public void testStatusId() {
 
-		assertThat(SUCCESS.getStatusId(), equalTo(0));
-		assertThat(QUEUED.getStatusId(), equalTo(1));
-		assertThat(IN_PROGRESS.getStatusId(), equalTo(2));
-		assertThat(ERROR.getStatusId(), equalTo(3));
-		assertThat(ABORTED.getStatusId(), equalTo(4));
-		assertThat(UNDEFINED.getStatusId(), equalTo(5));
-	}
+    assertEquals(SUCCESS.getStatusId(), 0);
+    assertEquals(QUEUED.getStatusId(), 1);
+    assertEquals(IN_PROGRESS.getStatusId(), 2);
+    assertEquals(ERROR.getStatusId(), 3);
+    assertEquals(ABORTED.getStatusId(), 4);
+    assertEquals(UNDEFINED.getStatusId(), 5);
+  }
 
-	@Test
-	public void testStatusCreationFromId() {
+  @Test
+  public void testStatusCreationFromId() {
 
-		assertThat(getRecallTaskStatus(0), equalTo(SUCCESS));
-		assertThat(getRecallTaskStatus(1), equalTo(QUEUED));
-		assertThat(getRecallTaskStatus(2), equalTo(IN_PROGRESS));
-		assertThat(getRecallTaskStatus(3), equalTo(ERROR));
-		assertThat(getRecallTaskStatus(4), equalTo(ABORTED));
-		assertThat(getRecallTaskStatus(5), equalTo(UNDEFINED));
-	}
+    assertEquals(getRecallTaskStatus(0), SUCCESS);
+    assertEquals(getRecallTaskStatus(1), QUEUED);
+    assertEquals(getRecallTaskStatus(2), IN_PROGRESS);
+    assertEquals(getRecallTaskStatus(3), ERROR);
+    assertEquals(getRecallTaskStatus(4), ABORTED);
+    assertEquals(getRecallTaskStatus(5), UNDEFINED);
+  }
 
-	@Test
-	public void testFinalStatuses() {
-	
-		assertThat(SUCCESS.isFinalStatus(), equalTo(true));
-		assertThat(QUEUED.isFinalStatus(), equalTo(false));
-		assertThat(IN_PROGRESS.isFinalStatus(), equalTo(false));
-		assertThat(ERROR.isFinalStatus(), equalTo(true));
-		assertThat(ABORTED.isFinalStatus(), equalTo(true));
-		assertThat(UNDEFINED.isFinalStatus(), equalTo(false));
+  @Test
+  public void testFinalStatuses() {
 
-		assertThat(isFinalStatus(0), equalTo(true));
-		assertThat(isFinalStatus(1), equalTo(false));
-		assertThat(isFinalStatus(2), equalTo(false));
-		assertThat(isFinalStatus(3), equalTo(true));
-		assertThat(isFinalStatus(4), equalTo(true));
-		assertThat(isFinalStatus(5), equalTo(false));
-	}
+    assertTrue(SUCCESS.isFinalStatus());
+    assertFalse(QUEUED.isFinalStatus());
+    assertFalse(IN_PROGRESS.isFinalStatus());
+    assertTrue(ERROR.isFinalStatus());
+    assertTrue(ABORTED.isFinalStatus());
+    assertFalse(UNDEFINED.isFinalStatus());
 
-	@Test
-	public void testSuccessPrecedes() {
+    assertTrue(isFinalStatus(0));
+    assertFalse(isFinalStatus(1));
+    assertFalse(isFinalStatus(2));
+    assertTrue(isFinalStatus(3));
+    assertTrue(isFinalStatus(4));
+    assertFalse(isFinalStatus(5));
+  }
 
-		assertThat(SUCCESS.precedes(0), equalTo(false));
-		assertThat(SUCCESS.precedes(1), equalTo(false));
-		assertThat(SUCCESS.precedes(2), equalTo(false));
-		assertThat(SUCCESS.precedes(3), equalTo(false));
-		assertThat(SUCCESS.precedes(4), equalTo(false));
-		assertThat(SUCCESS.precedes(5), equalTo(false));
-		assertThat(SUCCESS.precedes(SUCCESS), equalTo(false));
-		assertThat(SUCCESS.precedes(QUEUED), equalTo(false));
-		assertThat(SUCCESS.precedes(IN_PROGRESS), equalTo(false));
-		assertThat(SUCCESS.precedes(ERROR), equalTo(false));
-		assertThat(SUCCESS.precedes(ABORTED), equalTo(false));
-		assertThat(SUCCESS.precedes(UNDEFINED), equalTo(false));
-	}
+  @Test
+  public void testSuccessPrecedes() {
 
-	@Test
-	public void testQueuedPrecedes() {
+    assertFalse(SUCCESS.precedes(0));
+    assertFalse(SUCCESS.precedes(1));
+    assertFalse(SUCCESS.precedes(2));
+    assertFalse(SUCCESS.precedes(3));
+    assertFalse(SUCCESS.precedes(4));
+    assertFalse(SUCCESS.precedes(5));
+    assertFalse(SUCCESS.precedes(SUCCESS));
+    assertFalse(SUCCESS.precedes(QUEUED));
+    assertFalse(SUCCESS.precedes(IN_PROGRESS));
+    assertFalse(SUCCESS.precedes(ERROR));
+    assertFalse(SUCCESS.precedes(ABORTED));
+    assertFalse(SUCCESS.precedes(UNDEFINED));
+  }
 
-		assertThat(QUEUED.precedes(0), equalTo(true));
-		assertThat(QUEUED.precedes(SUCCESS), equalTo(true));
-		assertThat(QUEUED.precedes(1), equalTo(false));
-		assertThat(QUEUED.precedes(QUEUED), equalTo(false));
-		assertThat(QUEUED.precedes(2), equalTo(true));
-		assertThat(QUEUED.precedes(IN_PROGRESS), equalTo(true));
-		assertThat(QUEUED.precedes(3), equalTo(true));
-		assertThat(QUEUED.precedes(ERROR), equalTo(true));
-		assertThat(QUEUED.precedes(4), equalTo(true));
-		assertThat(QUEUED.precedes(ABORTED), equalTo(true));
-		assertThat(QUEUED.precedes(5), equalTo(false));
-		assertThat(QUEUED.precedes(UNDEFINED), equalTo(false));
-	}
+  @Test
+  public void testQueuedPrecedes() {
 
-	@Test
-	public void testInProgressPrecedes() {
+    assertTrue(QUEUED.precedes(0));
+    assertTrue(QUEUED.precedes(SUCCESS));
+    assertFalse(QUEUED.precedes(1));
+    assertFalse(QUEUED.precedes(QUEUED));
+    assertTrue(QUEUED.precedes(2));
+    assertTrue(QUEUED.precedes(IN_PROGRESS));
+    assertTrue(QUEUED.precedes(3));
+    assertTrue(QUEUED.precedes(ERROR));
+    assertTrue(QUEUED.precedes(4));
+    assertTrue(QUEUED.precedes(ABORTED));
+    assertFalse(QUEUED.precedes(5));
+    assertFalse(QUEUED.precedes(UNDEFINED));
+  }
 
-		assertThat(IN_PROGRESS.precedes(0), equalTo(true));
-		assertThat(IN_PROGRESS.precedes(SUCCESS), equalTo(true));
-		assertThat(IN_PROGRESS.precedes(1), equalTo(false));
-		assertThat(IN_PROGRESS.precedes(QUEUED), equalTo(false));
-		assertThat(IN_PROGRESS.precedes(2), equalTo(false));
-		assertThat(IN_PROGRESS.precedes(IN_PROGRESS), equalTo(false));
-		assertThat(IN_PROGRESS.precedes(3), equalTo(true));
-		assertThat(IN_PROGRESS.precedes(ERROR), equalTo(true));
-		assertThat(IN_PROGRESS.precedes(4), equalTo(true));
-		assertThat(IN_PROGRESS.precedes(ABORTED), equalTo(true));
-		assertThat(IN_PROGRESS.precedes(5), equalTo(false));
-		assertThat(IN_PROGRESS.precedes(UNDEFINED), equalTo(false));
-	}
+  @Test
+  public void testInProgressPrecedes() {
 
-	@Test
-	public void testErrorPrecedes() {
+    assertTrue(IN_PROGRESS.precedes(0));
+    assertTrue(IN_PROGRESS.precedes(SUCCESS));
+    assertFalse(IN_PROGRESS.precedes(1));
+    assertFalse(IN_PROGRESS.precedes(QUEUED));
+    assertFalse(IN_PROGRESS.precedes(2));
+    assertFalse(IN_PROGRESS.precedes(IN_PROGRESS));
+    assertTrue(IN_PROGRESS.precedes(3));
+    assertTrue(IN_PROGRESS.precedes(ERROR));
+    assertTrue(IN_PROGRESS.precedes(4));
+    assertTrue(IN_PROGRESS.precedes(ABORTED));
+    assertFalse(IN_PROGRESS.precedes(5));
+    assertFalse(IN_PROGRESS.precedes(UNDEFINED));
+  }
 
-		assertThat(ERROR.precedes(0), equalTo(false));
-		assertThat(ERROR.precedes(1), equalTo(false));
-		assertThat(ERROR.precedes(2), equalTo(false));
-		assertThat(ERROR.precedes(3), equalTo(false));
-		assertThat(ERROR.precedes(4), equalTo(false));
-		assertThat(ERROR.precedes(5), equalTo(false));
-		assertThat(ERROR.precedes(SUCCESS), equalTo(false));
-		assertThat(ERROR.precedes(QUEUED), equalTo(false));
-		assertThat(ERROR.precedes(IN_PROGRESS), equalTo(false));
-		assertThat(ERROR.precedes(ERROR), equalTo(false));
-		assertThat(ERROR.precedes(ABORTED), equalTo(false));
-		assertThat(ERROR.precedes(UNDEFINED), equalTo(false));
-	}
+  @Test
+  public void testErrorPrecedes() {
 
-	@Test
-	public void testAbortedPrecedes() {
+    assertFalse(ERROR.precedes(0));
+    assertFalse(ERROR.precedes(1));
+    assertFalse(ERROR.precedes(2));
+    assertFalse(ERROR.precedes(3));
+    assertFalse(ERROR.precedes(4));
+    assertFalse(ERROR.precedes(5));
+    assertFalse(ERROR.precedes(SUCCESS));
+    assertFalse(ERROR.precedes(QUEUED));
+    assertFalse(ERROR.precedes(IN_PROGRESS));
+    assertFalse(ERROR.precedes(ERROR));
+    assertFalse(ERROR.precedes(ABORTED));
+    assertFalse(ERROR.precedes(UNDEFINED));
+  }
 
-		assertThat(ABORTED.precedes(0), equalTo(false));
-		assertThat(ABORTED.precedes(1), equalTo(false));
-		assertThat(ABORTED.precedes(2), equalTo(false));
-		assertThat(ABORTED.precedes(3), equalTo(false));
-		assertThat(ABORTED.precedes(4), equalTo(false));
-		assertThat(ABORTED.precedes(5), equalTo(false));
-		assertThat(ABORTED.precedes(SUCCESS), equalTo(false));
-		assertThat(ABORTED.precedes(QUEUED), equalTo(false));
-		assertThat(ABORTED.precedes(IN_PROGRESS), equalTo(false));
-		assertThat(ABORTED.precedes(ERROR), equalTo(false));
-		assertThat(ABORTED.precedes(ABORTED), equalTo(false));
-		assertThat(ABORTED.precedes(UNDEFINED), equalTo(false));
-	}
+  @Test
+  public void testAbortedPrecedes() {
 
-	@Test
-	public void testUndefinedPrecedes() {
+    assertFalse(ABORTED.precedes(0));
+    assertFalse(ABORTED.precedes(1));
+    assertFalse(ABORTED.precedes(2));
+    assertFalse(ABORTED.precedes(3));
+    assertFalse(ABORTED.precedes(4));
+    assertFalse(ABORTED.precedes(5));
+    assertFalse(ABORTED.precedes(SUCCESS));
+    assertFalse(ABORTED.precedes(QUEUED));
+    assertFalse(ABORTED.precedes(IN_PROGRESS));
+    assertFalse(ABORTED.precedes(ERROR));
+    assertFalse(ABORTED.precedes(ABORTED));
+    assertFalse(ABORTED.precedes(UNDEFINED));
+  }
 
-		assertThat(UNDEFINED.precedes(0), equalTo(false));
-		assertThat(UNDEFINED.precedes(1), equalTo(false));
-		assertThat(UNDEFINED.precedes(2), equalTo(false));
-		assertThat(UNDEFINED.precedes(3), equalTo(false));
-		assertThat(UNDEFINED.precedes(4), equalTo(false));
-		assertThat(UNDEFINED.precedes(5), equalTo(false));
-		assertThat(UNDEFINED.precedes(SUCCESS), equalTo(false));
-		assertThat(UNDEFINED.precedes(QUEUED), equalTo(false));
-		assertThat(UNDEFINED.precedes(IN_PROGRESS), equalTo(false));
-		assertThat(UNDEFINED.precedes(ERROR), equalTo(false));
-		assertThat(UNDEFINED.precedes(ABORTED), equalTo(false));
-		assertThat(UNDEFINED.precedes(UNDEFINED), equalTo(false));
-	}
+  @Test
+  public void testUndefinedPrecedes() {
+
+    assertFalse(UNDEFINED.precedes(0));
+    assertFalse(UNDEFINED.precedes(1));
+    assertFalse(UNDEFINED.precedes(2));
+    assertFalse(UNDEFINED.precedes(3));
+    assertFalse(UNDEFINED.precedes(4));
+    assertFalse(UNDEFINED.precedes(5));
+    assertFalse(UNDEFINED.precedes(SUCCESS));
+    assertFalse(UNDEFINED.precedes(QUEUED));
+    assertFalse(UNDEFINED.precedes(IN_PROGRESS));
+    assertFalse(UNDEFINED.precedes(ERROR));
+    assertFalse(UNDEFINED.precedes(ABORTED));
+    assertFalse(UNDEFINED.precedes(UNDEFINED));
+  }
 }

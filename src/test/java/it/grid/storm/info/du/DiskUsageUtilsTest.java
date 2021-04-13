@@ -1,7 +1,8 @@
 package it.grid.storm.info.du;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static it.grid.storm.space.ExitStatus.FAILURE;
+import static it.grid.storm.space.ExitStatus.SUCCESS;
+import static org.junit.Assert.assertEquals;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -12,7 +13,6 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 
 import it.grid.storm.space.DUResult;
-import it.grid.storm.space.ExitStatus;
 
 public class DiskUsageUtilsTest {
 
@@ -26,11 +26,11 @@ public class DiskUsageUtilsTest {
     List<String> output = Lists.newArrayList();
 
     DUResult result = DiskUsageUtils.getResult(ABS_PATH, start, end, output);
-    assertThat(result.getAbsRootPath(), equalTo(ABS_PATH));
-    assertThat(result.getStatus(), equalTo(ExitStatus.FAILURE));
-    assertThat(result.getDetail(), equalTo("empty output"));
-    assertThat(result.getDurationInMillis(), equalTo(fiveMinutes.toMillis()));
-    assertThat(result.getSizeInBytes(), equalTo(-1L));
+    assertEquals(result.getAbsRootPath(), ABS_PATH);
+    assertEquals(result.getStatus(), FAILURE);
+    assertEquals(result.getDetail(), "empty output");
+    assertEquals(result.getDurationInMillis(), fiveMinutes.toMillis());
+    assertEquals(result.getSizeInBytes(), -1L);
 
   }
 
@@ -44,11 +44,11 @@ public class DiskUsageUtilsTest {
     List<String> output = Lists.newArrayList("474839632 /storage/sa");
 
     DUResult result = DiskUsageUtils.getResult(ABS_PATH, start, end, output);
-    assertThat(result.getAbsRootPath(), equalTo(ABS_PATH));
-    assertThat(result.getStatus(), equalTo(ExitStatus.SUCCESS));
-    assertThat(result.getDetail(), equalTo(""));
-    assertThat(result.getDurationInMillis(), equalTo(fiveMinutes.toMillis()));
-    assertThat(result.getSizeInBytes(), equalTo(474839632L));
+    assertEquals(result.getAbsRootPath(), ABS_PATH);
+    assertEquals(result.getStatus(), SUCCESS);
+    assertEquals(result.getDetail(), "");
+    assertEquals(result.getDurationInMillis(), fiveMinutes.toMillis());
+    assertEquals(result.getSizeInBytes(), 474839632L);
 
   }
 
@@ -62,11 +62,11 @@ public class DiskUsageUtilsTest {
     List<String> output = Lists.newArrayList("some error output message");
 
     DUResult result = DiskUsageUtils.getResult(ABS_PATH, start, end, output);
-    assertThat(result.getAbsRootPath(), equalTo(ABS_PATH));
-    assertThat(result.getStatus(), equalTo(ExitStatus.FAILURE));
-    assertThat(result.getDetail(), equalTo("NumberFormatException on parsing du output"));
-    assertThat(result.getDurationInMillis(), equalTo(fiveMinutes.toMillis()));
-    assertThat(result.getSizeInBytes(), equalTo(-1L));
+    assertEquals(result.getAbsRootPath(), ABS_PATH);
+    assertEquals(result.getStatus(), FAILURE);
+    assertEquals(result.getDetail(), "NumberFormatException on parsing du output");
+    assertEquals(result.getDurationInMillis(), fiveMinutes.toMillis());
+    assertEquals(result.getSizeInBytes(), -1L);
 
   }
 

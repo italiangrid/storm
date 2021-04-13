@@ -23,8 +23,8 @@ import it.grid.storm.persistence.exceptions.PersistenceException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.apache.commons.dbcp.cpdsadapter.DriverAdapterCPDS;
-import org.apache.commons.dbcp.datasources.SharedPoolDataSource;
+import org.apache.commons.dbcp2.cpdsadapter.DriverAdapterCPDS;
+import org.apache.commons.dbcp2.datasources.SharedPoolDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,7 +109,7 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 		result += "Nr Connection Active = " + sharedDatasource.getNumActive()
 			+ "\n";
 		result += "Nr Connection Idle = " + sharedDatasource.getNumIdle() + "\n";
-		result += "Nr Max Active Connection = " + sharedDatasource.getMaxActive()
+		result += "Nr Max Active Connection = " + sharedDatasource.getMaxTotal()
 			+ "\n";
 
 		return result;
@@ -132,8 +132,8 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 		sharedDatasource = new SharedPoolDataSource();
 		sharedDatasource.setConnectionPoolDataSource(connectionPoolDatasource);
 
-		sharedDatasource.setMaxActive(maxActive);
-		sharedDatasource.setMaxWait(maxWait);
+		sharedDatasource.setMaxTotal(maxActive);
+		sharedDatasource.setDefaultMaxWaitMillis(maxWait);
 
 		handle = System.currentTimeMillis();
 	}
