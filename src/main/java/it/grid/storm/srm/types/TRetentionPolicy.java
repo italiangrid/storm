@@ -91,11 +91,11 @@ public class TRetentionPolicy {
 		Integer value = null;
 
 		if (this.equals(TRetentionPolicy.REPLICA))
-			value = new Integer(0);
+			value = Integer.valueOf(0);
 		if (this.equals(TRetentionPolicy.OUTPUT))
-			value = new Integer(1);
+			value = Integer.valueOf(1);
 		if (this.equals(TRetentionPolicy.CUSTODIAL))
-			value = new Integer(2);
+			value = Integer.valueOf(2);
 
 		outputParam.put(fieldName, value);
 	}

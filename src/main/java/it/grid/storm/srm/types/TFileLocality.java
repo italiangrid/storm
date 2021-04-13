@@ -142,17 +142,17 @@ public class TFileLocality {
 
 		Integer value = null;
 		if (this.equals(TFileLocality.ONLINE))
-			value = new Integer(0);
+			value = Integer.valueOf(0);
 		if (this.equals(TFileLocality.NEARLINE))
-			value = new Integer(1);
+			value = Integer.valueOf(1);
 		if (this.equals(TFileLocality.ONLINE_AND_NEARLINE))
-			value = new Integer(2);
+			value = Integer.valueOf(2);
 		if (this.equals(TFileLocality.LOST))
-			value = new Integer(3);
+			value = Integer.valueOf(3);
 		if (this.equals(TFileLocality.NONE))
-			value = new Integer(4);
+			value = Integer.valueOf(4);
 		if (this.equals(TFileLocality.UNAVAILABLE))
-			value = new Integer(5);
+			value = Integer.valueOf(5);
 		param.put(name, value);
 
 	}

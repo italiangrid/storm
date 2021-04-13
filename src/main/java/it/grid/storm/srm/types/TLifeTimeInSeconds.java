@@ -145,7 +145,7 @@ public class TLifeTimeInSeconds implements Serializable {
 	public double getTimeIn(TimeUnit u) {
 
 		if ((!empty) && (!infinite) && (u != null)) {
-			Long l_time = new Long(time);
+			Long l_time = Long.valueOf(time);
 			double result = l_time.doubleValue()
 				* (this.u.conversionFactor() / u.conversionFactor());
 			return result;
@@ -271,7 +271,7 @@ public class TLifeTimeInSeconds implements Serializable {
 		if (infinite)
 			return -2;
 		int hash = 17;
-		hash = 37 * hash + new Long(time).hashCode();
+		hash = 37 * hash + Long.valueOf(time).hashCode();
 		hash = 37 * hash + u.hashCode();
 		return hash;
 	}

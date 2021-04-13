@@ -500,6 +500,6 @@ public class FilesystemPermission implements java.io.Serializable {
 
 	public String toString() {
 
-		return new Integer(permission).toString();
+		return Integer.valueOf(permission).toString();
 	}
 }

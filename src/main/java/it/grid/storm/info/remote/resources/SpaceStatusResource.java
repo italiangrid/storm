@@ -11,42 +11,27 @@
 
 package it.grid.storm.info.remote.resources;
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.info.SpaceInfoManager;
 import it.grid.storm.info.model.SpaceStatusSummary;
 import it.grid.storm.info.remote.Constants;
-import it.grid.storm.persistence.exceptions.DataAccessException;
-import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
-import it.grid.storm.srm.types.InvalidTSizeAttributesException;
-import it.grid.storm.srm.types.TSizeInBytes;
 
 @Path("/" + Constants.RESOURCE)
 public class SpaceStatusResource {
 
   private static final Logger log = LoggerFactory.getLogger(SpaceStatusResource.class);
-
-  private static final ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
 
   @GET
   @Produces("application/json")
@@ -76,125 +61,5 @@ public class SpaceStatusResource {
     }
     result = saSum.getJsonFormat();
     return result;
-  }
-
-  @PUT
-  @Path("/{alias}/" + Constants.UPDATE_OPERATION)
-  @Consumes("text/plain")
-  public void putStatusSummary(@PathParam("alias") String saAlias,
-      @QueryParam(Constants.TOTAL_SPACE_KEY) Long totalSpace,
-      @QueryParam(Constants.USED_SPACE_KEY) Long usedSpace,
-      @QueryParam(Constants.RESERVED_SPACE_KEY) Long reservedSpace,
-      @QueryParam(Constants.UNAVALILABLE_SPACE_KEY) Long unavailableSpace)
-      throws WebApplicationException {
-
-    // Decode received parameters
-    String saAliasDecoded;
-    try {
-      saAliasDecoded = URLDecoder.decode(saAlias.trim(), Constants.ENCODING_SCHEME);
-    } catch (UnsupportedEncodingException e) {
-      log.error("Unable to decode parameters. UnsupportedEncodingException : " + e.getMessage());
-      throw new WebApplicationException(Response.status(BAD_REQUEST)
-        .entity("Unable to decode paramethesr, unsupported encoding \'" + Constants.ENCODING_SCHEME
-            + "\'")
-        .build());
-    }
-    log.debug("Decoded saAlias = " + saAliasDecoded);
-    /*
-     * saAlias is mandatory if totalSpace is set then all parameters are needed
-     */
-    if (saAliasDecoded == null || saAliasDecoded.equals("") || (totalSpace != null
-        && (usedSpace == null || reservedSpace == null || unavailableSpace == null))) {
-      log.error("Unable to update space alias status. Some parameters are missing : saAlias "
-          + saAliasDecoded + " totalSpace " + totalSpace + " usedSpace " + usedSpace
-          + " reservedSpace " + reservedSpace + " unavailableSpace " + unavailableSpace);
-      throw new WebApplicationException(Response.status(BAD_REQUEST)
-        .entity("Unable to evaluate permissions. Some parameters are missing")
-        .build());
-    }
-    /*
-     * If not null size parameters must be >= 0
-     */
-    if ((totalSpace != null && totalSpace < 0) || (usedSpace != null && usedSpace < 0)
-        || (reservedSpace != null && reservedSpace < 0)
-        || (unavailableSpace != null && unavailableSpace < 0)) {
-      log.error(
-          "Unable to update space alias status. Some size parameters are lower than zero : totalSpace "
-              + totalSpace + " usedSpace " + usedSpace + " reservedSpace " + reservedSpace
-              + " unavailableSpace " + unavailableSpace);
-      throw new WebApplicationException(Response.status(BAD_REQUEST)
-        .entity("Unable to evaluate permissions. Some size parameters are lower than zero")
-        .build());
-    }
-    // returns null if no rows found
-    StorageSpaceData storageSpaceData = catalog.getStorageSpaceByAlias(saAliasDecoded);
-    if (storageSpaceData == null) {
-      log.error("The storage space with alias \'" + saAliasDecoded + "\' is not on StoRM Database");
-      throw new WebApplicationException(Response.status(NOT_FOUND)
-        .entity("Unable to update space alias status. Some parameters are not well formed")
-        .build());
-    }
-    SpaceStatusSummary spaceStatusSummary;
-    if (totalSpace != null) {
-      spaceStatusSummary = new SpaceStatusSummary(saAlias, totalSpace);
-    } else {
-      spaceStatusSummary =
-          new SpaceStatusSummary(saAlias, storageSpaceData.getTotalSpaceSize().value());
-    }
-    if (usedSpace != null) {
-      spaceStatusSummary.setUsedSpace(usedSpace);
-    }
-    if (reservedSpace != null) {
-      spaceStatusSummary.setReservedSpace(reservedSpace);
-    }
-    if (unavailableSpace != null) {
-      spaceStatusSummary.setUnavailableSpace(unavailableSpace);
-    }
-    try {
-      updateSASummary(storageSpaceData, spaceStatusSummary, totalSpace != null);
-    } catch (IllegalArgumentException e) {
-      log.error("Unable to update storage space \'" + saAliasDecoded
-          + "\' with the provided space values. IllegalArgumentException: " + e.getMessage());
-      throw new WebApplicationException(Response.status(BAD_REQUEST)
-        .entity("Unable to update space alias status. Some parameters are not valid")
-        .build());
-    }
-  }
-
-  /**
-   * @param storageSpaceData
-   * @param spaceStatusSummary
-   */
-  private void updateSASummary(StorageSpaceData storageSpaceData,
-      SpaceStatusSummary spaceStatusSummary, boolean updateTotalSpace) {
-
-    // fill in the StorageSpaceData the provided values
-    try {
-      if (updateTotalSpace && spaceStatusSummary.getTotalSpace() >= 0) {
-        storageSpaceData
-          .setTotalSpaceSize(TSizeInBytes.make(spaceStatusSummary.getTotalSpace(), SizeUnit.BYTES));
-      }
-      if (spaceStatusSummary.getUsedSpace() >= 0) {
-        storageSpaceData
-          .setUsedSpaceSize(TSizeInBytes.make(spaceStatusSummary.getUsedSpace(), SizeUnit.BYTES));
-      }
-      if (spaceStatusSummary.getReservedSpace() >= 0) {
-        storageSpaceData.setReservedSpaceSize(
-            TSizeInBytes.make(spaceStatusSummary.getReservedSpace(), SizeUnit.BYTES));
-      }
-      if (spaceStatusSummary.getUnavailableSpace() >= 0) {
-        storageSpaceData.setUnavailableSpaceSize(
-            TSizeInBytes.make(spaceStatusSummary.getUnavailableSpace(), SizeUnit.BYTES));
-      }
-    } catch (InvalidTSizeAttributesException e) {
-      throw new IllegalArgumentException(
-          "Unable to produce the TSizeInBytes object for some of the SpaceStatusSummary fields:"
-              + spaceStatusSummary.toString());
-    }
-    try {
-      catalog.updateStorageSpace(storageSpaceData);
-    } catch (DataAccessException e) {
-      log.error("Unable to update {}: {}", storageSpaceData, e.getMessage());
-    }
   }
 }

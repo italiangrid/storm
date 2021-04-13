@@ -78,7 +78,7 @@ public class UserInfoCommand {
 		String output = getOutput(command);
 		if ((output != null) && (output.length() > 0)) {
 			try {
-				Long groupLong = new Long(Long.parseLong(output));
+				Long groupLong = Long.valueOf(Long.parseLong(output));
 				if (groupLong.intValue() == groupLong.longValue()) {
 					// The number in the output string fits in an integer (is at most 16
 					// bits)
@@ -252,7 +252,7 @@ public class UserInfoCommand {
 		if ((fields != null) && (fields.length > 2) && (fields[2] != null)) {
 			log.trace("field[2], GID ='" + fields[2] + "'");
 			try {
-				Long groupLong = new Long(Long.parseLong(fields[2]));
+				Long groupLong = Long.valueOf(Long.parseLong(fields[2]));
 				if (groupLong.intValue() == groupLong.longValue()) {
 					// The number in the output string fits in an integer (is at most 16
 					// bits)
