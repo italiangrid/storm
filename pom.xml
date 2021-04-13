@@ -39,7 +39,7 @@
 
     <guavaVersion>18.0</guavaVersion>
     <metrics.version>3.1.0</metrics.version>
-    <xercesImplVersion>2.11.0</xercesImplVersion>
+    <xercesImplVersion>2.12.1</xercesImplVersion>
 
     <mockitoVersion>1.10.19</mockitoVersion>
     <hamcrestVersion>1.3</hamcrestVersion>
