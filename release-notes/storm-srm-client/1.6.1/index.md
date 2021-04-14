@@ -7,6 +7,8 @@ release_date: 09.12.2013
 ## StoRM SRM clients v. 1.6.1
 
 Released on **{{ page.release_date }}** with [StoRM v. 1.11.3]({{ site.baseurl }}/release-notes/StoRM-v1.11.3.html).
+<span style="float: right; margin-left: 8px;" class="label label-success">centos6</span>
+<span style="float: right; margin-left: 8px;" class="label label-info">centos7</span>
 
 ### Description
 

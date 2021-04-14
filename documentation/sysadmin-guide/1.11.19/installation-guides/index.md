@@ -5,10 +5,10 @@ navigation:
   - link: documentation/sysadmin-guide/1.11.19/index.html
     label: Index
   - link: documentation/sysadmin-guide/1.11.19/installation-guides/index.html
-    label: Installation Guides
+    label: Installation and configuration guides
 ---
 
-## Installation Guides <a name="installation">&nbsp;</a>
+## Installation and configuration guides <a name="installation">&nbsp;</a>
 
 Once you have satisfied the [installation prerequisites][prerequisites],
 created your [service user][service-user] and installed the needed [repositories][repositories],
@@ -40,7 +40,6 @@ then we can procede with the StoRM components installation and configuration gui
 ### StoRM Info Provider <a name="infoprovider">&nbsp;</a>
 
 * [Installation and configuration guide](info-provider/index.html)
-
 
 [prerequisites]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.19/installation-prerequisites/index.html
 [service-user]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.19/service-user/index.html

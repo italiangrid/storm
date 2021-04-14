@@ -10,8 +10,6 @@ menu:
     label: upgrading
   - link: documentation/sysadmin-guide/1.11.19/index.html#upgrading
     label: upgrading
-redirect_from:
-  - /documentation/sysadmin-guide/
 ---
 
 # StoRM System Administration Guide
@@ -22,11 +20,10 @@ version: {{ page.version }}
 
 * [Upgrade to StoRM {{page.version}}](upgrading/index.html)
 * [Repositories](repositories/index.html)
-* [Prerequisites](installation-prerequisites/index.html)
+* [Installation prerequisites](installation-prerequisites/index.html)
 * [StoRM user setup](service-user/index.html)
-* [Installation Guides](installation-guides/index.html)
-* [Quick deployments instructions](quick-deployments/index.html)
-
+* [Installation and configuration guides](installation-guides/index.html)
+* [All-in-one deployment examples](quick-deployments/index.html)
 
 
 [Scientific Linux]: http://www.scientificlinux.org

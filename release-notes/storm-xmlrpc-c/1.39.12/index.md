@@ -10,6 +10,9 @@ features:
 
 ## StoRM XMLRPC-C v1.39.12
 
+<span style="float: right; margin-left: 8px;" class="label label-success">centos6</span>
+<span style="float: right; margin-left: 8px;" class="label label-info">centos7</span>
+
 Released for RHEL6 on **{{ page.release_date14 }}** with [StoRM v. 1.11.14][release-notes14].
 
 Released for RHEL7 on **{{ page.release_date18 }}** with [StoRM v. 1.11.18][release-notes18].

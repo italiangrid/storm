@@ -6,7 +6,6 @@
           <button id="release-button" type="button" class="btn btn-mini pull-right"
             data-toggle="collapse" data-target=".collapse">Show older releases</button>
       </th>
-      <th class="col-md-2">Platforms</th>
     </tr>
   </thead>
   <tbody>
@@ -24,11 +23,6 @@
         {% endfor %}
     {% endif %}
       </ul>
-    </td>
-    <td class="col-md-2">
-      {% for platform in component[1].platforms %}
-      <span class="label {% if platform == 'centos6' %} label-success {% else %} label-info {% endif %}">{{platform}}</span>
-      {% endfor %}
     </td>
   </tr>
 {% endfor %}
