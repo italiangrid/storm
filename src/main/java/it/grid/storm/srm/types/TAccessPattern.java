@@ -89,9 +89,9 @@ public class TAccessPattern {
 		Integer value = null;
 
 		if (this.equals(TAccessPattern.TRANSFER_MODE))
-			value = new Integer(0);
+			value = Integer.valueOf(0);
 		if (this.equals(TAccessPattern.PROCESSING_MODE))
-			value = new Integer(1);
+			value = Integer.valueOf(1);
 
 		outputParam.put(fieldName, value);
 	}

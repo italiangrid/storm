@@ -315,17 +315,17 @@ public class Configuration {
   /**
    * Method used by all DAO Objects to get the DataBase Driver. If no value is found in the
    * configuration medium, then the default value is returned instead.
-   * key="asynch.picker.db.driver"; default value="com.mysql.jdbc.Driver";
+   * key="asynch.picker.db.driver"; default value="com.mysql.cj.jdbc.Driver";
    */
   public String getDBDriver() {
 
     if (!cr.getConfiguration().containsKey(DB_DRIVER_KEY)) {
-      return "com.mysql.jdbc.Driver";
+      return "com.mysql.cj.jdbc.Driver";
     }
     String vendor = cr.getConfiguration().getString(DB_DRIVER_KEY);
     String driver = "";
     if ("mysql".equalsIgnoreCase(vendor)) {
-      driver = "com.mysql.jdbc.Driver";
+      driver = "com.mysql.cj.jdbc.Driver";
     } else {
       log.error("CONFIG ERROR 'RDBMS Vendor ('{}') unknown.'", vendor);
     }

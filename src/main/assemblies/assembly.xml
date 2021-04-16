@@ -15,11 +15,7 @@
   <!-- include all project dependencies and the project artifact -->
   <dependencySets>
     <dependencySet>
-      <!-- need to exclude this old xerces version that would otherwise be brough
-        in as a commons-dbcp dendendency. Though the compiler seems to resolve the
-        conflict fine, the assembly plugin put it in the package -->
       <excludes>
-        <exclude>xerces:xerces</exclude>
         <exclude>org.italiangrid:storm-native-interface</exclude>
       </excludes>
       <useProjectArtifact>false</useProjectArtifact>
@@ -58,14 +54,14 @@
       <outputDirectory>etc/storm/backend-server/db</outputDirectory>
     </fileSet>
 
-    <!-- an empty fileset to create an empty log directory -->
+    <!-- Empty fileset to create empty directory -->
     <fileSet>
       <directory>src</directory>
       <outputDirectory>var/log/storm</outputDirectory>
       <excludes>
         <exclude>**/*</exclude>
       </excludes>
-      <directoryMode>0755</directoryMode>
+      <directoryMode>0750</directoryMode>
     </fileSet>
 
     <!-- CentOS 7 stuff-->
@@ -96,18 +92,6 @@
     <file>
       <source>etc/logrotate.d/storm-backend-server</source>
       <outputDirectory>etc/logrotate.d</outputDirectory>
-    </file>
-
-    <!-- CentOS 6 stuff-->
-    <file>
-      <source>etc/init.d/storm-backend-server</source>
-      <outputDirectory>etc/init.d</outputDirectory>
-      <fileMode>0755</fileMode>
-    </file>
-
-    <file>
-      <source>etc/sysconfig/storm-backend-server</source>
-      <outputDirectory>etc/sysconfig</outputDirectory>
     </file>
 
     <!-- CentOS 7 stuff-->

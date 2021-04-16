@@ -7,9 +7,9 @@ import static it.grid.storm.ea.StormEA.EA_PREMIGRATE;
 import static it.grid.storm.ea.StormEA.EA_TSMRECD;
 import static it.grid.storm.ea.StormEA.EA_TSMRECR;
 import static it.grid.storm.ea.StormEA.EA_TSMRECT;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
@@ -135,17 +135,17 @@ public class StoriMetadataServiceTest {
     initAsFileOnline();
     StoriMetadata metadata = service.getMetadata(FILE_STFN_PATH);
     log.info("Metadata: {}", metadata);
-    assertThat(metadata.getAbsolutePath(), equalTo(FILE_PATH));
-    assertThat(metadata.getType(), equalTo(ResourceType.FILE));
-    assertThat(metadata.getStatus(), equalTo(ResourceStatus.ONLINE));
-    assertThat(metadata.getAttributes().getPinned(), equalTo(false));
-    assertThat(metadata.getAttributes().getMigrated(), equalTo(false));
-    assertThat(metadata.getAttributes().getPremigrated(), equalTo(false));
-    assertThat(metadata.getAttributes().getTsmRecD(), equalTo(null));
-    assertThat(metadata.getAttributes().getTsmRecR(), equalTo(null));
-    assertThat(metadata.getAttributes().getTsmRecT(), equalTo(null));
-    assertThat(metadata.getAttributes().getChecksum(), equalTo(CHECKSUM));
-    assertThat(metadata.getFilesystem().getName(), equalTo(VFS_NAME));
+    assertEquals(metadata.getAbsolutePath(), FILE_PATH);
+    assertEquals(metadata.getType(), ResourceType.FILE);
+    assertEquals(metadata.getStatus(), ResourceStatus.ONLINE);
+    assertEquals(metadata.getAttributes().getPinned(), false);
+    assertEquals(metadata.getAttributes().getMigrated(), false);
+    assertEquals(metadata.getAttributes().getPremigrated(), false);
+    assertNull(metadata.getAttributes().getTsmRecD());
+    assertNull(metadata.getAttributes().getTsmRecR());
+    assertNull(metadata.getAttributes().getTsmRecT());
+    assertEquals(metadata.getAttributes().getChecksum(), CHECKSUM);
+    assertEquals(metadata.getFilesystem().getName(), VFS_NAME);
   }
 
   @Test
@@ -155,12 +155,12 @@ public class StoriMetadataServiceTest {
     initAsFileOnline();
     StoriMetadata metadata = service.getMetadata(DIR_STFN_PATH);
     log.info("Metadata: {}", metadata);
-    assertThat(metadata.getAbsolutePath(), equalTo(DIR_PATH));
-    assertThat(metadata.getType(), equalTo(ResourceType.FOLDER));
-    assertThat(metadata.getStatus(), equalTo(ResourceStatus.ONLINE));
-    assertThat(metadata.getChildren().size(), equalTo(1));
-    assertThat(metadata.getChildren().get(0), equalTo(FILE_NAME));
-    assertThat(metadata.getFilesystem().getName(), equalTo(VFS_NAME));
+    assertEquals(metadata.getAbsolutePath(), DIR_PATH);
+    assertEquals(metadata.getType(), ResourceType.FOLDER);
+    assertEquals(metadata.getStatus(), ResourceStatus.ONLINE);
+    assertEquals(metadata.getChildren().size(), 1);
+    assertEquals(metadata.getChildren().get(0), FILE_NAME);
+    assertEquals(metadata.getFilesystem().getName(), VFS_NAME);
   }
 
   @Test
@@ -171,7 +171,7 @@ public class StoriMetadataServiceTest {
     try {
       service.getMetadata(FILE_STFN_PATH);
     } catch (ResourceNotFoundException e) {
-      assertThat(e.getMessage(), containsString("not exists"));
+      assertTrue(e.getMessage().indexOf("not exists") != -1);
     }
   }
 
@@ -182,10 +182,10 @@ public class StoriMetadataServiceTest {
     initAsFileOffline();
     StoriMetadata metadata = service.getMetadata(FILE_STFN_PATH);
     log.info("Metadata: {}", metadata);
-    assertThat(metadata.getAbsolutePath(), equalTo(FILE_PATH));
-    assertThat(metadata.getType(), equalTo(ResourceType.FILE));
-    assertThat(metadata.getStatus(), equalTo(ResourceStatus.NEARLINE));
-    assertThat(metadata.getFilesystem().getName(), equalTo(VFS_NAME));
+    assertEquals(metadata.getAbsolutePath(), FILE_PATH);
+    assertEquals(metadata.getType(), ResourceType.FILE);
+    assertEquals(metadata.getStatus(), ResourceStatus.NEARLINE);
+    assertEquals(metadata.getFilesystem().getName(), VFS_NAME);
   }
 
   @Test
@@ -195,10 +195,10 @@ public class StoriMetadataServiceTest {
     initAsFileMigratedAndRecalled();
     StoriMetadata metadata = service.getMetadata(FILE_STFN_PATH);
     log.info("Metadata: {}", metadata);
-    assertThat(metadata.getAbsolutePath(), equalTo(FILE_PATH));
-    assertThat(metadata.getType(), equalTo(ResourceType.FILE));
-    assertThat(metadata.getStatus(), equalTo(ResourceStatus.NEARLINE));
-    assertThat(metadata.getAttributes().getTsmRecT(), equalTo(TASK_ID));
-    assertThat(metadata.getFilesystem().getName(), equalTo(VFS_NAME));
+    assertEquals(metadata.getAbsolutePath(), FILE_PATH);
+    assertEquals(metadata.getType(), ResourceType.FILE);
+    assertEquals(metadata.getStatus(), ResourceStatus.NEARLINE);
+    assertEquals(metadata.getAttributes().getTsmRecT(), TASK_ID);
+    assertEquals(metadata.getFilesystem().getName(), VFS_NAME);
   }
 }

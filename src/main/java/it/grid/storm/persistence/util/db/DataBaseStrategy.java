@@ -33,7 +33,7 @@ public class DataBaseStrategy {
 	private SQLFormat formatter;
 
 	public static final DataBaseStrategy MYSQL = new DataBaseStrategy("mysql",
-		"com.mysql.jdbc.Driver", "jdbc:mysql://", new MySqlFormat());
+	    "com.mysql.cj.jdbc.Driver", "jdbc:mysql://", new MySqlFormat());
 
 	private static final Map<String, DataBaseStrategy> DATABASES = new HashMap<String, DataBaseStrategy>();
 
