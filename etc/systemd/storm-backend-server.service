@@ -1,5 +1,6 @@
 [Unit]
 Description=StoRM Backend service
+After=mariadb.service
 
 [Service]
 WorkingDirectory=/etc/storm/backend-server
