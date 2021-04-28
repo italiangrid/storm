@@ -5,18 +5,18 @@ This interface expose operations on recall tasks.
 
 Recall tasks have the following fields
 
-- groupTaskId
-- insertionInstant  the time at which the task was created
-- requestType  the type of request that originated the recall task, either bol or ptg
-- fileName  the local path of the file to recall
-- voName  the virtual organization
-- userID
-- retryAttempt  the number of times GEMMS will retry to recall the file in case of failure
-- status  the status of the recall task, either 0 (success), 1 (queued), 2 (in-progress), 3 (error), 4 (aborted), 5 (undefined)
-- deferredRecallInstant
-- pinLifetime
-- requestToken  the token of the request (the bol or ptg) that originated the recall task
-- inProgressInstant  the time at which the task status was changed to in progress 
+- `groupTaskId`, each recall task that points to the same resource (same `fileName`) has the same `groupTaskId`;
+- `insertionInstant`, the time at which the task was created;
+- `requestType`, the type of request that originated the recall task: bol or ptg;
+- `fileName`, the local path of the file to recall;
+- `voName`, the virtual organization name;
+- `userID`, the DN of the user that has submitted the task;
+- `retryAttempt`, the number of times GEMMS will retry to recall the file in case of failure;
+- `status`, the status of the recall task (see the available values into [status table](#recall-task-statuses) in appendix;
+- `deferredRecallInstant`
+- `pinLifetime`
+- `requestToken`, the token of the request (bol or ptg) that originated the recall task;
+- `inProgressInstant`, the time at which the task status was changed to in progress.
 
 Recall tasks are transferred using a text/plain representation. Fields are separated by a tab, recall tasks are separated by a #, and all tasks are included by curly brackets as in
 
@@ -165,9 +165,9 @@ and the corresponding response would be
 
 ## PUT  /recalltable/task/{groupTaskId}
 
-Update a recall task status.
+Update status of all the recall tasks of the same resources, grouped by groupTaskId.
 
-The status is passed in the body of the PUT request encoded as follows
+The status is passed in the body of the PUT request encoded as follow:
 
 	status=0
 
@@ -252,3 +252,17 @@ In your `storm.properties` set:
 rest.token.enabled = true
 rest.token.value = your-secret-token
 ```
+
+## Recall Task statuses
+
+Recall tasks status table:
+
+| code | status      |
+|:----:|:-----------:|
+|   0  | success     |
+|   1  | queued      |
+|   2  | in-progress |
+|   3  | error       |
+|   4  | aborted     |
+|   5  | undefined   |
+

@@ -20,7 +20,6 @@ import it.grid.storm.namespace.StoRI;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
-import it.grid.storm.tape.recalltable.TapeRecallException;
 
 import java.util.Date;
 import java.util.UUID;
