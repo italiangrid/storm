@@ -108,8 +108,31 @@ In case you have any kind of questions or problems please contact us.
 
 Read more info about upgrading [here][upgrade-from-19]
 
+<hr/>
+
+### Known issue \[Updated on 30.04.2021\]
+
+After the update from StoRM v1.11.19 to StoRM v1.11.20, if JVM and database are not on the same timezone, the Backend's communication with MariaDB could start failing with the following error:
+
+```
+Caused by: java.sql.SQLException: The server time zone value 'CEST' is unrecognized or represents more than one time zone. You must configure either the server or JDBC driver (via the serverTimezone configuration property) to use a more specifc time zone value if you want to utilize time zone support.
+```
+
+This bug is tracked at [STOR-1397](https://issues.infn.it/jira/browse/STOR-1397).
+
+The possible solutions to avoid this problem are:
+ * downgrade StoRM Backend to v1.11.19 (**recommended**)
+ * apply a workaround within MariaDB
+ * install StoRM Backend v1.11.21 beta
+
+Read more [here][known-issue-post] 
+
+<hr/>
+
 
 [downloads-page]: {{site.baseurl}}/download.html#stable-releases
 [storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide
 
 [upgrade-from-19]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.20/upgrading/
+
+[known-issue-post]: {{site.baseurl}}/2021/04/30/storm-v1.11.20-known-issue.html
