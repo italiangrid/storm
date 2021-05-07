@@ -83,7 +83,7 @@ Read more at:
 
 [stormpuppetmodule]: https://forge.puppet.com/cnafsd/storm
 [stormpuppetmoduledoc]: https://italiangrid.github.io/storm-puppet-module/
-[quickdeploy]: {{site.baseurl}}/documentation/how-to/basic-storm-standalone-configuration-centos7/1.11.18/
+[quickdeploy]: {{site.baseurl}}/documentation/documentation/sysadmin-guide/1.11.20/quick-deployments/centos7/index.html
 
 [release-notes]: {{site.baseurl}}/release-notes/StoRM-v1.11.20.html
 [upgrading]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.20/upgrading
