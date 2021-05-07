@@ -4,11 +4,11 @@ title: StoRM System Administration Guide - Quick deploy - Centos 7
 redirect_from:
   /documentation/how-to/basic-storm-standalone-configuration-centos7/1.11.18/
 navigation:
-  - link: documentation/sysadmin-guide/1.11.19/index.html
+  - link: documentation/sysadmin-guide/1.11.20/index.html
     label: Index
-  - link: documentation/sysadmin-guide/1.11.19/quick-deployments/index.html
+  - link: documentation/sysadmin-guide/1.11.20/quick-deployments/index.html
     label: Quick Deployments Instructions
-  - link: documentation/sysadmin-guide/1.11.19/quick-deployments/centos7/index.html
+  - link: documentation/sysadmin-guide/1.11.20/quick-deployments/centos7/index.html
     label: CentOS 7
 ---
 
@@ -256,7 +256,7 @@ class { 'storm::backend':
   # ...
   'webdav_pool_members' => [
     {
-      'hostname' => webdav.test.example,
+      'hostname' => 'webdav.test.example',
     },
   ],
   # defines the default list of transfer protocols for each storage area:
