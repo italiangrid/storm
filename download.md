@@ -60,6 +60,7 @@ The StoRM source is available on [Github](https://github.com) in the following r
 - [StoRM GridFTP](https://github.com/italiangrid/storm-gridftp-dsi)
 - [CDMI StoRM](https://github.com/italiangrid/cdmi-storm)
 - [StoRM Puppet module](https://github.com/italiangrid/storm-puppet-module)
+- [StoRM Utils](https://github.com/italiangrid/storm-utils)
 
 [storm-repo-index]: https://repo.cloud.cnaf.infn.it/repository/storm/index.html
 

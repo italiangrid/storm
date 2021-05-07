@@ -1,15 +1,12 @@
 ---
 layout: service-guide
 title: StoRM System Administration Guide
-version: 1.11.20
+version: 1.11.21
 navigation:
-  - link: documentation/sysadmin-guide/1.11.20/index.html
+  - link: documentation/sysadmin-guide/1.11.21/index.html
     label: Index
-menu:
-  - link: documentation/sysadmin-guide/1.11.20/index.html#upgrading
-    label: upgrading
-  - link: documentation/sysadmin-guide/1.11.20/index.html#upgrading
-    label: upgrading
+redirect_from:
+  - /documentation/sysadmin-guide/
 ---
 
 # StoRM System Administration Guide
@@ -23,6 +20,12 @@ version: {{ page.version }}
 * [Installation prerequisites](installation-prerequisites/index.html)
 * [StoRM user setup](service-user/index.html)
 * [Installation and configuration guides](installation-guides/index.html)
+  * [StoRM Backend](installation-guides/backend/index.html)
+  * [StoRM Frontend](installation-guides/frontend/index.html)
+  * [StoRM WebDAV](installation-guides/webdav/index.html)
+  * [StoRM GridFTP plugin](installation-guides/gridftp/index.html)
+  * [StoRM Info Provider](installation-guides/info-provider/index.html)
+  * [CDMI StoRM](installation-guides/cdmi/index.html)
 * [All-in-one deployment examples](quick-deployments/index.html)
 
 
