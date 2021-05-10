@@ -118,7 +118,7 @@ public class DataBaseStrategy {
 	public String getConnectionString() {
 
 		String connStr;
-		connStr = jdbcPrefix + dbUrl + "/" + dbName + "?serverTimezone=UTC";
+		connStr = jdbcPrefix + dbUrl + "/" + dbName + "?serverTimezone=UTC&autoReconnect=true";
 		return connStr;
 	}
 

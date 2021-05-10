@@ -134,6 +134,7 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 
 		sharedDatasource.setMaxTotal(maxActive);
 		sharedDatasource.setDefaultMaxWaitMillis(maxWait);
+		sharedDatasource.setValidationQuery("SELECT 1");
 
 		handle = System.currentTimeMillis();
 	}

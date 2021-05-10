@@ -373,7 +373,7 @@ public class Configuration {
       name = cr.getConfiguration().getString(DB_URL_3KEY);
     }
     // return value...
-    return prefix + host + "/" + name + "?serverTimezone=UTC";
+    return prefix + host + "/" + name + "?serverTimezone=UTC&autoReconnect=true";
   }
 
   /**
