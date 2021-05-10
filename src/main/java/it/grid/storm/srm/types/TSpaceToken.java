@@ -135,13 +135,13 @@ public class TSpaceToken implements Serializable {
 	 * 
 	 * @param vector
 	 */
-	public void encode(List<String> list) {
+	public void encode(List<Object> list) {
 
 		list.add(this.toString());
 	}
 
-	public void encode(Map<String, String> outputParam, String fieldName) {
+	public void encode(Map<String, Object> outputParam, String fieldName) {
 
-		outputParam.put(fieldName, (String) token);
+		outputParam.put(fieldName, token);
 	}
 }

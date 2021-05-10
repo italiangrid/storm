@@ -31,8 +31,6 @@
 
 package it.grid.storm.filesystem;
 
-import it.grid.storm.filesystem.AclLockPoolElement;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

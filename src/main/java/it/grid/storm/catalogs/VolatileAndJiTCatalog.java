@@ -17,7 +17,6 @@
 
 package it.grid.storm.catalogs;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
@@ -27,6 +26,8 @@ import java.util.TimerTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 import it.grid.storm.acl.AclManager;
 import it.grid.storm.acl.AclManagerFS;
@@ -239,6 +240,7 @@ public class VolatileAndJiTCatalog {
    * catalogue DOES get cleaned up even if the physical removal of the ACL or erasing of the file
    * fails.
    */
+  @SuppressWarnings("unchecked")
   public synchronized void purge() {
 
     log.debug("VolatileAndJiT CATALOG! Executing purge!");
@@ -248,24 +250,24 @@ public class VolatileAndJiTCatalog {
      * with the PFN of Volatile files, and the other with PFN + GridUser couple of the entries that
      * were just being tracked for the ACLs set up on them.
      */
-    Collection[] expired = dao.removeExpired(rightNow.getTimeInMillis() / 1000);
-    Collection expiredVolatile = expired[0];
-    Collection expiredJiT = expired[1];
+    List<Object> expired = dao.removeExpired(rightNow.getTimeInMillis() / 1000);
+    List<String> expiredVolatile = (List<String>) expired.get(0);
+    List<JiTData> expiredJiT = (List<JiTData>) expired.get(1);
     if (expiredVolatile.size() == 0) {
       log.debug("VolatileAndJiT CATALOG! No expired Volatile entries found.");
     } else {
       log.info("VolatileAndJiT CATALOG! Found and purged the following expired "
-          + "Volatile entries:\n {}", volatileString(expired[0]));
+          + "Volatile entries:\n {}", volatileString(expiredVolatile));
     }
     if (expiredJiT.size() == 0) {
       log.debug("VolatileAndJiT CATALOG! No JiT entries found.");
     } else {
       log.info("VolatileAndJiT CATALOG! Found and purged the following expired "
-          + "JiT ACLs entries:\n {}", jitString(expired[1]));
+          + "JiT ACLs entries:\n {}", jitString(expiredJiT));
     }
     // Remove ACLs
     JiTData aux = null;
-    for (Iterator i = expiredJiT.iterator(); i.hasNext();) {
+    for (Iterator<JiTData> i = expiredJiT.iterator(); i.hasNext();) {
       aux = (JiTData) i.next();
       int jitacl = aux.acl();
       String jitfile = aux.pfn();
@@ -301,7 +303,7 @@ public class VolatileAndJiTCatalog {
     }
     // Delete files
     String auxPFN = null;
-    for (Iterator i = expiredVolatile.iterator(); i.hasNext();) {
+    for (Iterator<String> i = expiredVolatile.iterator(); i.hasNext();) {
       auxPFN = (String) i.next();
       try {
         log.info("VolatileAndJiT CATALOG. Deleting file {}", auxPFN);
@@ -460,9 +462,9 @@ public class VolatileAndJiTCatalog {
    * any reason the value for the Lifetime read from the DB does not allow creation of a valid
    * TLifeTimeInSeconds, an Empty one is returned. Error messages in logs warn of the situation.
    */
-  public synchronized List volatileInfoOn(PFN pfn) {
+  public synchronized List<Object> volatileInfoOn(PFN pfn) {
 
-    ArrayList aux = new ArrayList();
+    List<Object> aux = Lists.newArrayList();
     if (pfn == null) {
       log
         .error("VolatileAndJiT CATALOG: programming bug! volatileInfoOn " + "invoked on null PFN!");
@@ -544,7 +546,7 @@ public class VolatileAndJiTCatalog {
    * Private method used to return a String representation of the expired entries Collection of pfn
    * Strings.
    */
-  private String volatileString(Collection<String> c) {
+  private String volatileString(List<String> c) {
 
     if (c == null) {
       return "";

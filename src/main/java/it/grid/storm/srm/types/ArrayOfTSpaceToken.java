@@ -25,106 +25,108 @@
 
 package it.grid.storm.srm.types;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
-
-import it.grid.storm.srm.types.TSpaceToken;
-import java.io.Serializable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
+
 public class ArrayOfTSpaceToken implements Serializable {
 
-	private static Logger log = LoggerFactory.getLogger(ArrayOfTSpaceToken.class);
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
 
-	public static final String PNAME_ARRAYOFSPACETOKENS = "arrayOfSpaceTokens";
+  private static Logger log = LoggerFactory.getLogger(ArrayOfTSpaceToken.class);
 
-	ArrayList<TSpaceToken> tokenList;
+  public static final String PNAME_ARRAYOFSPACETOKENS = "arrayOfSpaceTokens";
 
-	/**
-	 * Constructor that requires a String. If it is null, then an
-	 * InvalidArrayOfTTSpaceTokenAttributeException is thrown.
-	 */
-	public ArrayOfTSpaceToken(TSpaceToken[] tokenArray)
-		throws InvalidArrayOfTSpaceTokenAttributeException {
+  ArrayList<TSpaceToken> tokenList;
 
-		if (tokenArray == null)
-			throw new InvalidArrayOfTSpaceTokenAttributeException(tokenArray);
-		// FIXME this.tokenArray = tokenArray;
-	}
+  /**
+   * Constructor that requires a String. If it is null, then an
+   * InvalidArrayOfTTSpaceTokenAttributeException is thrown.
+   */
+  public ArrayOfTSpaceToken(TSpaceToken[] tokenArray)
+      throws InvalidArrayOfTSpaceTokenAttributeException {
 
-	public ArrayOfTSpaceToken() {
+    if (tokenArray == null)
+      throw new InvalidArrayOfTSpaceTokenAttributeException(tokenArray);
+  }
 
-		tokenList = new ArrayList<TSpaceToken>();
-	}
+  public ArrayOfTSpaceToken() {
 
-	public static ArrayOfTSpaceToken decode(Map inputParam, String fieldName)
-		throws InvalidArrayOfTSpaceTokenAttributeException {
+    tokenList = new ArrayList<TSpaceToken>();
+  }
 
-		List<Object> tokensList = null;
-		try {
-			tokensList = Arrays.asList((Object[]) inputParam.get(fieldName));
-		} catch (NullPointerException e) {
-			log.warn("");
-		}
-		if (tokensList == null)
-			throw new InvalidArrayOfTSpaceTokenAttributeException(null);
+  public static ArrayOfTSpaceToken decode(Map<String, Object> inputParam, String fieldName)
+      throws InvalidArrayOfTSpaceTokenAttributeException {
 
-		ArrayOfTSpaceToken arrayOfTSpaceTokens = new ArrayOfTSpaceToken();
+    List<Object> tokensList = null;
+    try {
+      tokensList = Arrays.asList((Object[]) inputParam.get(fieldName));
+    } catch (NullPointerException e) {
+      log.warn("");
+    }
+    if (tokensList == null)
+      throw new InvalidArrayOfTSpaceTokenAttributeException(null);
 
-		for (int i = 0; i < tokensList.size(); i++) {
-			TSpaceToken token = null;
-			try {
-				token = TSpaceToken.make((String) tokensList.get(i));
-			} catch (InvalidTSpaceTokenAttributesException e) {
-				token = TSpaceToken.makeEmpty();
-			}
-			arrayOfTSpaceTokens.addTSpaceToken(token);
-		}
+    ArrayOfTSpaceToken arrayOfTSpaceTokens = new ArrayOfTSpaceToken();
 
-		return arrayOfTSpaceTokens;
-	}
+    for (int i = 0; i < tokensList.size(); i++) {
+      TSpaceToken token = null;
+      try {
+        token = TSpaceToken.make((String) tokensList.get(i));
+      } catch (InvalidTSpaceTokenAttributesException e) {
+        token = TSpaceToken.makeEmpty();
+      }
+      arrayOfTSpaceTokens.addTSpaceToken(token);
+    }
 
-	public TSpaceToken getTSpaceToken(int i) {
+    return arrayOfTSpaceTokens;
+  }
 
-		return (TSpaceToken) tokenList.get(i);
-	}
+  public TSpaceToken getTSpaceToken(int i) {
 
-	public TSpaceToken[] getTSpaceTokenArray() {
+    return (TSpaceToken) tokenList.get(i);
+  }
 
-		TSpaceToken[] array = new TSpaceToken[0];
-		return tokenList.toArray(array);
-	}
+  public TSpaceToken[] getTSpaceTokenArray() {
 
-	public void addTSpaceToken(TSpaceToken token) {
+    TSpaceToken[] array = new TSpaceToken[0];
+    return tokenList.toArray(array);
+  }
 
-		tokenList.add(token);
-	}
+  public void addTSpaceToken(TSpaceToken token) {
 
-	public int size() {
+    tokenList.add(token);
+  }
 
-		return tokenList.size();
-	}
+  public int size() {
 
-	/**
-	 * Encode method, used to create a structured paramter representing this
-	 * object, for FE communication.
-	 * 
-	 * @param outputParam
-	 * @param name
-	 */
-	public void encode(Map outputParam, String name) {
+    return tokenList.size();
+  }
 
-		Vector vector = new Vector();
-		for (int i = 0; i < tokenList.size(); i++) {
-			((TSpaceToken) tokenList.get(i)).encode(vector);
-		}
+  /**
+   * Encode method, used to create a structured paramter representing this object, for FE
+   * communication.
+   * 
+   * @param outputParam
+   * @param name
+   */
+  public void encode(Map<String, Object> outputParam, String name) {
 
-		outputParam.put(name, vector);
-	}
+    List<Object> vector = Lists.newArrayList();
+    for (int i = 0; i < tokenList.size(); i++) {
+      ((TSpaceToken) tokenList.get(i)).encode(vector);
+    }
+
+    outputParam.put(name, vector);
+  }
 }

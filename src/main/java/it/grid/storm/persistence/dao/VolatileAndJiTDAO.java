@@ -1,6 +1,5 @@
 package it.grid.storm.persistence.dao;
 
-import java.util.Collection;
 import java.util.List;
 
 public interface VolatileAndJiTDAO {
@@ -19,7 +18,7 @@ public interface VolatileAndJiTDAO {
 
   public void removeAllJiTsOn(String filename);
 
-  public Collection[] removeExpired(long time);
+  public List<Object> removeExpired(long time);
 
   public void updateJiT(String filename, int uid, int acl, long start, long pinLifetime);
 

@@ -29,325 +29,312 @@
 
 package it.grid.storm.srm.types;
 
-import it.grid.storm.space.SpaceHelper;
-import it.grid.storm.space.StorageSpaceData;
-
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Maps;
+
+import it.grid.storm.space.SpaceHelper;
+import it.grid.storm.space.StorageSpaceData;
+
 public class TMetaDataSpace implements Serializable {
 
-	private TSpaceType spaceType;
-	private TReturnStatus status = null;
-	private TSpaceToken spaceToken;
-	private TRetentionPolicyInfo retentionPolicyInfo;
-	private TUserID owner;
-	private TSizeInBytes totalSize;
-	private TSizeInBytes guaranteedSize;
-	private TSizeInBytes unusedSize;
-	private TLifeTimeInSeconds lifetimeAssigned = null;
-	private TLifeTimeInSeconds lifetimeLeft = null;
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
 
-	private static final Logger log = LoggerFactory
-		.getLogger(TMetaDataSpace.class);
+  private TSpaceType spaceType;
+  private TReturnStatus status = null;
+  private TSpaceToken spaceToken;
+  private TRetentionPolicyInfo retentionPolicyInfo;
+  private TUserID owner;
+  private TSizeInBytes totalSize;
+  private TSizeInBytes guaranteedSize;
+  private TSizeInBytes unusedSize;
+  private TLifeTimeInSeconds lifetimeAssigned = null;
+  private TLifeTimeInSeconds lifetimeLeft = null;
 
-	public TMetaDataSpace() {
+  private static final Logger log = LoggerFactory.getLogger(TMetaDataSpace.class);
 
-		this.spaceType = TSpaceType.EMPTY;
-		this.status = null;
-		this.spaceToken = TSpaceToken.makeEmpty();
-		this.retentionPolicyInfo = null;
-		this.owner = TUserID.makeEmpty();
-		this.totalSize = TSizeInBytes.makeEmpty();
-		this.guaranteedSize = TSizeInBytes.makeEmpty();
-		this.unusedSize = TSizeInBytes.makeEmpty();
-		this.lifetimeAssigned = TLifeTimeInSeconds.makeEmpty();
-		this.lifetimeLeft = TLifeTimeInSeconds.makeEmpty();
-	}
+  public TMetaDataSpace() {
 
-	/**
-	 * Constructor
-	 * 
-	 * @param spaceType
-	 *          TSpaceType
-	 * @param spaceToken
-	 *          TSpaceToken
-	 * @param status
-	 *          TReturnStatus
-	 * @param user
-	 *          TUserID
-	 * @param totalSize
-	 *          TSizeInBytes
-	 * @param guaranteedSize
-	 *          TSizeInBytes
-	 * @param unusedSize
-	 *          TSizeInBytes
-	 * @param lifetimeAssigned
-	 *          TLifeTimeInSeconds
-	 * @param lifetimeLeft
-	 *          TLifeTimeInSeconds
-	 * @throws InvalidTMetaDataSpaceAttributeException
-	 */
-	public TMetaDataSpace(TSpaceType spaceType, TSpaceToken spaceToken,
-		TReturnStatus status, TUserID user, TSizeInBytes totalSize,
-		TSizeInBytes guaranteedSize, TSizeInBytes unusedSize,
-		TLifeTimeInSeconds lifetimeAssigned, TLifeTimeInSeconds lifetimeLeft)
-		throws InvalidTMetaDataSpaceAttributeException {
+    this.spaceType = TSpaceType.EMPTY;
+    this.status = null;
+    this.spaceToken = TSpaceToken.makeEmpty();
+    this.retentionPolicyInfo = null;
+    this.owner = TUserID.makeEmpty();
+    this.totalSize = TSizeInBytes.makeEmpty();
+    this.guaranteedSize = TSizeInBytes.makeEmpty();
+    this.unusedSize = TSizeInBytes.makeEmpty();
+    this.lifetimeAssigned = TLifeTimeInSeconds.makeEmpty();
+    this.lifetimeLeft = TLifeTimeInSeconds.makeEmpty();
+  }
 
-		boolean ok = (spaceToken != null);
+  /**
+   * Constructor
+   * 
+   * @param spaceType TSpaceType
+   * @param spaceToken TSpaceToken
+   * @param status TReturnStatus
+   * @param user TUserID
+   * @param totalSize TSizeInBytes
+   * @param guaranteedSize TSizeInBytes
+   * @param unusedSize TSizeInBytes
+   * @param lifetimeAssigned TLifeTimeInSeconds
+   * @param lifetimeLeft TLifeTimeInSeconds
+   * @throws InvalidTMetaDataSpaceAttributeException
+   */
+  public TMetaDataSpace(TSpaceType spaceType, TSpaceToken spaceToken, TReturnStatus status,
+      TUserID user, TSizeInBytes totalSize, TSizeInBytes guaranteedSize, TSizeInBytes unusedSize,
+      TLifeTimeInSeconds lifetimeAssigned, TLifeTimeInSeconds lifetimeLeft)
+      throws InvalidTMetaDataSpaceAttributeException {
 
-		if (!ok) {
-			throw new InvalidTMetaDataSpaceAttributeException(spaceToken);
-		}
+    boolean ok = (spaceToken != null);
 
-		this.spaceType = spaceType;
-		this.spaceToken = spaceToken;
-		this.status = status;
-		this.owner = user;
-		this.totalSize = totalSize;
-		this.guaranteedSize = guaranteedSize;
-		this.unusedSize = unusedSize;
-		this.lifetimeAssigned = lifetimeAssigned;
-		this.lifetimeLeft = lifetimeLeft;
-	}
+    if (!ok) {
+      throw new InvalidTMetaDataSpaceAttributeException(spaceToken);
+    }
 
-	/**
-	 * Constructor with SpaceData returned by DAO.
-	 * 
-	 * @param spaceData
-	 *          of type StorageSpaceData
-	 * @throws InvalidTMetaDataSpaceAttributeException
-	 * @throws InvalidTSizeAttributesException
-	 */
-	public TMetaDataSpace(StorageSpaceData spaceData)
-		throws InvalidTMetaDataSpaceAttributeException,
-		InvalidTSizeAttributesException {
+    this.spaceType = spaceType;
+    this.spaceToken = spaceToken;
+    this.status = status;
+    this.owner = user;
+    this.totalSize = totalSize;
+    this.guaranteedSize = guaranteedSize;
+    this.unusedSize = unusedSize;
+    this.lifetimeAssigned = lifetimeAssigned;
+    this.lifetimeLeft = lifetimeLeft;
+  }
 
-		if (spaceData == null) {
-			log.warn("TMetaDataSpace built without SPACEDATA detail.");
-			this.spaceType = TSpaceType.EMPTY;
-			this.spaceToken = TSpaceToken.makeEmpty();
-			this.status = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-				"Invalid space token");
-			this.owner = TUserID.makeEmpty();
-			this.totalSize = TSizeInBytes.makeEmpty();
-			this.guaranteedSize = TSizeInBytes.makeEmpty();
-			this.unusedSize = TSizeInBytes.makeEmpty();
-			this.lifetimeAssigned = TLifeTimeInSeconds.makeEmpty();
-			this.lifetimeLeft = TLifeTimeInSeconds.makeEmpty();
-		} else {
-			boolean ok = (spaceData.getSpaceToken() != null);
-			if (!ok) {
-				log.warn("TMetaDataSpace built with SpaceData without Token.. !?");
-				throw new InvalidTMetaDataSpaceAttributeException(spaceToken);
-			}
-			this.spaceType = spaceData.getSpaceType();
-			this.spaceToken = spaceData.getSpaceToken();
-			this.owner = spaceData.getUserID();
-			this.totalSize = spaceData.getTotalSpaceSize();
-			this.guaranteedSize = spaceData.getTotalGuaranteedSize();
-			try {
-				if (SpaceHelper.isStorageArea(spaceData)) {
-					this.guaranteedSize = spaceData.getTotalGuaranteedSize();
-				} else {
-					this.guaranteedSize = spaceData.getReservedSpaceSize();
-				}
-			} catch (IllegalArgumentException e) {
-				// impossible
-			}
+  /**
+   * Constructor with SpaceData returned by DAO.
+   * 
+   * @param spaceData of type StorageSpaceData
+   * @throws InvalidTMetaDataSpaceAttributeException
+   * @throws InvalidTSizeAttributesException
+   */
+  public TMetaDataSpace(StorageSpaceData spaceData)
+      throws InvalidTMetaDataSpaceAttributeException, InvalidTSizeAttributesException {
 
-			this.unusedSize = spaceData.getFreeSpaceSize();
-			this.lifetimeAssigned = spaceData.getLifeTime();
-			if (this.lifetimeAssigned.isInfinite()) {
-				this.lifetimeLeft = TLifeTimeInSeconds.makeInfinite();
-			} else {
-				this.lifetimeLeft = this.lifetimeAssigned.timeLeft(spaceData
-					.getCreationDate());
-			}
-			if ((this.lifetimeLeft.value() == 0)
-				&& (this.spaceType != TSpaceType.VOSPACE)) {
-				this.status = new TReturnStatus(TStatusCode.SRM_SPACE_LIFETIME_EXPIRED,
-					"Expired space lifetime");
-			} else {
-				this.status = new TReturnStatus(TStatusCode.SRM_SUCCESS,
-					"Valid space token");
-			}
-		}
-	}
+    if (spaceData == null) {
+      log.warn("TMetaDataSpace built without SPACEDATA detail.");
+      this.spaceType = TSpaceType.EMPTY;
+      this.spaceToken = TSpaceToken.makeEmpty();
+      this.status = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid space token");
+      this.owner = TUserID.makeEmpty();
+      this.totalSize = TSizeInBytes.makeEmpty();
+      this.guaranteedSize = TSizeInBytes.makeEmpty();
+      this.unusedSize = TSizeInBytes.makeEmpty();
+      this.lifetimeAssigned = TLifeTimeInSeconds.makeEmpty();
+      this.lifetimeLeft = TLifeTimeInSeconds.makeEmpty();
+    } else {
+      boolean ok = (spaceData.getSpaceToken() != null);
+      if (!ok) {
+        log.warn("TMetaDataSpace built with SpaceData without Token.. !?");
+        throw new InvalidTMetaDataSpaceAttributeException(spaceToken);
+      }
+      this.spaceType = spaceData.getSpaceType();
+      this.spaceToken = spaceData.getSpaceToken();
+      this.owner = spaceData.getUserID();
+      this.totalSize = spaceData.getTotalSpaceSize();
+      this.guaranteedSize = spaceData.getTotalGuaranteedSize();
+      try {
+        if (SpaceHelper.isStorageArea(spaceData)) {
+          this.guaranteedSize = spaceData.getTotalGuaranteedSize();
+        } else {
+          this.guaranteedSize = spaceData.getReservedSpaceSize();
+        }
+      } catch (IllegalArgumentException e) {
+        // impossible
+      }
 
-	public static TMetaDataSpace makeEmpty() {
+      this.unusedSize = spaceData.getFreeSpaceSize();
+      this.lifetimeAssigned = spaceData.getLifeTime();
+      if (this.lifetimeAssigned.isInfinite()) {
+        this.lifetimeLeft = TLifeTimeInSeconds.makeInfinite();
+      } else {
+        this.lifetimeLeft = this.lifetimeAssigned.timeLeft(spaceData.getCreationDate());
+      }
+      if ((this.lifetimeLeft.value() == 0) && (this.spaceType != TSpaceType.VOSPACE)) {
+        this.status =
+            new TReturnStatus(TStatusCode.SRM_SPACE_LIFETIME_EXPIRED, "Expired space lifetime");
+      } else {
+        this.status = new TReturnStatus(TStatusCode.SRM_SUCCESS, "Valid space token");
+      }
+    }
+  }
 
-		return new TMetaDataSpace();
-	}
+  public static TMetaDataSpace makeEmpty() {
 
-	/**
-	 * Method that returns SpaceType
-	 */
-	public TSpaceType getSpaceType() {
+    return new TMetaDataSpace();
+  }
 
-		return spaceType;
-	}
+  /**
+   * Method that returns SpaceType
+   */
+  public TSpaceType getSpaceType() {
 
-	/**
-	 * Get TReturnStatus
-	 */
-	public TReturnStatus getStatus() {
+    return spaceType;
+  }
 
-		return status;
-	}
+  /**
+   * Get TReturnStatus
+   */
+  public TReturnStatus getStatus() {
 
-	/**
-	 * Set TReturnStatus
-	 */
-	public void setStatus(TReturnStatus status) {
+    return status;
+  }
 
-		this.status = status;
-	}
+  /**
+   * Set TReturnStatus
+   */
+  public void setStatus(TReturnStatus status) {
 
-	/**
-	 * Return Space Token;
-	 */
-	public TSpaceToken getSpaceToken() {
+    this.status = status;
+  }
 
-		return spaceToken;
-	}
+  /**
+   * Return Space Token;
+   */
+  public TSpaceToken getSpaceToken() {
 
-	public void setSpaceToken(TSpaceToken token) {
+    return spaceToken;
+  }
 
-		this.spaceToken = token;
-	}
+  public void setSpaceToken(TSpaceToken token) {
 
-	public void setSpaceType(TSpaceType type) {
+    this.spaceToken = token;
+  }
 
-		this.spaceType = type;
-	}
+  public void setSpaceType(TSpaceType type) {
 
-	public void setOwner(TUserID uid) {
+    this.spaceType = type;
+  }
 
-		this.owner = uid;
-	}
+  public void setOwner(TUserID uid) {
 
-	public void setTotalSize(TSizeInBytes tsize) {
+    this.owner = uid;
+  }
 
-		this.totalSize = tsize;
-	}
+  public void setTotalSize(TSizeInBytes tsize) {
 
-	public void setGuarSize(TSizeInBytes gsize) {
+    this.totalSize = tsize;
+  }
 
-		this.guaranteedSize = gsize;
-	}
+  public void setGuarSize(TSizeInBytes gsize) {
 
-	public void setUnSize(TSizeInBytes usize) {
+    this.guaranteedSize = gsize;
+  }
 
-		this.unusedSize = usize;
-	}
+  public void setUnSize(TSizeInBytes usize) {
 
-	public void setLifeTime(TLifeTimeInSeconds time) {
+    this.unusedSize = usize;
+  }
 
-		this.lifetimeAssigned = time;
-	}
+  public void setLifeTime(TLifeTimeInSeconds time) {
 
-	public void setLifeTimeLeft(TLifeTimeInSeconds time) {
+    this.lifetimeAssigned = time;
+  }
 
-		this.lifetimeLeft = time;
-	}
+  public void setLifeTimeLeft(TLifeTimeInSeconds time) {
 
-	/**
-	 * Return retentionPolicyInfo
-	 */
-	public TRetentionPolicyInfo getRetentionPolicyInfo() {
+    this.lifetimeLeft = time;
+  }
 
-		return retentionPolicyInfo;
-	}
+  /**
+   * Return retentionPolicyInfo
+   */
+  public TRetentionPolicyInfo getRetentionPolicyInfo() {
 
-	public void setRetentionPolicyInfo(TRetentionPolicyInfo retentionPolicyInfo) {
+    return retentionPolicyInfo;
+  }
 
-		this.retentionPolicyInfo = retentionPolicyInfo;
-	}
+  public void setRetentionPolicyInfo(TRetentionPolicyInfo retentionPolicyInfo) {
 
-	/**
-	 * Return User Identifier;
-	 */
-	public TUserID getUserID() {
+    this.retentionPolicyInfo = retentionPolicyInfo;
+  }
 
-		return owner;
-	}
+  /**
+   * Return User Identifier;
+   */
+  public TUserID getUserID() {
 
-	/**
-	 * Return TotalSize;
-	 */
-	public TSizeInBytes getTotalSize() {
+    return owner;
+  }
 
-		return totalSize;
-	}
+  /**
+   * Return TotalSize;
+   */
+  public TSizeInBytes getTotalSize() {
 
-	/**
-	 * Return Guaranteed Size;
-	 */
-	public TSizeInBytes getGuaranteedSize() {
+    return totalSize;
+  }
 
-		return guaranteedSize;
-	}
+  /**
+   * Return Guaranteed Size;
+   */
+  public TSizeInBytes getGuaranteedSize() {
 
-	/**
-	 * Return Unused Size.
-	 */
-	public TSizeInBytes getUnusedSize() {
+    return guaranteedSize;
+  }
 
-		return unusedSize;
-	}
+  /**
+   * Return Unused Size.
+   */
+  public TSizeInBytes getUnusedSize() {
 
-	/**
-	 * Return Lifetime Assigned.
-	 */
-	public TLifeTimeInSeconds getLifeTimeAssigned() {
+    return unusedSize;
+  }
 
-		return lifetimeAssigned;
+  /**
+   * Return Lifetime Assigned.
+   */
+  public TLifeTimeInSeconds getLifeTimeAssigned() {
 
-	}
+    return lifetimeAssigned;
 
-	/**
-	 * Return LifeTime Left
-	 */
-	public TLifeTimeInSeconds getLifeTimeLeft() {
+  }
 
-		return lifetimeLeft;
-	}
+  /**
+   * Return LifeTime Left
+   */
+  public TLifeTimeInSeconds getLifeTimeLeft() {
 
-	/**
-	 * Method used to encode value for FE communication.
-	 */
-	public void encode(Map outputParam, String fieldName) {
+    return lifetimeLeft;
+  }
 
-		Map metaDataSpace = new HashMap();
+  /**
+   * Method used to encode value for FE communication.
+   */
+  public void encode(Map<String, Object> outputParam, String fieldName) {
 
-		this.encode(metaDataSpace);
-		outputParam.put(fieldName, metaDataSpace);
-	}
+    Map<String, Object> metaDataSpace = Maps.newHashMap();
 
-	/**
-	 * Method used to encode value for FE communication.
-	 */
-	public void encode(Map metaDataSpace) {
+    this.encode(metaDataSpace);
+    outputParam.put(fieldName, metaDataSpace);
+  }
 
-		spaceToken.encode(metaDataSpace, TSpaceToken.PNAME_SPACETOKEN);
-		if (status != null) {
-			status.encode(metaDataSpace, TReturnStatus.PNAME_STATUS);
-		}
-		if (retentionPolicyInfo != null) {
-			retentionPolicyInfo.encode(metaDataSpace,
-				TRetentionPolicyInfo.PNAME_retentionPolicyInfo);
-		}
-		owner.encode(metaDataSpace, TUserID.PNAME_OWNER);
-		totalSize.encode(metaDataSpace, TSizeInBytes.PNAME_TOTALSIZE);
-		guaranteedSize.encode(metaDataSpace, TSizeInBytes.PNAME_GUARANTEEDSIZE);
-		unusedSize.encode(metaDataSpace, TSizeInBytes.PNAME_UNUSEDSIZE);
-		lifetimeAssigned.encode(metaDataSpace,
-			TLifeTimeInSeconds.PNAME_LIFETIMEASSIGNED);
-		lifetimeLeft.encode(metaDataSpace, TLifeTimeInSeconds.PNAME_LIFETIMELEFT);
-	}
+  /**
+   * Method used to encode value for FE communication.
+   */
+  public void encode(Map<String, Object> metaDataSpace) {
+
+    spaceToken.encode(metaDataSpace, TSpaceToken.PNAME_SPACETOKEN);
+    if (status != null) {
+      status.encode(metaDataSpace, TReturnStatus.PNAME_STATUS);
+    }
+    if (retentionPolicyInfo != null) {
+      retentionPolicyInfo.encode(metaDataSpace, TRetentionPolicyInfo.PNAME_retentionPolicyInfo);
+    }
+    owner.encode(metaDataSpace, TUserID.PNAME_OWNER);
+    totalSize.encode(metaDataSpace, TSizeInBytes.PNAME_TOTALSIZE);
+    guaranteedSize.encode(metaDataSpace, TSizeInBytes.PNAME_GUARANTEEDSIZE);
+    unusedSize.encode(metaDataSpace, TSizeInBytes.PNAME_UNUSEDSIZE);
+    lifetimeAssigned.encode(metaDataSpace, TLifeTimeInSeconds.PNAME_LIFETIMEASSIGNED);
+    lifetimeLeft.encode(metaDataSpace, TLifeTimeInSeconds.PNAME_LIFETIMELEFT);
+  }
 }

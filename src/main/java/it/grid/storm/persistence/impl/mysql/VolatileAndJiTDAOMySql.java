@@ -21,7 +21,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -333,7 +332,9 @@ public class VolatileAndJiTDAOMySql extends AbstractDAO implements VolatileAndJi
    * This operation is treated as a Transaction by the DB, so a Roll Back should return everything
    * to its original state!
    */
-  public Collection[] removeExpired(long time) {
+  public List<Object> removeExpired(long time) {
+
+    List<Object> output = Lists.newArrayList(Lists.newArrayList(), Lists.newArrayList());
 
     String vol = "SELECT ID,file FROM volatile WHERE (UNIX_TIMESTAMP(start)+fileLifetime<?)";
     String jit = "SELECT ID,file,acl,uid,gid FROM jit WHERE (UNIX_TIMESTAMP(start)+pinLifetime<?)";
@@ -386,8 +387,8 @@ public class VolatileAndJiTDAOMySql extends AbstractDAO implements VolatileAndJi
       closeStatement(stmt);
 
       // remove entries
-      Collection volcol = Lists.newArrayList();
-      Collection jitcol = Lists.newArrayList();
+      Collection<String> volcol = Lists.newArrayList();
+      Collection<JiTData> jitcol = Lists.newArrayList();
       try {
         con.setAutoCommit(false); // begin transaction!
         // delete volatile
@@ -422,11 +423,11 @@ public class VolatileAndJiTDAOMySql extends AbstractDAO implements VolatileAndJi
       }
 
       // return collections
-      return new Collection[] {volcol, jitcol};
+      return Lists.newArrayList(volcol, jitcol);
     } catch (SQLException e) {
       log.error("VolatileAndJiTDAO! Unable to complete removeExpired! {}", e.getMessage(), e);
       // in case of any failure return an array of two empty Collection
-      return new Collection[] {Lists.newArrayList(), Lists.newArrayList()};
+      return output;
     } finally {
       closeResultSet(rs);
       closeStatement(stmt);
