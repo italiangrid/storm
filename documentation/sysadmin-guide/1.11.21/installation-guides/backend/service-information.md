@@ -77,19 +77,16 @@ The agent runs each `transit.interval` seconds and updates all the expired reque
 
 #### Database connection parameters
 
-|   Property Name   |   Description     |
-|:------------------|:------------------|
-|   `com.mysql.jdbc.Driver` |   JDBC driver to be used to connect with StoRM database. Default: **com.mysql.jdbc.Driver**
-|   `storm.service.request-db.protocol` |   Protocol to be used to connect with StoRM database. Default: **jdbc:mysql://**
-|   `storm.service.request-db.host` |   Host for StoRM database. Default: **localhost**
-|   `storm.service.request-db.db-name`  |   Database name for SRM requests. Default: **storm_db**
-|   `storm.service.request-db.username` |   Username for database connection. Default: **storm**
-|   `storm.service.request-db.passwd`   |   Password for database connection
-|   `asynch.db.ReconnectPeriod` |   Database connection refresh time intervall in seconds. Default: **18000**
-|   `asynch.db.DelayPeriod` |   Database connection refresh initial delay in seconds. Default: **30**
-|   `persistence.internal-db.connection-pool`   |   Enable the database connection pool. Default: **false**
-|   `persistence.internal-db.connection-pool.maxActive`     |   Database connection pool max active connections. Default: **10**
-|   `persistence.internal-db.connection-pool.maxWait`   |   Database connection pool max wait time to provide a connection. Default: **50**
+|   Property Name   |   Description         |
+|:------------------|:----------------------|
+|   `storm.service.request-db.host`        |   Host for StoRM database. Default: **localhost**
+|   `storm.service.request-db.username`    |   Username for database connection. Default: **storm**
+|   `storm.service.request-db.passwd`      |   Password for database connection
+|   `storm.service.request-db.properties`  |   Database connection URL properties. Default: **serverTimezone=UTC&autoReconnect=true**
+|   `asynch.db.ReconnectPeriod`            |   Database connection refresh time intervall in seconds. Default: **18000**
+|   `asynch.db.DelayPeriod`                |   Database connection refresh initial delay in seconds. Default: **30**
+|   `persistence.internal-db.connection-pool.maxActive`  |   Database connection pool max active connections. Default: **10**
+|   `persistence.internal-db.connection-pool.maxWait`    |   Database connection pool max wait time to provide a connection. Default: **50**
 
 #### SRM Requests Picker
 
@@ -98,15 +95,14 @@ The agent runs each `transit.interval` seconds and updates all the expired reque
 |   `asynch.PickingInitialDelay`    |   Initial delay before starting to pick requests from the DB, in seconds. Default: **1**
 |   `asynch.PickingTimeInterval`    |   Polling interval in seconds to pick up new SRM requests. Default: **2**
 |   `asynch.PickingMaxBatchSize`    |   Maximum number of requests picked up at each polling time. Default: **100**
-|   `scheduler.serial`          |   **DEPRECATED** Flag to enable the execution of all the request on a single thread. Default: **false**
 
 #### Worker threads
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
-|   `scheduler.crusher.workerCorePoolSize`  |   Crusher Scheduler worker pool base size. Default: **10**
-|   `scheduler.crusher.workerMaxPoolSize`       |   Crusher Schedule worker pool max size. Default: **50**
-|   `scheduler.crusher.queueSize`               |   Request queue maximum size.<br/>Default: **2000**
+|   `scheduler.crusher.workerCorePoolSize`          |   Crusher Scheduler worker pool base size. Default: **10**
+|   `scheduler.crusher.workerMaxPoolSize`           |   Crusher Schedule worker pool max size. Default: **50**
+|   `scheduler.crusher.queueSize`                   |   Request queue maximum size.<br/>Default: **2000**
 |   `scheduler.chunksched.ptg.workerCorePoolSize`   |   *PrepareToGet* worker pool base size. Default: **50**
 |   `scheduler.chunksched.ptg.workerMaxPoolSize`    |   *PrepareToGet* worker pool max size. Default: **200**
 |   `scheduler.chunksched.ptg.queueSize`            |   *PrepareToGet* request queue maximum size. Default: **2000**
@@ -130,9 +126,9 @@ The agent runs each `transit.interval` seconds and updates all the expired reque
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
-|   `tape.support.enabled`  |   Flag to enable tape support. Default: **false**
-|   `tape.buffer.group.read`    |   System group to be assigned to files migrated from tape storage. Default: **storm-SA-read**
-|   `tape.buffer.group.write`   |   System group to be assigned to files migrated to tape storage. Default: **storm-SA-write**
+|   `tape.recalltable.service.param.retry-value`   |   Default: **retry-value**
+|   `tape.recalltable.service.param.status`        |   Default: **status**
+|   `tape.recalltable.service.param.takeover`      |   Default: **first**
 
 #### Disk Usage Service
 

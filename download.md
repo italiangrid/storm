@@ -13,7 +13,6 @@ title: StoRM releases
 
 ### Platforms
 
-* **CentOS 8** <span class="label label-info">FUTURE RELEASES</span> - We're going to test future releases also on **RHEL 8 platform**.
 * **CentOS 7** <span class="label label-success">SUPPORTED</span> - All the latest StoRM components are certified to work on **RHEL 7 platform**.
 * **CentOS 6** and minors <span class="label label-danger">NOT SUPPORTED</span> - CentOS 6 has reached EOL on Nov. 30th 2020. Since StoRM v1.11.20 release, CentOS 6 platform is no more supported by our components. The last StoRM release which supports CentOS 6 platform is v1.11.19.
 
