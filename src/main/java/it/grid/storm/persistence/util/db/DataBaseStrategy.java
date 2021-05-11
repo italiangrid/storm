@@ -17,9 +17,6 @@
 
 package it.grid.storm.persistence.util.db;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class DataBaseStrategy {
 
 	private final String dbmsVendor;
@@ -31,24 +28,16 @@ public class DataBaseStrategy {
 	private String dbUsr;
 	private String dbPwd;
 	private SQLFormat formatter;
+	private String properties;
 
-	public static final DataBaseStrategy MYSQL = new DataBaseStrategy("mysql",
-	    "com.mysql.cj.jdbc.Driver", "jdbc:mysql://", new MySqlFormat());
-
-	private static final Map<String, DataBaseStrategy> DATABASES = new HashMap<String, DataBaseStrategy>();
-
-	static {
-		DataBaseStrategy.DATABASES.put(DataBaseStrategy.MYSQL.toString(),
-			DataBaseStrategy.MYSQL);
-	}
-
-	private DataBaseStrategy(String dbmsVendor, String driverName, String prefix,
+	public DataBaseStrategy(String dbmsVendor, String driverName, String prefix,
 		SQLFormat formatter) {
 
 		this.dbmsVendor = dbmsVendor;
 		this.driverName = driverName;
 		jdbcPrefix = prefix;
 		this.formatter = formatter;
+		this.properties = "";
 	}
 
 
@@ -117,8 +106,10 @@ public class DataBaseStrategy {
 
 	public String getConnectionString() {
 
-		String connStr;
-		connStr = jdbcPrefix + dbUrl + "/" + dbName + "?serverTimezone=UTC&autoReconnect=true";
+		String connStr = jdbcPrefix + dbUrl + "/" + dbName;
+		if (!properties.isEmpty()) {
+		  connStr += "?" + properties;
+		}
 		return connStr;
 	}
 
@@ -132,25 +123,14 @@ public class DataBaseStrategy {
 		return formatter;
 	}
 
+	public void setProperties(String encodedProperties) {
+
+	    this.properties = encodedProperties;
+	}
+
 	@Override
 	public String toString() {
 
 		return dbmsVendor;
-	}
-
-
-	public static DataBaseStrategy getInstance(String vendor) {
-
-		return DataBaseStrategy.DATABASES.get(vendor);
-	}
-
-	public static String getDriverName(String vendor) {
-
-		return (DataBaseStrategy.getInstance(vendor)).driverName;
-	}
-
-	public static String getJdbcPrefix(String vendor) {
-
-		return (DataBaseStrategy.getInstance(vendor)).jdbcPrefix;
 	}
 }

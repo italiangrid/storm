@@ -125,8 +125,9 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 			log.error("Exception while getting driver: {}", ex.getMessage(), ex);
 		}
 
-		connectionPoolDatasource.setUrl(db.getConnectionString());
-		log.debug("connection string: {}", db.getConnectionString());
+		String connectionString = db.getConnectionString();
+		connectionPoolDatasource.setUrl(connectionString);
+		log.debug("connection string: {}", connectionString);
 		connectionPoolDatasource.setUser(db.getDbUsr());
 		connectionPoolDatasource.setPassword(db.getDbPwd());
 
