@@ -24,7 +24,7 @@ public class DataBaseStrategy {
 	private final String jdbcPrefix;
 	private String dbName;
 	private String dbPrefix;
-	private String dbUrl;
+	private String dbHost;
 	private String dbUsr;
 	private String dbPwd;
 	private SQLFormat formatter;
@@ -94,19 +94,19 @@ public class DataBaseStrategy {
 		return dbPrefix;
 	}
 
-	public void setDbUrl(String url) {
+	public void setDbHost(String host) {
 
-		dbUrl = url;
+		dbHost = host;
 	}
 
-	public String getDbUrl() {
+	public String getDbHost() {
 
-		return dbUrl;
+		return dbHost;
 	}
 
 	public String getConnectionString() {
 
-		String connStr = jdbcPrefix + dbUrl + "/" + dbName;
+		String connStr = jdbcPrefix + dbHost + "/" + dbName;
 		if (!properties.isEmpty()) {
 		  connStr += "?" + properties;
 		}

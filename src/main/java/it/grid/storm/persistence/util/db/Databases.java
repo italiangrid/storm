@@ -15,14 +15,16 @@ public class Databases {
   private static final String MYSQL_PREFIX = "jdbc:mysql://";
   private static final SQLFormat MYSQL_FORMATTER = new MySqlFormat();
 
+  private static final String DB_NAME = "storm_be_ISAM";
+
   static {
     Configuration config = Configuration.getInstance();
     DataBaseStrategy dbs = new DataBaseStrategy(MYSQL_VENDOR, MYSQL_DRIVER, MYSQL_PREFIX, MYSQL_FORMATTER);
-    dbs.setDbUsr(config.getBEPersistenceDBUserName());
-    dbs.setDbPwd(config.getBEPersistenceDBPassword());
-    dbs.setProperties(config.getBEPersistenceDbProperties());
-    dbs.setDbName(config.getBEPersistenceDBName());
-    dbs.setDbUrl(config.getBEPersistenceDBMSUrl());
+    dbs.setDbUsr(config.getDBUserName());
+    dbs.setDbPwd(config.getDBPassword());
+    dbs.setProperties(config.getDBProperties());
+    dbs.setDbName(DB_NAME);
+    dbs.setDbHost(config.getDBHostname());
     DATABASES.put(MYSQL_VENDOR, dbs);
   }
 

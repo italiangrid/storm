@@ -127,7 +127,7 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 
 		String connectionString = db.getConnectionString();
 		connectionPoolDatasource.setUrl(connectionString);
-		log.debug("connection string: {}", connectionString);
+		log.debug("Database connection string: {}", connectionString);
 		connectionPoolDatasource.setUser(db.getDbUsr());
 		connectionPoolDatasource.setPassword(db.getDbPwd());
 
