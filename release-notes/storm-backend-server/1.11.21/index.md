@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM Backend v. 1.11.21 release notes"
-release_date: "07.05.2021"
+release_date: "12.05.2021"
 rfcs:
   - id: STOR-1395
     title: StoRM Backend service enters failed state when stopped

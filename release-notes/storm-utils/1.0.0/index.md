@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM Utils v. 10.0 release notes"
-release_date: "07.05.2021"
+release_date: "12.05.2021"
 
 ---
 

@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM WebDAV v. 1.4.1 release notes"
-release_date: "07.05.2021"
+release_date: "12.05.2021"
 rfcs:
   - id: STOR-1400
     title: StoRM WebDAV service enters failed state when stopped

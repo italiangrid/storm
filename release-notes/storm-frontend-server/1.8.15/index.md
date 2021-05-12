@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "StoRM Frontend v.1.8.15 release notes"
-release_date: "07.05.2021"
+release_date: "12.05.2021"
 rfcs:
   - id: STOR-1398
     title: Ensure MariaDB is started before StoRM Frontend on boot
