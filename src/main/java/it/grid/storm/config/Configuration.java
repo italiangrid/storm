@@ -32,8 +32,6 @@ import java.util.List;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
@@ -56,8 +54,6 @@ public class Configuration {
       "/etc/storm/backend-server/storm.properties";
   public static final int DEFAULT_STORM_CONFIG_REFRESH_RATE = 0;
 
-  private static final Logger log = LoggerFactory.getLogger(Configuration.class);
-
   private final ConfigReader cr;
 
   private static Configuration instance;
@@ -72,10 +68,8 @@ public class Configuration {
   private static final String SERVICE_HOSTNAME_KEY = "storm.service.FE-public.hostname";
   private static final String SERVICE_PORT_KEY = "storm.service.port";
   private static final String LIST_OF_MACHINE_IPS_KEY = "storm.service.FE-list.IPs";
-  private static final String DB_DRIVER_KEY = "storm.service.request-db.dbms-vendor";
-  private static final String DB_URL_1KEY = "storm.service.request-db.protocol";
-  private static final String DB_URL_2KEY = "storm.service.request-db.host";
-  private static final String DB_URL_3KEY = "storm.service.request-db.db-name";
+  private static final String DB_URL_HOSTNAME = "storm.service.request-db.host";
+  private static final String DB_URL_PROPERTIES = "storm.service.request-db.properties";
   private static final String DB_USER_NAME_KEY = "storm.service.request-db.username";
   private static final String DB_PASSWORD_KEY = "storm.service.request-db.passwd";
   private static final String DB_RECONNECT_PERIOD_KEY = "asynch.db.ReconnectPeriod";
@@ -95,16 +89,6 @@ public class Configuration {
   private static final String XMLRPC_MAX_QUEUE_SIZE_KEY = "synchcall.xmlrpc.max_queue_size";
   private static final String LIST_OF_DEFAULT_SPACE_TOKEN_KEY = "storm.service.defaultSpaceTokens";
   private static final String COMMAND_SERVER_BINDING_PORT_KEY = "storm.commandserver.port";
-  private static final String BE_PERSISTENCE_DB_VENDOR_KEY = "persistence.internal-db.dbms-vendor";
-  private static final String BE_PERSISTENCE_DBMS_URL_1KEY = "persistence.internal-db.host";
-  private static final String BE_PERSISTENCE_DBMS_URL_2KEY = "" + DB_URL_2KEY;
-  private static final String BE_PERSISTENCE_DB_NAME_KEY = "persistence.internal-db.db-name";
-  private static final String BE_PERSISTENCEDB_USER_NAME_1KEY = "persistence.internal-db.username";
-  private static final String BE_PERSISTENCEDB_USER_NAME_2KEY = "" + DB_USER_NAME_KEY;
-  private static final String BE_PERSISTENCE_DB_PASSWORD_1KEY = "persistence.internal-db.passwd";
-  private static final String BE_PERSISTENCE_DB_PASSWORD_2KEY = "" + DB_PASSWORD_KEY;
-  private static final String BE_PERSISTENCE_POOL_DB_KEY =
-      "persistence.internal-db.connection-pool";
   private static final String BE_PERSISTENCE_POOL_DB_MAX_ACTIVE_KEY =
       "persistence.internal-db.connection-pool.maxActive";
   private static final String BE_PERSISTENCE_POOL_DB_MAX_WAIT_KEY =
@@ -322,58 +306,21 @@ public class Configuration {
    */
   public String getDBDriver() {
 
-    if (!cr.getConfiguration().containsKey(DB_DRIVER_KEY)) {
-      return "com.mysql.cj.jdbc.Driver";
-    }
-    String vendor = cr.getConfiguration().getString(DB_DRIVER_KEY);
-    String driver = "";
-    if ("mysql".equalsIgnoreCase(vendor)) {
-      driver = "com.mysql.cj.jdbc.Driver";
-    } else {
-      log.error("CONFIG ERROR 'RDBMS Vendor ('{}') unknown.'", vendor);
-    }
-    return driver;
+    return "com.mysql.cj.jdbc.Driver";
   }
 
   /**
    * Method used by all DAO Objects to get DB URL. If no value is found in the configuration medium,
-   * then the default value is returned instead. key1="asynch.picker.db.protocol"; default
-   * value="jdbc:mysql://"; key2="asynch.picker.db.host"; default value="localhost";
-   * key3="asynch.picker.db.name"; default value="storm_db"; The returned value is made up of the
-   * above default values and whatever is read from the configuration medium, combined in the
-   * following way: protocol + host + "/" + name
+   * then the default value is returned instead.
    */
-  public String getDBURL() {
+  public String getStormDbURL() {
 
-    String prefix = "";
-    String host = "";
-    String name = "";
-    // get prefix...
-    if (!cr.getConfiguration().containsKey(DB_URL_1KEY)) {
-      // use default
-      prefix = "jdbc:mysql://";
-    } else {
-      // load from external source
-      prefix = cr.getConfiguration().getString(DB_URL_1KEY);
+    String host = getDBHostname();
+    String properties = getDBProperties();
+    if (properties.isEmpty()) {
+      return "jdbc:mysql://" + host + "/storm_db";
     }
-    // get host...
-    if (!cr.getConfiguration().containsKey(DB_URL_2KEY)) {
-      // use default
-      host = "localhost";
-    } else {
-      // load from external source
-      host = cr.getConfiguration().getString(DB_URL_2KEY);
-    }
-    // get db name...
-    if (!cr.getConfiguration().containsKey(DB_URL_3KEY)) {
-      // use default
-      name = "storm_db";
-    } else {
-      // load from external source
-      name = cr.getConfiguration().getString(DB_URL_3KEY);
-    }
-    // return value...
-    return prefix + host + "/" + name;
+    return "jdbc:mysql://" + host + "/storm_db?" + properties;
   }
 
   /**
@@ -388,7 +335,7 @@ public class Configuration {
 
   /**
    * Method used by all DAO Objects to get the DB password. If no value is found in the
-   * configuration medium, then the default value is returned instead. Deafult value = "storm"; key
+   * configuration medium, then the default value is returned instead. Default value = "storm"; key
    * searched in medium = "asynch.picker.db.passwd".
    */
   public String getDBPassword() {
@@ -396,9 +343,19 @@ public class Configuration {
     return cr.getConfiguration().getString(DB_PASSWORD_KEY, "storm");
   }
 
+  public String getDBHostname() {
+
+    return cr.getConfiguration().getString(DB_URL_HOSTNAME, "localhost");
+  }
+
   /*
    * END definition of MANDATORY PROPERTIES
    */
+
+  public String getDBProperties() {
+
+    return cr.getConfiguration().getString(DB_URL_PROPERTIES, "serverTimezone=UTC&autoReconnect=true");
+  }
 
   /**
    * Method used by all DAOs to establish the reconnection period in _seconds_: after such period
@@ -584,89 +541,6 @@ public class Configuration {
   public int getCommandServerBindingPort() {
 
     return cr.getConfiguration().getInt(COMMAND_SERVER_BINDING_PORT_KEY, 4444);
-  }
-
-  /**
-   * Method used in Persistence Component It returns the DB vendor name. If no value is found in the
-   * configuration medium, then the default value is returned instead. key="persistence.db.vendor";
-   * default value="mysql";
-   */
-  public String getBEPersistenceDBVendor() {
-
-    return cr.getConfiguration().getString(BE_PERSISTENCE_DB_VENDOR_KEY, "mysql");
-  }
-
-  /**
-   * Method used in Persistence Component: it returns the host where the DB resides. If no value is
-   * found in the configuration medium, then the default value is returned instead.
-   * key="persistence.db.host"; default value="localhost";
-   */
-  public String getBEPersistenceDBMSUrl() {
-
-    if (cr.getConfiguration().containsKey(BE_PERSISTENCE_DBMS_URL_1KEY)) {
-      return cr.getConfiguration().getString(BE_PERSISTENCE_DBMS_URL_1KEY);
-    }
-
-    if (cr.getConfiguration().containsKey(BE_PERSISTENCE_DBMS_URL_2KEY)) {
-      return cr.getConfiguration().getString(BE_PERSISTENCE_DBMS_URL_2KEY);
-    }
-    return "localhost";
-  }
-
-  /**
-   * Method used in Persistence Component it returns the name of the DB to use. If no value is found
-   * in the configuration medium, then the default value is returned instead.
-   * key="persistence.db.name"; default value="storm_be_ISAM";
-   */
-  public String getBEPersistenceDBName() {
-
-    return cr.getConfiguration().getString(BE_PERSISTENCE_DB_NAME_KEY, "storm_be_ISAM");
-  }
-
-  /**
-   * Method used in Persistence Component it returns the name of the DB user that must be used. If
-   * no value is found in the configuration medium, then the default value is returned instead.
-   * key="persistence.db.username"; default value="storm";
-   */
-  public String getBEPersistenceDBUserName() {
-
-    if (cr.getConfiguration().containsKey(BE_PERSISTENCEDB_USER_NAME_1KEY)) {
-      return cr.getConfiguration().getString(BE_PERSISTENCEDB_USER_NAME_1KEY);
-    }
-
-    if (cr.getConfiguration().containsKey(BE_PERSISTENCEDB_USER_NAME_2KEY)) {
-      return cr.getConfiguration().getString(BE_PERSISTENCEDB_USER_NAME_2KEY);
-    }
-
-    return "storm";
-  }
-
-  /**
-   * Method used in Persistence Component it returns the password for the DB user that must be used.
-   * If no value is found in the configuration medium, then the default value is returned instead.
-   * key="persistence.db.passwd"; default value="storm";
-   */
-  public String getBEPersistenceDBPassword() {
-
-    if (cr.getConfiguration().containsKey(BE_PERSISTENCE_DB_PASSWORD_1KEY)) {
-      return cr.getConfiguration().getString(BE_PERSISTENCE_DB_PASSWORD_1KEY);
-    }
-
-    if (cr.getConfiguration().containsKey(BE_PERSISTENCE_DB_PASSWORD_2KEY)) {
-      return cr.getConfiguration().getString(BE_PERSISTENCE_DB_PASSWORD_2KEY);
-    }
-
-    return "storm";
-  }
-
-  /**
-   * Method used in Persistence Component it returns a boolean indicating whether to use connection
-   * pooling or not. If no value is found in the configuration medium, then the default value is
-   * returned instead. key="persistence.db.pool"; default value=false;
-   */
-  public boolean getBEPersistencePoolDB() {
-
-    return cr.getConfiguration().getBoolean(BE_PERSISTENCE_POOL_DB_KEY, false);
   }
 
   /**

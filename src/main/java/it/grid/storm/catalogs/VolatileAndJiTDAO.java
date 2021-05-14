@@ -54,7 +54,7 @@ public class VolatileAndJiTDAO {
 	private final String driver = Configuration.getInstance().getDBDriver();
 
 	// The URL of the DB
-	private final String url = Configuration.getInstance().getDBURL();
+	private final String url = Configuration.getInstance().getStormDbURL();
 
 	// The password for the DB
 	private final String password = Configuration.getInstance().getDBPassword();

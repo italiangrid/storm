@@ -125,7 +125,9 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 			log.error("Exception while getting driver: {}", ex.getMessage(), ex);
 		}
 
-		connectionPoolDatasource.setUrl(db.getConnectionString());
+		String connectionString = db.getConnectionString();
+		connectionPoolDatasource.setUrl(connectionString);
+		log.debug("Database connection string: {}", connectionString);
 		connectionPoolDatasource.setUser(db.getDbUsr());
 		connectionPoolDatasource.setPassword(db.getDbPwd());
 
@@ -134,6 +136,8 @@ public class DBConnectionPool implements DataSourceConnectionFactory {
 
 		sharedDatasource.setMaxTotal(maxActive);
 		sharedDatasource.setDefaultMaxWaitMillis(maxWait);
+		sharedDatasource.setValidationQuery("SELECT 1");
+		sharedDatasource.setDefaultTestOnBorrow(true);
 
 		handle = System.currentTimeMillis();
 	}
