@@ -169,7 +169,7 @@ public class StoRMDataSource {
      Configuration conf = Configuration.getInstance();
      instance = new StoRMDataSource.Builder()
        .driver(conf.getDBDriver())
-       .url(conf.getDBURL())
+       .url(conf.getStormDbURL())
        .username(conf.getDBUserName())
        .password(conf.getDBPassword())
        .build();

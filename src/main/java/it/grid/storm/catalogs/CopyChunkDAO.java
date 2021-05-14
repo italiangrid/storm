@@ -56,7 +56,7 @@ public class CopyChunkDAO {
 	/* String with the name of the class for the DB driver */
 	private final String driver = Configuration.getInstance().getDBDriver();
 	/* String referring to the URL of the DB */
-	private final String url = Configuration.getInstance().getDBURL();
+	private final String url = Configuration.getInstance().getStormDbURL();
 	/* String with the password for the DB */
 	private final String password = Configuration.getInstance().getDBPassword();
 	/* String with the name for the DB */
