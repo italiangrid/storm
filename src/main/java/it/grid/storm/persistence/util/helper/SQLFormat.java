@@ -15,26 +15,10 @@
  * the License.
  */
 
-package it.grid.storm.persistence.pool;
+package it.grid.storm.persistence.util.helper;
 
-public interface DatabaseStrategy {
+public interface SQLFormat {
 
-  public String getDbmsVendor();
-
-  public String getDriverName();
-
-  public String getJdbcPrefix();
-
-  public String getDbName();
-
-  public String getDbHostname();
-
-  public String getDbUsername();
-
-  public String getDbPassword();
-
-  public String getConnectionString();
-
-  public SQLFormat getFormatter();
+	public String format(Object value);
 
 }

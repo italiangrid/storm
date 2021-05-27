@@ -25,15 +25,15 @@ import java.sql.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.grid.storm.persistence.pool.DBConnectionPool;
+import it.grid.storm.persistence.pool.DefaultDatabaseConnectionPool;
 
 public abstract class AbstractDAO {
 
   private static final Logger log = LoggerFactory.getLogger(AbstractDAO.class);
 
-  private final DBConnectionPool connectionPool;
+  private final DefaultDatabaseConnectionPool connectionPool;
 
-  public AbstractDAO(DBConnectionPool connectionPool) {
+  public AbstractDAO(DefaultDatabaseConnectionPool connectionPool) {
 
     this.connectionPool = connectionPool;
   }

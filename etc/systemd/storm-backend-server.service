@@ -1,5 +1,6 @@
 [Unit]
 Description=StoRM Backend service
+After=mariadb.service
 
 [Service]
 WorkingDirectory=/etc/storm/backend-server
@@ -14,6 +15,7 @@ ExecStart=/bin/bash -ac "exec /usr/bin/java \
     -Djna.library.path=/usr/lib64/modules:/usr/lib64/ \
     it.grid.storm.Main > /var/log/storm/storm-backend.stdout 2> /var/log/storm/storm-backend.stderr"
 KillMode=process
+SuccessExitStatus=143
 
 [Install]
 WantedBy=multi-user.target

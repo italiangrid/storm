@@ -15,7 +15,7 @@
  * the License.
  */
 
-package it.grid.storm.persistence.pool;
+package it.grid.storm.persistence.util.helper;
 
 import java.text.SimpleDateFormat;
 

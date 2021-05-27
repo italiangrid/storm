@@ -17,8 +17,14 @@
 
 package it.grid.storm.persistence.pool;
 
-public interface SQLFormat {
+public interface DatabaseConnector {
 
-	public String format(Object value);
+  public String getDriverName();
+
+  public String getDbUsername();
+
+  public String getDbPassword();
+
+  public String getDbURL();
 
 }

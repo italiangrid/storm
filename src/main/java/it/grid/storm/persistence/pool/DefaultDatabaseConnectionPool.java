@@ -29,19 +29,39 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 
-public class DBConnectionPool {
+public class DefaultDatabaseConnectionPool implements DatabaseConnectionPool {
 
-  private static final Logger log = LoggerFactory.getLogger(DBConnectionPool.class);
+  private static final Logger log = LoggerFactory.getLogger(DefaultDatabaseConnectionPool.class);
+
+  private DatabaseConnector dbs;
+
+  private int maxTotal;
+  private int minIdle;
+  private int maxConnLifetimeMillis;
+  private boolean isTestOnBorrow;
+  private boolean isTestWhileIdle;
 
   private BasicDataSource bds;
 
-  public DBConnectionPool(DatabaseStrategy dbs, int maxTotal, int minIdle,
+  public DefaultDatabaseConnectionPool(DatabaseConnector dbs, int maxTotal, int minIdle,
       int maxConnLifetimeMillis, boolean isTestOnBorrow, boolean isTestWhileIdle) {
+
+    this.dbs = dbs;
+    this.maxTotal = maxTotal;
+    this.minIdle = minIdle;
+    this.maxConnLifetimeMillis = maxConnLifetimeMillis;
+    this.isTestOnBorrow = isTestOnBorrow;
+    this.isTestWhileIdle = isTestWhileIdle;
+
+    init();
+  }
+
+  private void init() {
 
     bds = new BasicDataSource();
 
     bds.setDriverClassName(dbs.getDriverName());
-    bds.setUrl(dbs.getConnectionString());
+    bds.setUrl(dbs.getDbURL());
     bds.setUsername(dbs.getDbUsername());
     bds.setPassword(dbs.getDbPassword());
     bds.setMaxTotal(maxTotal);
@@ -52,9 +72,9 @@ public class DBConnectionPool {
     bds.setTestWhileIdle(isTestWhileIdle);
 
     log.info(
-        "Connected as {} to '{}'@'{}' [max-total: {}, min-idle: {}, max-conn-lifetime-millis: {}, test-on-borrow: {}, test-while-idle: {}]",
-        dbs.getDbUsername(), dbs.getDbName(), dbs.getDbHostname(), maxTotal, minIdle,
-        maxConnLifetimeMillis, isTestOnBorrow, isTestWhileIdle);
+        "Connected as {} at '{}' [max-total: {}, min-idle: {}, max-conn-lifetime-millis: {}, test-on-borrow: {}, test-while-idle: {}]",
+        dbs.getDbUsername(), dbs.getDbURL(), maxTotal, minIdle, maxConnLifetimeMillis,
+        isTestOnBorrow, isTestWhileIdle);
   }
 
   public Connection getConnection() throws SQLException {
@@ -74,6 +94,36 @@ public class DBConnectionPool {
     metrics.put("max-conn-lifetime-millis", valueOf(bds.getMaxConnLifetimeMillis()));
     metrics.put("max-idle", valueOf(bds.getMaxIdle()));
     return metrics;
+  }
+
+  @Override
+  public int getMaxTotal() {
+    return maxTotal;
+  }
+
+  @Override
+  public int getInitialSize() {
+    return minIdle;
+  }
+
+  @Override
+  public int getMinIdle() {
+    return minIdle;
+  }
+
+  @Override
+  public long getMaxConnLifetimeMillis() {
+    return maxConnLifetimeMillis;
+  }
+
+  @Override
+  public boolean getTestOnBorrow() {
+    return isTestOnBorrow;
+  }
+
+  @Override
+  public boolean getTestWhileIdle() {
+    return isTestWhileIdle;
   }
 
 }

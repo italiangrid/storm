@@ -17,8 +17,8 @@
 
 package it.grid.storm.persistence.model;
 
-import it.grid.storm.persistence.pool.MySqlFormat;
-import it.grid.storm.persistence.pool.SQLFormat;
+import it.grid.storm.persistence.util.helper.MySqlFormat;
+import it.grid.storm.persistence.util.helper.SQLFormat;
 
 public abstract class SQLHelper {
 

@@ -11,21 +11,11 @@
 ############################
 ###  SERVICE PARAMETERS  ###
 ############################
-##
-##  NOTE:
-##        The SERVICE PARAMETERS are managed also by YAIM. 
-##        So, if you install and configure the service with YAIM, please 
-##        remember that the parameters tagged as YAIM will be overwrite at every  
-##        reconfiguration done with YAIM, so if you want change some parameters 
-##        you should use the YAIM configuration files:
-##           <siteinfo_dir>/services/ig-se_storm_backend  (or equivalent)
-##
 
 # ============================
 # StoRM Service DNS
 # ============================
 # hostname with which the service is published
-#   <!! managed by YAIM; please read the above NOTE !!>
 storm.service.FE-public.hostname =
 
 
@@ -33,7 +23,6 @@ storm.service.FE-public.hostname =
 # Front End service port
 # ============================
 # The Front End binding port
-#   <!! managed by YAIM; please read the above NOTE !!>
 storm.service.port = 8444
 
 # ============================
@@ -44,7 +33,6 @@ storm.service.port = 8444
 # These entries are used to check the SURL validity. 
 # storm.service.SURL.endpoint = srm://<surl-host>:<surl-port>/<surl-service-path>
 # Example: Example: srm://storm.cnaf.infn.it:8444/srm/managerv2
-#   <!! managed by YAIM; please read the above NOTE !!>
 storm.service.SURL.endpoint =   
 
 # ============================
@@ -55,27 +43,41 @@ storm.service.SURL.endpoint =
 # These entries are used to check the SURL validity. 
 # storm.service.SURL.default-ports = <surl-port>
 # Example: 8444
-#   <!! managed by YAIM; please read the above NOTE !!>
 storm.service.SURL.default-ports =   
 
 # ============================
 # FE/BE communication RDBMS
 # ============================
-#
-# Parameters to connect to the DB used as channel for the requests. 
-#   <!! managed by YAIM; please read the above NOTE !!>
-storm.service.request-db.host =  
-storm.service.request-db.username =   
-storm.service.request-db.passwd =  
+
+# Credentials:
+# ============
+
+db.username =
+db.password =
+
+# Connection:
+# ===========
+
+db.url.hostname =
+# db.driver = com.mysql.cj.jdbc.Driver
+# db.url.subprotocol = mysql
+# db.url.subname =
+# db.url.port = 3306
+# db.url.properties = serverTimezone=UTC&autoReconnect=true
+
+# Connection pool:
+# ================
+
+# db.pool.size = -1
+# db.pool.min_idle = 10
+# db.pool.max_wait_millis = 5000
+# db.pool.test_on_borrow = true
+# db.pool.test_while_idle = true
+
 
 #############################################
 ############  PROFILE PARAMETERS ############
 #############################################
-##
-## NOTE: 
-##  The PROFILE PARAMETERS are not managed by YAIM in any case, 
-##  so any change must be managed by directly editing this file.
-##
 
 # ============================
 # StoRM Service Generic Behavior
@@ -119,20 +121,6 @@ default.storagetype = P
 #############################################
 ############  TUNING PARAMETERS #############
 #############################################
-##
-## NOTE: 
-##  The TUNING PARAMETERS are not managed by YAIM in any case, 
-##  so any change must be managed by directly editing this file.
-##
-
-
-# ============================
-# BE-private RDBMS
-# ============================
-persistence.internal-db.connection-pool = true
-persistence.internal-db.connection-pool.maxActive = 50
-persistence.internal-db.connection-pool.maxWait = 50
-
 
 # ============================
 # ASYNCH SCHEDULER Component parameters
@@ -207,7 +195,6 @@ tape.recalltable.service.param.takeover=first
 # ============================
 # srmCopy parameters
 # ============================
-proxy.home=/opt/storm/backend/tmp
 asynch.srmclient.retrytime=60
 asynch.srmclient.timeout=180
 asynch.srmclient.sleeptime=5
@@ -292,4 +279,3 @@ storm.service.du.parallelTasks=false
 storm.service.du.delaySecs=60
 # Interval of execution of the du in seconds. Default: 86400s (24h)
 storm.service.du.periodSecs=86400
-ß
