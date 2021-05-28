@@ -21,60 +21,65 @@ import java.io.Serializable;
 
 public class VO implements Serializable {
 
-	private String vo;
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	public static final VO NO_VO = new VO("NO_VO");
+  private String vo;
 
-	private VO(String vo) {
+  public static final VO NO_VO = new VO("NO_VO");
 
-		this.vo = vo;
-	}
+  private VO(String vo) {
 
-	public static VO make(String newVo) {
+    this.vo = vo;
+  }
 
-		if (newVo.equals("NO_VO"))
-			return NO_VO;
-		else
-			return new VO(newVo);
-	}
+  public static VO make(String newVo) {
 
-	public static VO makeDefault() {
+    if (newVo.equals("NO_VO"))
+      return NO_VO;
+    else
+      return new VO(newVo);
+  }
 
-		return new VO("CNAF");
-	}
+  public static VO makeDefault() {
 
-	public static VO makeNoVo() {
+    return new VO("CNAF");
+  }
 
-		return NO_VO;
-	}
+  public static VO makeNoVo() {
 
-	public String getValue() {
+    return NO_VO;
+  }
 
-		return vo;
-	}
+  public String getValue() {
 
-	public String toString() {
+    return vo;
+  }
 
-		return vo;
-	}
+  public String toString() {
 
-	public boolean equals(Object o) {
+    return vo;
+  }
 
-		if (!(o instanceof VO))
-			return false;
-		if (o == this)
-			return true;
-		VO tmp = (VO) o;
+  public boolean equals(Object o) {
 
-		return (vo.equals(tmp.getValue()));
-	}
+    if (!(o instanceof VO))
+      return false;
+    if (o == this)
+      return true;
+    VO tmp = (VO) o;
 
-	@Override
-	public int hashCode() {
+    return (vo.equals(tmp.getValue()));
+  }
 
-		int result = 17;
-		result = 31 * result + (vo != null ? vo.hashCode() : 0);
-		return result;
-	}
+  @Override
+  public int hashCode() {
+
+    int result = 17;
+    result = 31 * result + (vo != null ? vo.hashCode() : 0);
+    return result;
+  }
 
 }

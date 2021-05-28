@@ -22,8 +22,7 @@ import it.grid.storm.srm.types.TRetentionPolicyInfo;
 import it.grid.storm.srm.types.TSizeInBytes;
 
 /**
- * This class represents an Exception throws if SpaceResData is not well formed.
- * *
+ * This class represents an Exception throws if SpaceResData is not well formed. *
  * 
  * @author Magnoni Luca
  * @author Cnaf - INFN Bologna
@@ -33,21 +32,26 @@ import it.grid.storm.srm.types.TSizeInBytes;
 
 public class IllegalSRMSpaceParameter extends Exception {
 
-	private boolean nullAuth = true;
-	private boolean nullSpaceDes = true;
-	private boolean nullRetentionPolicyInfo = true;
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	public IllegalSRMSpaceParameter(GridUserInterface guser,
-		TSizeInBytes spaceDes, TRetentionPolicyInfo retentionPolicyInfo) {
+  private boolean nullAuth = true;
+  private boolean nullSpaceDes = true;
+  private boolean nullRetentionPolicyInfo = true;
 
-		nullAuth = (guser == null);
-		nullSpaceDes = (spaceDes == null);
-		nullRetentionPolicyInfo = (retentionPolicyInfo == null);
-	}
+  public IllegalSRMSpaceParameter(GridUserInterface guser, TSizeInBytes spaceDes,
+      TRetentionPolicyInfo retentionPolicyInfo) {
 
-	public String toString() {
+    nullAuth = (guser == null);
+    nullSpaceDes = (spaceDes == null);
+    nullRetentionPolicyInfo = (retentionPolicyInfo == null);
+  }
 
-		return "The Problem is: null-Auth= " + nullAuth + ", nullSpaceDesired= "
-			+ nullSpaceDes + ", nullRetentionPolicyInfo= " + nullRetentionPolicyInfo;
-	}
+  public String toString() {
+
+    return "The Problem is: null-Auth= " + nullAuth + ", nullSpaceDesired= " + nullSpaceDes
+        + ", nullRetentionPolicyInfo= " + nullRetentionPolicyInfo;
+  }
 }

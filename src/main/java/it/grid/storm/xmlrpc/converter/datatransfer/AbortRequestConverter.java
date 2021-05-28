@@ -27,6 +27,13 @@
  */
 package it.grid.storm.xmlrpc.converter.datatransfer;
 
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
+
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
@@ -41,68 +48,58 @@ import it.grid.storm.synchcall.data.datatransfer.AnonymousAbortRequestInputData;
 import it.grid.storm.synchcall.data.datatransfer.IdentityAbortRequestInputData;
 import it.grid.storm.xmlrpc.converter.Converter;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class AbortRequestConverter implements Converter {
 
-	private static final Logger log = LoggerFactory
-		.getLogger(AbortRequestConverter.class);
+  private static final Logger log = LoggerFactory.getLogger(AbortRequestConverter.class);
 
-	public AbortRequestConverter() {
+  public AbortRequestConverter() {
 
-	}
+  }
 
-	/**
-	 * This method returns a AbortRequest data created from the input Hashtable
-	 * structure of a xmlrpc srmAbortRequest() v2.2 call.
-	 * 
-	 * @param inputParam
-	 *          Hashtable containing the input data
-	 * @return AbortRequestInputData
-	 */
-	public InputData convertToInputData(Map inputParam) {
+  /**
+   * This method returns a AbortRequest data created from the input Hashtable structure of a xmlrpc
+   * srmAbortRequest() v2.2 call.
+   * 
+   * @param inputParam Hashtable containing the input data
+   * @return AbortRequestInputData
+   */
+  public InputData convertToInputData(Map<String, Object> inputParam) {
 
-		GridUserInterface guser = GridUserManager.decode(inputParam);
+    GridUserInterface guser = GridUserManager.decode(inputParam);
 
-		TRequestToken requestToken;
-		try {
-			requestToken = TRequestToken.decode(inputParam,
-				TRequestToken.PNAME_REQUESTOKEN);
-			log.debug("requestToken={}" , requestToken.toString());
-		} catch (InvalidTRequestTokenAttributesException e) {
-			requestToken = null;
-			log.debug("requestToken=NULL",e);
-		}
-		AbortInputData inputData;
-		if (guser != null) {
-			inputData = new IdentityAbortRequestInputData(guser, requestToken);
-		} else {
-			inputData = new AnonymousAbortRequestInputData(requestToken);
-		}
-		return inputData;
-	}
+    TRequestToken requestToken;
+    try {
+      requestToken = TRequestToken.decode(inputParam, TRequestToken.PNAME_REQUESTOKEN);
+      log.debug("requestToken={}", requestToken.toString());
+    } catch (InvalidTRequestTokenAttributesException e) {
+      requestToken = null;
+      log.debug("requestToken=NULL", e);
+    }
+    AbortInputData inputData;
+    if (guser != null) {
+      inputData = new IdentityAbortRequestInputData(guser, requestToken);
+    } else {
+      inputData = new AnonymousAbortRequestInputData(requestToken);
+    }
+    return inputData;
+  }
 
-	public Map convertFromOutputData(OutputData data) {
+  public Map<String, Object> convertFromOutputData(OutputData data) {
 
-		log.debug("AbortRequestOutputData - Creation of XMLRPC Output Structure!");
+    log.debug("AbortRequestOutputData - Creation of XMLRPC Output Structure!");
 
-		Map outputParam = new HashMap();
-		AbortRequestOutputData outputData = AbortRequestOutputData
-			.make((AbortGeneralOutputData) data);
+    Map<String, Object> outputParam = Maps.newHashMap();
+    AbortRequestOutputData outputData = AbortRequestOutputData.make((AbortGeneralOutputData) data);
 
-		// (1) returnStatus
-		TReturnStatus returnStatus = outputData.getReturnStatus();
+    // (1) returnStatus
+    TReturnStatus returnStatus = outputData.getReturnStatus();
 
-		if (returnStatus != null) {
-			returnStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
-		}
-		log.debug("AbortRequestConverter - Sending: {}" , outputParam.toString());
+    if (returnStatus != null) {
+      returnStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
+    }
+    log.debug("AbortRequestConverter - Sending: {}", outputParam.toString());
 
-		// Return global structure.
-		return outputParam;
-	}
+    // Return global structure.
+    return outputParam;
+  }
 }

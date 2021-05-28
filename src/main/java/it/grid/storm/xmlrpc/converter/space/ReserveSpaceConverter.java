@@ -28,6 +28,13 @@
 
 package it.grid.storm.xmlrpc.converter.space;
 
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
+
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.ArrayOfTExtraInfo;
@@ -46,156 +53,135 @@ import it.grid.storm.synchcall.data.space.ReserveSpaceOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
 import it.grid.storm.xmlrpc.converter.ParameterDisplayHelper;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class ReserveSpaceConverter implements Converter {
 
-	/**
-	 * Logger
-	 */
-	private static final Logger log = LoggerFactory
-		.getLogger(ReserveSpaceConverter.class);
+  /**
+   * Logger
+   */
+  private static final Logger log = LoggerFactory.getLogger(ReserveSpaceConverter.class);
 
-	public ReserveSpaceConverter() {
+  public ReserveSpaceConverter() {
 
-	};
+  };
 
-	/**
-	 * This method return a SpaceResData created from input Hashtable structure of
-	 * an xmlrpc spaceReservation v2.1 call. SpaceResData can be used to invoke
-	 * SpaceResevation Manager
-	 */
-	public InputData convertToInputData(Map inputParam) {
+  /**
+   * This method return a SpaceResData created from input Hashtable structure of an xmlrpc
+   * spaceReservation v2.1 call. SpaceResData can be used to invoke SpaceResevation Manager
+   */
+  public InputData convertToInputData(Map<String, Object> inputParam) {
 
-		log
-			.debug("reserveSpaceConverter :Call received :Creation of SpaceResData = {}"
-				, inputParam.size());
-		log.debug("reserveSpaceConverter: Input Structure toString: {}"
-			, ParameterDisplayHelper.display(inputParam));
+    log.debug("reserveSpaceConverter :Call received :Creation of SpaceResData = {}",
+        inputParam.size());
+    log.debug("reserveSpaceConverter: Input Structure toString: {}",
+        ParameterDisplayHelper.display(inputParam));
 
-		String memberName = null;
+    String memberName = null;
 
-		GridUserInterface guser = GridUserManager.decode(inputParam);
+    GridUserInterface guser = GridUserManager.decode(inputParam);
 
-		memberName = new String("authorizationID");
-		String authID = (String) inputParam.get(memberName);
+    memberName = new String("userSpaceTokenDescription");
+    String spaceAlias = (String) inputParam.get(memberName);
+    if (spaceAlias == null) {
+      spaceAlias = new String("");
+    }
 
-		memberName = new String("userSpaceTokenDescription");
-		String spaceAlias = (String) inputParam.get(memberName);
-		if (spaceAlias == null) {
-			spaceAlias = new String("");
-		}
+    TRetentionPolicyInfo retentionPolicyInfo =
+        TRetentionPolicyInfo.decode(inputParam, TRetentionPolicyInfo.PNAME_retentionPolicyInfo);
 
-		TRetentionPolicyInfo retentionPolicyInfo = TRetentionPolicyInfo.decode(
-			inputParam, TRetentionPolicyInfo.PNAME_retentionPolicyInfo);
+    TSizeInBytes desiredSizeOfTotalSpace =
+        TSizeInBytes.decode(inputParam, TSizeInBytes.PNAME_DESIREDSIZEOFTOTALSPACE);
 
-		TSizeInBytes desiredSizeOfTotalSpace = TSizeInBytes.decode(inputParam,
-			TSizeInBytes.PNAME_DESIREDSIZEOFTOTALSPACE);
+    TSizeInBytes desiredSizeOfGuaranteedSpace =
+        TSizeInBytes.decode(inputParam, TSizeInBytes.PNAME_DESIREDSIZEOFGUARANTEEDSPACE);
 
-		TSizeInBytes desiredSizeOfGuaranteedSpace = TSizeInBytes.decode(inputParam,
-			TSizeInBytes.PNAME_DESIREDSIZEOFGUARANTEEDSPACE);
+    ArrayOfTExtraInfo storageSystemInfo;
+    try {
+      storageSystemInfo =
+          ArrayOfTExtraInfo.decode(inputParam, ArrayOfTExtraInfo.PNAME_STORAGESYSTEMINFO);
+    } catch (InvalidArrayOfTExtraInfoAttributeException e) {
+      storageSystemInfo = null;
+    }
 
-		ArrayOfTExtraInfo storageSystemInfo;
-		try {
-			storageSystemInfo = ArrayOfTExtraInfo.decode(inputParam,
-				ArrayOfTExtraInfo.PNAME_STORAGESYSTEMINFO);
-		} catch (InvalidArrayOfTExtraInfoAttributeException e) {
-			storageSystemInfo = null;
-		}
+    ReserveSpaceInputData inputData;
+    if (guser != null) {
+      inputData = new IdentityReserveSpaceInputData(guser, spaceAlias, retentionPolicyInfo,
+          desiredSizeOfTotalSpace, desiredSizeOfGuaranteedSpace, storageSystemInfo);
+    } else {
+      inputData = new AnonymousReserveSpaceInputData(spaceAlias, retentionPolicyInfo,
+          desiredSizeOfTotalSpace, desiredSizeOfGuaranteedSpace, storageSystemInfo);
+    }
+    TLifeTimeInSeconds desiredLifetimeOfReservedSpace = TLifeTimeInSeconds.decode(inputParam,
+        TLifeTimeInSeconds.PNAME_DESIREDLIFETIMEOFRESERVEDSPACE);
+    if (desiredLifetimeOfReservedSpace != null && !desiredLifetimeOfReservedSpace.isEmpty()) {
+      inputData.setSpaceLifetime(desiredLifetimeOfReservedSpace);
+    }
+    return inputData;
 
-		ReserveSpaceInputData inputData;
-		if (guser != null) {
-			inputData = new IdentityReserveSpaceInputData(guser, spaceAlias,
-				retentionPolicyInfo, desiredSizeOfTotalSpace,
-				desiredSizeOfGuaranteedSpace, storageSystemInfo);
-		} else {
-			inputData = new AnonymousReserveSpaceInputData(spaceAlias,
-				retentionPolicyInfo, desiredSizeOfTotalSpace,
-				desiredSizeOfGuaranteedSpace, storageSystemInfo);
-		}
-		TLifeTimeInSeconds desiredLifetimeOfReservedSpace = TLifeTimeInSeconds
-			.decode(inputParam,
-				TLifeTimeInSeconds.PNAME_DESIREDLIFETIMEOFRESERVEDSPACE);
-		if (desiredLifetimeOfReservedSpace != null
-			&& !desiredLifetimeOfReservedSpace.isEmpty()) {
-			inputData.setSpaceLifetime(desiredLifetimeOfReservedSpace);
-		}
-		return inputData;
+  }
 
-	}
+  public Map<String, Object> convertFromOutputData(OutputData data) {
 
-	public Map convertFromOutputData(OutputData data) {
+    log.debug("reserveSpaceConverter :Call received :Creation of XMLRPC Output Structure! ");
 
-		log
-			.debug("reserveSpaceConverter :Call received :Creation of XMLRPC Output Structure! ");
+    // Creation of new HashMap to return
+    Map<String, Object> outputParam = Maps.newHashMap();
 
-		// Creation of new Hashtable to return
-		Map outputParam = new HashMap();
+    ReserveSpaceOutputData outputData = (ReserveSpaceOutputData) data;
 
-		ReserveSpaceOutputData outputData = (ReserveSpaceOutputData) data;
+    /* (1) returnStatus */
+    TReturnStatus returnStatus = outputData.getStatus();
+    returnStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
 
-		/* (1) returnStatus */
-		TReturnStatus returnStatus = outputData.getStatus();
-		returnStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
+    /* (2) requestToken */
+    /*
+     * Actually we are not planning an asynchronous version of ReserveSpace (in theory not needed
+     * for StoRM). Therefor this parameter is not set.
+     */
 
-		/* (2) requestToken */
-		/*
-		 * Actually we are not planning an asynchronous version of ReserveSpace (in
-		 * theory not needed for StoRM). Therefor this parameter is not set.
-		 */
+    /* (3) estimatedProcessingTime */
+    // TODO: in the future (actually the FE is predisposed to decode this value
+    // as an int).
 
-		/* (3) estimatedProcessingTime */
-		// TODO: in the future (actually the FE is predisposed to decode this value
-		// as an int).
+    /* (4) retentionPolocyInfo */
+    TRetentionPolicyInfo retentionPolicyInfo = outputData.getRetentionPolicyInfo();
+    if (retentionPolicyInfo != null) {
+      retentionPolicyInfo.encode(outputParam, TRetentionPolicyInfo.PNAME_retentionPolicyInfo);
+    }
 
-		/* (4) retentionPolocyInfo */
-		TRetentionPolicyInfo retentionPolicyInfo = outputData
-			.getRetentionPolicyInfo();
-		if (retentionPolicyInfo != null) {
-			retentionPolicyInfo.encode(outputParam,
-				TRetentionPolicyInfo.PNAME_retentionPolicyInfo);
-		}
+    /* (5) sizeOfTotalReservedSpace */
+    TSizeInBytes sizeOfTotalReservedSpace = outputData.getTotalSize();
+    if (sizeOfTotalReservedSpace != null) {
+      if (!(sizeOfTotalReservedSpace.isEmpty())) {
+        sizeOfTotalReservedSpace.encode(outputParam, TSizeInBytes.PNAME_SIZEOFTOTALRESERVEDSPACE);
+      }
+    }
 
-		/* (5) sizeOfTotalReservedSpace */
-		TSizeInBytes sizeOfTotalReservedSpace = outputData.getTotalSize();
-		if (sizeOfTotalReservedSpace != null) {
-			if (!(sizeOfTotalReservedSpace.isEmpty())) {
-				sizeOfTotalReservedSpace.encode(outputParam,
-					TSizeInBytes.PNAME_SIZEOFTOTALRESERVEDSPACE);
-			}
-		}
+    /* (6) sizeOfGuaranteedReservedSpace */
+    TSizeInBytes sizeOfGuaranteedReservedSpace = outputData.getGuaranteedSize();
+    if (sizeOfGuaranteedReservedSpace != null) {
+      if (!(sizeOfGuaranteedReservedSpace.isEmpty())) {
+        sizeOfGuaranteedReservedSpace.encode(outputParam,
+            TSizeInBytes.PNAME_SIZEOFGUARANTEEDRESERVEDSPACE);
+      }
+    }
 
-		/* (6) sizeOfGuaranteedReservedSpace */
-		TSizeInBytes sizeOfGuaranteedReservedSpace = outputData.getGuaranteedSize();
-		if (sizeOfGuaranteedReservedSpace != null) {
-			if (!(sizeOfGuaranteedReservedSpace.isEmpty())) {
-				sizeOfGuaranteedReservedSpace.encode(outputParam,
-					TSizeInBytes.PNAME_SIZEOFGUARANTEEDRESERVEDSPACE);
-			}
-		}
+    /* (7) lifetimeOfReservedSpace */
+    TLifeTimeInSeconds lifetimeOfReservedSpace = outputData.getLifeTimeInSeconds();
+    if (lifetimeOfReservedSpace != null) {
+      if (!(lifetimeOfReservedSpace.isEmpty())) {
+        lifetimeOfReservedSpace.encode(outputParam,
+            TLifeTimeInSeconds.PNAME_LIFETIMEOFRESERVEDSPACE);
+      }
+    }
 
-		/* (7) lifetimeOfReservedSpace */
-		TLifeTimeInSeconds lifetimeOfReservedSpace = outputData
-			.getLifeTimeInSeconds();
-		if (lifetimeOfReservedSpace != null) {
-			if (!(lifetimeOfReservedSpace.isEmpty())) {
-				lifetimeOfReservedSpace.encode(outputParam,
-					TLifeTimeInSeconds.PNAME_LIFETIMEOFRESERVEDSPACE);
-			}
-		}
+    /* (8) spaceToken */
+    TSpaceToken spaceToken = outputData.getSpaceToken();
+    if (spaceToken != null) {
+      spaceToken.encode(outputParam, TSpaceToken.PNAME_SPACETOKEN);
+    }
 
-		/* (8) spaceToken */
-		TSpaceToken spaceToken = outputData.getSpaceToken();
-		if (spaceToken != null) {
-			spaceToken.encode(outputParam, TSpaceToken.PNAME_SPACETOKEN);
-		}
+    log.debug(outputParam.toString());
 
-		log.debug(outputParam.toString());
-
-		return outputParam;
-	}
+    return outputParam;
+  }
 }

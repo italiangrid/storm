@@ -21,16 +21,21 @@ import it.grid.storm.srm.types.TReturnStatus;
 
 public class InvalidMvOutputAttributeException extends Exception {
 
-	private boolean nullStat = true;
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	public InvalidMvOutputAttributeException(TReturnStatus stat) {
+  private boolean nullStat = true;
 
-		nullStat = (stat == null);
-	}
+  public InvalidMvOutputAttributeException(TReturnStatus stat) {
 
-	public String toString() {
+    nullStat = (stat == null);
+  }
 
-		return "nullStatus = " + nullStat;
-	}
+  public String toString() {
+
+    return "nullStatus = " + nullStat;
+  }
 
 }

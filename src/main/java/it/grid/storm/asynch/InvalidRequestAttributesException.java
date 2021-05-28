@@ -11,8 +11,8 @@
 
 package it.grid.storm.asynch;
 
-import it.grid.storm.catalogs.RequestData;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.persistence.model.RequestData;
 
 /**
  * @author Michele Dibenedetto

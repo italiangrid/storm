@@ -27,6 +27,13 @@
 
 package it.grid.storm.xmlrpc.converter.discovery;
 
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
+
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.ArrayOfTExtraInfo;
@@ -38,56 +45,48 @@ import it.grid.storm.synchcall.data.discovery.PingInputData;
 import it.grid.storm.synchcall.data.discovery.PingOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
 
-import java.util.Hashtable;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class PingConverter implements Converter {
 
-	private static final Logger log = LoggerFactory
-		.getLogger(PingConverter.class);
+  private static final Logger log = LoggerFactory.getLogger(PingConverter.class);
 
-	public PingConverter() {
+  public PingConverter() {
 
-	}
+  }
 
-	public InputData convertToInputData(Map inputParam) {
+  public InputData convertToInputData(Map<String, Object> inputParam) {
 
-		log.debug("Ping: input converter started. InputParam ");
+    log.debug("Ping: input converter started. InputParam ");
 
-		GridUserInterface requestor = GridUserManager.decode(inputParam);
+    GridUserInterface requestor = GridUserManager.decode(inputParam);
 
-		String authorizationID = (String) inputParam.get("authorizationID");
+    String authorizationID = (String) inputParam.get("authorizationID");
 
-		PingInputData inputData;
-		if (requestor != null) {
-			inputData = new IdentityPingInputData(requestor, authorizationID);
-		} else {
-			inputData = new AnonymousPingInputData(authorizationID);
-		}
-		log.debug("Ping: input converter has finished.");
-		return inputData;
-	}
+    PingInputData inputData;
+    if (requestor != null) {
+      inputData = new IdentityPingInputData(requestor, authorizationID);
+    } else {
+      inputData = new AnonymousPingInputData(authorizationID);
+    }
+    log.debug("Ping: input converter has finished.");
+    return inputData;
+  }
 
-	public Map convertFromOutputData(OutputData data) {
+  public Map<String, Object> convertFromOutputData(OutputData data) {
 
-		log.debug("Ping: output converter started.");
-		Hashtable<String, String> outputParam = new Hashtable<String, String>();
-		PingOutputData outputData = (PingOutputData) data;
-		String versionInfo = outputData.getVersionInfo();
-		if (versionInfo != null) {
-			outputParam.put("versionInfo", versionInfo);
-		}
+    log.debug("Ping: output converter started.");
+    Map<String, Object> outputParam = Maps.newHashMap();
+    PingOutputData outputData = (PingOutputData) data;
+    String versionInfo = outputData.getVersionInfo();
+    if (versionInfo != null) {
+      outputParam.put("versionInfo", versionInfo);
+    }
 
-		ArrayOfTExtraInfo extraInfoArray = outputData.getExtraInfoArray();
-		if (extraInfoArray != null) {
-			extraInfoArray.encode(outputParam,
-				ArrayOfTExtraInfo.PNAME_STORAGESYSTEMINFO);
-		}
+    ArrayOfTExtraInfo extraInfoArray = outputData.getExtraInfoArray();
+    if (extraInfoArray != null) {
+      extraInfoArray.encode(outputParam, ArrayOfTExtraInfo.PNAME_STORAGESYSTEMINFO);
+    }
 
-		log.debug("Ping: output converter has finished.");
-		return outputParam;
-	}
+    log.debug("Ping: output converter has finished.");
+    return outputParam;
+  }
 }

@@ -33,223 +33,216 @@ import java.util.Map;
  */
 public class StFN {
 
-	private ArrayList<String> name = new ArrayList<String>();
-	private boolean directory = false;
+  private ArrayList<String> name = new ArrayList<String>();
+  private boolean directory = false;
 
-	private boolean empty = true;
-	public static final String PNAME_PATH = "path";
-	
-	private static final String ROOT_STFN = "/";
+  private boolean empty = true;
+  public static final String PNAME_PATH = "path";
 
-	private StFN(ArrayList<String> name, boolean empty, boolean dir) {
+  private static final String ROOT_STFN = "/";
 
-		this.name.clear();
-		this.name.addAll(name);
-		this.empty = empty;
-		this.directory = dir;
-	}
+  private StFN(ArrayList<String> name, boolean empty, boolean dir) {
 
-	/**
-	 * Public static method that returns an empty StFN.
-	 */
-	public static StFN makeEmpty() {
+    this.name.clear();
+    this.name.addAll(name);
+    this.empty = empty;
+    this.directory = dir;
+  }
 
-		return new StFN(new ArrayList<String>(), true, false);
-	}
+  /**
+   * Public static method that returns an empty StFN.
+   */
+  public static StFN makeEmpty() {
 
-	/**
-	 * Public static method that requires a String representing the pathname of
-	 * the SFN: it cannot be null or empty otherwise an
-	 * InvalidStFNAttributeException is thrown. Likewise if it contains two
-	 * consecutive dots (..). or does not begin with a slash (/).
-	 */
-	public static StFN make(String name) throws InvalidStFNAttributeException {
+    return new StFN(new ArrayList<String>(), true, false);
+  }
 
-		if (invalid(name)) {
-			throw new InvalidStFNAttributeException(name);
-		}
-		return new StFN(normalize(name), false, checkDirectory(name));
-	}
+  /**
+   * Public static method that requires a String representing the pathname of the SFN: it cannot be
+   * null or empty otherwise an InvalidStFNAttributeException is thrown. Likewise if it contains two
+   * consecutive dots (..). or does not begin with a slash (/).
+   */
+  public static StFN make(String name) throws InvalidStFNAttributeException {
 
-	/**
-	 * Public static method that returns true if the supplied String ends with the
-	 * Separator, thereby indicating a directory.
-	 */
-	private static boolean checkDirectory(String path) {
+    if (invalid(name)) {
+      throw new InvalidStFNAttributeException(name);
+    }
+    return new StFN(normalize(name), false, checkDirectory(name));
+  }
 
-		if (path != null) {
-			return path.endsWith(NamingConst.SEPARATOR);
-		} else {
-			return false;
-		}
-	}
+  /**
+   * Public static method that returns true if the supplied String ends with the Separator, thereby
+   * indicating a directory.
+   */
+  private static boolean checkDirectory(String path) {
 
-	/**
-	 * Private method that returns true if the supplied string is null, or is
-	 * empty, or contains two consecutive dots (..), or does not begin with a
-	 * slash (/).
-	 */
-	static private boolean invalid(String name) {
+    if (path != null) {
+      return path.endsWith(NamingConst.SEPARATOR);
+    } else {
+      return false;
+    }
+  }
 
-		boolean wrong = (name == null) || (name.equals(""))
-			|| (name.charAt(0) != '/');
-		return wrong;
-	}
+  /**
+   * Private method that returns true if the supplied string is null, or is empty, or contains two
+   * consecutive dots (..), or does not begin with a slash (/).
+   */
+  static private boolean invalid(String name) {
 
-	/**
-	 * Private method that accepts a valid String as defined by the private valid
-	 * method, and returns an ordered ArrayList of all slash-separated elemets,
-	 * trimmed of leading and trailing white spaces. Multiple consecutive slashes
-	 * are treated as a single slash. Example1: /a/ b /c/d Result: a b c d
-	 * Example2: /////a///b//////////// c/d///////// Result: a b c d Example3: /
-	 * Result: empty ArrayList!
-	 */
-	static private ArrayList<String> normalize(String s) {
+    boolean wrong = (name == null) || (name.equals("")) || (name.charAt(0) != '/');
+    return wrong;
+  }
 
-		// split around slash!
-		String[] pieces = s.split("/");
-		// remove all empty Strings which may have been produced because of
-		// consecutive slashes!
-		ArrayList<String> auxList = new ArrayList<String>();
-		int pos = 0;
-		String aux = null;
-		for (String piece : pieces) {
-			aux = piece; // get the element
-			aux = aux.trim(); // remove all leading and trailing white spaces
-			if (!aux.equals("")) {
-				auxList.add(pos++, aux);
-			}
-		}
-		return auxList;
-	}
+  /**
+   * Private method that accepts a valid String as defined by the private valid method, and returns
+   * an ordered ArrayList of all slash-separated elemets, trimmed of leading and trailing white
+   * spaces. Multiple consecutive slashes are treated as a single slash. Example1: /a/ b /c/d
+   * Result: a b c d Example2: /////a///b//////////// c/d///////// Result: a b c d Example3: /
+   * Result: empty ArrayList!
+   */
+  static private ArrayList<String> normalize(String s) {
 
-	/**
-	 * Method that returns a Collection of all parent StFNs, stopping at root
-	 * parent. The following example clarifies what is meant by parent StFNs, and
-	 * by stopping at root parent. Original StFN:
-	 * /EGRID/original/data/nyse/file.txt Parent StFNs: /EGRID/original/data/nyse
-	 * /EGRID/original/data /EGRID/original /EGRID Second example: /file.txt
-	 * Parent StFNs: Empty collection! Third example: /EGRID/ Parent StFNs: Empty
-	 * collection! An empty collection is returned if any error occurs during
-	 * creation of parent StFNs. Likewise if This is an EmptyStFN.
-	 */
-	public Collection<StFN> getParents() {
+    // split around slash!
+    String[] pieces = s.split("/");
+    // remove all empty Strings which may have been produced because of
+    // consecutive slashes!
+    ArrayList<String> auxList = new ArrayList<String>();
+    int pos = 0;
+    String aux = null;
+    for (String piece : pieces) {
+      aux = piece; // get the element
+      aux = aux.trim(); // remove all leading and trailing white spaces
+      if (!aux.equals("")) {
+        auxList.add(pos++, aux);
+      }
+    }
+    return auxList;
+  }
 
-		Collection<StFN> aux = new ArrayList<StFN>();
-		if (empty) {
-			// empty StFN!
-			return aux;
-		}
-		// number of elements in this StFN
-		int size = name.size();
-		if ((size == 0) || (size == 1)) {
-			// StFN directly on root, or with only _one_ element!
-			return aux; 
-		}
-		for (int i = 1; i < size; i++) {
-		  // recall sublist goes from 0 inclusive, to i _EXCLUDED_!!!
-			aux.add(new StFN(new ArrayList<String>(name.subList(0, i)), false, true)); 
-		}
-		return aux;
-	}
+  /**
+   * Method that returns a Collection of all parent StFNs, stopping at root parent. The following
+   * example clarifies what is meant by parent StFNs, and by stopping at root parent. Original StFN:
+   * /EGRID/original/data/nyse/file.txt Parent StFNs: /EGRID/original/data/nyse /EGRID/original/data
+   * /EGRID/original /EGRID Second example: /file.txt Parent StFNs: Empty collection! Third example:
+   * /EGRID/ Parent StFNs: Empty collection! An empty collection is returned if any error occurs
+   * during creation of parent StFNs. Likewise if This is an EmptyStFN.
+   */
+  public Collection<StFN> getParents() {
 
-	/**
-	 * Method that returns the parent StFN. The following example clarifies what
-	 * is meant by parent StFN. Beware of the root of the StFN: the parent is
-	 * calculated from the root! Original StFN: /EGRID/original/data/nyse/file.txt
-	 * Parent StFN: /EGRID/original/data/nyse Second example, Original StFN:
-	 * /file.txt Parent StFN: Empty StFN! Third example: /EGRID/ Parent StFN:
-	 * Empty StFN! An empty StFN is returned if any error occurs during creation
-	 * of parent. Likewise if This is an EmptyStFN.
-	 */
-	public StFN getParent() {
+    Collection<StFN> aux = new ArrayList<StFN>();
+    if (empty) {
+      // empty StFN!
+      return aux;
+    }
+    // number of elements in this StFN
+    int size = name.size();
+    if ((size == 0) || (size == 1)) {
+      // StFN directly on root, or with only _one_ element!
+      return aux;
+    }
+    for (int i = 1; i < size; i++) {
+      // recall sublist goes from 0 inclusive, to i _EXCLUDED_!!!
+      aux.add(new StFN(new ArrayList<String>(name.subList(0, i)), false, true));
+    }
+    return aux;
+  }
 
-		if (empty) {
-			return makeEmpty(); // empty StFN!
-		}
-		int size = name.size(); // number of elements in this StFN
-		if ((size == 0) || (size == 1)) {
-			return makeEmpty(); // either directly on root, or only one element!
-		}
-		return new StFN(new ArrayList<String>(name.subList(0, size - 1)), false, true);
-	}
+  /**
+   * Method that returns the parent StFN. The following example clarifies what is meant by parent
+   * StFN. Beware of the root of the StFN: the parent is calculated from the root! Original StFN:
+   * /EGRID/original/data/nyse/file.txt Parent StFN: /EGRID/original/data/nyse Second example,
+   * Original StFN: /file.txt Parent StFN: Empty StFN! Third example: /EGRID/ Parent StFN: Empty
+   * StFN! An empty StFN is returned if any error occurs during creation of parent. Likewise if This
+   * is an EmptyStFN.
+   */
+  public StFN getParent() {
 
-	/**
-	 * Method that returns true if this StFN is empty.
-	 */
-	public boolean isEmpty() {
+    if (empty) {
+      return makeEmpty(); // empty StFN!
+    }
+    int size = name.size(); // number of elements in this StFN
+    if ((size == 0) || (size == 1)) {
+      return makeEmpty(); // either directly on root, or only one element!
+    }
+    return new StFN(new ArrayList<String>(name.subList(0, size - 1)), false, true);
+  }
 
-		return empty;
-	}
+  /**
+   * Method that returns true if this StFN is empty.
+   */
+  public boolean isEmpty() {
 
-	public String getValue() {
+    return empty;
+  }
 
-		return toString();
-	}
+  public String getValue() {
 
-	@Override
-	public String toString() {
+    return toString();
+  }
 
-		if (empty) {
-			return "Empty StFN";
-		}
-		int size = name.size();
-		if (size == 0) {
-			return ROOT_STFN;
-		}
-		StringBuilder sb = new StringBuilder();
-		sb.append("/");
-		for (Iterator<String> i = name.iterator(); i.hasNext();) {
-			sb.append(i.next());
-			if (i.hasNext()) {
-				sb.append("/");
-			}
-		}
-		if (directory) {
-			sb.append(NamingConst.SEPARATOR);
-		}
-		return sb.toString();
-	}
+  @Override
+  public String toString() {
 
-	@Override
-	public boolean equals(Object o) {
+    if (empty) {
+      return "Empty StFN";
+    }
+    int size = name.size();
+    if (size == 0) {
+      return ROOT_STFN;
+    }
+    StringBuilder sb = new StringBuilder();
+    sb.append("/");
+    for (Iterator<String> i = name.iterator(); i.hasNext();) {
+      sb.append(i.next());
+      if (i.hasNext()) {
+        sb.append("/");
+      }
+    }
+    if (directory) {
+      sb.append(NamingConst.SEPARATOR);
+    }
+    return sb.toString();
+  }
 
-		if (o == this) {
-			return true;
-		}
-		if (!(o instanceof StFN)) {
-			return false;
-		}
-		StFN po = (StFN) o;
-		if (po.empty && empty) {
-			return true;
-		}
-		if ((!empty) && (!po.empty) && (name.size() == 0) && (po.name.size() == 0)) {
-			return true;
-		}
-		return (!empty) && (!po.empty) && (directory == po.directory) && name.equals(po.name);
-	}
+  @Override
+  public boolean equals(Object o) {
 
-	@Override
-	public int hashCode() {
+    if (o == this) {
+      return true;
+    }
+    if (!(o instanceof StFN)) {
+      return false;
+    }
+    StFN po = (StFN) o;
+    if (po.empty && empty) {
+      return true;
+    }
+    if ((!empty) && (!po.empty) && (name.size() == 0) && (po.name.size() == 0)) {
+      return true;
+    }
+    return (!empty) && (!po.empty) && (directory == po.directory) && name.equals(po.name);
+  }
 
-		if (empty) {
-			return 0;
-		}
-		int hash = 17;
-		if (name.size() != 0) {
-			hash = 31 * hash + name.hashCode();
-		}
-		hash = 31 * hash + (directory ? 1 : 0);
-		return hash;
-	}
+  @Override
+  public int hashCode() {
 
-	/**
-	 * Encode StFN for FE communication.
-	 */
-	public void encode(Map<String, String> param, String name) {
+    if (empty) {
+      return 0;
+    }
+    int hash = 17;
+    if (name.size() != 0) {
+      hash = 31 * hash + name.hashCode();
+    }
+    hash = 31 * hash + (directory ? 1 : 0);
+    return hash;
+  }
 
-		param.put(name, toString());
-	}
+  /**
+   * Encode StFN for FE communication.
+   */
+  public void encode(Map<String, Object> param, String name) {
+
+    param.put(name, toString());
+  }
 
 }

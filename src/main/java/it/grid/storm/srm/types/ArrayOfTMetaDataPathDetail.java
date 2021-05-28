@@ -25,78 +25,78 @@
 
 package it.grid.storm.srm.types;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
-import it.grid.storm.srm.types.TSpaceToken;
-import java.io.Serializable;
+import com.google.common.collect.Lists;
 
 public class ArrayOfTMetaDataPathDetail implements Serializable {
 
-	public static String PNAME_DETAILS = "details";
-	public static String PNAME_ARRAYOFSUBPATHS = "arrayOfSubPaths";
-	ArrayList metaDataList;
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	public ArrayOfTMetaDataPathDetail() {
+  public static String PNAME_DETAILS = "details";
+  public static String PNAME_ARRAYOFSUBPATHS = "arrayOfSubPaths";
+  List<TMetaDataPathDetail> metaDataList;
 
-		metaDataList = new ArrayList();
-	}
+  public ArrayOfTMetaDataPathDetail() {
 
-	public Object[] getArray() {
+    metaDataList = Lists.newArrayList();
+  }
 
-		return metaDataList.toArray();
-	}
+  public Object[] getArray() {
 
-	public TMetaDataPathDetail getTMetaDataPathDetail(int i) {
+    return metaDataList.toArray();
+  }
 
-		return (TMetaDataPathDetail) metaDataList.get(i);
-	}
+  public TMetaDataPathDetail getTMetaDataPathDetail(int i) {
 
-	public void setTMetaDataPathDetail(int index, TMetaDataPathDetail elem) {
+    return metaDataList.get(i);
+  }
 
-		metaDataList.set(index, elem);
-	}
+  public void setTMetaDataPathDetail(int index, TMetaDataPathDetail elem) {
 
-	public void addTMetaDataPathDetail(TMetaDataPathDetail elem) {
+    metaDataList.set(index, elem);
+  }
 
-		metaDataList.add(elem);
-	}
+  public void addTMetaDataPathDetail(TMetaDataPathDetail elem) {
 
-	public int size() {
+    metaDataList.add(elem);
+  }
 
-		return metaDataList.size();
-	}
+  public int size() {
 
-	/**
-	 * Encode method, used to create a structured paramter representing this
-	 * object, for FE communication.
-	 * 
-	 * @param outputParam
-	 *          structured Parameter that must be filled whit ArrayOfTMetaDataPath
-	 *          information.
-	 * @param name
-	 *          name of the paramter
-	 */
-	public void encode(Map outputParam, String name) {
+    return metaDataList.size();
+  }
 
-		List list = new ArrayList();
-		for (int i = 0; i < metaDataList.size(); i++) {
-			((TMetaDataPathDetail) metaDataList.get(i)).encode(list);
-		}
-		outputParam.put(name, list);
-	}
+  /**
+   * Encode method, used to create a structured parameter representing this object, for FE
+   * communication.
+   * 
+   * @param outputParam structured Parameter that must be filled whit ArrayOfTMetaDataPath
+   *        information.
+   * @param name name of the parameter
+   */
+  public void encode(Map<String, Object> outputParam, String name) {
 
-	public String toString() {
+    List<TMetaDataPathDetail> list = Lists.newArrayList();
+    for (int i = 0; i < metaDataList.size(); i++) {
+      ((TMetaDataPathDetail) metaDataList.get(i)).encode(list);
+    }
+    outputParam.put(name, list);
+  }
 
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < metaDataList.size(); i++) {
-			sb.append("MetaData[" + i + "]:\n");
-			sb.append(((TMetaDataPathDetail) metaDataList.get(i)).toString());
-		}
-		return sb.toString();
-	}
+  public String toString() {
+
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < metaDataList.size(); i++) {
+      sb.append("MetaData[" + i + "]:\n");
+      sb.append(((TMetaDataPathDetail) metaDataList.get(i)).toString());
+    }
+    return sb.toString();
+  }
 
 }

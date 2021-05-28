@@ -71,35 +71,14 @@ public class DiskUsageService {
     return new DiskUsageService(vfss, Executors.newSingleThreadScheduledExecutor());
   }
 
-  public static DiskUsageService getSingleThreadScheduledService() {
-
-    return getSingleThreadScheduledService(Lists.newArrayList());
-  }
-
-  public static DiskUsageService getScheduledThreadPoolService(List<VirtualFSInterface> vfss,
-      int poolSize) {
-
-    return new DiskUsageService(vfss, Executors.newScheduledThreadPool(poolSize));
-  }
-
   public static DiskUsageService getScheduledThreadPoolService(List<VirtualFSInterface> vfss) {
 
     return new DiskUsageService(vfss, Executors.newScheduledThreadPool(vfss.size()));
   }
 
-  public static DiskUsageService getScheduledThreadPoolService(int poolSize) {
-
-    return getScheduledThreadPoolService(Lists.newArrayList(), poolSize);
-  }
-
   public List<VirtualFSInterface> getMonitoredSAs() {
 
     return monitoredSAs;
-  }
-
-  public void addMonitoredSA(VirtualFSInterface vfs) {
-
-    monitoredSAs.add(vfs);
   }
 
   public synchronized int start() {

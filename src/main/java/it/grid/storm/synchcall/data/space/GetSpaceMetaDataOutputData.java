@@ -36,13 +36,12 @@ import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.exception.InvalidGetSpaceMetaDataOutputAttributeException;
 
 /**
- * This class is part of the StoRM project. Copyright: Copyright (c) 2008
- * Company: INFN-CNAF and ICTP/EGRID project
+ * This class is part of the StoRM project. Copyright: Copyright (c) 2008 Company: INFN-CNAF and
+ * ICTP/EGRID project
  * 
- * This class represents the SpaceReservationData associated with the SRM
- * request, that is it contains info about: UserID, spaceType, SizeDesired,
- * SizeGuaranteed,ecc. Number of files progressing, Number of files finished,
- * and whether the request is currently suspended.
+ * This class represents the SpaceReservationData associated with the SRM request, that is it
+ * contains info about: UserID, spaceType, SizeDesired, SizeGuaranteed,ecc. Number of files
+ * progressing, Number of files finished, and whether the request is currently suspended.
  * 
  * @author lucamag
  * @date May 29, 2008
@@ -51,67 +50,70 @@ import it.grid.storm.synchcall.data.exception.InvalidGetSpaceMetaDataOutputAttri
 
 public class GetSpaceMetaDataOutputData implements OutputData, Serializable {
 
-	private TReturnStatus status = null;
-	private ArrayOfTMetaDataSpace metaDataArray = null;
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	public GetSpaceMetaDataOutputData() {
+  private TReturnStatus status = null;
+  private ArrayOfTMetaDataSpace metaDataArray = null;
 
-	}
+  public GetSpaceMetaDataOutputData() {
 
-	public GetSpaceMetaDataOutputData(TReturnStatus status,
-		ArrayOfTMetaDataSpace metaDataArray)
-		throws InvalidGetSpaceMetaDataOutputAttributeException {
+  }
 
-		boolean ok = status != null && metaDataArray != null;
+  public GetSpaceMetaDataOutputData(TReturnStatus status, ArrayOfTMetaDataSpace metaDataArray)
+      throws InvalidGetSpaceMetaDataOutputAttributeException {
 
-		if (!ok) {
-			throw new InvalidGetSpaceMetaDataOutputAttributeException(status,
-				metaDataArray);
-		}
+    boolean ok = status != null && metaDataArray != null;
 
-		this.status = status;
-		this.metaDataArray = metaDataArray;
+    if (!ok) {
+      throw new InvalidGetSpaceMetaDataOutputAttributeException(status, metaDataArray);
+    }
 
-	}
+    this.status = status;
+    this.metaDataArray = metaDataArray;
 
-	/**
-	 * Method that returns GridUser specify in SRM request.
-	 */
+  }
 
-	public TReturnStatus getStatus() {
+  /**
+   * Method that returns GridUser specify in SRM request.
+   */
 
-		return status;
-	}
+  public TReturnStatus getStatus() {
 
-	/**
-     *
-     *
-     */
-	public void setStatus(TReturnStatus status) {
+    return status;
+  }
 
-		this.status = status;
+  /**
+   *
+   *
+   */
+  public void setStatus(TReturnStatus status) {
 
-	}
+    this.status = status;
 
-	/**
-	 * Method return metaData. i n queue.
-	 */
+  }
 
-	public ArrayOfTMetaDataSpace getMetaDataSpaceArray() {
+  /**
+   * Method return metaData. i n queue.
+   */
 
-		return metaDataArray;
-	}
+  public ArrayOfTMetaDataSpace getMetaDataSpaceArray() {
 
-	public void setMetaDataSpaceArray(ArrayOfTMetaDataSpace metaDataArray) {
+    return metaDataArray;
+  }
 
-		this.metaDataArray = metaDataArray;
-	}
+  public void setMetaDataSpaceArray(ArrayOfTMetaDataSpace metaDataArray) {
 
-	// @Override
-	public boolean isSuccess() {
+    this.metaDataArray = metaDataArray;
+  }
 
-		// TODO Auto-generated method stub
-		return false;
-	}
+  // @Override
+  public boolean isSuccess() {
+
+    // TODO Auto-generated method stub
+    return false;
+  }
 
 }

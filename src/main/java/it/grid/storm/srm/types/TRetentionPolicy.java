@@ -29,84 +29,80 @@ import java.util.Map;
 
 public class TRetentionPolicy {
 
-	public static String PNAME_retentionPolicy = "retentionPolicy";
-	private String retentionPolicy = null;
+  public static String PNAME_retentionPolicy = "retentionPolicy";
+  private String retentionPolicy = null;
 
-	public static final TRetentionPolicy REPLICA = new TRetentionPolicy("REPLICA"),
-		OUTPUT = new TRetentionPolicy("OUTPUT"), CUSTODIAL = new TRetentionPolicy(
-			"CUSTODIAL"), EMPTY = new TRetentionPolicy("EMPTY");
+  public static final TRetentionPolicy REPLICA = new TRetentionPolicy("REPLICA");
+  public static final TRetentionPolicy OUTPUT = new TRetentionPolicy("OUTPUT");
+  public static final TRetentionPolicy CUSTODIAL = new TRetentionPolicy("CUSTODIAL");
+  public static final TRetentionPolicy EMPTY = new TRetentionPolicy("EMPTY");
 
-	private TRetentionPolicy(String retPol) {
+  private TRetentionPolicy(String retPol) {
 
-		this.retentionPolicy = retPol;
-	}
+    this.retentionPolicy = retPol;
+  }
 
-	public final static TRetentionPolicy getTRetentionPolicy(int idx) {
+  public final static TRetentionPolicy getTRetentionPolicy(int idx) {
 
-		switch (idx) {
-		case 0:
-			return REPLICA;
-		case 1:
-			return OUTPUT;
-		case 2:
-			return CUSTODIAL;
-		default:
-			return EMPTY;
-		}
+    switch (idx) {
+      case 0:
+        return REPLICA;
+      case 1:
+        return OUTPUT;
+      case 2:
+        return CUSTODIAL;
+      default:
+        return EMPTY;
+    }
 
-	}
+  }
 
-	/**
-	 * decode() method creates a TRetentionPolicy object from the inforation
-	 * contained into the structured parameter received from the FE.
-	 * 
-	 * @param inputParam
-	 *          hashtable structure
-	 * @param fieldName
-	 *          field name
-	 * @return
-	 */
-	public final static TRetentionPolicy decode(Map inputParam, String fieldName) {
+  /**
+   * decode() method creates a TRetentionPolicy object from the information contained into the
+   * structured parameter received from the FE.
+   * 
+   * @param inputParam map structure
+   * @param fieldName field name
+   * @return
+   */
+  public final static TRetentionPolicy decode(Map<String, Object> inputParam, String fieldName) {
 
-		Integer val;
+    Integer val;
 
-		val = (Integer) inputParam.get(fieldName);
-		if (val == null)
-			return EMPTY;
+    val = (Integer) inputParam.get(fieldName);
+    if (val == null)
+      return EMPTY;
 
-		return TRetentionPolicy.getTRetentionPolicy(val.intValue());
-	}
+    return TRetentionPolicy.getTRetentionPolicy(val.intValue());
+  }
 
-	/**
-	 * encode() method creates structured parameter representing this ogbject. It
-	 * is passed to the FE.
-	 * 
-	 * @param outputParam
-	 *          hashtable structure
-	 * @param fieldName
-	 *          field name
-	 */
-	public void encode(Map outputParam, String fieldName) {
+  /**
+   * encode() method creates structured parameter representing this object. It is passed to the FE.
+   * 
+   * @param outputParam map structure
+   * @param fieldName field name
+   */
+  public void encode(Map<String, Object> outputParam, String fieldName) {
 
-		Integer value = null;
+    Integer value = null;
 
-		if (this.equals(TRetentionPolicy.REPLICA))
-			value = Integer.valueOf(0);
-		if (this.equals(TRetentionPolicy.OUTPUT))
-			value = Integer.valueOf(1);
-		if (this.equals(TRetentionPolicy.CUSTODIAL))
-			value = Integer.valueOf(2);
+    if (this.equals(TRetentionPolicy.REPLICA))
+      value = Integer.valueOf(0);
+    if (this.equals(TRetentionPolicy.OUTPUT))
+      value = Integer.valueOf(1);
+    if (this.equals(TRetentionPolicy.CUSTODIAL))
+      value = Integer.valueOf(2);
 
-		outputParam.put(fieldName, value);
-	}
+    outputParam.put(fieldName, value);
+  }
 
-	public String toString() {
+  public String toString() {
 
-		return retentionPolicy;
-	}
+    return retentionPolicy;
+  }
 
-	public String getValue() {
+  public String getValue() {
 
-		return retentionPolicy;
-	}
+    return retentionPolicy;
+  }
 }

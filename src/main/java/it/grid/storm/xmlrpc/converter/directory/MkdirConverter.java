@@ -17,6 +17,13 @@
 
 package it.grid.storm.xmlrpc.converter.directory;
 
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
+
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
@@ -31,15 +38,9 @@ import it.grid.storm.synchcall.data.directory.MkdirOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
 import it.grid.storm.xmlrpc.converter.ParameterDisplayHelper;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
- * This class is part of the StoRM project. Copyright: Copyright (c) 2008
- * Company: INFN-CNAF and ICTP/EGRID project
+ * This class is part of the StoRM project. Copyright: Copyright (c) 2008 Company: INFN-CNAF and
+ * ICTP/EGRID project
  * 
  * @author lucamag
  * @date May 28, 2008
@@ -48,62 +49,58 @@ import org.slf4j.LoggerFactory;
 
 public class MkdirConverter implements Converter {
 
-	/**
-	 * Logger
-	 */
-	private static final Logger log = LoggerFactory
-		.getLogger(MkdirConverter.class);
+  /**
+   * Logger
+   */
+  private static final Logger log = LoggerFactory.getLogger(MkdirConverter.class);
 
-	public MkdirConverter() {
+  public MkdirConverter() {
 
-	};
+  };
 
-	/**
-	 * This method return a MkdirInputData created from input Hashtable structure
-	 * of an xmlrpc Mkdir v2.1 call. Mkdir Input Data can be used to invoke mkdir
-	 * method of DirectoryFunctionsManager
-	 */
-	public InputData convertToInputData(Map inputParam) {
+  /**
+   * This method return a MkdirInputData created from input Hashtable structure of an xmlrpc Mkdir
+   * v2.1 call. Mkdir Input Data can be used to invoke mkdir method of DirectoryFunctionsManager
+   */
+  public InputData convertToInputData(Map<String, Object> inputParam) {
 
-		log
-			.debug("SrmMkdir: Converter :Call received :Creation of MkdirInputData = {}"
-				, inputParam.size());
-		log.debug("SrmMkdir: Converter: Input Structure toString: {}"
-			, ParameterDisplayHelper.display(inputParam));
+    log.debug("SrmMkdir: Converter :Call received :Creation of MkdirInputData = {}",
+        inputParam.size());
+    log.debug("SrmMkdir: Converter: Input Structure toString: {}",
+        ParameterDisplayHelper.display(inputParam));
 
-		GridUserInterface guser = GridUserManager.decode(inputParam);
+    GridUserInterface guser = GridUserManager.decode(inputParam);
 
-		/* (2) directoryPath */
-		TSURL surl = null;
-		try {
-			surl = TSURL.decode(inputParam, TSURL.PNAME_SURL);
-		} catch (InvalidTSURLAttributesException e1) {
-			log.debug("SrmMkdir: ErrorCreating surl: {}" , e1.toString(),e1);
-		}
+    /* (2) directoryPath */
+    TSURL surl = null;
+    try {
+      surl = TSURL.decode(inputParam, TSURL.PNAME_SURL);
+    } catch (InvalidTSURLAttributesException e1) {
+      log.debug("SrmMkdir: ErrorCreating surl: {}", e1.toString(), e1);
+    }
 
-		MkdirInputData inputData;
-		if (guser != null) {
-			inputData = new IdentityMkdirInputData(guser, surl);
-		} else {
-			inputData = new AnonymousMkdirInputData(surl);
-		}
-		return inputData;
-	}
+    MkdirInputData inputData;
+    if (guser != null) {
+      inputData = new IdentityMkdirInputData(guser, surl);
+    } else {
+      inputData = new AnonymousMkdirInputData(surl);
+    }
+    return inputData;
+  }
 
-	public Map convertFromOutputData(OutputData outputData) {
+  public Map<String, Object> convertFromOutputData(OutputData outputData) {
 
-		log
-			.debug("SrmMkdir: Converter :Call received :Creation of XMLRPC Output Structure! ");
+    log.debug("SrmMkdir: Converter :Call received :Creation of XMLRPC Output Structure! ");
 
-		Map outputParam = new HashMap();
+    Map<String, Object> outputParam = Maps.newHashMap();
 
-		MkdirOutputData odata = (MkdirOutputData) outputData;
-		TReturnStatus outputStatus = odata.getStatus();
+    MkdirOutputData odata = (MkdirOutputData) outputData;
+    TReturnStatus outputStatus = odata.getStatus();
 
-		outputStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
+    outputStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
 
-		// Return Output Structure
-		return outputParam;
+    // Return Output Structure
+    return outputParam;
 
-	}
+  }
 }

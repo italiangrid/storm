@@ -36,7 +36,7 @@ public class GridFtpConnectionStatus extends Observable {
 
 	public void setMessageParsingResponse(boolean response) {
 
-		this.messageParsingResponse = new Boolean(response);
+		this.messageParsingResponse = Boolean.valueOf(response);
 
 	}
 

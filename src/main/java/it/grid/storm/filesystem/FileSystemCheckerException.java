@@ -22,9 +22,14 @@ package it.grid.storm.filesystem;
  */
 public class FileSystemCheckerException extends Exception {
 
-	public FileSystemCheckerException(String message) {
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-		super(message);
+  public FileSystemCheckerException(String message) {
 
-	}
+    super(message);
+
+  }
 }

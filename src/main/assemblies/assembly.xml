@@ -94,7 +94,6 @@
       <outputDirectory>etc/logrotate.d</outputDirectory>
     </file>
 
-    <!-- CentOS 7 stuff-->
     <file>
       <source>etc/systemd/storm-backend-server.service</source>
       <outputDirectory>usr/lib/systemd/system</outputDirectory>

@@ -68,12 +68,22 @@ public class Configuration {
   private static final String SERVICE_HOSTNAME_KEY = "storm.service.FE-public.hostname";
   private static final String SERVICE_PORT_KEY = "storm.service.port";
   private static final String LIST_OF_MACHINE_IPS_KEY = "storm.service.FE-list.IPs";
-  private static final String DB_URL_HOSTNAME = "storm.service.request-db.host";
-  private static final String DB_URL_PROPERTIES = "storm.service.request-db.properties";
-  private static final String DB_USER_NAME_KEY = "storm.service.request-db.username";
-  private static final String DB_PASSWORD_KEY = "storm.service.request-db.passwd";
-  private static final String DB_RECONNECT_PERIOD_KEY = "asynch.db.ReconnectPeriod";
-  private static final String DB_RECONNECT_DELAY_KEY = "asynch.db.DelayPeriod";
+
+  /* Database */
+  private static final String DB_USERNAME_KEY = "db.username";
+  private static final String DB_PASSWORD_KEY = "db.password";
+  private static final String DB_DRIVER_KEY = "db.driver";
+  private static final String DB_URL_SUBPROTOCOL_KEY = "db.url.subprotocol";
+  private static final String DB_URL_SUBNAME_KEY = "db.url.subname";
+  private static final String DB_URL_HOSTNAME_KEY = "db.url.hostname";
+  private static final String DB_URL_PORT_KEY = "db.url.port";
+  private static final String DB_URL_PROPERTIES_KEY = "db.url.properties";
+  private static final String DB_POOL_SIZE_KEY = "db.pool.size";
+  private static final String DB_POOL_MIN_IDLE_KEY = "db.pool.min_idle";
+  private static final String DB_POOL_MAX_WAIT_MILLIS_KEY = "db.pool.max_wait_millis";
+  private static final String DB_POOL_TEST_ON_BORROW_KEY = "db.pool.test_on_borrow";
+  private static final String DB_POOL_TEST_WHILE_IDLE_KEY = "db.pool.test_while_idle";
+
   private static final String CLEANING_INITIAL_DELAY_KEY = "gc.pinnedfiles.cleaning.delay";
   private static final String CLEANING_TIME_INTERVAL_KEY = "gc.pinnedfiles.cleaning.interval";
   private static final String FILE_DEFAULT_SIZE_KEY = "fileSize.default";
@@ -89,10 +99,7 @@ public class Configuration {
   private static final String XMLRPC_MAX_QUEUE_SIZE_KEY = "synchcall.xmlrpc.max_queue_size";
   private static final String LIST_OF_DEFAULT_SPACE_TOKEN_KEY = "storm.service.defaultSpaceTokens";
   private static final String COMMAND_SERVER_BINDING_PORT_KEY = "storm.commandserver.port";
-  private static final String BE_PERSISTENCE_POOL_DB_MAX_ACTIVE_KEY =
-      "persistence.internal-db.connection-pool.maxActive";
-  private static final String BE_PERSISTENCE_POOL_DB_MAX_WAIT_KEY =
-      "persistence.internal-db.connection-pool.maxWait";
+
   private static final String XMLRPC_SERVER_PORT_KEY = "synchcall.xmlrpc.unsecureServerPort";
   private static final String LS_MAX_NUMBER_OF_ENTRY_KEY = "synchcall.directoryManager.maxLsEntry";
   private static final String LS_ALL_LEVEL_RECURSIVE_KEY =
@@ -299,91 +306,107 @@ public class Configuration {
     }
   }
 
-  /**
-   * Method used by all DAO Objects to get the DataBase Driver. If no value is found in the
-   * configuration medium, then the default value is returned instead.
-   * key="asynch.picker.db.driver"; default value="com.mysql.cj.jdbc.Driver";
-   */
-  public String getDBDriver() {
+  public String getDbDriver() {
 
-    return "com.mysql.cj.jdbc.Driver";
+    return cr.getConfiguration().getString(DB_DRIVER_KEY, "com.mysql.cj.jdbc.Driver");
   }
 
   /**
-   * Method used by all DAO Objects to get DB URL. If no value is found in the configuration medium,
-   * then the default value is returned instead.
+   * Get database URL's sub-protocol
    */
-  public String getStormDbURL() {
+  public String getDbUrlSubprotocol() {
 
-    String host = getDBHostname();
-    String properties = getDBProperties();
-    if (properties.isEmpty()) {
-      return "jdbc:mysql://" + host + "/storm_db";
-    }
-    return "jdbc:mysql://" + host + "/storm_db?" + properties;
+    return cr.getConfiguration().getString(DB_URL_SUBPROTOCOL_KEY, "mysql");
   }
 
   /**
-   * Method used by all DAO Objects to get the DB username. If no value is found in the
-   * configuration medium, then the default value is returned instead. Default value = "storm"; key
-   * searched in medium = "asynch.picker.db.username".
+   * Get database URL's sub-name
    */
-  public String getDBUserName() {
+  public String getDbUrlSubname() {
 
-    return cr.getConfiguration().getString(DB_USER_NAME_KEY, "storm");
+    return cr.getConfiguration().getString(DB_URL_SUBNAME_KEY, "");
   }
 
   /**
-   * Method used by all DAO Objects to get the DB password. If no value is found in the
-   * configuration medium, then the default value is returned instead. Default value = "storm"; key
-   * searched in medium = "asynch.picker.db.passwd".
+   * Get database host
    */
-  public String getDBPassword() {
+  public String getDbUrlHostname() {
+
+    return cr.getConfiguration().getString(DB_URL_HOSTNAME_KEY, "localhost");
+  }
+
+  /**
+   * Get database URL's sub-name
+   */
+  public String getDbUrlPort() {
+
+    return cr.getConfiguration().getString(DB_URL_PORT_KEY, "3306");
+  }
+
+  /**
+   * Get database username.
+   */
+  public String getDbUsername() {
+
+    return cr.getConfiguration().getString(DB_USERNAME_KEY, "storm");
+  }
+
+  /**
+   * Get database password.
+   */
+  public String getDbPassword() {
 
     return cr.getConfiguration().getString(DB_PASSWORD_KEY, "storm");
-  }
-
-  public String getDBHostname() {
-
-    return cr.getConfiguration().getString(DB_URL_HOSTNAME, "localhost");
   }
 
   /*
    * END definition of MANDATORY PROPERTIES
    */
 
-  public String getDBProperties() {
+  public String getDbUrlProperties() {
 
-    return cr.getConfiguration().getString(DB_URL_PROPERTIES, "serverTimezone=UTC&autoReconnect=true");
+    return cr.getConfiguration().getString(DB_URL_PROPERTIES_KEY, "serverTimezone=UTC&autoReconnect=true");
   }
 
   /**
-   * Method used by all DAOs to establish the reconnection period in _seconds_: after such period
-   * the DB connection will be closed and re-opened. Beware that after such time expires, the
-   * connection is _not_ automatically closed and reopened; rather, it acts as a flag that is
-   * considered by the main code and when the most appropriate time comes, the connection is closed
-   * and reopened. This is because of MySQL bug that does not allow a connection to remain open for
-   * an arbitrary amount of time! Else an Unexpected EOF Exception gets thrown by the JDBC driver!
-   * If no value is found in the configuration medium, then the default value is returned instead.
-   * key="asynch.db.ReconnectPeriod"; default value=18000; Keep in mind that 18000 seconds = 5
-   * hours.
+   * Sets the maximum total number of idle and borrows connections that can be active at the same time. Use a negative
+   * value for no limit.
    */
-  public long getDBReconnectPeriod() {
+  public int getDbPoolSize() {
 
-    return cr.getConfiguration().getLong(DB_RECONNECT_PERIOD_KEY, 18000);
+    return cr.getConfiguration().getInt(DB_POOL_SIZE_KEY, -1);
   }
 
   /**
-   * Method used by all DAOs to establish the reconnection delay in _seconds_: when StoRM is first
-   * launched it will wait for this amount of time before starting the timer. This is because of
-   * MySQL bug that does not allow a connection to remain open for an arbitrary amount of time! Else
-   * an Unexpected EOF Exception gets thrown by the JDBC driver! If no value is found in the
-   * configuration medium, then the default value is returned instead.
-   * key="asynch.db.ReconnectDelay"; default value=30;
+   * Sets the minimum number of idle connections in the pool.
    */
-  public long getDBReconnectDelay() {
+  public int getDbPoolMinIdle() {
 
-    return cr.getConfiguration().getLong(DB_RECONNECT_DELAY_KEY, 30);
+    return cr.getConfiguration().getInt(DB_POOL_MIN_IDLE_KEY, 10);
+  }
+
+  /**
+   * Sets the MaxWaitMillis property. Use -1 to make the pool wait indefinitely.
+   */
+  public int getDbPoolMaxWaitMillis() {
+
+    return cr.getConfiguration().getInt(DB_POOL_MAX_WAIT_MILLIS_KEY, 5000);
+  }
+
+  /**
+   * This property determines whether or not the pool will validate objects before they are borrowed from the pool.
+   */
+  public boolean isDbPoolTestOnBorrow() {
+
+    return cr.getConfiguration().getBoolean(DB_POOL_TEST_ON_BORROW_KEY, true);
+  }
+
+  /**
+   * This property determines whether or not the idle object evictor will validate connections.
+   */
+  public boolean isDbPoolTestWhileIdle() {
+
+    return cr.getConfiguration().getBoolean(DB_POOL_TEST_WHILE_IDLE_KEY, true);
   }
 
   /**
@@ -541,31 +564,6 @@ public class Configuration {
   public int getCommandServerBindingPort() {
 
     return cr.getConfiguration().getInt(COMMAND_SERVER_BINDING_PORT_KEY, 4444);
-  }
-
-  /**
-   * Method used in Persistence Component it returns an int indicating the maximum number of active
-   * connections in the connection pool. It is the maximum number of active connections that can be
-   * allocated from this pool at the same time... 0 (zero) for no limit. If no value is found in the
-   * configuration medium, then the default value is returned instead.
-   * key="persistence.db.pool.maxActive"; default value=10;
-   */
-  public int getBEPersistencePoolDBMaxActive() {
-
-    return cr.getConfiguration().getInt(BE_PERSISTENCE_POOL_DB_MAX_ACTIVE_KEY, 10);
-  }
-
-  /**
-   * Method used in Persistence Component it returns an int indicating the maximum waiting time in
-   * _milliseconds_ for the connection in the pool. It represents the time that the pool will wait
-   * (when there are no available connections) for a connection to be returned before throwing an
-   * exception... a value of -1 to wait indefinitely. If no value is found in the configuration
-   * medium, then the default value is returned instead. key="persistence.db.pool.maxWait"; default
-   * value=50;
-   */
-  public int getBEPersistencePoolDBMaxWait() {
-
-    return cr.getConfiguration().getInt(BE_PERSISTENCE_POOL_DB_MAX_WAIT_KEY, 50);
   }
 
   /**

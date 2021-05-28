@@ -17,25 +17,22 @@
 
 package it.grid.storm.srm.types;
 
-/**
- * This class represents an Exception thrown when the constructor for SpaceToken
- * is invoked with a null String.
- * 
- */
-
-import it.grid.storm.srm.types.TExtraInfo;
-
 public class InvalidArrayOfTExtraInfoAttributeException extends Exception {
 
-	private boolean nullArray;
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	public InvalidArrayOfTExtraInfoAttributeException(Object[] infoArray) {
+  private boolean nullArray;
 
-		nullArray = infoArray == null;
-	}
+  public InvalidArrayOfTExtraInfoAttributeException(Object[] infoArray) {
 
-	public String toString() {
+    nullArray = infoArray == null;
+  }
 
-		return "Invalid TExtraInfo[]: nullArray = " + nullArray;
-	}
+  public String toString() {
+
+    return "Invalid TExtraInfo[]: nullArray = " + nullArray;
+  }
 }

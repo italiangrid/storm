@@ -21,7 +21,7 @@ public class DiskUsageTask implements Runnable {
 
   private static final Logger log = LoggerFactory.getLogger(DiskUsageTask.class);
 
-  private final ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
+  private final ReservedSpaceCatalog spaceCatalog = ReservedSpaceCatalog.getInstance();
   private VirtualFSInterface vfs;
 
   public DiskUsageTask(VirtualFSInterface vfs) {

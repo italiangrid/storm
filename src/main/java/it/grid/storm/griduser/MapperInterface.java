@@ -17,11 +17,7 @@
 
 package it.grid.storm.griduser;
 
-import it.grid.storm.griduser.CannotMapUserException;
-import it.grid.storm.griduser.LocalUser;
-
 interface MapperInterface {
 
-	public LocalUser map(final String dn, final String[] fqans)
-		throws CannotMapUserException;
+  public LocalUser map(final String dn, final String[] fqans) throws CannotMapUserException;
 }

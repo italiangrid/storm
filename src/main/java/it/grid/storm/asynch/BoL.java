@@ -17,11 +17,9 @@
 
 package it.grid.storm.asynch;
 
-import it.grid.storm.authz.AuthzDirector;
-import it.grid.storm.authz.SpaceAuthzInterface;
-import it.grid.storm.authz.sa.model.SRMSpaceRequest;
-import it.grid.storm.catalogs.BoLData;
-import it.grid.storm.catalogs.RequestData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.common.types.SizeUnit;
@@ -35,20 +33,17 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
+import it.grid.storm.persistence.model.BoLData;
+import it.grid.storm.persistence.model.RequestData;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
-import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
-import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Class that represents a chunk of an srmBringOnLine request: it handles a single file of a
@@ -229,20 +224,6 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
         printOutcome(dn, surl, requestData.getStatus());
         return;
       }
-    }
-
-    SpaceHelper sp = new SpaceHelper();
-    TSpaceToken token = sp.getTokenFromStoRI(log, fileStoRI);
-    SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
-
-    if (!spaceAuth.authorize(gu, SRMSpaceRequest.BOL)) {
-      String emsg =
-          String.format("Space authorization denied %s" + " in Storage Area: %s", surl, token);
-      log.debug(emsg);
-      requestData.changeStatusSRM_AUTHORIZATION_FAILURE(emsg);
-      failure = true;
-      printOutcome(dn, surl, requestData.getStatus());
-      return;
     }
 
     manageIsPermit(fileStoRI);

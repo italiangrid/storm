@@ -31,15 +31,20 @@ import it.grid.storm.srm.types.ArrayOfSURLs;
 
 public class InvalidAbortGeneralInputDataAttributeException extends Exception {
 
-	private boolean nullSurlInfo = true;
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	public InvalidAbortGeneralInputDataAttributeException(ArrayOfSURLs surlInfo) {
+  private boolean nullSurlInfo = true;
 
-		nullSurlInfo = (surlInfo == null);
-	}
+  public InvalidAbortGeneralInputDataAttributeException(ArrayOfSURLs surlInfo) {
 
-	public String toString() {
+    nullSurlInfo = (surlInfo == null);
+  }
 
-		return "nullSurlInfo = " + nullSurlInfo;
-	}
+  public String toString() {
+
+    return "nullSurlInfo = " + nullSurlInfo;
+  }
 }

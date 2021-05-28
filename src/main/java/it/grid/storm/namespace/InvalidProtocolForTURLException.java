@@ -19,27 +19,30 @@ package it.grid.storm.namespace;
 
 import it.grid.storm.srm.types.InvalidTTURLAttributesException;
 
-public class InvalidProtocolForTURLException extends
-	InvalidTTURLAttributesException {
+public class InvalidProtocolForTURLException extends InvalidTTURLAttributesException {
 
-	private String protocolSchema;
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	public InvalidProtocolForTURLException(String protocolSchema) {
+  private String protocolSchema;
 
-		super();
-		this.protocolSchema = protocolSchema;
-	}
+  public InvalidProtocolForTURLException(String protocolSchema) {
 
-	public InvalidProtocolForTURLException(Throwable cause, String protocolSchema) {
+    super();
+    this.protocolSchema = protocolSchema;
+  }
 
-		super(cause);
-		this.protocolSchema = protocolSchema;
-	}
+  public InvalidProtocolForTURLException(Throwable cause, String protocolSchema) {
 
-	public String toString() {
+    super(cause);
+    this.protocolSchema = protocolSchema;
+  }
 
-		return ("Impossible to build TURL with the protocol schema '"
-			+ protocolSchema + "'");
-	}
+  public String toString() {
+
+    return ("Impossible to build TURL with the protocol schema '" + protocolSchema + "'");
+  }
 
 }

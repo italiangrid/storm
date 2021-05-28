@@ -71,15 +71,6 @@ public class PathAuthzDBReader {
     log.info(pathAuthzDB.toString());
   }
 
-  public void refreshPathAuthzDB() throws Exception {
-
-    log.debug("<PathAuthzDBReader> Start refreshing.");
-    pathAuthzDB = loadPathAuthzDB(authzDBFilename);
-    log.debug("<PathAuthzDBReader> End refreshing.");
-    log.info("Path Authz DB ('{}') RE-loaded.", pathAuthzDB.getPathAuthzDBID());
-    log.info(pathAuthzDB.toString());
-  }
-
   public PathAuthzDB getPathAuthzDB() {
 
     return pathAuthzDB;

@@ -48,11 +48,32 @@ storm.service.SURL.default-ports =
 # ============================
 # FE/BE communication RDBMS
 # ============================
-#
-# Parameters to connect to the DB used as channel for the requests. 
-storm.service.request-db.host =  
-storm.service.request-db.username =   
-storm.service.request-db.passwd =  
+
+# Credentials:
+# ============
+
+db.username =
+db.password =
+
+# Connection:
+# ===========
+
+db.url.hostname =
+# db.driver = com.mysql.cj.jdbc.Driver
+# db.url.subprotocol = mysql
+# db.url.subname =
+# db.url.port = 3306
+# db.url.properties = serverTimezone=UTC&autoReconnect=true
+
+# Connection pool:
+# ================
+
+# db.pool.size = -1
+# db.pool.min_idle = 10
+# db.pool.max_wait_millis = 5000
+# db.pool.test_on_borrow = true
+# db.pool.test_while_idle = true
+
 
 #############################################
 ############  PROFILE PARAMETERS ############
@@ -100,13 +121,6 @@ default.storagetype = P
 #############################################
 ############  TUNING PARAMETERS #############
 #############################################
-
-# ============================
-# BE-private RDBMS
-# ============================
-persistence.internal-db.connection-pool.maxActive = 50
-persistence.internal-db.connection-pool.maxWait = 50
-
 
 # ============================
 # ASYNCH SCHEDULER Component parameters

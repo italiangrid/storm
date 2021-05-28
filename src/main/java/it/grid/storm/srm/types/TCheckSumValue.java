@@ -17,7 +17,6 @@
 
 package it.grid.storm.srm.types;
 
-import java.util.Hashtable;
 import java.util.Map;
 
 /**
@@ -34,28 +33,27 @@ import java.util.Map;
  */
 public class TCheckSumValue {
 
-	private String value = null;
+  private String value = null;
 
-	public static String PNAME_CHECKSUMVALUE = "checkSumValue";
+  public static String PNAME_CHECKSUMVALUE = "checkSumValue";
 
-	// TO Complete wut Exception if Strin specified == null
-	public TCheckSumValue(String value) {
+  public TCheckSumValue(String value) {
 
-		this.value = value;
-	}
+    this.value = value;
+  }
 
-	public String toString() {
+  public String toString() {
 
-		return value;
-	}
+    return value;
+  }
 
-	public String getValue() {
+  public String getValue() {
 
-		return value;
-	}
+    return value;
+  }
 
-	public void encode(Map param, String name) {
+  public void encode(Map<String, Object> param, String name) {
 
-		param.put(name, this.toString());
-	}
+    param.put(name, this.toString());
+  }
 }

@@ -17,14 +17,13 @@
 
 package it.grid.storm.namespace;
 
+import java.io.File;
+
 import it.grid.storm.srm.types.TDirOption;
 
-import java.io.*;
-import java.util.*;
-
 /**
- * This class represents an Exception throws if TDirOptionData is not valid to
- * explore directory content. *
+ * This class represents an Exception throws if TDirOptionData is not valid to explore directory
+ * content. *
  * 
  * @author Michele Dibenedetto
  * @author Cnaf - INFN Bologna
@@ -35,21 +34,20 @@ import java.util.*;
 @SuppressWarnings("serial")
 public class InvalidDescendantsTDirOptionRequestException extends Exception {
 
-	private String filePath = "";
-	private final boolean allRecursive;
-	private final int levels;
+  private String filePath = "";
+  private final boolean allRecursive;
+  private final int levels;
 
-	public InvalidDescendantsTDirOptionRequestException(File fh,
-		TDirOption dirOption) {
+  public InvalidDescendantsTDirOptionRequestException(File fh, TDirOption dirOption) {
 
-		filePath = fh.getAbsolutePath();
-		allRecursive = dirOption.isAllLevelRecursive();
-		levels = dirOption.getNumLevel();
-	}
+    filePath = fh.getAbsolutePath();
+    allRecursive = dirOption.isAllLevelRecursive();
+    levels = dirOption.getNumLevel();
+  }
 
-	public String toString() {
+  public String toString() {
 
-		return ("Unable to explore folder " + filePath + " allRecursive = "
-			+ allRecursive + " allowed recursion levels = " + levels);
-	}
+    return ("Unable to explore folder " + filePath + " allRecursive = " + allRecursive
+        + " allowed recursion levels = " + levels);
+  }
 }

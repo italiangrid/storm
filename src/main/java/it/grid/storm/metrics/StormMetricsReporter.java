@@ -1,7 +1,9 @@
 package it.grid.storm.metrics;
 
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,8 @@ import com.codahale.metrics.Timer;
 
 import it.grid.storm.common.OperationType;
 import it.grid.storm.filesystem.MetricsFilesystemAdapter.FilesystemMetric;
+import it.grid.storm.persistence.pool.StormBeIsamConnectionPool;
+import it.grid.storm.persistence.pool.StormDbConnectionPool;
 
 public class StormMetricsReporter extends ScheduledReporter {
 
@@ -110,6 +114,18 @@ public class StormMetricsReporter extends ScheduledReporter {
 
     reportJettyHandlerMetrics("xmlrpc-handler", meters);
     reportJettyHandlerMetrics("rest-handler", meters);
+
+    reportDbPoolMetrics("storm-db", StormDbConnectionPool.getInstance().getMetrics());
+    reportDbPoolMetrics("storm-be-isam", StormBeIsamConnectionPool.getInstance().getMetrics());
+  }
+
+  private void reportDbPoolMetrics(String tpName, Map<String, String> metrics) {
+
+    String result = metrics.entrySet()
+      .stream()
+      .map(e -> e.getKey() + "=" + e.getValue())
+      .collect(Collectors.joining(", "));
+    LOG.info("{} [{}]", tpName, result);
   }
 
   private void reportMetric(String name, Timer timer) {
@@ -134,7 +150,8 @@ public class StormMetricsReporter extends ScheduledReporter {
     int jobs = getIntValue(gauges.get(tpName + ".jobs"));
     double utilizationMax = round2dec(getDoubleValue(gauges.get(tpName + ".utilization-max")));
 
-    LOG.info("{} [active-threads={}, idle-threads={}, jobs={}, utilization-max={}, percent-idle={}]",
+    LOG.info(
+        "{} [active-threads={}, idle-threads={}, jobs={}, utilization-max={}, percent-idle={}]",
         tpName, activeThreads, idleThreads, jobs, utilizationMax, percentIdle);
   }
 
@@ -151,8 +168,7 @@ public class StormMetricsReporter extends ScheduledReporter {
 
   private void reportMetric(String name, Meter meter) {
 
-    LOG.info(
-        "{} [(count={}, m1_rate={}, m5_rate={}, m15_rate={}, mean_rate={})] rate_units={}",
+    LOG.info("{} [(count={}, m1_rate={}, m5_rate={}, m15_rate={}, mean_rate={})] rate_units={}",
         name, meter.getCount(), convertRate(meter.getOneMinuteRate()),
         convertRate(meter.getFiveMinuteRate()), convertRate(meter.getFifteenMinuteRate()),
         convertRate(meter.getMeanRate()), getRateUnit());

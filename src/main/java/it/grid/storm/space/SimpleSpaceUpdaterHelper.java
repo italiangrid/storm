@@ -8,72 +8,67 @@ import it.grid.storm.namespace.VirtualFSInterface;
 
 public class SimpleSpaceUpdaterHelper implements SpaceUpdaterHelperInterface {
 
-	private static final Logger log = LoggerFactory
-		.getLogger(SimpleSpaceUpdaterHelper.class);
+  private static final Logger log = LoggerFactory.getLogger(SimpleSpaceUpdaterHelper.class);
 
-	private ReservedSpaceCatalog rsc;
-	
-	public SimpleSpaceUpdaterHelper() {
-		rsc = new ReservedSpaceCatalog();
-	}
-	
-	private StorageSpaceData getStorageSpaceDataForVFS(VirtualFSInterface vfs) {
+  private ReservedSpaceCatalog rsc;
 
-		return rsc.getStorageSpaceByAlias(vfs.getSpaceTokenDescription());
-	}
-	
-	@Override
-	public boolean increaseUsedSpace(VirtualFSInterface vfs, long size) {
+  public SimpleSpaceUpdaterHelper() {
+    rsc = ReservedSpaceCatalog.getInstance();
+  }
 
-		log.debug("Increase {} used space: {} bytes ", vfs.getAliasName(), size);
+  private StorageSpaceData getStorageSpaceDataForVFS(VirtualFSInterface vfs) {
 
-		if (size < 0) {
-			log.error("Size to add is a negative value: {}", size);
-			return false;
-		}
-		if (size == 0) {
-			log.debug("Size is zero, vfs {} used space won't be increased!",
-				vfs.getAliasName());
-			return true;
-		}
+    return rsc.getStorageSpaceByAlias(vfs.getSpaceTokenDescription());
+  }
 
-		log.debug("Get StorageSpaceData from vfs ...");
-		StorageSpaceData ssd = getStorageSpaceDataForVFS(vfs);
+  @Override
+  public boolean increaseUsedSpace(VirtualFSInterface vfs, long size) {
 
-		if (ssd == null) {
-			log.error("Unable to get StorageSpaceData from alias name {}",
-				vfs.getAliasName());
-			return false;
-		}
+    log.debug("Increase {} used space: {} bytes ", vfs.getAliasName(), size);
 
-		return rsc.increaseUsedSpace(ssd.getSpaceToken().getValue(), size);
-	}
+    if (size < 0) {
+      log.error("Size to add is a negative value: {}", size);
+      return false;
+    }
+    if (size == 0) {
+      log.debug("Size is zero, vfs {} used space won't be increased!", vfs.getAliasName());
+      return true;
+    }
 
-	@Override
-	public boolean decreaseUsedSpace(VirtualFSInterface vfs, long size) {
+    log.debug("Get StorageSpaceData from vfs ...");
+    StorageSpaceData ssd = getStorageSpaceDataForVFS(vfs);
 
-		log.debug("Decrease {} used space: {} bytes ", vfs.getAliasName(), size);
+    if (ssd == null) {
+      log.error("Unable to get StorageSpaceData from alias name {}", vfs.getAliasName());
+      return false;
+    }
 
-		if (size < 0) {
-			log.error("Size to remove is a negative value: {}", size);
-			return false;
-		}
-		if (size == 0) {
-			log.debug("Size is zero, vfs {} used space won't be decreased!",
-				vfs.getAliasName());
-			return true;
-		}
+    return rsc.increaseUsedSpace(ssd.getSpaceToken().getValue(), size);
+  }
 
-		log.debug("Get StorageSpaceData from vfs ...");
-		StorageSpaceData ssd = getStorageSpaceDataForVFS(vfs);
+  @Override
+  public boolean decreaseUsedSpace(VirtualFSInterface vfs, long size) {
 
-		if (ssd == null) {
-			log.error("Unable to get StorageSpaceData from alias name {}",
-				vfs.getAliasName());
-			return false;
-		}
+    log.debug("Decrease {} used space: {} bytes ", vfs.getAliasName(), size);
 
-		return rsc.decreaseUsedSpace(ssd.getSpaceToken().getValue(), size);
-	}
+    if (size < 0) {
+      log.error("Size to remove is a negative value: {}", size);
+      return false;
+    }
+    if (size == 0) {
+      log.debug("Size is zero, vfs {} used space won't be decreased!", vfs.getAliasName());
+      return true;
+    }
+
+    log.debug("Get StorageSpaceData from vfs ...");
+    StorageSpaceData ssd = getStorageSpaceDataForVFS(vfs);
+
+    if (ssd == null) {
+      log.error("Unable to get StorageSpaceData from alias name {}", vfs.getAliasName());
+      return false;
+    }
+
+    return rsc.decreaseUsedSpace(ssd.getSpaceToken().getValue(), size);
+  }
 
 }

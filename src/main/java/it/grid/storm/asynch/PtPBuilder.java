@@ -19,14 +19,15 @@ package it.grid.storm.asynch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import it.grid.storm.catalogs.AnonymousPtPData;
-import it.grid.storm.catalogs.IdentityPtPData;
-import it.grid.storm.catalogs.InvalidFileTransferDataAttributesException;
-import it.grid.storm.catalogs.InvalidPtPDataAttributesException;
-import it.grid.storm.catalogs.InvalidSurlRequestDataAttributesException;
-import it.grid.storm.catalogs.PtPData;
+
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.persistence.exceptions.InvalidFileTransferDataAttributesException;
+import it.grid.storm.persistence.exceptions.InvalidPtPDataAttributesException;
+import it.grid.storm.persistence.exceptions.InvalidSurlRequestDataAttributesException;
+import it.grid.storm.persistence.model.AnonymousPtPData;
+import it.grid.storm.persistence.model.IdentityPtPData;
+import it.grid.storm.persistence.model.PtPData;
 import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TOverwriteMode;

@@ -11,9 +11,9 @@
 
 package it.grid.storm.asynch;
 
-import it.grid.storm.catalogs.PersistentChunkData;
-import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.persistence.model.PersistentChunkData;
+import it.grid.storm.persistence.model.RequestSummaryData;
 
 /**
  * This class represents an Exceptin thrown when a PtPChunk is created with any null attribute:

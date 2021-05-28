@@ -97,40 +97,6 @@ public class HealthDirector {
 
 	}
 
-
-	private static String getHealthPatternLayout() {
-
-		/**
-		 * @todo : Retrieve Patter Layout from Configuration ..
-		 */
-		String pattern = "[%d{ISO8601}]: %m%n";
-		return pattern;
-	}
-
-	/**
-	 * @return String
-	 */
-	private static String getBookKeppingPatternLayout() {
-
-		/**
-		 * @todo : Retrieve Patter Layout from Configuration ..
-		 */
-		String pattern = "[%d{ISO8601}]: %-5p [%t] %x -%m%n";
-		return pattern;
-	}
-
-	/**
-	 * @return String
-	 */
-	private static String getPerformanceMonitoringPatternLayout() {
-
-		/**
-		 * @todo : Retrieve Patter Layout from Configuration ..
-		 */
-		String pattern = "[%d{ISO8601}]: %m%n";
-		return pattern;
-	}
-
 	/**
 	 * 
 	 * @return Logger

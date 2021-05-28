@@ -19,23 +19,28 @@ package it.grid.storm.namespace.util.userinfo;
 
 public class UserInfoException extends RuntimeException {
 
-	public UserInfoException() {
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-		super();
-	}
+  public UserInfoException() {
 
-	public UserInfoException(String message) {
+    super();
+  }
 
-		super(message);
-	}
+  public UserInfoException(String message) {
 
-	public UserInfoException(String message, Throwable cause) {
+    super(message);
+  }
 
-		super(message, cause);
-	}
+  public UserInfoException(String message, Throwable cause) {
 
-	public UserInfoException(Throwable cause) {
+    super(message, cause);
+  }
 
-		super(cause);
-	}
+  public UserInfoException(Throwable cause) {
+
+    super(cause);
+  }
 }

@@ -31,15 +31,20 @@ import it.grid.storm.srm.types.TSURL;
 
 public class InvalidMkdirInputAttributeException extends Exception {
 
-	private boolean nullSurl = true;
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	public InvalidMkdirInputAttributeException(TSURL surl) {
+  private boolean nullSurl = true;
 
-		nullSurl = (surl == null);
-	}
+  public InvalidMkdirInputAttributeException(TSURL surl) {
 
-	public String toString() {
+    nullSurl = (surl == null);
+  }
 
-		return "nullSurl = " + nullSurl;
-	}
+  public String toString() {
+
+    return "nullSurl = " + nullSurl;
+  }
 }

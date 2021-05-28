@@ -1,6 +1,8 @@
 package it.grid.storm.tape.recalltable.resources;
 
 import static it.grid.storm.config.Configuration.CONFIG_FILE_PATH;
+import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.BOL;
+import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.PTG;
 import static it.grid.storm.tape.recalltable.resources.TaskInsertRequest.MAX_RETRY_ATTEMPTS;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -14,9 +16,9 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import javax.ws.rs.WebApplicationException;
@@ -68,13 +70,36 @@ public class TaskResourceTest {
     System.setProperty(CONFIG_FILE_PATH, "storm.properties");
   }
 
+  private TapeRecallTO createRandom(Date date, String voName) {
+
+    TapeRecallTO result = new TapeRecallTO();
+    Random r = new Random();
+    result.setFileName("/root/" + voName + "/test/" + r.nextInt(1001));
+    result.setRequestToken(TRequestToken.getRandom());
+    if (r.nextInt(2) == 0) {
+      result.setRequestType(BOL);
+    } else {
+      result.setRequestType(PTG);
+    }
+    result.setUserID("FakeId");
+    result.setRetryAttempt(0);
+    result.setPinLifetime(r.nextInt(1001));
+    result.setVoName(voName);
+    result.setInsertionInstant(date);
+    int deferred = r.nextInt(2);
+    Date deferredRecallTime = new Date(date.getTime() + (deferred * (long) Math.random()));
+    result.setDeferredRecallInstant(deferredRecallTime);
+    result.setGroupTaskId(UUID.randomUUID());
+    return result;
+  }
+
   private TapeRecallCatalog getTapeRecallCatalogInsertSuccess(UUID groupTaskId) {
 
     TapeRecallCatalog catalog = Mockito.mock(TapeRecallCatalog.class);
     try {
       Mockito.when(catalog.insertNewTask(Mockito.any(TapeRecallTO.class))).thenReturn(groupTaskId);
       Mockito.when(catalog.getGroupTasks(groupTaskId))
-        .thenReturn(Lists.newArrayList(TapeRecallTO.createRandom(new Date(), VFS_VONAME)));
+        .thenReturn(Lists.newArrayList(createRandom(new Date(), VFS_VONAME)));
     } catch (DataAccessException e) {
       e.printStackTrace();
     }
@@ -163,7 +188,7 @@ public class TaskResourceTest {
     String requestTokenValue = location.getQuery().split("=")[1];
 
     // prepare mocks for task info request
-    TapeRecallTO task = TapeRecallTO.createRandom(new Date(), VFS_VONAME);
+    TapeRecallTO task = createRandom(new Date(), VFS_VONAME);
     TRequestToken requestToken = Mockito.mock(TRequestToken.class);
     Mockito.when(requestToken.getValue()).thenReturn(requestTokenValue);
     task.setRequestToken(new TRequestToken(requestTokenValue, new Date()));
@@ -370,7 +395,7 @@ public class TaskResourceTest {
 
   private TapeRecallCatalog getTapeRecallCatalogInProgressNotEmpty() {
 
-    List<TapeRecallTO> emptyList = new ArrayList<TapeRecallTO>();
+    List<TapeRecallTO> emptyList = Lists.newArrayList();
     TapeRecallCatalog catalog = Mockito.mock(TapeRecallCatalog.class);
     Mockito.when(catalog.getAllInProgressTasks(Mockito.anyInt())).thenReturn(emptyList);
     return catalog;

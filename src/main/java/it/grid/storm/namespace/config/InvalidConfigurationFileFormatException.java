@@ -20,8 +20,7 @@ package it.grid.storm.namespace.config;
 import it.grid.storm.namespace.*;
 
 /**
- * This class represents an Exception throws if TDirOptionData is not well
- * formed. *
+ * This class represents an Exception throws if TDirOptionData is not well formed. *
  * 
  * @author Magnoni Luca
  * @author Cnaf - INFN Bologna
@@ -31,15 +30,20 @@ import it.grid.storm.namespace.*;
 
 public class InvalidConfigurationFileFormatException extends NamespaceException {
 
-	private boolean notSupported = false;
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	public InvalidConfigurationFileFormatException(String fileName) {
+  private boolean notSupported = false;
 
-		notSupported = fileName.endsWith(".cfg") || fileName.endsWith(".xml");
-	}
+  public InvalidConfigurationFileFormatException(String fileName) {
 
-	public String toString() {
+    notSupported = fileName.endsWith(".cfg") || fileName.endsWith(".xml");
+  }
 
-		return ("Configuration File Format NOT SUPPORTED = Not .xml or .cfg formati = " + notSupported);
-	}
+  public String toString() {
+
+    return ("Configuration File Format NOT SUPPORTED = Not .xml or .cfg formati = " + notSupported);
+  }
 }

@@ -27,7 +27,6 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.grid.storm.catalogs.InvalidSpaceDataAttributesException;
 import it.grid.storm.common.types.InvalidPFNAttributeException;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.SizeUnit;
@@ -35,6 +34,7 @@ import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.common.types.VO;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
+import it.grid.storm.persistence.exceptions.InvalidSpaceDataAttributesException;
 import it.grid.storm.persistence.model.StorageSpaceTO;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.InvalidTSpaceTokenAttributesException;

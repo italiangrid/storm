@@ -114,7 +114,7 @@ public class ChunkTask extends Task {
 	 * 
 	 */
 	@Override
-	public int compareTo(Object o) {
+	public int compareTo(Task o) {
 
 		return 0;
 	}

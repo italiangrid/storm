@@ -26,18 +26,23 @@ package it.grid.storm.filesystem;
  */
 public class ReservationException extends Exception {
 
-	private String error = "";
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	/**
-	 * Public constructor requiring a String explaining the nature of the error.
-	 * If the String is null, then an empty one is used instead.
-	 */
-	public ReservationException(String error) {
+  private String error = "";
 
-		if (error != null)
-			this.error = error;
-	}
-	
+  /**
+   * Public constructor requiring a String explaining the nature of the error. If the String is
+   * null, then an empty one is used instead.
+   */
+  public ReservationException(String error) {
+
+    if (error != null)
+      this.error = error;
+  }
+
   public ReservationException(String error, Throwable cause) {
     super(error, cause);
   }
@@ -46,6 +51,6 @@ public class ReservationException extends Exception {
 
   public String toString() {
 
-		return error;
-	}
+    return error;
+  }
 }

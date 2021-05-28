@@ -25,10 +25,9 @@ import org.slf4j.LoggerFactory;
 
 import it.grid.storm.info.SpaceInfoManager;
 import it.grid.storm.info.model.SpaceStatusSummary;
-import it.grid.storm.info.remote.Constants;
 import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
 
-@Path("/" + Constants.RESOURCE)
+@Path("/info/status")
 public class SpaceStatusResource {
 
   private static final Logger log = LoggerFactory.getLogger(SpaceStatusResource.class);

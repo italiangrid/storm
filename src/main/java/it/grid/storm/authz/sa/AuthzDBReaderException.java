@@ -33,14 +33,4 @@ public class AuthzDBReaderException extends Exception {
 
     super(message);
   }
-
-  public AuthzDBReaderException(String message, Throwable cause) {
-
-    super(message, cause);
-  }
-
-  public AuthzDBReaderException(Throwable cause) {
-
-    super(cause);
-  }
 }

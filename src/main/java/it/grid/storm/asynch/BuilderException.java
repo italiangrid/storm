@@ -36,14 +36,4 @@ public class BuilderException extends Exception {
 
     super(message);
   }
-
-  public BuilderException(Throwable cause) {
-
-    super(cause);
-  }
-
-  public BuilderException(String message, Throwable cause) {
-
-    super(message, cause);
-  }
 }

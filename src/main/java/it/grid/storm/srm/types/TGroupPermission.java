@@ -26,57 +26,58 @@
 
 package it.grid.storm.srm.types;
 
-import java.util.HashMap;
 import java.util.Map;
+
+import com.google.common.collect.Maps;
 
 public class TGroupPermission {
 
-	private TGroupID groupID;
-	private TPermissionMode permMode;
+  private TGroupID groupID;
+  private TPermissionMode permMode;
 
-	public static String PNAME_GROUPPERMISSION = "groupPermission";
+  public static String PNAME_GROUPPERMISSION = "groupPermission";
 
-	public TGroupPermission(TGroupID groupID, TPermissionMode permMode) {
+  public TGroupPermission(TGroupID groupID, TPermissionMode permMode) {
 
-		this.groupID = groupID;
-		this.permMode = permMode;
-	}
+    this.groupID = groupID;
+    this.permMode = permMode;
+  }
 
-	public TGroupID getGroupID() {
+  public TGroupID getGroupID() {
 
-		return groupID;
-	}
+    return groupID;
+  }
 
-	public TPermissionMode getPermissionMode() {
+  public TPermissionMode getPermissionMode() {
 
-		return permMode;
-	}
+    return permMode;
+  }
 
-	public static TGroupPermission makeDirectoryDefault() {
+  public static TGroupPermission makeDirectoryDefault() {
 
-		return new TGroupPermission(new TGroupID("undef"), TPermissionMode.NONE);
-	}
+    return new TGroupPermission(new TGroupID("undef"), TPermissionMode.NONE);
+  }
 
-	public static TGroupPermission makeFileDefault() {
+  public static TGroupPermission makeFileDefault() {
 
-		return new TGroupPermission(new TGroupID("undef"), TPermissionMode.NONE);
-	}
+    return new TGroupPermission(new TGroupID("undef"), TPermissionMode.NONE);
+  }
 
-	/**
-	 * Encode method use to provide a represnetation of this object into a
-	 * structures paramter for communication to FE component.
-	 * 
-	 * @param param
-	 * @param name
-	 */
-	public void encode(Map param, String name) {
+  /**
+   * Encode method use to provide a representation of this object into a structures parameter for
+   * communication to FE component.
+   * 
+   * @param param
+   * @param name
+   */
+  public void encode(Map<String, Object> param, String name) {
 
-		Map paramStructure = new HashMap();
-		if ((groupID != null) && (permMode != null)) {
-			groupID.encode(paramStructure, TGroupID.NAME_GROUPID);
-			permMode.encode(paramStructure, TPermissionMode.PNAME_MODE);
-			param.put(name, paramStructure);
-		}
-	}
+    Map<String, Object> paramStructure = Maps.newHashMap();
+    if ((groupID != null) && (permMode != null)) {
+      groupID.encode(paramStructure, TGroupID.NAME_GROUPID);
+      permMode.encode(paramStructure, TPermissionMode.PNAME_MODE);
+      param.put(name, paramStructure);
+    }
+  }
 
 }

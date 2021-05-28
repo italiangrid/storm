@@ -43,7 +43,7 @@ public class SpaceStatusSummary {
 	// published by DIP SETTED TO ZERO BECAUSE CURRENTLY RETURN FAKE VALUES
 	// For now do not consider the reserved space, a better management is needed
 
-	private static final ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
+	private static final ReservedSpaceCatalog catalog = ReservedSpaceCatalog.getInstance();
 
 	private static final Logger log = LoggerFactory
 		.getLogger(SpaceStatusSummary.class);

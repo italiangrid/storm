@@ -36,38 +36,6 @@ public class GUID implements Serializable {
 		buildNewGUID();
 	}
 
-	public GUID(String guidString) {
-
-		int pos = 0;
-		int count = 0;
-
-		while (pos < guidString.length()) {
-			guidValue[count] = getByteValue(guidString.substring(pos, pos + 2));
-			pos += 2;
-			count++;
-
-			if (pos == guidString.length()) {
-				continue;
-			}
-
-			if (guidString.charAt(pos) == '-') {
-				pos++;
-			}
-		}
-	}
-
-	/**
-	 * Calculates the byte from a hex string.
-	 * 
-	 * @param hex
-	 *          A string hex value.
-	 * @return a byte value.
-	 */
-	private byte getByteValue(String hex) {
-
-		return (byte) Integer.parseInt(hex, 16);
-	}
-
 	/**
 	 * Calculates the hex string from a byte.
 	 * 

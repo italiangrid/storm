@@ -18,9 +18,8 @@
 package it.grid.storm.common.types;
 
 /**
- * This class represents an Exception throw nwhen attempting to create a
- * PathName with a null or empty String, or with a String that does not begin a
- * /.
+ * This class represents an Exception throw nwhen attempting to create a PathName with a null or
+ * empty String, or with a String that does not begin a /.
  * 
  * @author Ezio Corso
  * @author EGRID - ICTP Trieste
@@ -29,27 +28,30 @@ package it.grid.storm.common.types;
  */
 public class InvalidPFNAttributeException extends Exception {
 
-	private boolean nullName; // boolean true if the supplied String is null
-	private boolean emptyName; // boolean true if the supplied String is empty
-	private boolean wrong = false; // boolean true if the supplied String does not
-																	// begin with a /
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	/**
-	 * Constructor requiring the String that caused the exception to be thrown.
-	 */
-	public InvalidPFNAttributeException(String name) {
+  private boolean nullName; // boolean true if the supplied String is null
+  private boolean emptyName; // boolean true if the supplied String is empty
+  private boolean wrong = false; // boolean true if the supplied String does not begin with a /
 
-		this.nullName = (name == null);
-		this.emptyName = (name.equals(""));
-		if (!nullName && !emptyName)
-			this.wrong = (name.charAt(0) != '/');
-	}
+  /**
+   * Constructor requiring the String that caused the exception to be thrown.
+   */
+  public InvalidPFNAttributeException(String name) {
 
-	public String toString() {
+    this.nullName = (name == null);
+    this.emptyName = (name.equals(""));
+    if (!nullName && !emptyName)
+      this.wrong = (name.charAt(0) != '/');
+  }
 
-		return "Attempt to create PFN with invalid attributes: nullName="
-			+ nullName + "; emptyName=" + emptyName + "; not-beginning-with-/="
-			+ wrong;
-	}
+  public String toString() {
+
+    return "Attempt to create PFN with invalid attributes: nullName=" + nullName + "; emptyName="
+        + emptyName + "; not-beginning-with-/=" + wrong;
+  }
 
 }

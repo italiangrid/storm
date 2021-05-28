@@ -22,24 +22,29 @@ package it.grid.storm.griduser;
  */
 public class GridUserException extends Exception {
 
-	public GridUserException() {
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-		super();
-	}
+  public GridUserException() {
 
-	public GridUserException(String message) {
+    super();
+  }
 
-		super(message);
-	}
+  public GridUserException(String message) {
 
-	public GridUserException(String message, Throwable cause) {
+    super(message);
+  }
 
-		super(message, cause);
-	}
+  public GridUserException(String message, Throwable cause) {
 
-	public GridUserException(Throwable cause) {
+    super(message, cause);
+  }
 
-		super(cause);
-	}
+  public GridUserException(Throwable cause) {
+
+    super(cause);
+  }
 
 }

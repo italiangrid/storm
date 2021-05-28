@@ -24,9 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
-import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
-import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.filesystem.LocalFile;
@@ -42,7 +40,6 @@ import it.grid.storm.srm.types.SRMCommandException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSURLReturnStatus;
-import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.Command;
 import it.grid.storm.synchcall.command.CommandHelper;
@@ -270,20 +267,6 @@ public class RmCommand implements Command {
 
   private void checkUserAuthorization(StoRI stori, GridUserInterface user) throws RmException {
 
-    TSpaceToken token = stori.getVirtualFileSystem().getSpaceToken();
-    SpaceAuthzInterface spaceAuth = AuthzDirector.getSpaceAuthz(token);
-
-    boolean isSpaceAuthorized;
-    if (isAnonymous(user)) {
-      isSpaceAuthorized = spaceAuth.authorizeAnonymous(SRMSpaceRequest.RM);
-    } else {
-      isSpaceAuthorized = spaceAuth.authorize(user, SRMSpaceRequest.RM);
-    }
-    if (!isSpaceAuthorized) {
-      log.debug("srmRm: User not authorized to perform srmRm on SA: {}", token);
-      throw new RmException(TStatusCode.SRM_AUTHORIZATION_FAILURE,
-          "User not authorized to perform srmRm request on the storage area");
-    }
     AuthzDecision decision;
     if (isAnonymous(user)) {
       decision =

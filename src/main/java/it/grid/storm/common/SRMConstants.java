@@ -30,11 +30,6 @@ package it.grid.storm.common;
 public class SRMConstants {
 
 	/**
-	 * Default parameter for SrmRmdir function.
-	 */
-	public static final boolean recursiveFlag = false;
-
-	/**
 	 * Default Parameter for SrmLS function.
 	 */
 	public static final boolean fullDetailedList = false;

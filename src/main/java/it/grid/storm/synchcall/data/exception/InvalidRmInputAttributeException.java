@@ -29,19 +29,22 @@ package it.grid.storm.synchcall.data.exception;
 
 import it.grid.storm.srm.types.ArrayOfSURLs;
 
-import java.util.Vector;
-
 public class InvalidRmInputAttributeException extends Exception {
 
-	private boolean nullSurlInfo = true;
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
 
-	public InvalidRmInputAttributeException(ArrayOfSURLs surl) {
+  private boolean nullSurlInfo = true;
 
-		nullSurlInfo = (surl == null);
-	}
+  public InvalidRmInputAttributeException(ArrayOfSURLs surl) {
 
-	public String toString() {
+    nullSurlInfo = (surl == null);
+  }
 
-		return "nullSurlInfo = " + nullSurlInfo;
-	}
+  public String toString() {
+
+    return "nullSurlInfo = " + nullSurlInfo;
+  }
 }

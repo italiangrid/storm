@@ -19,23 +19,28 @@ package it.grid.storm.namespace;
 
 public class ExpiredSpaceTokenException extends Exception {
 
-	public ExpiredSpaceTokenException() {
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-		super();
-	}
+  public ExpiredSpaceTokenException() {
 
-	public ExpiredSpaceTokenException(String message) {
+    super();
+  }
 
-		super(message);
-	}
+  public ExpiredSpaceTokenException(String message) {
 
-	public ExpiredSpaceTokenException(String message, Throwable cause) {
+    super(message);
+  }
 
-		super(message, cause);
-	}
+  public ExpiredSpaceTokenException(String message, Throwable cause) {
 
-	public ExpiredSpaceTokenException(Throwable cause) {
+    super(message, cause);
+  }
 
-		super(cause);
-	}
+  public ExpiredSpaceTokenException(Throwable cause) {
+
+    super(cause);
+  }
 }

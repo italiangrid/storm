@@ -17,8 +17,8 @@
 
 package it.grid.storm.asynch;
 
-import it.grid.storm.catalogs.ChunkData;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
+import it.grid.storm.persistence.model.ChunkData;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TStatusCode;

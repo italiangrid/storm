@@ -1,11 +1,18 @@
 package it.grid.storm.synchcall.command.datatransfer;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
-import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
-import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.persistence.model.RequestSummaryData;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
@@ -20,14 +27,6 @@ import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferFilesInputDat
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferOutputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestInputData;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class FileTransferRequestStatusCommand extends
   DataTransferCommand implements Command {

@@ -19,23 +19,28 @@ package it.grid.storm.namespace.model;
 
 public class PermissionException extends RuntimeException {
 
-	public PermissionException() {
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-		super();
-	}
+  public PermissionException() {
 
-	public PermissionException(String message) {
+    super();
+  }
 
-		super(message);
-	}
+  public PermissionException(String message) {
 
-	public PermissionException(String message, Throwable cause) {
+    super(message);
+  }
 
-		super(message, cause);
-	}
+  public PermissionException(String message, Throwable cause) {
 
-	public PermissionException(Throwable cause) {
+    super(message, cause);
+  }
 
-		super(cause);
-	}
+  public PermissionException(Throwable cause) {
+
+    super(cause);
+  }
 }

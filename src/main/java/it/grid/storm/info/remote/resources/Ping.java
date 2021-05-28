@@ -24,68 +24,56 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
-import it.grid.storm.info.remote.Constants;
-
 @Path("/info/ping")
 public class Ping {
 
-	// The Java method will process HTTP GET requests
-	@GET
-	// The Java method will produce content identified by the MIME Media
-	// type "text/plain"
-	@Produces("text/plain")
-	public String getClichedMessage() {
+  public static final String ENCODING_SCHEME = "UTF-8";
 
-		// Return some cliched textual content
-		return "Hello World";
-	}
+  @GET
+  @Produces("text/plain")
+  public String getClichedMessage() {
 
-	@GET
-	// The Java method will produce content identified by the MIME Media
-	// type "text/plain"
-	@Produces("text/plain")
-	@Path("/queryMeGet")
-	public String getParameterizedMessage(@QueryParam("uno") String uno,
-		@QueryParam("due") String due) {
+    return "Hello World";
+  }
 
-		String unoDecoded, dueDecoded;
-		try {
-			unoDecoded = URLDecoder.decode(uno.trim(), Constants.ENCODING_SCHEME);
-			dueDecoded = URLDecoder.decode(due.trim(), Constants.ENCODING_SCHEME);
-		} catch (UnsupportedEncodingException e) {
-			System.err
-				.println("Unable to decode parameters. UnsupportedEncodingException : "
-					+ e.getMessage());
-			throw new WebApplicationException(Response.status(BAD_REQUEST)
-				.entity("Unable to decode parameters, unsupported encoding \'" + Constants.ENCODING_SCHEME
-						+ "\'")
-				.build());
-		}
-		return "Hello by GET my friend " + unoDecoded + " from " + dueDecoded;
-	}
+  @GET
+  @Produces("text/plain")
+  @Path("/queryMeGet")
+  public String getParameterizedMessage(@QueryParam("uno") String uno,
+      @QueryParam("due") String due) {
 
-	@PUT
-	// The Java method will produce content identified by the MIME Media
-	// type "text/plain"
-	@Produces("text/plain")
-	@Path("/queryMePut")
-	public String putParameterizedMessage(@QueryParam("uno") String uno,
-		@QueryParam("due") String due) {
+    String unoDecoded, dueDecoded;
+    try {
+      unoDecoded = URLDecoder.decode(uno.trim(), ENCODING_SCHEME);
+      dueDecoded = URLDecoder.decode(due.trim(), ENCODING_SCHEME);
+    } catch (UnsupportedEncodingException e) {
+      System.err
+        .println("Unable to decode parameters. UnsupportedEncodingException : " + e.getMessage());
+      throw new WebApplicationException(Response.status(BAD_REQUEST)
+        .entity("Unable to decode parameters, unsupported encoding \'" + ENCODING_SCHEME + "\'")
+        .build());
+    }
+    return "Hello by GET my friend " + unoDecoded + " from " + dueDecoded;
+  }
 
-		String unoDecoded, dueDecoded;
-		try {
-			unoDecoded = URLDecoder.decode(uno.trim(), Constants.ENCODING_SCHEME);
-			dueDecoded = URLDecoder.decode(due.trim(), Constants.ENCODING_SCHEME);
-		} catch (UnsupportedEncodingException e) {
-			System.err
-				.println("Unable to decode parameters. UnsupportedEncodingException : "
-					+ e.getMessage());
-			throw new WebApplicationException(Response.status(BAD_REQUEST)
-				.entity("Unable to decode parameters, unsupported encoding \'" + Constants.ENCODING_SCHEME
-						+ "\'")
-				.build());
-		}
-		return "Hello by PUT my friend " + unoDecoded + " from " + dueDecoded;
-	}
+  @PUT
+  @Produces("text/plain")
+  @Path("/queryMePut")
+  public String putParameterizedMessage(@QueryParam("uno") String uno,
+      @QueryParam("due") String due) {
+
+    String unoDecoded, dueDecoded;
+    try {
+      unoDecoded = URLDecoder.decode(uno.trim(), ENCODING_SCHEME);
+      dueDecoded = URLDecoder.decode(due.trim(), ENCODING_SCHEME);
+    } catch (UnsupportedEncodingException e) {
+      System.err
+        .println("Unable to decode parameters. UnsupportedEncodingException : " + e.getMessage());
+      throw new WebApplicationException(Response.status(BAD_REQUEST)
+        .entity("Unable to decode parameters, unsupported encoding \'" + ENCODING_SCHEME + "\'")
+        .build());
+    }
+    return "Hello by PUT my friend " + unoDecoded + " from " + dueDecoded;
+  }
 
 }

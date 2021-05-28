@@ -27,61 +27,49 @@
 package it.grid.storm.synchcall.data.datatransfer;
 
 import it.grid.storm.srm.types.TReturnStatus;
-import it.grid.storm.synchcall.data.OutputData;
 
 public class AbortRequestOutputData extends AbortGeneralOutputData {
 
-	private TReturnStatus returnStatus = null;
+  private TReturnStatus returnStatus = null;
 
-	public AbortRequestOutputData() {
+  public AbortRequestOutputData() {
 
-	}
+  }
 
-	public AbortRequestOutputData(TReturnStatus retStatus)
-	// throws InvalidAbortRequestOutputDataAttributeException
-	{
+  public AbortRequestOutputData(TReturnStatus retStatus) {
 
-		boolean ok = (retStatus == null);
+    this.returnStatus = retStatus;
+  }
 
-		if (!ok) {
-			;// throw new InvalidAbortRequestOutputDataAttributeException(retStatus);
-		}
+  public static AbortRequestOutputData make(AbortGeneralOutputData generalOutData) {
 
-		this.returnStatus = retStatus;
-	}
+    return new AbortRequestOutputData(generalOutData.getReturnStatus());
+  }
 
-	public static AbortRequestOutputData make(
-		AbortGeneralOutputData generalOutData) {
+  /**
+   * Returns the returnStatus field
+   * 
+   * @return TReturnStatus
+   */
+  public TReturnStatus getReturnStatus() {
 
-		// Create an output data from an AbortFiles output data.
-		// new AbortRequestOutputData(generalOutData.getReturnStatus());
-		return new AbortRequestOutputData(generalOutData.getReturnStatus());
-	}
+    return returnStatus;
+  }
 
-	/**
-	 * Returns the returnStatus field
-	 * 
-	 * @return TReturnStatus
-	 */
-	public TReturnStatus getReturnStatus() {
+  /**
+   * Set the returnStatus field
+   * 
+   * @param returnStatus
+   */
+  public void setReturnStatus(TReturnStatus returnStatus) {
 
-		return returnStatus;
-	}
+    this.returnStatus = returnStatus;
+  }
 
-	/**
-	 * Set the returnStatus field
-	 * 
-	 * @param returnStatus
-	 */
-	public void setReturnStatus(TReturnStatus returnStatus) {
+  public boolean isSuccess() {
 
-		this.returnStatus = returnStatus;
-	}
-
-	public boolean isSuccess() {
-
-		// TODO Auto-generated method stub
-		return false;
-	}
+    // TODO Auto-generated method stub
+    return false;
+  }
 
 }

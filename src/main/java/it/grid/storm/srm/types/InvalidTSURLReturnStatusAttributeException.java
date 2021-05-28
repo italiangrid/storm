@@ -26,19 +26,22 @@
 
 package it.grid.storm.srm.types;
 
-import it.grid.storm.srm.types.TSURL;
-
 public class InvalidTSURLReturnStatusAttributeException extends Exception {
 
-	private boolean nullSurl = true;
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	public InvalidTSURLReturnStatusAttributeException(TSURL surl) {
+  private boolean nullSurl = true;
 
-		nullSurl = (surl == null);
-	}
+  public InvalidTSURLReturnStatusAttributeException(TSURL surl) {
 
-	public String toString() {
+    nullSurl = (surl == null);
+  }
 
-		return "nullSurl = " + nullSurl;
-	}
+  public String toString() {
+
+    return "nullSurl = " + nullSurl;
+  }
 }

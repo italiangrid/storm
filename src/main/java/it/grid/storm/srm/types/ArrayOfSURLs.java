@@ -113,7 +113,7 @@ public class ArrayOfSURLs implements Serializable {
     return stringList;
   }
 
-  public static ArrayOfSURLs decode(Map inputParam, String name)
+  public static ArrayOfSURLs decode(Map<String, Object> inputParam, String name)
       throws InvalidArrayOfSURLsAttributeException {
 
     List<Object> list = null;

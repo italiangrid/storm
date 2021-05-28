@@ -40,84 +40,95 @@ package it.grid.storm.scheduler;
  * 
  */
 
-public abstract class Task implements Runnable, Comparable {
+public abstract class Task implements Runnable, Comparable<Task> {
 
-	private static String UNDEF_TASKNAME = "undefined";
-	private long creationTime = System.currentTimeMillis();
-	private long enqueueTime = 0L;
-	private long startExecutionTime = 0L;
-	private long endExecutionTime = 0L;
-	private long abortingEventTime = 0L;
-	private long suspendingEventTime = 0L;
-	protected String taskName = null;
+  private static String UNDEF_TASKNAME = "undefined";
+  private long creationTime = System.currentTimeMillis();
+  private long enqueueTime = 0L;
+  private long startExecutionTime = 0L;
+  private long endExecutionTime = 0L;
+  private long abortingEventTime = 0L;
+  private long suspendingEventTime = 0L;
+  protected String taskName = null;
 
-	protected Task() {
+  protected Task() {
 
-		this(UNDEF_TASKNAME);
-	}
+    this(UNDEF_TASKNAME);
+  }
 
-	protected Task(String name) {
+  protected Task(String name) {
 
-		taskName = name;
-		if (taskName == null) {
-			taskName = UNDEF_TASKNAME;
-		}
-		creationTime = System.currentTimeMillis();
-	}
+    taskName = name;
+    if (taskName == null) {
+      taskName = UNDEF_TASKNAME;
+    }
+    creationTime = System.currentTimeMillis();
+  }
 
-	public long getStartExecutionTime() {
+  public long getStartExecutionTime() {
 
-		return this.startExecutionTime;
-	}
+    return startExecutionTime;
+  }
 
-	public long howlongBeforeUnqueue() {
+  public long getAbortingEventTime() {
 
-		return enqueueTime - creationTime;
-	}
+    return abortingEventTime;
+  }
 
-	public long howlongInQueue() {
+  public long getSuspendingEventTime() {
 
-		return startExecutionTime - enqueueTime;
-	}
+    return suspendingEventTime;
+  }
 
-	public long howlongInExecution() {
+  public long howlongBeforeUnqueue() {
 
-		return endExecutionTime - startExecutionTime;
-	}
+    return enqueueTime - creationTime;
+  }
 
-	protected void enqueueEvent() {
+  public long howlongInQueue() {
 
-		this.enqueueTime = System.currentTimeMillis();
-	}
+    return startExecutionTime - enqueueTime;
+  }
 
-	protected void abortEvent() {
+  public long howlongInExecution() {
 
-		this.abortingEventTime = System.currentTimeMillis();
-	}
+    return endExecutionTime - startExecutionTime;
+  }
 
-	protected void suspendEvent() {
+  protected void enqueueEvent() {
 
-		this.suspendingEventTime = System.currentTimeMillis();
-	}
+    enqueueTime = System.currentTimeMillis();
+  }
 
-	protected void runEvent() {
+  protected void abortEvent() {
 
-		this.startExecutionTime = System.currentTimeMillis();
-	}
+    abortingEventTime = System.currentTimeMillis();
+  }
 
-	protected void endEvent() {
+  protected void suspendEvent() {
 
-		this.endExecutionTime = System.currentTimeMillis();
-	}
+    suspendingEventTime = System.currentTimeMillis();
+  }
 
-	protected String getName() {
+  protected void runEvent() {
 
-		return taskName;
-	}
+    startExecutionTime = System.currentTimeMillis();
+  }
 
-	public abstract void run();
+  protected void endEvent() {
 
-	public abstract int compareTo(Object o);
+    endExecutionTime = System.currentTimeMillis();
+  }
 
-	public abstract boolean equals(Object o);
+  protected String getName() {
+
+    return taskName;
+  }
+
+  public abstract void run();
+
+  public abstract int compareTo(Task o);
+
+  public abstract boolean equals(Object o);
+
 }
