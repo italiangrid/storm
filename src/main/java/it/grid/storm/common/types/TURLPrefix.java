@@ -74,10 +74,6 @@ public class TURLPrefix {
 		return desiredProtocols.size();
 	}
 
-	public void print() {
-
-	}
-
 	public String toString() {
 
 		StringBuilder sb = new StringBuilder();
@@ -94,7 +90,7 @@ public class TURLPrefix {
 	 * @param memberName
 	 * @return
 	 */
-	public static TURLPrefix decode(Map inputParam, String memberName) {
+	public static TURLPrefix decode(Map<String, Object> inputParam, String memberName) {
 
 		TURLPrefix decodedTurlPrefix = null;
 		if (inputParam.containsKey(memberName)) {

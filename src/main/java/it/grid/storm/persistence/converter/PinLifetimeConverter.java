@@ -55,7 +55,7 @@ public class PinLifetimeConverter {
 
     if (l == TLifeTimeInSeconds.makeEmpty().value())
       return 0;
-    return new Long(l).intValue();
+    return Long.valueOf(l).intValue();
   }
 
   /**
@@ -71,7 +71,7 @@ public class PinLifetimeConverter {
       // The default is used also as a Minimum
       return Configuration.getInstance().getPinLifetimeDefault();
     }
-    return new Integer(s).longValue();
+    return Integer.valueOf(s).longValue();
   }
 
   public long toStoRM(long s) {

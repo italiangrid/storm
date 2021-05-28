@@ -803,7 +803,7 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
 
       while (rs.next()) {
         requestTokens.add(rs.getString("r_token"));
-        ids.add(new Long(rs.getLong("ID")));
+        ids.add(Long.valueOf(rs.getLong("ID")));
       }
 
       if (!ids.isEmpty()) {

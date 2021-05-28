@@ -212,7 +212,7 @@ public class StorageSpaceSQLHelper extends SQLHelper {
     StorageSpaceTO ssTO = new StorageSpaceTO();
 
     try {
-      ssTO.setStorageSpaceId(new Long(res.getLong("SS_ID")));
+      ssTO.setStorageSpaceId(Long.valueOf(res.getLong("SS_ID")));
 
       ssTO.setOwnerName(res.getString("USERDN"));
       ssTO.setVoName(res.getString("VOGROUP"));

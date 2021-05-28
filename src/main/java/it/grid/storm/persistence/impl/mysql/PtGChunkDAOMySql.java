@@ -552,7 +552,7 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
         chunkDataTO.setNormalizedStFN(rsRequest.getString("rg.normalized_sourceSURL_StFN"));
         int uniqueID = rsRequest.getInt("rg.sourceSURL_uniqueID");
         if (!rsRequest.wasNull()) {
-          chunkDataTO.setSurlUniqueID(new Integer(uniqueID));
+          chunkDataTO.setSurlUniqueID(Integer.valueOf(uniqueID));
         }
         chunkDataTO.setClientDN(rsRequest.getString("rq.client_dn"));
 
@@ -856,7 +856,7 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
 
       while (expired.next()) {
         String sourceSURL = expired.getString("rg.sourceSURL");
-        Integer uniqueID = new Integer(expired.getInt("rg.sourceSURL_uniqueID"));
+        Integer uniqueID = Integer.valueOf(expired.getInt("rg.sourceSURL_uniqueID"));
         /* If the uniqueID is not set compute it */
         if (expired.wasNull()) {
           try {
@@ -905,7 +905,7 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
 
       while (ptgPinnedSurls.next()) {
         String sourceSURL = ptgPinnedSurls.getString("rg.sourceSURL");
-        Integer uniqueID = new Integer(ptgPinnedSurls.getInt("rg.sourceSURL_uniqueID"));
+        Integer uniqueID = Integer.valueOf(ptgPinnedSurls.getInt("rg.sourceSURL_uniqueID"));
         /* If the uniqueID is not setted compute it */
         if (ptgPinnedSurls.wasNull()) {
           try {
@@ -926,7 +926,7 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
 
       while (bolPinnedSurls.next()) {
         String sourceSURL = bolPinnedSurls.getString("rb.sourceSURL");
-        Integer uniqueID = new Integer(bolPinnedSurls.getInt("rb.sourceSURL_uniqueID"));
+        Integer uniqueID = Integer.valueOf(bolPinnedSurls.getInt("rb.sourceSURL_uniqueID"));
         /* If the uniqueID is not setted compute it */
         if (bolPinnedSurls.wasNull()) {
           try {

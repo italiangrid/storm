@@ -84,7 +84,7 @@ public class ReducedBoLChunkData implements ReducedChunkData {
   public int hashCode() {
 
     int hash = 17;
-    hash = 37 * hash + new Long(primaryKey).hashCode();
+    hash = 37 * hash + Long.valueOf(primaryKey).hashCode();
     hash = 37 * hash + fromSURL.hashCode();
     hash = 37 * hash + status.hashCode();
     return hash;

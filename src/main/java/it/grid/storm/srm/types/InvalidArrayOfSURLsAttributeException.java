@@ -30,15 +30,20 @@ import java.util.List;
 
 public class InvalidArrayOfSURLsAttributeException extends Exception {
 
-	private boolean nullArray = true;
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	public InvalidArrayOfSURLsAttributeException(List array) {
+  private boolean nullArray = true;
 
-		nullArray = (array == null);
-	}
+  public InvalidArrayOfSURLsAttributeException(List<Object> array) {
 
-	public String toString() {
+    nullArray = (array == null);
+  }
 
-		return "surlList = " + nullArray;
-	}
+  public String toString() {
+
+    return "surlList = " + nullArray;
+  }
 }

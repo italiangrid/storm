@@ -235,7 +235,7 @@ public class BoLChunkCatalog {
   private void completeTO(ReducedBoLChunkDataTO chunkTO, final ReducedBoLChunkData chunk) {
 
     chunkTO.setNormalizedStFN(chunk.fromSURL().normalizedStFN());
-    chunkTO.setSurlUniqueID(new Integer(chunk.fromSURL().uniqueId()));
+    chunkTO.setSurlUniqueID(Integer.valueOf(chunk.fromSURL().uniqueId()));
   }
 
   /**
@@ -318,7 +318,7 @@ public class BoLChunkCatalog {
     to.setLifeTime(PinLifetimeConverter.getInstance().toDB(cd.getLifeTime().value()));
     // TODO MICHELE USER_SURL fill new fields
     to.setNormalizedStFN(cd.getSURL().normalizedStFN());
-    to.setSurlUniqueID(new Integer(cd.getSURL().uniqueId()));
+    to.setSurlUniqueID(Integer.valueOf(cd.getSURL().uniqueId()));
 
     dao.update(to);
   }
@@ -346,7 +346,7 @@ public class BoLChunkCatalog {
     to.setRequestToken(chunkData.getRequestToken().toString());
     to.setFromSURL(chunkData.getSURL().toString());
     to.setNormalizedStFN(chunkData.getSURL().normalizedStFN());
-    to.setSurlUniqueID(new Integer(chunkData.getSURL().uniqueId()));
+    to.setSurlUniqueID(Integer.valueOf(chunkData.getSURL().uniqueId()));
 
     to.setAllLevelRecursive(chunkData.getDirOption().isAllLevelRecursive());
     to.setDirOption(chunkData.getDirOption().isDirectory());

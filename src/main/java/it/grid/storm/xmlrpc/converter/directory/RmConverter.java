@@ -17,6 +17,13 @@
 
 package it.grid.storm.xmlrpc.converter.directory;
 
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
+
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.srm.types.ArrayOfSURLs;
@@ -32,18 +39,11 @@ import it.grid.storm.synchcall.data.directory.RmOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
 import it.grid.storm.xmlrpc.converter.ParameterDisplayHelper;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * This class is part of the StoRM project.
  * 
- * This class represents the Type Converter for Rm function . This class have
- * get an input data from xmlrpc call anc convert it into a StoRM Type that can
- * be used to invoke the RmManager
+ * This class represents the Type Converter for Rm function . This class have get an input data from
+ * xmlrpc call anc convert it into a StoRM Type that can be used to invoke the RmManager
  * 
  * Copyright: Copyright (c) 2008 Company: INFN-CNAF and ICTP/EGRID project
  * 
@@ -54,66 +54,62 @@ import org.slf4j.LoggerFactory;
 
 public class RmConverter implements Converter {
 
-	/**
-	 * Logger
-	 */
-	private static final Logger log = LoggerFactory.getLogger(RmConverter.class);
+  /**
+   * Logger
+   */
+  private static final Logger log = LoggerFactory.getLogger(RmConverter.class);
 
-	public RmConverter() {
+  public RmConverter() {
 
-	};
+  };
 
-	/**
-	 * This method return a RmInputData created from input Hashtable structure of
-	 * an xmlrpc Rm v2.1 call. Rm Input Data can be used to invoke mkdir method of
-	 * DirectoryFunctionsManager
-	 */
-	public InputData convertToInputData(Map inputParam) {
+  /**
+   * This method return a RmInputData created from input Hashtable structure of an xmlrpc Rm v2.1
+   * call. Rm Input Data can be used to invoke mkdir method of DirectoryFunctionsManager
+   */
+  public InputData convertToInputData(Map<String, Object> inputParam) {
 
-		log.debug("RmConverter :Call received :Creation of RmdirInputData = {}"
-			, inputParam.size());
-		log.debug("RmConverter: Input Structure toString: {}"
-			, ParameterDisplayHelper.display(inputParam));
+    log.debug("RmConverter :Call received :Creation of RmdirInputData = {}", inputParam.size());
+    log.debug("RmConverter: Input Structure toString: {}",
+        ParameterDisplayHelper.display(inputParam));
 
-		GridUserInterface guser = GridUserManager.decode(inputParam);
+    GridUserInterface guser = GridUserManager.decode(inputParam);
 
-		ArrayOfSURLs surlArray = null;
-		try {
-			surlArray = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAY_OF_SURLS);
-		} catch (InvalidArrayOfSURLsAttributeException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+    ArrayOfSURLs surlArray = null;
+    try {
+      surlArray = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAY_OF_SURLS);
+    } catch (InvalidArrayOfSURLsAttributeException e1) {
+      // TODO Auto-generated catch block
+      e1.printStackTrace();
+    }
 
-		RmInputData inputData;
-		if (guser != null) {
-			inputData = new IdentityRmInputData(guser, surlArray);
-		} else {
-			inputData = new AnonymousRmInputData(surlArray);
-		}
-		log.debug("RmInputData Created!");
-		return inputData;
-	}
+    RmInputData inputData;
+    if (guser != null) {
+      inputData = new IdentityRmInputData(guser, surlArray);
+    } else {
+      inputData = new AnonymousRmInputData(surlArray);
+    }
+    log.debug("RmInputData Created!");
+    return inputData;
+  }
 
-	public Map convertFromOutputData(OutputData outputData) {
+  public Map<String, Object> convertFromOutputData(OutputData outputData) {
 
-		log
-			.debug("RmConverter :Call received :Creation of XMLRPC Output Structure! ");
-		// Output structure to return to xmlrpc client
-		Map outputParam = new HashMap();
-		RmOutputData rmOutputData = (RmOutputData) outputData;
-		TReturnStatus status = rmOutputData.getStatus();
-		if (status != null) {
-			status.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
-		}
+    log.debug("RmConverter :Call received :Creation of XMLRPC Output Structure! ");
+    // Output structure to return to xmlrpc client
+    Map<String, Object> outputParam = Maps.newHashMap();
+    RmOutputData rmOutputData = (RmOutputData) outputData;
+    TReturnStatus status = rmOutputData.getStatus();
+    if (status != null) {
+      status.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
+    }
 
-		ArrayOfTSURLReturnStatus surlArray = rmOutputData.getSurlStatus();
-		if (surlArray != null) {
-			surlArray.encode(outputParam,
-				ArrayOfTSURLReturnStatus.PNAME_ARRAYOFFILESTATUSES);
-		}
+    ArrayOfTSURLReturnStatus surlArray = rmOutputData.getSurlStatus();
+    if (surlArray != null) {
+      surlArray.encode(outputParam, ArrayOfTSURLReturnStatus.PNAME_ARRAYOFFILESTATUSES);
+    }
 
-		// Return global structure.
-		return outputParam;
-	}
+    // Return global structure.
+    return outputParam;
+  }
 }

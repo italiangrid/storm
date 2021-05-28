@@ -55,7 +55,7 @@ public class FileLifetimeConverter {
 
     if (l == TLifeTimeInSeconds.makeEmpty().value())
       return 0;
-    return new Long(l).intValue();
+    return Long.valueOf(l).intValue();
   }
 
   /**
@@ -67,6 +67,6 @@ public class FileLifetimeConverter {
 
     if (s <= 0)
       return Configuration.getInstance().getFileLifetimeDefault();
-    return new Integer(s).longValue();
+    return Integer.valueOf(s).longValue();
   }
 }

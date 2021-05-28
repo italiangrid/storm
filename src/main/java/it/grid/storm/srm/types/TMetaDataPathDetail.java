@@ -33,15 +33,14 @@
 
 package it.grid.storm.srm.types;
 
-import it.grid.storm.common.types.StFN;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
+
+import it.grid.storm.common.types.StFN;
 
 public class TMetaDataPathDetail {
 

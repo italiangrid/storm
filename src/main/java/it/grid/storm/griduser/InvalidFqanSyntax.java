@@ -19,40 +19,44 @@ package it.grid.storm.griduser;
 
 /**
  * Thrown when a invalid FQAN is detected by the
- * {@link it.grid.storm.griduser.VomsGridUser#VomsGridUser(String,String[])}
- * constructor. Holds and returns the offending FQAN string.
+ * {@link it.grid.storm.griduser.VomsGridUser#VomsGridUser(String,String[])} constructor. Holds and
+ * returns the offending FQAN string.
  */
 public class InvalidFqanSyntax extends GridUserException {
 
-	/** The FQAN string that does not match the FQAN regexp */
-	protected final String _offendingFqan;
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	/**
-	 * Constructor, with the offending FQAN and a separate exception message.
-	 */
-	public InvalidFqanSyntax(String offendingFqan, String message) {
+  /** The FQAN string that does not match the FQAN regexp */
+  protected final String _offendingFqan;
 
-		super(message);
+  /**
+   * Constructor, with the offending FQAN and a separate exception message.
+   */
+  public InvalidFqanSyntax(String offendingFqan, String message) {
 
-		assert (null == offendingFqan) : "Null string passed to InvalidFqanSyntax constructor";
+    super(message);
 
-		_offendingFqan = offendingFqan;
-	}
+    assert (null == offendingFqan) : "Null string passed to InvalidFqanSyntax constructor";
 
-	/**
-	 * Constructor, specifying the offending FQAN only. A standard message is
-	 * constructed.
-	 */
-	public InvalidFqanSyntax(String offendingFqan) {
+    _offendingFqan = offendingFqan;
+  }
 
-		// damn Java syntax, we cannot check offendingFqan before this...
-		super("Invalid FQAN: " + offendingFqan);
+  /**
+   * Constructor, specifying the offending FQAN only. A standard message is constructed.
+   */
+  public InvalidFqanSyntax(String offendingFqan) {
 
-		_offendingFqan = offendingFqan;
-	}
+    // damn Java syntax, we cannot check offendingFqan before this...
+    super("Invalid FQAN: " + offendingFqan);
 
-	public String getOffendingFqan() {
+    _offendingFqan = offendingFqan;
+  }
 
-		return _offendingFqan;
-	}
+  public String getOffendingFqan() {
+
+    return _offendingFqan;
+  }
 }

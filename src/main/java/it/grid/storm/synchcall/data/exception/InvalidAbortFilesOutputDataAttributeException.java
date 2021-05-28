@@ -31,17 +31,21 @@ import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 
 public class InvalidAbortFilesOutputDataAttributeException extends Exception {
 
-	private boolean nullSurlStatus = true;
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	public InvalidAbortFilesOutputDataAttributeException(
-		ArrayOfTSURLReturnStatus surlStatus) {
+  private boolean nullSurlStatus = true;
 
-		nullSurlStatus = (surlStatus == null);
-	}
+  public InvalidAbortFilesOutputDataAttributeException(ArrayOfTSURLReturnStatus surlStatus) {
 
-	public String toString() {
+    nullSurlStatus = (surlStatus == null);
+  }
 
-		return "nullSurlStatusArray = " + nullSurlStatus;
-	}
+  public String toString() {
+
+    return "nullSurlStatusArray = " + nullSurlStatus;
+  }
 
 }
