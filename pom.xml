@@ -12,7 +12,7 @@
     <!-- versions of the project dependencies -->
     <commonsConfigurationVersion>1.10</commonsConfigurationVersion>
     <jerseyVersion>2.25.1</jerseyVersion>
-    <jettyVersion>8.1.9.v20130131</jettyVersion>
+    <jettyVersion>9.4.41.v20210516</jettyVersion>
     <slf4jVersion>1.7.2</slf4jVersion>
     <logbackVersion>1.2.3</logbackVersion>
     <nettyVersion>3.5.0.Final</nettyVersion>
