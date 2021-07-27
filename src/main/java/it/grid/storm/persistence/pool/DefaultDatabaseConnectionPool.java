@@ -23,11 +23,12 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
+
+import it.grid.storm.metrics.InstrumentedBasicDataSource;
 
 public class DefaultDatabaseConnectionPool implements DatabaseConnectionPool {
 
@@ -41,7 +42,7 @@ public class DefaultDatabaseConnectionPool implements DatabaseConnectionPool {
   private boolean isTestOnBorrow;
   private boolean isTestWhileIdle;
 
-  private BasicDataSource bds;
+  private InstrumentedBasicDataSource bds;
 
   public DefaultDatabaseConnectionPool(DatabaseConnector dbs, int maxTotal, int minIdle,
       int maxConnLifetimeMillis, boolean isTestOnBorrow, boolean isTestWhileIdle) {
@@ -58,7 +59,7 @@ public class DefaultDatabaseConnectionPool implements DatabaseConnectionPool {
 
   private void init() {
 
-    bds = new BasicDataSource();
+    bds = new InstrumentedBasicDataSource();
 
     bds.setDriverClassName(dbs.getDriverName());
     bds.setUrl(dbs.getDbURL());
@@ -75,6 +76,7 @@ public class DefaultDatabaseConnectionPool implements DatabaseConnectionPool {
         "Connected as {} at '{}' [max-total: {}, min-idle: {}, max-conn-lifetime-millis: {}, test-on-borrow: {}, test-while-idle: {}]",
         dbs.getDbUsername(), dbs.getDbURL(), maxTotal, minIdle, maxConnLifetimeMillis,
         isTestOnBorrow, isTestWhileIdle);
+
   }
 
   public Connection getConnection() throws SQLException {
