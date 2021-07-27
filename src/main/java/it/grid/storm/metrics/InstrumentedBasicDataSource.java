@@ -1,23 +1,25 @@
 package it.grid.storm.metrics;
 
-import org.apache.commons.dbcp2.BasicDataSource;
-
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.JmxReporter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.SharedMetricRegistries;
-import com.codahale.metrics.Timer;
-
 import static com.codahale.metrics.MetricRegistry.name;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.apache.commons.dbcp2.BasicDataSource;
+
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.JmxReporter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+
 public class InstrumentedBasicDataSource extends BasicDataSource {
 
-  private MetricRegistry registry = null;
   private Timer getConnectionTimer = null;
   private JmxReporter reporter = null;
+
+  public InstrumentedBasicDataSource(MetricRegistry registry) {
+    instrument(registry, this);
+  }
 
   /**
    * Instrument the given BasicDataSource instance with a series of timers and gauges.
@@ -80,18 +82,6 @@ public class InstrumentedBasicDataSource extends BasicDataSource {
     getConnectionTimer = registry.timer(name(prefix, "getconnection"));
     reporter = JmxReporter.forRegistry(registry).build();
     reporter.start();
-  }
-
-  public void afterPropertiesSet() throws IllegalArgumentException {
-    if (registry == null) {
-      throw new IllegalArgumentException("registry must be specified");
-    }
-  }
-
-  public void setMetricRegistry(String registryName) {
-    final MetricRegistry registry = SharedMetricRegistries.getOrCreate(registryName);
-    this.registry = registry;
-    this.instrument(registry, this);
   }
 
   @Override

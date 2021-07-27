@@ -26,9 +26,11 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.Maps;
 
 import it.grid.storm.metrics.InstrumentedBasicDataSource;
+import it.grid.storm.metrics.StormMetricRegistry;
 
 public class DefaultDatabaseConnectionPool implements DatabaseConnectionPool {
 
@@ -59,7 +61,7 @@ public class DefaultDatabaseConnectionPool implements DatabaseConnectionPool {
 
   private void init() {
 
-    bds = new InstrumentedBasicDataSource();
+    bds = new InstrumentedBasicDataSource(StormMetricRegistry.METRIC_REGISTRY.getRegistry());
 
     bds.setDriverClassName(dbs.getDriverName());
     bds.setUrl(dbs.getDbURL());
