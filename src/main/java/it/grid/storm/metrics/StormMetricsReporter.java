@@ -1,9 +1,25 @@
+/*
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package it.grid.storm.metrics;
 
-import java.util.Map;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +36,6 @@ import com.codahale.metrics.Timer;
 
 import it.grid.storm.common.OperationType;
 import it.grid.storm.filesystem.MetricsFilesystemAdapter.FilesystemMetric;
-import it.grid.storm.persistence.pool.StormBeIsamConnectionPool;
-import it.grid.storm.persistence.pool.StormDbConnectionPool;
 
 public class StormMetricsReporter extends ScheduledReporter {
 
@@ -115,17 +129,33 @@ public class StormMetricsReporter extends ScheduledReporter {
     reportJettyHandlerMetrics("xmlrpc-handler", meters);
     reportJettyHandlerMetrics("rest-handler", meters);
 
-    reportDbPoolMetrics("storm-db", StormDbConnectionPool.getInstance().getMetrics());
-    reportDbPoolMetrics("storm-be-isam", StormBeIsamConnectionPool.getInstance().getMetrics());
+    reportDbPoolMetrics("storm_db", gauges, timers);
+    reportDbPoolMetrics("storm_be_ISAM", gauges, timers);
   }
 
-  private void reportDbPoolMetrics(String tpName, Map<String, String> metrics) {
+  @SuppressWarnings("rawtypes")
+  private void reportDbPoolMetrics(String tpName, SortedMap<String, Gauge> gauges,
+      SortedMap<String, Timer> timers) {
 
-    String result = metrics.entrySet()
-      .stream()
-      .map(e -> e.getKey() + "=" + e.getValue())
-      .collect(Collectors.joining(", "));
-    LOG.info("{} [{}]", tpName, result);
+    String timerName = tpName + ".get-connection";
+    Optional.ofNullable(timers.get(timerName))
+      .ifPresentOrElse(t -> {
+        reportMetric(timerName, t);
+      },
+      () -> {
+        LOG.error("Invalid metric name: {}", timerName);
+        return;
+      });
+
+    int numActive = getIntValue(gauges.get(tpName + ".num-active"));
+    int maxActive = getIntValue(gauges.get(tpName + ".max-total"));
+    int numIdle = getIntValue(gauges.get(tpName + ".num-idle"));
+    int maxIdle = getIntValue(gauges.get(tpName + ".max-idle"));
+    double percentActive = getDoubleValue(gauges.get(tpName + ".percent-active"));
+    double percentIdle = getDoubleValue(gauges.get(tpName + ".percent-idle"));
+
+    LOG.info("{} [active-connections={}, max-active-connections={}, percent-active={}, idle-connections={}, max-idle-connections={}. percent-idle={}]",
+        tpName, numActive, maxActive, percentActive, numIdle, maxIdle, percentIdle);
   }
 
   private void reportMetric(String name, Timer timer) {

@@ -17,17 +17,11 @@
 
 package it.grid.storm.persistence.pool;
 
-import static java.lang.String.valueOf;
-
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.codahale.metrics.MetricRegistry;
-import com.google.common.collect.Maps;
 
 import it.grid.storm.metrics.InstrumentedBasicDataSource;
 import it.grid.storm.metrics.StormMetricRegistry;
@@ -84,20 +78,6 @@ public class DefaultDatabaseConnectionPool implements DatabaseConnectionPool {
   public Connection getConnection() throws SQLException {
 
     return bds.getConnection();
-  }
-
-  public Map<String, String> getMetrics() {
-
-    Map<String, String> metrics = Maps.newHashMap();
-    metrics.put("max-total", valueOf(bds.getMaxTotal()));
-    metrics.put("min-idle", valueOf(bds.getMinIdle()));
-    metrics.put("test-on-borrow", valueOf(bds.getTestOnBorrow()));
-    metrics.put("test-while-idle", valueOf(bds.getTestWhileIdle()));
-    metrics.put("num-active", valueOf(bds.getNumActive()));
-    metrics.put("num-idle", valueOf(bds.getNumIdle()));
-    metrics.put("max-conn-lifetime-millis", valueOf(bds.getMaxConnLifetimeMillis()));
-    metrics.put("max-idle", valueOf(bds.getMaxIdle()));
-    return metrics;
   }
 
   @Override
