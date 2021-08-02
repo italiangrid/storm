@@ -17,16 +17,18 @@ public class InstrumentedBasicDataSource extends BasicDataSource {
   private Timer getConnectionTimer = null;
   private JmxReporter reporter = null;
 
-  public InstrumentedBasicDataSource(MetricRegistry registry) {
-    instrument(registry, this);
+  public InstrumentedBasicDataSource(String prefix, MetricRegistry registry) {
+    instrument(prefix, registry, this);
+    getConnectionTimer = registry.timer(name(prefix, "getconnection"));
+    reporter = JmxReporter.forRegistry(registry).build();
+    reporter.start();
   }
 
   /**
    * Instrument the given BasicDataSource instance with a series of timers and gauges.
    * 
    */
-  public void instrument(MetricRegistry registry, final BasicDataSource datasource) {
-    final String prefix = name(datasource.getClass(), datasource.getUrl());
+  public static void instrument(String prefix, MetricRegistry registry, final BasicDataSource datasource) {
 
     registry.register(name(prefix, "initialsize"), new Gauge<Integer>() {
       public Integer getValue() {
@@ -78,10 +80,6 @@ public class InstrumentedBasicDataSource extends BasicDataSource {
         return datasource.getTimeBetweenEvictionRunsMillis();
       }
     });
-
-    getConnectionTimer = registry.timer(name(prefix, "getconnection"));
-    reporter = JmxReporter.forRegistry(registry).build();
-    reporter.start();
   }
 
   @Override

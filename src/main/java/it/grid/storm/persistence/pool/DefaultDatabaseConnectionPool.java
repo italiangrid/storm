@@ -61,7 +61,7 @@ public class DefaultDatabaseConnectionPool implements DatabaseConnectionPool {
 
   private void init() {
 
-    bds = new InstrumentedBasicDataSource(StormMetricRegistry.METRIC_REGISTRY.getRegistry());
+    bds = new InstrumentedBasicDataSource(dbs.getDbName(), StormMetricRegistry.METRIC_REGISTRY.getRegistry());
 
     bds.setDriverClassName(dbs.getDriverName());
     bds.setUrl(dbs.getDbURL());

@@ -19,6 +19,8 @@ package it.grid.storm.persistence.pool;
 
 public interface DatabaseConnector {
 
+  public String getDbName();
+
   public String getDriverName();
 
   public String getDbUsername();

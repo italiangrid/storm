@@ -6,12 +6,15 @@ import it.grid.storm.config.Configuration;
 
 public class DefaultDatabaseConnector implements DatabaseConnector {
 
+  private final String name;
   private final String driver;
   private final String url;
   private final String username;
   private final String password;
 
   private DefaultDatabaseConnector(String database) {
+
+    this.name = database;
 
     Configuration config = Configuration.getInstance();
 
@@ -58,5 +61,10 @@ public class DefaultDatabaseConnector implements DatabaseConnector {
 
   public static DatabaseConnector getStormBeIsamDatabaseConnector() {
     return new DefaultDatabaseConnector("storm_be_ISAM");
+  }
+
+  @Override
+  public String getDbName() {
+    return name;
   }
 }
