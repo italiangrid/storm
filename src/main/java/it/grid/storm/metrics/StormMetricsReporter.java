@@ -139,12 +139,8 @@ public class StormMetricsReporter extends ScheduledReporter {
 
     String timerName = tpName + ".get-connection";
     Optional.ofNullable(timers.get(timerName))
-      .ifPresentOrElse(t -> {
+      .ifPresent(t -> {
         reportMetric(timerName, t);
-      },
-      () -> {
-        LOG.error("Invalid metric name: {}", timerName);
-        return;
       });
 
     int numActive = getIntValue(gauges.get(tpName + ".num-active"));
