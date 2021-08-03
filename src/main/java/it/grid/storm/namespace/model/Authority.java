@@ -19,98 +19,99 @@ package it.grid.storm.namespace.model;
 
 public class Authority {
 
-	private String hostname;
-	private int port = -1;
+  private String hostname;
+  private int port = -1;
 
-	public final static Authority EMPTY = new Authority("");
+  public final static Authority EMPTY = new Authority("");
 
-	/**
-	 * Complete constructor
-	 * 
-	 * @param serviceHostname
-	 *          String
-	 * @param servicePort
-	 *          int
-	 */
-	public Authority(String serviceHostname, int servicePort) {
+  /**
+   * Complete constructor
+   * 
+   * @param serviceHostname String
+   * @param servicePort int
+   */
+  public Authority(String serviceHostname, int servicePort) {
 
-		this.hostname = serviceHostname;
-		this.port = servicePort;
-	}
+    this.hostname = serviceHostname;
+    this.port = servicePort;
+  }
 
-	/**
-	 * Cnstructor with default port
-	 * 
-	 * @param serviceHostname
-	 *          String
-	 */
-	public Authority(String serviceHostname) {
+  /**
+   * Constructor with default port
+   * 
+   * @param serviceHostname String
+   */
+  public Authority(String serviceHostname) {
 
-		this.hostname = serviceHostname;
-	}
+    this.hostname = serviceHostname;
+  }
 
-	public String getServiceHostname() {
+  public String getServiceHostname() {
 
-		return this.hostname;
-	}
+    return this.hostname;
+  }
 
-	public void setServiceHostname(String hostname) {
+  public void setServiceHostname(String hostname) {
 
-		this.hostname = hostname;
-	}
+    this.hostname = hostname;
+  }
 
-	public int getServicePort() {
+  public int getServicePort() {
 
-		return this.port;
-	}
+    return this.port;
+  }
 
-	public void setServicePort(int port) {
+  public void setServicePort(int port) {
 
-		this.port = port;
-	}
+    this.port = port;
+  }
 
-	private String getHostnameAndPort() {
+  private String getHostnameAndPort() {
 
-		StringBuilder result = new StringBuilder();
-		if (hostname != null) {
-			result.append(hostname);
-			if (port > 0) {
-				result.append(":");
-				result.append(port);
-			}
-		}
-		return result.toString();
-	}
+    StringBuilder result = new StringBuilder();
+    if (hostname != null) {
+      result.append(hostname);
+      if (port > 0) {
+        result.append(":");
+        result.append(port);
+      }
+    }
+    return result.toString();
+  }
 
-	public String toString() {
+  public String toString() {
 
-		return getHostnameAndPort();
-	}
+    return getHostnameAndPort();
+  }
 
-	public boolean equals(Object other) {
+  public boolean equals(Object other) {
 
-		boolean result = false;
-		if (other instanceof Authority) {
-			Authority otherA = (Authority) other;
-			if (otherA.getServiceHostname().equals(this.getServiceHostname())) { // Hostname
-																																						// is
-																																						// equal
-				// Check if the Port is equal.
-				if (otherA.getServicePort() == this.getServicePort()) {
-					result = true;
-				}
-			}
-		}
-		return result;
-	}
+    boolean result = false;
+    if (other instanceof Authority) {
+      Authority otherA = (Authority) other;
+      if (otherA.getServiceHostname().equals(this.getServiceHostname())) {
+        // Check if the Port is equal.
+        if (otherA.getServicePort() == this.getServicePort()) {
+          result = true;
+        }
+      }
+    }
+    return result;
+  }
 
-	@Override
-	public int hashCode() {
+  public static Authority fromString(String endpoint) {
+    String host = endpoint.split(":")[0];
+    int port = Integer.valueOf(endpoint.split(":")[1]);
+    return new Authority(host, port);
+  }
 
-		int result = 17;
-		result = 31 * result + (hostname != null ? hostname.hashCode() : 0);
-		result = 31 * result + port;
-		return result;
-	}
+  @Override
+  public int hashCode() {
+
+    int result = 17;
+    result = 31 * result + (hostname != null ? hostname.hashCode() : 0);
+    result = 31 * result + port;
+    return result;
+  }
 
 }

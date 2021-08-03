@@ -17,8 +17,6 @@
 
 package it.grid.storm.namespace.model;
 
-import it.grid.storm.namespace.naming.*;
-
 public class TransportProtocol {
 
 	private int protocolID = -1;
@@ -59,13 +57,6 @@ public class TransportProtocol {
 			return Authority.EMPTY;
 		} else {
 			return this.service;
-		}
-	}
-
-	public void setLocalAuthority() {
-
-		if (!this.protocol.equals(Protocol.FILE)) {
-			this.service = new Authority(NamingConst.getServiceDefaultHost());
 		}
 	}
 

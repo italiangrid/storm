@@ -1,62 +1,43 @@
-###########################
-#    storm.properties
-###########################
+###################################################################################
+#  StoRM Configuration
+###################################################################################
 #
-#   This file contains properties that govern the operation of StoRM. 
-#   The file is read at startup of the service.
-#   Your changes will be applied when the service will be restarted.
+#  This file contains StoRM Backend configuration. The file is read at startup
+#  of the service. Your changes will be applied when the service will be restarted.
+
+
+# ============================================
+# SRM SERVICE PARAMETERS
+# ============================================
+
+# StoRM SRM Service Public Hostname and Port 
+# ============================================
+# StoRM SRM endpoint public hostname and port
+# (ex: storm.service.FE-public.hostname and storm.service.port)
 #
-############################
+storm.service.srm.public-host =
+storm.service.srm.public-port = 8444
 
-############################
-###  SERVICE PARAMETERS  ###
-############################
-
-# ============================
-# StoRM Service DNS
-# ============================
-# hostname with which the service is published
-storm.service.FE-public.hostname =
-
-
-# ============================
-# Front End service port
-# ============================
-# The Front End binding port
-storm.service.port = 8444
-
-# ============================
-# Managed SURL endpoints 
-# ============================
+# Managed SRM endpoints
+# ============================================
 #
-# comma-separated list of managed SURL. 
-# These entries are used to check the SURL validity. 
-# storm.service.SURL.endpoint = srm://<surl-host>:<surl-port>/<surl-service-path>
-# Example: Example: srm://storm.cnaf.infn.it:8444/srm/managerv2
-storm.service.SURL.endpoint =   
-
-# ============================
-# Managed SURL default ports
-# ============================
+# List of comma separated strings identifying the StoRM SRM endpoints (Frontends). Each endpoint is composed of [host]:[port].
+# Host can be expressed also with IPv4 or IPv6. This is used by StoRM to understand if a SURL is valid (managed or not).
 #
-# comma-separated list of managed SURL's defauilt ports. 
-# These entries are used to check the SURL validity. 
-# storm.service.SURL.default-ports = <surl-port>
-# Example: 8444
-storm.service.SURL.default-ports =   
+storm.service.srm.endpoints =
 
-# ============================
+# ============================================
 # FE/BE communication RDBMS
-# ============================
+# ============================================
 
 # Credentials:
-# ============
+# ============================================
 
 db.username =
 db.password =
 
 # Connection:
-# ===========
+# ============================================
 
 db.url.hostname =
 # db.driver = com.mysql.cj.jdbc.Driver
@@ -66,7 +47,7 @@ db.url.hostname =
 # db.url.properties = serverTimezone=UTC&autoReconnect=true
 
 # Connection pool:
-# ================
+# ============================================
 
 # db.pool.size = -1
 # db.pool.min_idle = 10
@@ -75,41 +56,32 @@ db.url.hostname =
 # db.pool.test_while_idle = true
 
 
-#############################################
-############  PROFILE PARAMETERS ############
-#############################################
+# ============================================
+# PROFILE PARAMETERS
+# ============================================
 
-# ============================
 # StoRM Service Generic Behavior
-# ============================
+# ============================================
 directory.automatic-creation = false
-# To enable file creation within directories. Useful when authorization is not defined.              
 directory.writeperm = false
 
-
-# ============================
 # StoRM Service PINNED Behavior
-# ============================
+# ============================================
 # Default PinLifetime in seconds used for pinning files in case of srmPrepareToPut or srmPrapareToGet operation
 # without any pinLifetime specified. 
 pinLifetime.default=259200
-# Maximum allowed value for Pin LifeTime. 
-# Values beyond the max will be dropped to max value.
+# Maximum allowed value for Pin LifeTime. Values beyond the max will be dropped to max value.
 pinLifetime.maximum=1814400
 
-
-# ============================
 # StoRM Service TURL Behavior
-# ============================
+# ============================================
 extraslashes.file=
 extraslashes.rfio=
 extraslashes.gsiftp=/
 extraslashes.root=
 
-
-# =======================
 # Default 
-# =======================
+# ============================================
 # Default FileLifetime in seconds used for VOLATILE file in case of SRM request without FileLifetime parameter specified.
 fileLifetime.default=259200
 # Possible values are :   N (Never) and  A (Always)
@@ -118,13 +90,12 @@ default.overwrite   = A
 default.storagetype = P       
 
 
-#############################################
-############  TUNING PARAMETERS #############
-#############################################
+# ============================================
+# TUNING PARAMETERS
+# ============================================
 
-# ============================
 # ASYNCH SCHEDULER Component parameters
-# ============================
+# ============================================
 scheduler.serial=false
 scheduler.crusher.workerCorePoolSize=10
 scheduler.crusher.workerMaxPoolSize=50
@@ -142,19 +113,13 @@ scheduler.chunksched.copy.workerCorePoolSize=10
 scheduler.chunksched.copy.workerMaxPoolSize=50
 scheduler.chunksched.copy.queueSize=500
 
-
-# ============================
 # ASYNCH PICKER Component parameters
-# ============================
-asynch.db.ReconnectPeriod=18000
-asynch.db.DelayPeriod=30
+# ============================================
 asynch.PickingInitialDelay=1
 # Polling time in seconds for pick up new requests from DB
 asynch.PickingTimeInterval=2
 asynch.PickingMaxBatchSize=100
 
-
-# ======================================
 # SYNCH CALL Component tuning parameters
 # ======================================
 synchcall.directoryManager.maxLsEntry=2000
@@ -190,24 +155,6 @@ gc.pinnedfiles.cleaning.interval = 300
 tape.recalltable.service.param.retry-value=retry-value
 tape.recalltable.service.param.status=status
 tape.recalltable.service.param.takeover=first
-
-
-# ============================
-# srmCopy parameters
-# ============================
-asynch.srmclient.retrytime=60
-asynch.srmclient.timeout=180
-asynch.srmclient.sleeptime=5
-asynch.srmclient.putdone.sleeptime=1
-asynch.srmclient.putdone.timeout=60
-asynch.gridftpclient=it.grid.storm.asynch.NaiveGridFTPTransferClient
-asynch.srmclient=it.grid.storm.asynch.SRM22Client
-# Default PinLifeTime in seconds used by StoRM in case of SrmCOpy operation.
-# This value is the one specified in the remote SrmPrepareToGet request.
-SRM22Client.PinLifeTime=259200
-# Time expressed in millisec.
-asynch.srmcopy.gridftp.timeout = 15000
-
 
 # ===========================
 # Garbage Collector parameter

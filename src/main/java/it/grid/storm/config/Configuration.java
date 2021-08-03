@@ -25,16 +25,21 @@ import static java.lang.System.getProperty;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
 
 import com.google.common.collect.Lists;
 
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.model.Authority;
 import it.grid.storm.rest.RestServer;
 import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 
@@ -50,6 +55,8 @@ import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 
 public class Configuration {
 
+  private Logger log = NamespaceDirector.getLogger();
+
   public static final String DEFAULT_STORM_CONFIG_FILE =
       "/etc/storm/backend-server/storm.properties";
   public static final int DEFAULT_STORM_CONFIG_REFRESH_RATE = 0;
@@ -63,11 +70,10 @@ public class Configuration {
   public static final String REFRESH_RATE = "storm.configuration.refresh";
 
   /* Configuration file properties */
-  private static final String MANAGED_SURLS_KEY = "storm.service.SURL.endpoint";
-  private static final String MANAGED_SURL_DEFAULT_PORTS_KEY = "storm.service.SURL.default-ports";
-  private static final String SERVICE_HOSTNAME_KEY = "storm.service.FE-public.hostname";
-  private static final String SERVICE_PORT_KEY = "storm.service.port";
-  private static final String LIST_OF_MACHINE_IPS_KEY = "storm.service.FE-list.IPs";
+  private static final String SERVICE_SRM_PUBLIC_HOST_KEY = "storm.service.srm.public-host";
+  private static final String SERVICE_SRM_PUBLIC_PORT_KEY = "storm.service.srm.public-port";
+
+  private static final String MANAGED_SRM_ENDPOINTS_KEY = "storm.service.srm.endpoints";
 
   /* Database */
   private static final String DB_USERNAME_KEY = "db.username";
@@ -127,7 +133,6 @@ public class Configuration {
       "namespace.refreshrate";
   private static final String NAMESPACE_AUTOMATIC_RELOADING_KEY =
       "namespace.automatic-config-reload";
-  private static final String GRIDFTP_TIME_OUT_KEY = "asynch.srmcopy.gridftp.timeout";
   private static final String AUTOMATIC_DIRECTORY_CREATION_KEY = "directory.automatic-creation";
   private static final String DEFAULT_OVERWRITE_MODE_KEY = "default.overwrite";
   private static final String DEFAULT_FILE_STORAGE_TYPE_KEY = "default.storagetype";
@@ -235,75 +240,40 @@ public class Configuration {
    * MANDATORY CONFIGURATION PARAMETER! Define the SURL end-points.
    * 
    * @return String[]
+   * @throws UnknownHostException
    */
-  public String[] getManagedSURLs() {
+  public List<Authority> getManagedSrmEndpoints() {
 
-    String[] defaultValue = {"UNDEFINED_SERVICE_ENDPOINT"};
-    if (!cr.getConfiguration().containsKey(MANAGED_SURLS_KEY)) {
-      return defaultValue;
-    }
-    return cr.getConfiguration().getStringArray(MANAGED_SURLS_KEY);
-  }
-
-  /**
-   * @return
-   */
-  public Integer[] getManagedSurlDefaultPorts() {
-
-    Integer[] portsArray;
-    if (!cr.getConfiguration().containsKey(MANAGED_SURL_DEFAULT_PORTS_KEY)) {
-      portsArray = new Integer[] {8444};
-    } else {
-      // load from external source
-      String[] portString = cr.getConfiguration().getStringArray(MANAGED_SURL_DEFAULT_PORTS_KEY);
-      ArrayList<Integer> ports = new ArrayList<>();
-      for (String port : portString) {
-        ports.add(Integer.parseInt(port.trim()));
-      }
-      portsArray = ports.toArray(new Integer[0]);
-    }
-    return portsArray;
+    String defaultValue = String.format("%s:%d", getSrmServiceHostname(), getSrmServicePort());
+    return cr.getConfiguration()
+      .getList(MANAGED_SRM_ENDPOINTS_KEY, Lists.newArrayList(defaultValue))
+      .stream()
+      .map(o -> Authority.fromString(String.valueOf(o)))
+      .collect(Collectors.toList());
   }
 
   /**
    * @return String
    */
-  public String getServiceHostname() {
+  public String getSrmServiceHostname() {
 
-    return cr.getConfiguration().getString(SERVICE_HOSTNAME_KEY, "UNDEFINED_STORM_HOSTNAME");
+    try {
+      return cr.getConfiguration().getString(SERVICE_SRM_PUBLIC_HOST_KEY, InetAddress.getLocalHost().getHostName());
+    } catch (UnknownHostException e) {
+      e.printStackTrace();
+      log.error("Unable to get local FQDN hostname: please set {} into your storm.properties file", SERVICE_SRM_PUBLIC_HOST_KEY);
+      System.exit(1);
+      return null;
+    }
   }
 
   /**
    * Method used by SFN to establish the FE binding port. If no value is found in the configuration
    * medium, then the default one is used instead. key="storm.service.port"; default value="8444"
    */
-  public int getServicePort() {
+  public int getSrmServicePort() {
 
-    return cr.getConfiguration().getInt(SERVICE_PORT_KEY, 8444);
-  }
-
-  /**
-   * Method used to get a List of Strings of the IPs of the machine hosting the FE for _this_ StoRM
-   * instance! Used in the xmlrcp server configuration, to allow request coming from the specified
-   * IP. (Into the xmlrpc server the filter is done by IP, not hostname.) This paramter is mandatory
-   * when a distribuited FE-BE installation of StoRM is used togheter with a dynamic DNS on the FE
-   * hostname. In that case the properties storm.machinenames is not enough meaningfull. If no value
-   * is found in the configuration medium, then the default value is returned instead.
-   * key="storm.machineIPs"; default value={"127.0.0.1"};
-   */
-  public List<String> getListOfMachineIPs() {
-
-    if (cr.getConfiguration().containsKey(LIST_OF_MACHINE_IPS_KEY)) {
-
-      String[] names = cr.getConfiguration().getString(LIST_OF_MACHINE_IPS_KEY).split(";"); // split
-      for (int i = 0; i < names.length; i++) {
-        names[i] = names[i].trim().toLowerCase(); // for each bit remove
-      }
-      return Arrays.asList(names);
-
-    } else {
-      return Arrays.asList("127.0.0.1");
-    }
+    return cr.getConfiguration().getInt(SERVICE_SRM_PUBLIC_PORT_KEY, 8444);
   }
 
   public String getDbDriver() {
@@ -365,12 +335,13 @@ public class Configuration {
 
   public String getDbUrlProperties() {
 
-    return cr.getConfiguration().getString(DB_URL_PROPERTIES_KEY, "serverTimezone=UTC&autoReconnect=true");
+    return cr.getConfiguration()
+      .getString(DB_URL_PROPERTIES_KEY, "serverTimezone=UTC&autoReconnect=true");
   }
 
   /**
-   * Sets the maximum total number of idle and borrows connections that can be active at the same time. Use a negative
-   * value for no limit.
+   * Sets the maximum total number of idle and borrows connections that can be active at the same
+   * time. Use a negative value for no limit.
    */
   public int getDbPoolSize() {
 
@@ -394,7 +365,8 @@ public class Configuration {
   }
 
   /**
-   * This property determines whether or not the pool will validate objects before they are borrowed from the pool.
+   * This property determines whether or not the pool will validate objects before they are borrowed
+   * from the pool.
    */
   public boolean isDbPoolTestOnBorrow() {
 
@@ -868,16 +840,6 @@ public class Configuration {
   }
 
   /**
-   * Method used by NaiveGridFTP internal client in srmCopy to establish the time out in
-   * milliseconds for a reply from the server. If no value is found in the configuration medium,
-   * then the default one is used instead. key="NaiveGridFTP.TimeOut"; default value="15000"
-   */
-  public int getGridFTPTimeOut() {
-
-    return cr.getConfiguration().getInt(GRIDFTP_TIME_OUT_KEY, 15000);
-  }
-
-  /**
    * Method used by PtPChunk to find out if missing local directories should be created
    * automatically or not. SRM 2.2 specification forbids automatic creation. If no value is found in
    * the configuration medium, then the default one is used instead.
@@ -1134,12 +1096,14 @@ public class Configuration {
 
   public int getRestServicesMaxThreads() {
 
-    return cr.getConfiguration().getInt(REST_SERVICES_MAX_THREAD, RestServer.DEFAULT_MAX_THREAD_NUM);
+    return cr.getConfiguration()
+      .getInt(REST_SERVICES_MAX_THREAD, RestServer.DEFAULT_MAX_THREAD_NUM);
   }
 
   public int getRestServicesMaxQueueSize() {
 
-    return cr.getConfiguration().getInt(REST_SERVICES_MAX_QUEUE_SIZE, RestServer.DEFAULT_MAX_QUEUE_SIZE);
+    return cr.getConfiguration()
+      .getInt(REST_SERVICES_MAX_QUEUE_SIZE, RestServer.DEFAULT_MAX_QUEUE_SIZE);
   }
 
   /**
@@ -1339,6 +1303,7 @@ public class Configuration {
 
   public boolean getDiskUsageServiceTasksParallel() {
 
-    return cr.getConfiguration().getBoolean(DISKUSAGE_SERVICE_TASKS_PARALLEL, DEFAULT_TASKS_PARALLEL);
+    return cr.getConfiguration()
+      .getBoolean(DISKUSAGE_SERVICE_TASKS_PARALLEL, DEFAULT_TASKS_PARALLEL);
   }
 }
