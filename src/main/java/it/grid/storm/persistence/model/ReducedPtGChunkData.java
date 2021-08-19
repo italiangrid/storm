@@ -42,10 +42,9 @@ public class ReducedPtGChunkData implements ReducedChunkData {
   @SuppressWarnings("unused")
   private static final Logger log = LoggerFactory.getLogger(ReducedPtGChunkData.class);
 
-  private long primaryKey = -1; // long representing the primary key for the
-                                // persistence layer!
-  private TSURL fromSURL; // SURL that the srm command wants to get
-  private TReturnStatus status; // return status for this chunk of request
+  private long primaryKey = -1;
+  private TSURL fromSURL;
+  private TReturnStatus status;
 
   public ReducedPtGChunkData(TSURL fromSURL, TReturnStatus status)
       throws InvalidReducedPtGChunkDataAttributesException {
@@ -69,7 +68,7 @@ public class ReducedPtGChunkData implements ReducedChunkData {
   public int hashCode() {
 
     int hash = 17;
-    hash = 37 * hash + new Long(primaryKey).hashCode();
+    hash = 37 * hash + Long.valueOf(primaryKey).hashCode();
     hash = 37 * hash + fromSURL.hashCode();
     hash = 37 * hash + status.hashCode();
     return hash;

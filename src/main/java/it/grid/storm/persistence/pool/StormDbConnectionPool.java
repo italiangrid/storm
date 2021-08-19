@@ -34,7 +34,7 @@ public class StormDbConnectionPool extends DefaultDatabaseConnectionPool {
 
   private StormDbConnectionPool() {
 
-    super(DefaultDatabaseConnector.getStormDbDatabaseConnector(), c.getDbPoolSize(),
+    super(DefaultMySqlDatabaseConnector.getStormDbDatabaseConnector(), c.getDbPoolSize(),
         c.getDbPoolMinIdle(), c.getDbPoolMaxWaitMillis(), c.isDbPoolTestOnBorrow(),
         c.isDbPoolTestWhileIdle());
   }

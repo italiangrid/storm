@@ -34,7 +34,7 @@ public class StormBeIsamConnectionPool extends DefaultDatabaseConnectionPool {
 
   private StormBeIsamConnectionPool() {
 
-    super(DefaultDatabaseConnector.getStormBeIsamDatabaseConnector(), c.getDbPoolSize(),
+    super(DefaultMySqlDatabaseConnector.getStormBeIsamDatabaseConnector(), c.getDbPoolSize(),
         c.getDbPoolMinIdle(), c.getDbPoolMaxWaitMillis(), c.isDbPoolTestOnBorrow(),
         c.isDbPoolTestWhileIdle());
   }

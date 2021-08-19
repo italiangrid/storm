@@ -111,9 +111,9 @@ public class StoRM {
 
     configureMetricsReporting();
 
-    loadNamespaceConfiguration();
+    NamespaceDirector.init();
 
-    HealthDirector.initializeDirector(false);
+    HealthDirector.initializeDirector();
 
     loadPathAuthzDBConfiguration();
 
@@ -158,12 +158,6 @@ public class StoRM {
 
   }
 
-  private void loadNamespaceConfiguration() {
-
-    NamespaceDirector.initializeDirector();
-
-  }
-
   private void loadPathAuthzDBConfiguration() throws BootstrapException {
 
     String pathAuthzDBFileName = config.configurationDir() + "path-authz.db";
@@ -175,8 +169,8 @@ public class StoRM {
 
     try {
 
-      xmlrpcServer = new XMLRPCHttpServer(config.getXmlRpcServerPort(), config.getXMLRPCMaxThread(),
-          config.getXMLRPCMaxQueueSize());
+      xmlrpcServer = new XMLRPCHttpServer(config.getXmlRpcServerPort(), config.getXmlrpcMaxThreads(),
+          config.getXmlrpcMaxQueueSize());
 
     } catch (StoRMXmlRpcException e) {
 
@@ -275,7 +269,7 @@ public class StoRM {
   private void configureRestService() {
 
     int restServicePort = Configuration.getInstance().getRestServicesPort();
-    boolean isTokenEnabled = Configuration.getInstance().getXmlRpcTokenEnabled();
+    boolean isTokenEnabled = Configuration.getInstance().getXmlRpcSecurityEnabled();
     String token = Configuration.getInstance().getXmlRpcToken();
     int maxThreads = Configuration.getInstance().getRestServicesMaxThreads();
     int maxQueueSize = Configuration.getInstance().getRestServicesMaxQueueSize();
@@ -414,6 +408,8 @@ public class StoRM {
   private void configureDiskUsageService() {
 
     isDiskUsageServiceEnabled = config.getDiskUsageServiceEnabled();
+    int delay = config.getDiskUsageServiceInitialDelay();
+    int period = config.getDiskUsageServiceTasksInterval();
 
     NamespaceInterface namespace = NamespaceDirector.getNamespace();
     List<VirtualFSInterface> quotaEnabledVfs = namespace.getVFSWithQuotaEnabled();
@@ -423,9 +419,9 @@ public class StoRM {
       .collect(Collectors.toList());
 
     if (config.getDiskUsageServiceTasksParallel()) {
-      duService = DiskUsageService.getScheduledThreadPoolService(sas);
+      duService = DiskUsageService.getScheduledThreadPoolService(sas, delay, period);
     } else {
-      duService = DiskUsageService.getSingleThreadScheduledService(sas);
+      duService = DiskUsageService.getSingleThreadScheduledService(sas, delay, period);
     }
     duService.setDelay(config.getDiskUsageServiceInitialDelay());
     duService.setPeriod(config.getDiskUsageServiceTasksInterval());

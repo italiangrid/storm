@@ -438,7 +438,7 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
 
         int uniqueID = rrs.getInt("rb.sourceSURL_uniqueID");
         if (!rrs.wasNull()) {
-          chunkDataTO.setSurlUniqueID(new Integer(uniqueID));
+          chunkDataTO.setSurlUniqueID(Integer.valueOf(uniqueID));
         }
 
         chunkDataTO.setDirOption(rrs.getBoolean("d.isSourceADirectory"));
@@ -835,7 +835,7 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
 
         int uniqueID = rs.getInt("rb.sourceSURL_uniqueID");
         if (!rs.wasNull()) {
-          chunkDataTO.setSurlUniqueID(new Integer(uniqueID));
+          chunkDataTO.setSurlUniqueID(Integer.valueOf(uniqueID));
         }
 
         chunkDataTO.setDirOption(rs.getBoolean("d.isSourceADirectory"));

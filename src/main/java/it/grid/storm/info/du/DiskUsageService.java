@@ -15,10 +15,6 @@ import it.grid.storm.namespace.VirtualFSInterface;
 
 public class DiskUsageService {
 
-  public static final int DEFAULT_INITIAL_DELAY = 0;
-  public static final int DEFAULT_TASKS_INTERVAL = 604800;
-  public static final boolean DEFAULT_TASKS_PARALLEL = false;
-
   private static final Logger log = LoggerFactory.getLogger(DiskUsageService.class);
 
   private List<VirtualFSInterface> monitoredSAs;
@@ -41,11 +37,6 @@ public class DiskUsageService {
     this.period = period;
   }
 
-  private DiskUsageService(List<VirtualFSInterface> vfss, ScheduledExecutorService executor) {
-
-    this(vfss, executor, DEFAULT_INITIAL_DELAY, DEFAULT_TASKS_INTERVAL);
-  }
-
   public int getDelay() {
 
     return delay;
@@ -66,14 +57,16 @@ public class DiskUsageService {
     this.period = period;
   }
 
-  public static DiskUsageService getSingleThreadScheduledService(List<VirtualFSInterface> vfss) {
+  public static DiskUsageService getSingleThreadScheduledService(List<VirtualFSInterface> vfss,
+      int delay, int period) {
 
-    return new DiskUsageService(vfss, Executors.newSingleThreadScheduledExecutor());
+    return new DiskUsageService(vfss, Executors.newSingleThreadScheduledExecutor(), delay, period);
   }
 
-  public static DiskUsageService getScheduledThreadPoolService(List<VirtualFSInterface> vfss) {
+  public static DiskUsageService getScheduledThreadPoolService(List<VirtualFSInterface> vfss,
+      int delay, int period) {
 
-    return new DiskUsageService(vfss, Executors.newScheduledThreadPool(vfss.size()));
+    return new DiskUsageService(vfss, Executors.newScheduledThreadPool(vfss.size()), delay, period);
   }
 
   public List<VirtualFSInterface> getMonitoredSAs() {

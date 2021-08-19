@@ -142,7 +142,7 @@ public class ReducedPtPChunkData {
   public int hashCode() {
 
     int hash = 17;
-    hash = 37 * hash + new Long(primaryKey).hashCode();
+    hash = 37 * hash + Long.valueOf(primaryKey).hashCode();
     hash = 37 * hash + toSURL.hashCode();
     hash = 37 * hash + status.hashCode();
     hash = 37 * hash + fileStorageType.hashCode();

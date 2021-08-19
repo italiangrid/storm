@@ -17,7 +17,7 @@
 
 package it.grid.storm.info;
 
-import static it.grid.storm.config.Configuration.DISKUSAGE_SERVICE_ENABLED;
+import static it.grid.storm.config.Configuration.DISKUSAGE_SERVICE_ENABLED_KEY;
 
 import java.io.FileNotFoundException;
 import java.util.List;
@@ -91,7 +91,7 @@ public class SpaceInfoManager {
       log.warn(
           "The remaining {} storage spaces WON'T be initialized with DUs. "
               + "Please enable DiskUsage service by setting '{}' as true.",
-          ssni.size(), DISKUSAGE_SERVICE_ENABLED);
+          ssni.size(), DISKUSAGE_SERVICE_ENABLED_KEY);
     }
   }
 

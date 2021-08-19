@@ -21,15 +21,16 @@ import static java.lang.String.format;
 
 import it.grid.storm.config.Configuration;
 
-public class DefaultDatabaseConnector implements DatabaseConnector {
+public class DefaultMySqlDatabaseConnector implements DatabaseConnector {
+
+  private static final String MYSQL_DRIVER = "com.mysql.cj.jdbc.Driver";
 
   private final String name;
-  private final String driver;
   private final String url;
   private final String username;
   private final String password;
 
-  private DefaultDatabaseConnector(String database) {
+  private DefaultMySqlDatabaseConnector(String database) {
 
     this.name = database;
 
@@ -37,24 +38,21 @@ public class DefaultDatabaseConnector implements DatabaseConnector {
 
     this.username = config.getDbUsername();
     this.password = config.getDbPassword();
-    this.driver = config.getDbDriver();
 
-    String subprotocol = config.getDbUrlSubprotocol();
-    String subname = config.getDbUrlSubname();
-    String hostname = config.getDbUrlHostname();
-    String port = config.getDbUrlPort();
-    String properties = config.getDbUrlProperties();
+    String hostname = config.getDbHostname();
+    int port = config.getDbPort();
+    String properties = config.getDbProperties();
 
     if (properties.isEmpty()) {
-      this.url = format("jdbc:%s:%s//%s:%s/%s", subprotocol, subname, hostname, port, database);
+      this.url = format("jdbc:mysql://%s:%d/%s", hostname, port, database);
     } else {
-      this.url = format("jdbc:%s:%s//%s:%s/%s?%s", subprotocol, subname, hostname, port, database, properties);
+      this.url = format("jdbc:mysqk://%s:%d/%s?%s", hostname, port, database, properties);
     }
   }
 
   @Override
   public String getDriverName() {
-    return driver;
+    return MYSQL_DRIVER;
   }
 
   @Override
@@ -73,11 +71,11 @@ public class DefaultDatabaseConnector implements DatabaseConnector {
   }
 
   public static DatabaseConnector getStormDbDatabaseConnector() {
-    return new DefaultDatabaseConnector("storm_db");
+    return new DefaultMySqlDatabaseConnector("storm_db");
   }
 
   public static DatabaseConnector getStormBeIsamDatabaseConnector() {
-    return new DefaultDatabaseConnector("storm_be_ISAM");
+    return new DefaultMySqlDatabaseConnector("storm_be_ISAM");
   }
 
   @Override

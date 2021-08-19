@@ -105,7 +105,7 @@ public class PtGChunkCatalog {
     to.setTurl(TURLConverter.getInstance().toDB(chunkData.getTransferURL().toString()));
     to.setLifeTime(PinLifetimeConverter.getInstance().toDB(chunkData.getPinLifeTime().value()));
     to.setNormalizedStFN(chunkData.getSURL().normalizedStFN());
-    to.setSurlUniqueID(new Integer(chunkData.getSURL().uniqueId()));
+    to.setSurlUniqueID(Integer.valueOf(chunkData.getSURL().uniqueId()));
     to.setClientDN(chunkData.getUser().getDn());
     if (chunkData.getUser() instanceof AbstractGridUser) {
       if (((AbstractGridUser) chunkData.getUser()).hasVoms()) {
@@ -278,7 +278,7 @@ public class PtGChunkCatalog {
   private void completeTO(ReducedPtGChunkDataTO chunkTO, final ReducedPtGChunkData chunk) {
 
     chunkTO.setNormalizedStFN(chunk.fromSURL().normalizedStFN());
-    chunkTO.setSurlUniqueID(new Integer(chunk.fromSURL().uniqueId()));
+    chunkTO.setSurlUniqueID(Integer.valueOf(chunk.fromSURL().uniqueId()));
   }
 
   /**
@@ -366,7 +366,7 @@ public class PtGChunkCatalog {
     to.setRequestToken(chunkData.getRequestToken().toString());
     to.setFromSURL(chunkData.getSURL().toString());
     to.setNormalizedStFN(chunkData.getSURL().normalizedStFN());
-    to.setSurlUniqueID(new Integer(chunkData.getSURL().uniqueId()));
+    to.setSurlUniqueID(Integer.valueOf(chunkData.getSURL().uniqueId()));
 
     to.setAllLevelRecursive(chunkData.getDirOption().isAllLevelRecursive());
     to.setDirOption(chunkData.getDirOption().isDirectory());

@@ -113,7 +113,7 @@ public class PtPChunkCatalog {
     to.setFileStorageType(FileStorageTypeConverter.getInstance().toDB(chunkData.fileStorageType()));
     to.setOverwriteOption(OverwriteModeConverter.getInstance().toDB(chunkData.overwriteOption()));
     to.setNormalizedStFN(chunkData.getSURL().normalizedStFN());
-    to.setSurlUniqueID(new Integer(chunkData.getSURL().uniqueId()));
+    to.setSurlUniqueID(Integer.valueOf(chunkData.getSURL().uniqueId()));
     to.setClientDN(chunkData.getUser().getDn());
     if (chunkData.getUser() instanceof AbstractGridUser) {
       if (((AbstractGridUser) chunkData.getUser()).hasVoms()) {
@@ -336,7 +336,7 @@ public class PtPChunkCatalog {
   private void completeTO(ReducedPtPChunkDataTO chunkTO, final ReducedPtPChunkData chunk) {
 
     chunkTO.setNormalizedStFN(chunk.toSURL().normalizedStFN());
-    chunkTO.setSurlUniqueID(new Integer(chunk.toSURL().uniqueId()));
+    chunkTO.setSurlUniqueID(Integer.valueOf(chunk.toSURL().uniqueId()));
   }
 
   /**

@@ -23,98 +23,83 @@ import it.grid.storm.namespace.config.NamespaceParser;
 import it.grid.storm.namespace.config.xml.XMLNamespaceLoader;
 import it.grid.storm.namespace.config.xml.XMLNamespaceParser;
 
+import static java.io.File.separatorChar;
+
+import java.io.IOException;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.commons.configuration.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.DOMException;
+import org.xml.sax.SAXException;
 
 public class NamespaceDirector {
 
-	private static final Logger log = LoggerFactory
-		.getLogger(NamespaceDirector.class);;
-	private static NamespaceInterface namespaceIstance = null;
+  private static final Logger log = LoggerFactory.getLogger(NamespaceDirector.class);
 
-	private static NamespaceLoader loader;
-	private static NamespaceParser parser;
+  private static NamespaceInterface namespaceIstance;
+  private static NamespaceLoader loader;
+  private static NamespaceParser parser;
 
-	private static boolean initialized = false;
+  private NamespaceDirector() {}
 
-	private NamespaceDirector() {}
+  public static void init() {
 
-	public static void initializeDirector() {
+    log.info("NAMESPACE : Initializing ...");
+    Configuration config = Configuration.getInstance();
+    String configurationDir = config.configurationDir();
+    String namespaceFileName = config.getNamespaceConfigFilename();
+    String namespaceAbsoluteFilePath = getNamespaceFileAbsolutePath(configurationDir, namespaceFileName);
 
-		log.info("NAMESPACE : Initializing ...");
-		Configuration config = Configuration.getInstance();
+    log.info(" +++++++++++++++++++++++ ");
+    log.info("    Production Mode      ");
+    log.info(" +++++++++++++++++++++++ ");
 
-		log.info(" +++++++++++++++++++++++ ");
-		log.info("    Production Mode      ");
-		log.info(" +++++++++++++++++++++++ ");
+    log.debug("Namespace Configuration PATH : {}", configurationDir);
+    log.debug("Namespace Configuration FILENAME : {}", namespaceFileName);
 
-		String configurationPATH = config.namespaceConfigPath();
-		String namespaceConfigFileName = config.getNamespaceConfigFilename();
-		int refreshInSeconds = config.getNamespaceConfigRefreshRateInSeconds();
-		loader = new XMLNamespaceLoader(configurationPATH, namespaceConfigFileName, refreshInSeconds);
+    try {
+      loader = new XMLNamespaceLoader(namespaceAbsoluteFilePath);
+    } catch (DOMException | ConfigurationException | ParserConfigurationException | SAXException
+        | IOException | NamespaceException e) {
+      log.error(e.getMessage(), e);
+      System.exit(1);
+    }
 
-			// Check the validity of namespace.
-			if (loader instanceof XMLNamespaceLoader) {
-				XMLNamespaceLoader xmlLoader = (XMLNamespaceLoader) loader;
-				if (!(xmlLoader.schemaValidity)) {
-					// Error into the validity ckeck of namespace
-					log.error("Namespace configuration is not conformant with namespae grammar.");
-					log.error("Please validate namespace configuration file.");
-					System.exit(0);
-				}
-			}
+    parser = new XMLNamespaceParser(loader);
+    namespaceIstance = new Namespace(parser);
 
-		log.debug("Namespace Configuration PATH : {}" , configurationPATH);
-		log.debug("Namespace Configuration FILENAME : {}" , namespaceConfigFileName);
-		log.debug("Namespace Configuration GLANCE RATE : {}" , refreshInSeconds);
+    log.debug("NAMESPACE INITIALIZATION : ... done!");
+  }
 
-		parser = new XMLNamespaceParser(loader);
-		namespaceIstance = new Namespace(parser);
+  private static String getNamespaceFileAbsolutePath(String configurationDir, String namespaceFileName) {
 
-		log.debug("NAMESPACE INITIALIZATION : ... done!");
-		initialized = true;
+    if (configurationDir.charAt(configurationDir.length() - 1) != separatorChar) {
+      configurationDir += Character.toString(separatorChar);
+    }
+    return configurationDir + namespaceFileName;
+  }
 
-	}
+  public static NamespaceInterface getNamespace() {
 
-	/**
-	 * 
-	 * @return Namespace
-	 */
-	public static NamespaceInterface getNamespace() {
+    return namespaceIstance;
+  }
 
-		if (!(initialized)) {
-			initializeDirector();
-		}
-		return namespaceIstance;
-	}
+  public static NamespaceParser getNamespaceParser() {
 
-	/**
-	 * 
-	 * @return Namespace
-	 */
-	public static NamespaceParser getNamespaceParser() {
+    return parser;
+  }
 
-		if (!(initialized)) {
-			initializeDirector();
-		}
-		return parser;
-	}
+  public static NamespaceLoader getNamespaceLoader() {
 
-	/**
-	 * 
-	 * @return Namespace
-	 */
-	public static NamespaceLoader getNamespaceLoader() {
+    return loader;
+  }
 
-		if (!(initialized)) {
-			initializeDirector();
-		}
-		return loader;
-	}
+  public static Logger getLogger() {
 
-	public static Logger getLogger() {
-
-		return log;
-	}
+    return log;
+  }
 
 }

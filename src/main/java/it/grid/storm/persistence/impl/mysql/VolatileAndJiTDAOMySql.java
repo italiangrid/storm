@@ -355,7 +355,7 @@ public class VolatileAndJiTDAOMySql extends AbstractDAO implements VolatileAndJi
       Collection<String> volat = Lists.newArrayList();
       Collection<Long> volatid = Lists.newArrayList();
       while (rs.next()) {
-        volatid.add(new Long(rs.getLong("ID")));
+        volatid.add(Long.valueOf(rs.getLong("ID")));
         volat.add(rs.getString("file"));
       }
       int nvolat = volatid.size();
@@ -377,7 +377,7 @@ public class VolatileAndJiTDAOMySql extends AbstractDAO implements VolatileAndJi
       Collection<Long> trackid = Lists.newArrayList();
 
       while (rs.next()) {
-        trackid.add(new Long(rs.getLong("ID")));
+        trackid.add(Long.valueOf(rs.getLong("ID")));
         JiTData aux =
             new JiTData(rs.getString("file"), rs.getInt("acl"), rs.getInt("uid"), rs.getInt("gid"));
         track.add(aux);

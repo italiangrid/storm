@@ -36,7 +36,7 @@ public abstract class SQLHelper {
    */
   public String format(boolean value) {
 
-    return formatter.format(new Boolean(value));
+    return formatter.format(Boolean.valueOf(value));
   }
 
   /**
@@ -46,7 +46,7 @@ public abstract class SQLHelper {
    */
   public String format(int value) throws NumberFormatException {
 
-    return formatter.format(new Integer(value));
+    return formatter.format(Integer.valueOf(value));
   }
 
   /**
@@ -56,7 +56,7 @@ public abstract class SQLHelper {
    */
   public String format(long value) throws NumberFormatException {
 
-    return formatter.format(new Long(value));
+    return formatter.format(Long.valueOf(value));
   }
 
   /**

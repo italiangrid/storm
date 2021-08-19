@@ -25,7 +25,7 @@ public class RequestFinalizerService {
     delay = config.getTransitInitialDelay() * 1000L;
     period = config.getTransitTimeInterval() * 1000L;
     executor = Executors.newScheduledThreadPool(3);
-    ptpTask = new PtPFinalizer(config.getInProgressPutRequestExpirationTime());
+    ptpTask = new PtPFinalizer(config.getInProgressPtpExpirationTime());
     bolTask = new BoLFinalizer();
     ptgTask = new PtGFinalizer();
 

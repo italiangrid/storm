@@ -17,31 +17,96 @@
 
 package it.grid.storm.config;
 
-import static it.grid.storm.info.du.DiskUsageService.DEFAULT_INITIAL_DELAY;
-import static it.grid.storm.info.du.DiskUsageService.DEFAULT_TASKS_INTERVAL;
-import static it.grid.storm.info.du.DiskUsageService.DEFAULT_TASKS_PARALLEL;
+import static it.grid.storm.config.ConfigurationDefaults.AUTOMATIC_DIRECTORY_CREATION;
+import static it.grid.storm.config.ConfigurationDefaults.BOL_CORE_POOL_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.BOL_MAX_POOL_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.BOL_QUEUE_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.BOOK_KEEPING_ENABLED;
+import static it.grid.storm.config.ConfigurationDefaults.CLEANING_INITIAL_DELAY;
+import static it.grid.storm.config.ConfigurationDefaults.CLEANING_TIME_INTERVAL;
+import static it.grid.storm.config.ConfigurationDefaults.CORE_POOL_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.DB_PASSWORD;
+import static it.grid.storm.config.ConfigurationDefaults.DB_POOL_MAX_WAIT_MILLIS;
+import static it.grid.storm.config.ConfigurationDefaults.DB_POOL_MIN_IDLE;
+import static it.grid.storm.config.ConfigurationDefaults.DB_POOL_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.DB_POOL_TEST_ON_BORROW;
+import static it.grid.storm.config.ConfigurationDefaults.DB_POOL_TEST_WHILE_IDLE;
+import static it.grid.storm.config.ConfigurationDefaults.DB_PORT;
+import static it.grid.storm.config.ConfigurationDefaults.DB_PROPERTIES;
+import static it.grid.storm.config.ConfigurationDefaults.DB_USERNAME;
+import static it.grid.storm.config.ConfigurationDefaults.DEFAULT_FILE_STORAGE_TYPE;
+import static it.grid.storm.config.ConfigurationDefaults.DEFAULT_OVERWRITE_MODE;
+import static it.grid.storm.config.ConfigurationDefaults.DISKUSAGE_SERVICE_ENABLED;
+import static it.grid.storm.config.ConfigurationDefaults.DISKUSAGE_SERVICE_INITIAL_DELAY;
+import static it.grid.storm.config.ConfigurationDefaults.DISKUSAGE_SERVICE_PARALLEL_TASKS_ENABLED;
+import static it.grid.storm.config.ConfigurationDefaults.DISKUSAGE_SERVICE_TASKS_INTERVAL;
+import static it.grid.storm.config.ConfigurationDefaults.ENABLE_WRITE_PERM_ON_DIRECTORY;
+import static it.grid.storm.config.ConfigurationDefaults.EXPIRED_INPROGRESS_PTP_TIME;
+import static it.grid.storm.config.ConfigurationDefaults.EXPIRED_REQUEST_PURGING;
+import static it.grid.storm.config.ConfigurationDefaults.EXPIRED_REQUEST_TIME;
+import static it.grid.storm.config.ConfigurationDefaults.EXTRA_SLASHES_FOR_FILE_TURL;
+import static it.grid.storm.config.ConfigurationDefaults.EXTRA_SLASHES_FOR_GSIFTP_TURL;
+import static it.grid.storm.config.ConfigurationDefaults.EXTRA_SLASHES_FOR_RFIO_TURL;
+import static it.grid.storm.config.ConfigurationDefaults.EXTRA_SLASHES_FOR_ROOT_TURL;
+import static it.grid.storm.config.ConfigurationDefaults.FILE_DEFAULT_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.FILE_LIFETIME_DEFAULT;
+import static it.grid.storm.config.ConfigurationDefaults.GPFS_QUOTA_REFRESH_PERIOD;
+import static it.grid.storm.config.ConfigurationDefaults.HEARTHBEAT_PERIOD;
+import static it.grid.storm.config.ConfigurationDefaults.HTTP_TURL_PREFIX;
+import static it.grid.storm.config.ConfigurationDefaults.LS_DEFAULT_ALL_LEVEL_RECURSIVE;
+import static it.grid.storm.config.ConfigurationDefaults.LS_DEFAULT_NUM_OF_LEVELS;
+import static it.grid.storm.config.ConfigurationDefaults.LS_MAX_NUMBER_OF_ENTRY;
+import static it.grid.storm.config.ConfigurationDefaults.LS_OFFSET;
+import static it.grid.storm.config.ConfigurationDefaults.MAX_LOOP;
+import static it.grid.storm.config.ConfigurationDefaults.MAX_POOL_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.PERFORMANCE_GLANCE_TIME_INTERVAL;
+import static it.grid.storm.config.ConfigurationDefaults.PERFORMANCE_LOGBOOK_TIME_INTERVAL;
+import static it.grid.storm.config.ConfigurationDefaults.PERFORMANCE_MEASURING;
+import static it.grid.storm.config.ConfigurationDefaults.PICKING_INITIAL_DELAY;
+import static it.grid.storm.config.ConfigurationDefaults.PICKING_MAX_BATCH_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.PICKING_TIME_INTERVAL;
+import static it.grid.storm.config.ConfigurationDefaults.PING_VALUES_PROPERTIES_FILENAME;
+import static it.grid.storm.config.ConfigurationDefaults.PIN_LIFETIME_DEFAULT;
+import static it.grid.storm.config.ConfigurationDefaults.PIN_LIFETIME_MAXIMUM;
+import static it.grid.storm.config.ConfigurationDefaults.PTG_CORE_POOL_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.PTG_MAX_POOL_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.PTG_QUEUE_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.PTG_SKIP_ACL_SETUP;
+import static it.grid.storm.config.ConfigurationDefaults.PTP_CORE_POOL_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.PTP_MAX_POOL_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.PTP_QUEUE_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.PURGE_BATCH_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.QUEUE_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.REQUEST_PURGER_DELAY;
+import static it.grid.storm.config.ConfigurationDefaults.REQUEST_PURGER_PERIOD;
+import static it.grid.storm.config.ConfigurationDefaults.REST_SERVICES_MAX_QUEUE_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.REST_SERVICES_MAX_THREADS;
+import static it.grid.storm.config.ConfigurationDefaults.REST_SERVICES_PORT;
+import static it.grid.storm.config.ConfigurationDefaults.SANITY_CHECK_ENABLED;
+import static it.grid.storm.config.ConfigurationDefaults.SERVER_POOL_STATUS_CHECK_TIMEOUT;
+import static it.grid.storm.config.ConfigurationDefaults.SERVICE_SRM_PUBLIC_PORT;
+import static it.grid.storm.config.ConfigurationDefaults.TRANSIT_INITIAL_DELAY;
+import static it.grid.storm.config.ConfigurationDefaults.TRANSIT_TIME_INTERVAL;
+import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_MAX_QUEUE_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_MAX_THREADS;
+import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_SECURITY_ENABLED;
+import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_SERVER_PORT;
 import static java.lang.System.getProperty;
 
 import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 
 import com.google.common.collect.Lists;
 
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.model.Authority;
-import it.grid.storm.rest.RestServer;
-import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 
 /**
  * Singleton holding all configuration values that any other object in the StoRM backend reads from
@@ -59,7 +124,7 @@ public class Configuration {
 
   public static final String DEFAULT_STORM_CONFIG_FILE =
       "/etc/storm/backend-server/storm.properties";
-  public static final int DEFAULT_STORM_CONFIG_REFRESH_RATE = 0;
+  public static final int DEFAULT_STORM_CONFIG_REFRESH_RATE = 5000;
 
   private final ConfigReader cr;
 
@@ -70,122 +135,122 @@ public class Configuration {
   public static final String REFRESH_RATE = "storm.configuration.refresh";
 
   /* Configuration file properties */
-  private static final String SERVICE_SRM_PUBLIC_HOST_KEY = "storm.service.srm.public-host";
-  private static final String SERVICE_SRM_PUBLIC_PORT_KEY = "storm.service.srm.public-port";
 
-  private static final String MANAGED_SRM_ENDPOINTS_KEY = "storm.service.srm.endpoints";
+  /* SRM public info */
+  private static final String SERVICE_SRM_PUBLIC_HOST_KEY = "srm_public_host";
+  private static final String SERVICE_SRM_PUBLIC_PORT_KEY = "srm_public_port";
+
+  /* SRM end-points */
+  private static final String MANAGED_SRM_ENDPOINTS_KEY = "srm_endpoints";
 
   /* Database */
-  private static final String DB_USERNAME_KEY = "db.username";
-  private static final String DB_PASSWORD_KEY = "db.password";
-  private static final String DB_DRIVER_KEY = "db.driver";
-  private static final String DB_URL_SUBPROTOCOL_KEY = "db.url.subprotocol";
-  private static final String DB_URL_SUBNAME_KEY = "db.url.subname";
-  private static final String DB_URL_HOSTNAME_KEY = "db.url.hostname";
-  private static final String DB_URL_PORT_KEY = "db.url.port";
-  private static final String DB_URL_PROPERTIES_KEY = "db.url.properties";
-  private static final String DB_POOL_SIZE_KEY = "db.pool.size";
-  private static final String DB_POOL_MIN_IDLE_KEY = "db.pool.min_idle";
-  private static final String DB_POOL_MAX_WAIT_MILLIS_KEY = "db.pool.max_wait_millis";
-  private static final String DB_POOL_TEST_ON_BORROW_KEY = "db.pool.test_on_borrow";
-  private static final String DB_POOL_TEST_WHILE_IDLE_KEY = "db.pool.test_while_idle";
+  private static final String DB_USERNAME_KEY = "db_username";
+  private static final String DB_PASSWORD_KEY = "db_password";
+  private static final String DB_HOSTNAME_KEY = "db_hostname";
+  private static final String DB_PORT_KEY = "db_port";
+  private static final String DB_PROPERTIES_KEY = "db_properties";
+  /* Database connection pool */
+  private static final String DB_POOL_SIZE_KEY = "db_pool_size";
+  private static final String DB_POOL_MIN_IDLE_KEY = "db_pool_min_idle";
+  private static final String DB_POOL_MAX_WAIT_MILLIS_KEY = "db_pool_max_wait_millis";
+  private static final String DB_POOL_TEST_ON_BORROW_KEY = "db_pool_test_on_borrow";
+  private static final String DB_POOL_TEST_WHILE_IDLE_KEY = "db_pool_test_while_idle";
+  /* REST service */
+  private static final String REST_SERVICES_PORT_KEY = "rest_services_port";
+  private static final String REST_SERVICES_MAX_THREADS_KEY = "rest_services_max_threads";
+  private static final String REST_SERVICES_MAX_QUEUE_SIZE_KEY = "rest_services_max_queue_size";
+  /* Sanity check enabled */
+  private static final String SANITY_CHECK_ENABLED_KEY = "sanity_check_enabled";
+  /* Disk usage service */
+  public static final String DISKUSAGE_SERVICE_ENABLED_KEY = "du_service_enabled";
+  private static final String DISKUSAGE_SERVICE_INITIAL_DELAY_KEY = "du_service_initial_delay";
+  private static final String DISKUSAGE_SERVICE_TASKS_INTERVAL_KEY = "du_service_tasks_interval";
+  private static final String DISKUSAGE_SERVICE_PARALLEL_TASKS_ENABLED_KEY =
+      "du_service_parallel_tasks_enabled";
+  /* XMLRPC */
+  private static final String XMLRPC_MAX_THREADS_KEY = "xmlrpc_max_threads";
+  private static final String XMLRPC_MAX_QUEUE_SIZE_KEY = "xmlrpc_max_queue_size";
+  private static final String XMLRPC_SERVER_PORT_KEY = "xmlrpc_unsecure_server_port";
+  private static final String XMLRPC_SECURITY_ENABLED_KEY = "xmlrpc_security_enabled";
+  private static final String XMLRPC_SECURITY_TOKEN_KEY = "xmlrpc_security_token";
 
-  private static final String CLEANING_INITIAL_DELAY_KEY = "gc.pinnedfiles.cleaning.delay";
-  private static final String CLEANING_TIME_INTERVAL_KEY = "gc.pinnedfiles.cleaning.interval";
-  private static final String FILE_DEFAULT_SIZE_KEY = "fileSize.default";
-  private static final String FILE_LIFETIME_DEFAULT_KEY = "fileLifetime.default";
-  private static final String PIN_LIFETIME_DEFAULT_KEY = "pinLifetime.default";
-  private static final String PIN_LIFETIME_MAXIMUM_KEY = "pinLifetime.maximum";
-  private static final String TRANSIT_INITIAL_DELAY_KEY = "transit.delay";
-  private static final String TRANSIT_TIME_INTERVAL_KEY = "transit.interval";
-  private static final String PICKING_INITIAL_DELAY_KEY = "asynch.PickingInitialDelay";
-  private static final String PICKING_TIME_INTERVAL_KEY = "asynch.PickingTimeInterval";
-  private static final String PICKING_MAX_BATCH_SIZE_KEY = "asynch.PickingMaxBatchSize";
-  private static final String XMLRPC_MAX_THREAD_KEY = "synchcall.xmlrpc.maxthread";
-  private static final String XMLRPC_MAX_QUEUE_SIZE_KEY = "synchcall.xmlrpc.max_queue_size";
-  private static final String LIST_OF_DEFAULT_SPACE_TOKEN_KEY = "storm.service.defaultSpaceTokens";
-  private static final String COMMAND_SERVER_BINDING_PORT_KEY = "storm.commandserver.port";
+  private static final String AUTOMATIC_DIRECTORY_CREATION_KEY = "directory_automatic_creation";
+  private static final String ENABLE_WRITE_PERM_ON_DIRECTORY_KEY = "directory_writeperm";
 
-  private static final String XMLRPC_SERVER_PORT_KEY = "synchcall.xmlrpc.unsecureServerPort";
-  private static final String LS_MAX_NUMBER_OF_ENTRY_KEY = "synchcall.directoryManager.maxLsEntry";
-  private static final String LS_ALL_LEVEL_RECURSIVE_KEY =
-      "synchcall.directoryManager.default.AllLevelRecursive";
-  private static final String LS_NUM_OF_LEVELS_KEY = "synchcall.directoryManager.default.Levels";
-  private static final String LS_OFFSET_KEY = "synchcall.directoryManager.default.Offset";
+  private static final String PIN_LIFETIME_DEFAULT_KEY = "pinlifetime_default";
+  private static final String PIN_LIFETIME_MAXIMUM_KEY = "pinlifetime_maximum";
+
+  private static final String EXTRA_SLASHES_FOR_FILE_TURL_KEY = "extraslashes_file";
+  private static final String EXTRA_SLASHES_FOR_RFIO_TURL_KEY = "extraslashes_rfio";
+  private static final String EXTRA_SLASHES_FOR_GSIFTP_TURL_KEY = "extraslashes_gsiftp";
+  private static final String EXTRA_SLASHES_FOR_ROOT_TURL_KEY = "extraslashes_root";
+
+  private static final String CLEANING_INITIAL_DELAY_KEY = "gc_pinnedfiles_cleaning_delay";
+  private static final String CLEANING_TIME_INTERVAL_KEY = "gc_pinnedfiles_cleaning_interval";
+
+  private static final String FILE_DEFAULT_SIZE_KEY = "filesize_default";
+  private static final String FILE_LIFETIME_DEFAULT_KEY = "filelifetime_default";
+
+  private static final String TRANSIT_INITIAL_DELAY_KEY = "transit_delay";
+  private static final String TRANSIT_TIME_INTERVAL_KEY = "transit_interval";
+
+  private static final String PICKING_INITIAL_DELAY_KEY = "asynch_picking_initial_delay";
+  private static final String PICKING_TIME_INTERVAL_KEY = "asynch_picking_time_interval";
+  private static final String PICKING_MAX_BATCH_SIZE_KEY = "asynch_picking_max_batch_size";
+
+  private static final String LS_MAX_NUMBER_OF_ENTRY_KEY = "synch_ls_max_entries";
+  private static final String LS_DEFAULT_ALL_LEVEL_RECURSIVE_KEY = "synch_ls_default_all_level_recursive";
+  private static final String LS_DEFAULT_NUM_OF_LEVELS_KEY = "synch_ls_default_num_levels";
+  private static final String LS_OFFSET_KEY = "synch_ls_default_offset";
+
+  private static final String PTG_SKIP_ACL_SETUP_KEY = "ptg_skip_acl_setup";
+  private static final String HTTP_TURL_PREFIX_KEY = "http_turl_prefix";
+
   private static final String PTP_CORE_POOL_SIZE_KEY =
-      "scheduler.chunksched.ptp.workerCorePoolSize";
-  private static final String PTP_MAX_POOL_SIZE_KEY = "scheduler.chunksched.ptp.workerMaxPoolSize";
-  private static final String PTP_QUEUE_SIZE_KEY = "scheduler.chunksched.ptp.queueSize";
+      "scheduler_chunksched_ptp_worker_core_pool_size";
+  private static final String PTP_MAX_POOL_SIZE_KEY =
+      "scheduler_chunksched_ptp_worker_max_pool_size";
+  private static final String PTP_QUEUE_SIZE_KEY = "scheduler_chunksched_ptp_queueSize";
   private static final String PTG_CORE_POOL_SIZE_KEY =
-      "scheduler.chunksched.ptg.workerCorePoolSize";
-  private static final String PTG_MAX_POOL_SIZE_KEY = "scheduler.chunksched.ptg.workerMaxPoolSize";
-  private static final String PTG_QUEUE_SIZE_KEY = "scheduler.chunksched.ptg.queueSize";
+      "scheduler_chunksched_ptg_worker_core_pool_size";
+  private static final String PTG_MAX_POOL_SIZE_KEY =
+      "scheduler_chunksched_ptg_worker_max_pool_size";
+  private static final String PTG_QUEUE_SIZE_KEY = "scheduler_chunksched_ptg_queueSize";
   private static final String BOL_CORE_POOL_SIZE_KEY =
-      "scheduler.chunksched.bol.workerCorePoolSize";
-  private static final String BOL_MAX_POOL_SIZE_KEY = "scheduler.chunksched.bol.workerMaxPoolSize";
-  private static final String BOL_QUEUE_SIZE_KEY = "scheduler.chunksched.bol.queueSize";
-  private static final String CORE_POOL_SIZE_KEY = "scheduler.crusher.workerCorePoolSize";
-  private static final String MAX_POOL_SIZE_KEY = "scheduler.crusher.workerMaxPoolSize";
-  private static final String QUEUE_SIZE_KEY = "scheduler.crusher.queueSize";
-  private static final String NAMESPACE_CONFIG_FILENAME_KEY = "namespace.filename";
-  private static final String NAMESPACE_SCHEMA_FILENAME_KEY = "namespace.schema.filename";
-  private static final String NAMESPACE_CONFIG_REFRESH_RATE_IN_SECONDS_KEY =
-      "namespace.refreshrate";
-  private static final String NAMESPACE_AUTOMATIC_RELOADING_KEY =
-      "namespace.automatic-config-reload";
-  private static final String AUTOMATIC_DIRECTORY_CREATION_KEY = "directory.automatic-creation";
-  private static final String DEFAULT_OVERWRITE_MODE_KEY = "default.overwrite";
-  private static final String DEFAULT_FILE_STORAGE_TYPE_KEY = "default.storagetype";
-  private static final String PURGE_BATCH_SIZE_KEY = "purge.size";
-  private static final String EXPIRED_REQUEST_TIME_KEY = "expired.request.time";
-  private static final String EXPIRED_INPROGRESS_PTP_TIME_KEY = "expired.inprogress.time";
-  private static final String REQUEST_PURGER_DELAY_KEY = "purge.delay";
-  private static final String REQUEST_PURGER_PERIOD_KEY = "purge.interval";
-  private static final String EXPIRED_REQUEST_PURGING_KEY = "purging";
-  private static final String EXTRA_SLASHES_FOR_FILE_TURL_KEY = "extraslashes.file";
-  private static final String EXTRA_SLASHES_FOR_RFIO_TURL_KEY = "extraslashes.rfio";
-  private static final String EXTRA_SLASHES_FOR_GSIFTP_TURL_KEY = "extraslashes.gsiftp";
-  private static final String EXTRA_SLASHES_FOR_ROOT_TURL_KEY = "extraslashes.root";
-  private static final String PING_VALUES_PROPERTIES_FILENAME_KEY = "ping-properties.filename";
-  private static final String HEARTHBEAT_PERIOD_KEY = "health.electrocardiogram.period";
-  private static final String PERFORMANCE_GLANCE_TIME_INTERVAL_KEY =
-      "health.performance.glance.timeInterval";
-  private static final String PERFORMANCE_LOGBOOK_TIME_INTERVAL_KEY =
-      "health.performance.logbook.timeInterval";
-  private static final String PERFORMANCE_MEASURING_KEY = "health.performance.mesauring.enabled";
-  private static final String BOOK_KEEPING_ENABLED_KEY = "health.bookkeeping.enabled";
-  private static final String ENABLE_WRITE_PERM_ON_DIRECTORY_KEY = "directory.writeperm";
-  private static final String MAX_LOOP_KEY = "abort.maxloop";
-  private static final String GRID_USER_MAPPER_CLASSNAME_KEY = "griduser.mapper.classname";
-  private static final String AUTHZ_DB_PATH_KEY = "authzdb.path";
-  private static final String REFRESH_RATE_AUTHZDB_FILES_IN_SECONDS_KEY = "authzdb.refreshrate";
-  private static final String RECALL_TABLE_TESTING_MODE_KEY = "tape.recalltable.service.test-mode";
-  private static final String REST_SERVICES_PORT_KEY = "storm.rest.services.port";
-  private static final String REST_SERVICES_MAX_THREAD = "storm.rest.services.maxthread";
-  private static final String REST_SERVICES_MAX_QUEUE_SIZE = "storm.rest.services.max_queue_size";
-  private static final String RETRY_VALUE_KEY_KEY = "tape.recalltable.service.param.retry-value";
-  private static final String STATUS_KEY_KEY = "tape.recalltable.service.param.status";
-  private static final String TASKOVER_KEY_KEY = "tape.recalltable.service.param.takeover";
-  private static final String STORM_PROPERTIES_VERSION_KEY = "storm.properties.version";
-  private static final String TAPE_SUPPORT_ENABLED_KEY = "tape.support.enabled";
-  private static final String SYNCHRONOUS_QUOTA_CHECK_ENABLED_KEY = "info.quota-check.enabled";
-  private static final String GPFS_QUOTA_REFRESH_PERIOD_KEY = "info.quota.refresh.period";
-  private static final String FAST_BOOTSTRAP_ENABLED_KEY = "bootstrap.fast.enabled";
-  private static final String SERVER_POOL_STATUS_CHECK_TIMEOUT_KEY =
-      "server-pool.status-check.timeout";
-  private static final String SANITY_CHECK_ENABLED_KEY = "sanity-check.enabled";
-  private static final String XMLRPC_SECURITY_ENABLED_KEY = "synchcall.xmlrpc.security.enabled";
-  private static final String XMLRPC_SECURITY_TOKEN_KEY = "synchcall.xmlrpc.security.token";
-  private static final String PTG_SKIP_ACL_SETUP = "ptg.skip-acl-setup";
-  private static final String HTTP_TURL_PREFIX = "http.turl_prefix";
-  private static final String NETWORKADDRESS_CACHE_TTL = "networkaddress.cache.ttl";
-  private static final String NETWORKADDRESS_CACHE_NEGATIVE_TTL =
-      "networkaddress.cache.negative.ttl";
+      "scheduler_chunksched_bol_worker_core_pool_size";
+  private static final String BOL_MAX_POOL_SIZE_KEY =
+      "scheduler_chunksched_bol_worker_max_pool_size";
+  private static final String BOL_QUEUE_SIZE_KEY = "scheduler_chunksched_bol_queueSize";
+  private static final String CORE_POOL_SIZE_KEY = "scheduler_crusher_worker_core_pool_size";
+  private static final String MAX_POOL_SIZE_KEY = "scheduler_crusher_worker_max_pool_size";
+  private static final String QUEUE_SIZE_KEY = "scheduler_crusher_queue_size";
 
-  public static final String DISKUSAGE_SERVICE_ENABLED = "storm.service.du.enabled";
-  private static final String DISKUSAGE_SERVICE_INITIAL_DELAY = "storm.service.du.delaySecs";
-  private static final String DISKUSAGE_SERVICE_TASKS_INTERVAL = "storm.service.du.periodSecs";
-  private static final String DISKUSAGE_SERVICE_TASKS_PARALLEL = "storm.service.du.parallelTasks";
+  private static final String DEFAULT_OVERWRITE_MODE_KEY = "default_overwrite";
+  private static final String DEFAULT_FILE_STORAGE_TYPE_KEY = "default_storagetype";
+
+  private static final String EXPIRED_REQUEST_PURGING_KEY = "purging";
+  private static final String REQUEST_PURGER_PERIOD_KEY = "purge_interval";
+  private static final String PURGE_BATCH_SIZE_KEY = "purge_size";
+  private static final String EXPIRED_REQUEST_TIME_KEY = "expired_request_time";
+  private static final String EXPIRED_INPROGRESS_PTP_TIME_KEY = "expired_inprogress_time";
+  private static final String REQUEST_PURGER_DELAY_KEY = "purge_delay";
+
+  private static final String PING_VALUES_PROPERTIES_FILENAME_KEY = "ping_properties_filename";
+
+  private static final String HEARTHBEAT_PERIOD_KEY = "health_electrocardiogram_period";
+  private static final String PERFORMANCE_GLANCE_TIME_INTERVAL_KEY =
+      "health_performance_glance_time_interval";
+  private static final String PERFORMANCE_LOGBOOK_TIME_INTERVAL_KEY =
+      "health_performance_logbook_time_interval";
+  private static final String PERFORMANCE_MEASURING_KEY = "health_performance_measuring_enabled";
+  private static final String BOOK_KEEPING_ENABLED_KEY = "health_bookkeeping_enabled";
+
+  private static final String MAX_LOOP_KEY = "abort_maxloop";
+
+  private static final String GPFS_QUOTA_REFRESH_PERIOD_KEY = "info_quota_refresh_period";
+
+  private static final String SERVER_POOL_STATUS_CHECK_TIMEOUT_KEY =
+      "server_pool_status_check_timeout";
 
   static {
     try {
@@ -253,64 +318,53 @@ public class Configuration {
   }
 
   /**
-   * @return String
+   * The published host of SRM service. It's used also to initialize a SURL starting from the SFN.
    */
   public String getSrmServiceHostname() {
 
     try {
-      return cr.getConfiguration().getString(SERVICE_SRM_PUBLIC_HOST_KEY, InetAddress.getLocalHost().getHostName());
+      return cr.getConfiguration()
+        .getString(SERVICE_SRM_PUBLIC_HOST_KEY, InetAddress.getLocalHost().getHostName());
     } catch (UnknownHostException e) {
       e.printStackTrace();
-      log.error("Unable to get local FQDN hostname: please set {} into your storm.properties file", SERVICE_SRM_PUBLIC_HOST_KEY);
+      log.error("Unable to get local FQDN hostname: please set {} into your storm.properties file",
+          SERVICE_SRM_PUBLIC_HOST_KEY);
       System.exit(1);
       return null;
     }
   }
 
   /**
-   * Method used by SFN to establish the FE binding port. If no value is found in the configuration
-   * medium, then the default one is used instead. key="storm.service.port"; default value="8444"
+   * The published port of SRM service. It's used also to initialize a SURL starting from the SFN.
    */
   public int getSrmServicePort() {
 
-    return cr.getConfiguration().getInt(SERVICE_SRM_PUBLIC_PORT_KEY, 8444);
-  }
-
-  public String getDbDriver() {
-
-    return cr.getConfiguration().getString(DB_DRIVER_KEY, "com.mysql.cj.jdbc.Driver");
-  }
-
-  /**
-   * Get database URL's sub-protocol
-   */
-  public String getDbUrlSubprotocol() {
-
-    return cr.getConfiguration().getString(DB_URL_SUBPROTOCOL_KEY, "mysql");
-  }
-
-  /**
-   * Get database URL's sub-name
-   */
-  public String getDbUrlSubname() {
-
-    return cr.getConfiguration().getString(DB_URL_SUBNAME_KEY, "");
+    return cr.getConfiguration().getInt(SERVICE_SRM_PUBLIC_PORT_KEY, SERVICE_SRM_PUBLIC_PORT);
   }
 
   /**
    * Get database host
    */
-  public String getDbUrlHostname() {
+  public String getDbHostname() {
 
-    return cr.getConfiguration().getString(DB_URL_HOSTNAME_KEY, "localhost");
+    try {
+      return cr.getConfiguration()
+        .getString(DB_HOSTNAME_KEY, InetAddress.getLocalHost().getHostName());
+    } catch (UnknownHostException e) {
+      e.printStackTrace();
+      log.error("Unable to get local FQDN hostname: please set {} into your storm.properties file",
+          DB_HOSTNAME_KEY);
+      System.exit(1);
+      return null;
+    }
   }
 
   /**
    * Get database URL's sub-name
    */
-  public String getDbUrlPort() {
+  public int getDbPort() {
 
-    return cr.getConfiguration().getString(DB_URL_PORT_KEY, "3306");
+    return cr.getConfiguration().getInt(DB_PORT_KEY, DB_PORT);
   }
 
   /**
@@ -318,7 +372,7 @@ public class Configuration {
    */
   public String getDbUsername() {
 
-    return cr.getConfiguration().getString(DB_USERNAME_KEY, "storm");
+    return cr.getConfiguration().getString(DB_USERNAME_KEY, DB_USERNAME);
   }
 
   /**
@@ -326,17 +380,15 @@ public class Configuration {
    */
   public String getDbPassword() {
 
-    return cr.getConfiguration().getString(DB_PASSWORD_KEY, "storm");
+    return cr.getConfiguration().getString(DB_PASSWORD_KEY, DB_PASSWORD);
   }
 
-  /*
-   * END definition of MANDATORY PROPERTIES
+  /**
+   * Get database connection properties
    */
+  public String getDbProperties() {
 
-  public String getDbUrlProperties() {
-
-    return cr.getConfiguration()
-      .getString(DB_URL_PROPERTIES_KEY, "serverTimezone=UTC&autoReconnect=true");
+    return cr.getConfiguration().getString(DB_PROPERTIES_KEY, DB_PROPERTIES);
   }
 
   /**
@@ -345,7 +397,7 @@ public class Configuration {
    */
   public int getDbPoolSize() {
 
-    return cr.getConfiguration().getInt(DB_POOL_SIZE_KEY, -1);
+    return cr.getConfiguration().getInt(DB_POOL_SIZE_KEY, DB_POOL_SIZE);
   }
 
   /**
@@ -353,7 +405,7 @@ public class Configuration {
    */
   public int getDbPoolMinIdle() {
 
-    return cr.getConfiguration().getInt(DB_POOL_MIN_IDLE_KEY, 10);
+    return cr.getConfiguration().getInt(DB_POOL_MIN_IDLE_KEY, DB_POOL_MIN_IDLE);
   }
 
   /**
@@ -361,7 +413,7 @@ public class Configuration {
    */
   public int getDbPoolMaxWaitMillis() {
 
-    return cr.getConfiguration().getInt(DB_POOL_MAX_WAIT_MILLIS_KEY, 5000);
+    return cr.getConfiguration().getInt(DB_POOL_MAX_WAIT_MILLIS_KEY, DB_POOL_MAX_WAIT_MILLIS);
   }
 
   /**
@@ -370,7 +422,7 @@ public class Configuration {
    */
   public boolean isDbPoolTestOnBorrow() {
 
-    return cr.getConfiguration().getBoolean(DB_POOL_TEST_ON_BORROW_KEY, true);
+    return cr.getConfiguration().getBoolean(DB_POOL_TEST_ON_BORROW_KEY, DB_POOL_TEST_ON_BORROW);
   }
 
   /**
@@ -378,216 +430,227 @@ public class Configuration {
    */
   public boolean isDbPoolTestWhileIdle() {
 
-    return cr.getConfiguration().getBoolean(DB_POOL_TEST_WHILE_IDLE_KEY, true);
+    return cr.getConfiguration().getBoolean(DB_POOL_TEST_WHILE_IDLE_KEY, DB_POOL_TEST_WHILE_IDLE);
   }
 
   /**
-   * Method used by PinnedFilesCatalog to get the initial delay in _seconds_ before starting the
-   * cleaning thread. If no value is found in the configuration medium, then the default value is
-   * returned instead. key="pinnedfiles.cleaning.delay"; default value=10;
+   * Method used to retrieve the PORT where RESTful services listen (like the Recall Table service)
+   */
+  public int getRestServicesPort() {
+
+    return cr.getConfiguration().getInt(REST_SERVICES_PORT_KEY, REST_SERVICES_PORT);
+  }
+
+  public int getRestServicesMaxThreads() {
+
+    int value =
+        cr.getConfiguration().getInt(REST_SERVICES_MAX_THREADS_KEY, REST_SERVICES_MAX_THREADS);
+    return value < 0 ? REST_SERVICES_MAX_THREADS : value;
+  }
+
+  public int getRestServicesMaxQueueSize() {
+
+    int value = cr.getConfiguration()
+      .getInt(REST_SERVICES_MAX_QUEUE_SIZE_KEY, REST_SERVICES_MAX_QUEUE_SIZE);
+    return value < 0 ? REST_SERVICES_MAX_QUEUE_SIZE : value;
+  }
+
+  public boolean getSanityCheckEnabled() {
+
+    return cr.getConfiguration().getBoolean(SANITY_CHECK_ENABLED_KEY, SANITY_CHECK_ENABLED);
+  }
+
+  /**
+   * Get max number of XMLRPC threads into for the XMLRPC server.
+   */
+  public int getXmlrpcMaxThreads() {
+
+    int value = cr.getConfiguration().getInt(XMLRPC_MAX_THREADS_KEY, XMLRPC_MAX_THREADS);
+    return value < 0 ? XMLRPC_MAX_THREADS : value;
+  }
+
+  public int getXmlrpcMaxQueueSize() {
+
+    int value = cr.getConfiguration().getInt(XMLRPC_MAX_QUEUE_SIZE_KEY, XMLRPC_MAX_QUEUE_SIZE);
+    return value < 0 ? XMLRPC_MAX_QUEUE_SIZE : value;
+  }
+
+  /**
+   * Method used by the Synch Component to set the binding port for the _unsecure_ xmlrpc server in
+   * the BE.
+   */
+  public int getXmlRpcServerPort() {
+
+    return cr.getConfiguration().getInt(XMLRPC_SERVER_PORT_KEY, XMLRPC_SERVER_PORT);
+  }
+
+  public Boolean getXmlRpcSecurityEnabled() {
+
+    return cr.getConfiguration().getBoolean(XMLRPC_SECURITY_ENABLED_KEY, XMLRPC_SECURITY_ENABLED);
+  }
+
+  public String getXmlRpcToken() {
+
+    return cr.getConfiguration().getString(XMLRPC_SECURITY_TOKEN_KEY);
+  }
+
+  public boolean getDiskUsageServiceEnabled() {
+
+    return cr.getConfiguration()
+      .getBoolean(DISKUSAGE_SERVICE_ENABLED_KEY, DISKUSAGE_SERVICE_ENABLED);
+  }
+
+  public int getDiskUsageServiceInitialDelay() {
+
+    return cr.getConfiguration()
+      .getInt(DISKUSAGE_SERVICE_INITIAL_DELAY_KEY, DISKUSAGE_SERVICE_INITIAL_DELAY);
+  }
+
+  public int getDiskUsageServiceTasksInterval() {
+
+    // default: 604800 s => 1 week
+    return cr.getConfiguration()
+      .getInt(DISKUSAGE_SERVICE_TASKS_INTERVAL_KEY, DISKUSAGE_SERVICE_TASKS_INTERVAL);
+  }
+
+  public boolean getDiskUsageServiceTasksParallel() {
+
+    return cr.getConfiguration()
+      .getBoolean(DISKUSAGE_SERVICE_PARALLEL_TASKS_ENABLED_KEY,
+          DISKUSAGE_SERVICE_PARALLEL_TASKS_ENABLED);
+  }
+
+  public String getNamespaceConfigFilename() {
+
+    return "namespace.xml";
+  }
+
+  /**
+   * Used by PinnedFilesCatalog to get the initial delay in _seconds_ before starting the cleaning
+   * thread.
    */
   public long getCleaningInitialDelay() {
 
-    return cr.getConfiguration().getLong(CLEANING_INITIAL_DELAY_KEY, 10);
+    return cr.getConfiguration().getLong(CLEANING_INITIAL_DELAY_KEY, CLEANING_INITIAL_DELAY);
   }
 
   /**
-   * Method used by PinnedFilesCatalog to get the cleaning time interval, in _seconds_. If no value
-   * is found in the configuration medium, then the default value is returned instead.
-   * key="pinnedfiles.cleaning.interval"; default value=300; Keep in mind that 300 seconds = 5
-   * minutes.
+   * Used by PinnedFilesCatalog to get the cleaning time interval, in _seconds_.
    */
   public long getCleaningTimeInterval() {
 
-    return cr.getConfiguration().getLong(CLEANING_TIME_INTERVAL_KEY, 300);
+    return cr.getConfiguration().getLong(CLEANING_TIME_INTERVAL_KEY, CLEANING_TIME_INTERVAL);
   }
 
-  /**
-   * Get the default file size
-   * 
-   * @return
-   */
   public long getFileDefaultSize() {
 
-    return cr.getConfiguration().getLong(FILE_DEFAULT_SIZE_KEY, 1000000);
+    return cr.getConfiguration().getLong(FILE_DEFAULT_SIZE_KEY, FILE_DEFAULT_SIZE);
   }
 
   /**
    * Method used by VolatileAndJiTCatalog to get the default fileLifetime to use when a volatile
    * entry is being added/updated, but the user specified a non positive value. Measured in
-   * _seconds_. If no value is found in the configuration medium, then the default value is returned
-   * instead. key="fileLifetime.default"; default value=3600;
+   * _seconds_.
    */
   public long getFileLifetimeDefault() {
 
-    return cr.getConfiguration().getLong(FILE_LIFETIME_DEFAULT_KEY, 3600);
+    return cr.getConfiguration().getLong(FILE_LIFETIME_DEFAULT_KEY, FILE_LIFETIME_DEFAULT);
   }
 
   /**
    * Method used by VolatileAndJiTCatalog to get the minimum pinLifetime allowed, when a jit is
    * being added/updated, but the user specified a lower one. This method is also used by the
    * PinLifetimeConverter to translate a NULL/0/negative value to a default one. Measured in
-   * _seconds_. If no value is found in the configuration medium, then the default value is returned
-   * instead. key="pinLifetime.minimum"; default value=259200;
+   * _seconds_.
    */
   public long getPinLifetimeDefault() {
 
-    return cr.getConfiguration().getLong(PIN_LIFETIME_DEFAULT_KEY, 259200);
+    return cr.getConfiguration().getLong(PIN_LIFETIME_DEFAULT_KEY, PIN_LIFETIME_DEFAULT);
   }
 
   /**
    * Method used by VolatileAndJiTCatalog to get the maximum pinLifetime allowed, when a jit is
-   * being added/updated, but the user specified a higher one. Measured in _seconds_. If no value is
-   * found in the configuration medium, then the default value is returned instead.
-   * key="pinLifetime.maximum"; default value=1814400 (21 days);
+   * being added/updated, but the user specified a higher one. Measured in _seconds_.
    */
   public long getPinLifetimeMaximum() {
 
-    return cr.getConfiguration().getLong(PIN_LIFETIME_MAXIMUM_KEY, 1814400);
+    return cr.getConfiguration().getLong(PIN_LIFETIME_MAXIMUM_KEY, PIN_LIFETIME_MAXIMUM);
   }
 
   /**
    * Method used by PtPChunkCatalog to get the initial delay in _seconds_ before starting the
-   * transiting thread. If no value is found in the configuration medium, then the default value is
-   * returned instead. key="transit.delay"; default value=10;
+   * transiting thread.
    */
   public long getTransitInitialDelay() {
 
-    return cr.getConfiguration().getLong(TRANSIT_INITIAL_DELAY_KEY, 10);
+    return cr.getConfiguration().getLong(TRANSIT_INITIAL_DELAY_KEY, TRANSIT_INITIAL_DELAY);
   }
 
   /**
-   * Method used by PtPChunkCatalog to get the transiting time interval, in _seconds_. If no value
-   * is found in the configuration medium, then the default value is returned instead.
-   * key="transit.interval"; default value=300; Keep in mind that 300 seconds = 5 minutes.
+   * Method used by PtPChunkCatalog to get the transiting time interval, in _seconds_.
    */
   public long getTransitTimeInterval() {
 
-    return cr.getConfiguration().getLong(TRANSIT_TIME_INTERVAL_KEY, 300);
+    return cr.getConfiguration().getLong(TRANSIT_TIME_INTERVAL_KEY, TRANSIT_TIME_INTERVAL);
   }
 
   /**
    * Method used by AdvancedPicker to get the initial delay before starting to pick data from the
-   * DB, in _seconds_. If no value is found in the configuration medium, then the default value is
-   * returned instead. key="asynch.PickingInitialDelay"; default value=1;
+   * DB, in _seconds_.
    */
   public long getPickingInitialDelay() {
 
-    return cr.getConfiguration().getLong(PICKING_INITIAL_DELAY_KEY, 1);
+    return cr.getConfiguration().getLong(PICKING_INITIAL_DELAY_KEY, PICKING_INITIAL_DELAY);
   }
 
   /**
-   * Method used by AdvancedPicker to get the time interval of successive pickings, in _seconds_. If
-   * no value is found in the configuration medium, then the default value is returned instead.
-   * key="asynch.PickingTimeInterval"; default value=15;
+   * Method used by AdvancedPicker to get the time interval of successive pickings, in _seconds_.
    */
   public long getPickingTimeInterval() {
 
-    return cr.getConfiguration().getLong(PICKING_TIME_INTERVAL_KEY, 2);
+    return cr.getConfiguration().getLong(PICKING_TIME_INTERVAL_KEY, PICKING_TIME_INTERVAL);
   }
 
   /**
    * Method used by RequestSummaryDAO to establish the maximum number of requests to retrieve with
-   * each polling. If no value is found in the configuration medium, then the default value is
-   * returned instead. key="asynch.PickingMaxBatchSize"; default value=100;
+   * each polling.
    */
   public int getPickingMaxBatchSize() {
 
-    return cr.getConfiguration().getInt(PICKING_MAX_BATCH_SIZE_KEY, 100);
-  }
-
-  /**
-   * Get max number of XMLRPC threads into for the XMLRPC server.
-   */
-  public int getXMLRPCMaxThread() {
-
-    return cr.getConfiguration()
-      .getInt(XMLRPC_MAX_THREAD_KEY, XMLRPCHttpServer.DEFAULT_MAX_THREAD_NUM);
-  }
-
-  public int getXMLRPCMaxQueueSize() {
-
-    return cr.getConfiguration()
-      .getInt(XMLRPC_MAX_QUEUE_SIZE_KEY, XMLRPCHttpServer.DEFAULT_MAX_QUEUE_SIZE);
-  }
-
-  /**
-   * Get Default Space Tokens
-   * 
-   * @return
-   */
-  public List<String> getListOfDefaultSpaceToken() {
-
-    if (cr.getConfiguration().containsKey(LIST_OF_DEFAULT_SPACE_TOKEN_KEY)) {
-
-      String[] namesArray = cr.getConfiguration().getStringArray(LIST_OF_DEFAULT_SPACE_TOKEN_KEY);
-      if (namesArray != null) {
-        return Arrays.asList(namesArray);
-      }
-    }
-    return Lists.newArrayList();
-  }
-
-  /**
-   * Method used by StoRMCommandServer to establish the listening port to which it should bind. If
-   * no value is found in the configuration medium, then the default value is returned instead.
-   * key="storm.commandserver.port"; default value=4444;
-   */
-  public int getCommandServerBindingPort() {
-
-    return cr.getConfiguration().getInt(COMMAND_SERVER_BINDING_PORT_KEY, 4444);
-  }
-
-  /**
-   * Method used by the Synch Component to set the binding port for the _unsecure_ xmlrpc server in
-   * the BE. If no value is found in the configuration medium, then the default value is returned
-   * instead. key="synchcall.xmlrpc.unsecureServerPort"; default value=8080;
-   */
-  public int getXmlRpcServerPort() {
-
-    return cr.getConfiguration().getInt(XMLRPC_SERVER_PORT_KEY, 8080);
+    return cr.getConfiguration().getInt(PICKING_MAX_BATCH_SIZE_KEY, PICKING_MAX_BATCH_SIZE);
   }
 
   /**
    * Method used by the Synch Component to set the maximum number of entries to return for the srmLs
-   * functionality. If no value is found in the configuration medium, then the default value is
-   * returned instead. key="synchcall.directoryManager.maxLsEntry"; default value=500;
-   * 
-   * @return int
+   * functionality.
    */
-  public int getLSMaxNumberOfEntry() {
+  public int getLsMaxNumberOfEntry() {
 
-    return cr.getConfiguration().getInt(LS_MAX_NUMBER_OF_ENTRY_KEY, 500);
+    return cr.getConfiguration().getInt(LS_MAX_NUMBER_OF_ENTRY_KEY, LS_MAX_NUMBER_OF_ENTRY);
   }
 
   /**
    * Default value for the parameter "allLevelRecursive" of the LS request.
-   * 
-   * @return boolean
    */
-  public boolean getLSallLevelRecursive() {
+  public boolean getLsAllLevelRecursive() {
 
-    return cr.getConfiguration().getBoolean(LS_ALL_LEVEL_RECURSIVE_KEY, false);
+    return cr.getConfiguration().getBoolean(LS_DEFAULT_ALL_LEVEL_RECURSIVE_KEY, LS_DEFAULT_ALL_LEVEL_RECURSIVE);
   }
 
   /**
    * Default value for the parameter "numOfLevels" of the LS request.
-   * 
-   * @return int
    */
-  public int getLSnumOfLevels() {
+  public int getLsNumOfLevels() {
 
-    return cr.getConfiguration().getInt(LS_NUM_OF_LEVELS_KEY, 1);
+    return cr.getConfiguration().getInt(LS_DEFAULT_NUM_OF_LEVELS_KEY, LS_DEFAULT_NUM_OF_LEVELS);
   }
 
   /**
    * Default value for the parameter "offset" of the LS request.
-   * 
-   * @return int
    */
-  public int getLSoffset() {
+  public int getLsOffset() {
 
-    return cr.getConfiguration().getInt(LS_OFFSET_KEY, 0);
+    return cr.getConfiguration().getInt(LS_OFFSET_KEY, LS_OFFSET);
   }
 
   /**
@@ -599,13 +662,11 @@ public class Configuration {
    * threads are idle. If there are more than corePoolSize but less than maximumPoolSize threads
    * running, a new thread will be created only if the queue is full. By setting corePoolSize and
    * maximumPoolSize the same, you create a fixed-size thread pool. corePoolSize - the number of
-   * threads to keep in the pool, even if they are idle. If no value is found in the configuration
-   * medium, then the default value is returned instead.
-   * key="scheduler.chunksched.ptp.workerCorePoolSize"; default value=50;
+   * threads to keep in the pool, even if they are idle.
    */
   public int getPtPCorePoolSize() {
 
-    return cr.getConfiguration().getInt(PTP_CORE_POOL_SIZE_KEY, 50);
+    return cr.getConfiguration().getInt(PTP_CORE_POOL_SIZE_KEY, PTP_CORE_POOL_SIZE);
   }
 
   /**
@@ -617,13 +678,11 @@ public class Configuration {
    * threads are idle. If there are more than corePoolSize but less than maximumPoolSize threads
    * running, a new thread will be created only if the queue is full. By setting corePoolSize and
    * maximumPoolSize the same, you create a fixed-size thread pool. maxPoolSize - the maximum number
-   * of threads to allow in the pool. If no value is found in the configuration medium, then the
-   * default value is returned instead. key="scheduler.chunksched.ptp.workerMaxPoolSize"; default
-   * value=100;
+   * of threads to allow in the pool.
    */
   public int getPtPMaxPoolSize() {
 
-    return cr.getConfiguration().getInt(PTP_MAX_POOL_SIZE_KEY, 200);
+    return cr.getConfiguration().getInt(PTP_MAX_POOL_SIZE_KEY, PTP_MAX_POOL_SIZE);
   }
 
   /**
@@ -637,11 +696,10 @@ public class Configuration {
    * would exceed maxPoolSize, in which case, the task will be rejected. QueueSize - The initial
    * capacity for this priority queue used for holding tasks before they are executed. The queue
    * will hold only the Runnable tasks submitted by the execute method.
-   * key="scheduler.chunksched.ptp.queueSize"; default value=100;
    */
   public int getPtPQueueSize() {
 
-    return cr.getConfiguration().getInt(PTP_QUEUE_SIZE_KEY, 1000);
+    return cr.getConfiguration().getInt(PTP_QUEUE_SIZE_KEY, PTP_QUEUE_SIZE);
   }
 
   /**
@@ -655,11 +713,10 @@ public class Configuration {
    * running, a new thread will be created only if the queue is full. By setting corePoolSize and
    * maximumPoolSize the same, you create a fixed-size thread pool. corePoolSize - the number of
    * threads to keep in the pool, even if they are idle.
-   * key="scheduler.chunksched.ptg.workerCorePoolSize"; default value=50;
    */
   public int getPtGCorePoolSize() {
 
-    return cr.getConfiguration().getInt(PTG_CORE_POOL_SIZE_KEY, 50);
+    return cr.getConfiguration().getInt(PTG_CORE_POOL_SIZE_KEY, PTG_CORE_POOL_SIZE);
   }
 
   /**
@@ -672,12 +729,11 @@ public class Configuration {
    * threads are idle. If there are more than corePoolSize but less than maximumPoolSize threads
    * running, a new thread will be created only if the queue is full. By setting corePoolSize and
    * maximumPoolSize the same, you create a fixed-size thread pool. maxPoolSize - the maximum number
-   * of threads to allow in the pool. key="scheduler.chunksched.ptg.workerMaxPoolSize"; default
-   * value=200;
+   * of threads to allow in the pool.
    */
   public int getPtGMaxPoolSize() {
 
-    return cr.getConfiguration().getInt(PTG_MAX_POOL_SIZE_KEY, 200);
+    return cr.getConfiguration().getInt(PTG_MAX_POOL_SIZE_KEY, PTG_MAX_POOL_SIZE);
   }
 
   /**
@@ -691,11 +747,10 @@ public class Configuration {
    * would exceed maxPoolSize, in which case, the task will be rejected. QueueSize - The initial
    * capacity for this priority queue used for holding tasks before they are executed. The queue
    * will hold only the Runnable tasks submitted by the execute method.
-   * key="scheduler.chunksched.ptg.queueSize"; default value=2000;
    */
   public int getPtGQueueSize() {
 
-    return cr.getConfiguration().getInt(PTG_QUEUE_SIZE_KEY, 2000);
+    return cr.getConfiguration().getInt(PTG_QUEUE_SIZE_KEY, PTG_QUEUE_SIZE);
   }
 
   /**
@@ -708,11 +763,11 @@ public class Configuration {
    * more than corePoolSize but less than maximumPoolSize threads running, a new thread will be
    * created only if the queue is full. By setting corePoolSize and maximumPoolSize the same, you
    * create a fixed-size thread pool. corePoolSize - the number of threads to keep in the pool, even
-   * if they are idle. key="scheduler.chunksched.bol.workerCorePoolSize"; default value=50;
+   * if they are idle.
    */
   public int getBoLCorePoolSize() {
 
-    return cr.getConfiguration().getInt(BOL_CORE_POOL_SIZE_KEY, 50);
+    return cr.getConfiguration().getInt(BOL_CORE_POOL_SIZE_KEY, BOL_CORE_POOL_SIZE);
   }
 
   /**
@@ -725,11 +780,11 @@ public class Configuration {
    * more than corePoolSize but less than maximumPoolSize threads running, a new thread will be
    * created only if the queue is full. By setting corePoolSize and maximumPoolSize the same, you
    * create a fixed-size thread pool. maxPoolSize - the maximum number of threads to allow in the
-   * pool. key="scheduler.chunksched.bol.workerMaxPoolSize"; default value=200;
+   * pool.
    */
   public int getBoLMaxPoolSize() {
 
-    return cr.getConfiguration().getInt(BOL_MAX_POOL_SIZE_KEY, 200);
+    return cr.getConfiguration().getInt(BOL_MAX_POOL_SIZE_KEY, BOL_MAX_POOL_SIZE);
   }
 
   /**
@@ -742,12 +797,11 @@ public class Configuration {
    * thread. - If a request cannot be queued, a new thread is created unless this would exceed
    * maxPoolSize, in which case, the task will be rejected. QueueSize - The initial capacity for
    * this priority queue used for holding tasks before they are executed. The queue will hold only
-   * the Runnable tasks submitted by the execute method. key="scheduler.chunksched.bol.queueSize";
-   * default value=2000;
+   * the Runnable tasks submitted by the execute method.
    */
   public int getBoLQueueSize() {
 
-    return cr.getConfiguration().getInt(BOL_QUEUE_SIZE_KEY, 2000);
+    return cr.getConfiguration().getInt(BOL_QUEUE_SIZE_KEY, BOL_QUEUE_SIZE);
   }
 
   /**
@@ -760,16 +814,16 @@ public class Configuration {
    * corePoolSize but less than maximumPoolSize threads running, a new thread will be created only
    * if the queue is full. By setting corePoolSize and maximumPoolSize the same, you create a
    * fixed-size thread pool. corePoolSize - the number of threads to keep in the pool, even if they
-   * are idle. key="scheduler.crusher.workerCorePoolSize"; default value=10;
+   * are idle.
    */
   public int getCorePoolSize() {
 
-    return cr.getConfiguration().getInt(CORE_POOL_SIZE_KEY, 10);
+    return cr.getConfiguration().getInt(CORE_POOL_SIZE_KEY, CORE_POOL_SIZE);
   }
 
   /**
    * Method used by the Scheduler Component to get the QuotaJobResultsHandler Max Pool Size for the
-   * Crisher. If no value is found in the configuration medium, then the default value is returned
+   * Crusher. If no value is found in the configuration medium, then the default value is returned
    * instead. Scheduler component uses a thread pool. Scheduler pool will automatically adjust the
    * pool size according to the bounds set by corePoolSize and maximumPoolSize. When a new task is
    * submitted in method execute, and fewer than corePoolSize threads are running, a new thread is
@@ -777,11 +831,10 @@ public class Configuration {
    * corePoolSize but less than maximumPoolSize threads running, a new thread will be created only
    * if the queue is full. By setting corePoolSize and maximumPoolSize the same, you create a
    * fixed-size thread pool. maxPoolSize - the maximum number of threads to allow in the pool.
-   * key="scheduler.crusher.workerMaxPoolSize"; default value=50;
    */
   public int getMaxPoolSize() {
 
-    return cr.getConfiguration().getInt(MAX_POOL_SIZE_KEY, 50);
+    return cr.getConfiguration().getInt(MAX_POOL_SIZE_KEY, MAX_POOL_SIZE);
   }
 
   /**
@@ -794,243 +847,21 @@ public class Configuration {
    * request cannot be queued, a new thread is created unless this would exceed maxPoolSize, in
    * which case, the task will be rejected. QueueSize - The initial capacity for this priority queue
    * used for holding tasks before they are executed. The queue will hold only the Runnable tasks
-   * submitted by the execute method. key="scheduler.crusher.queueSize"; default value=2000;
+   * submitted by the execute method.
    */
   public int getQueueSize() {
 
-    return cr.getConfiguration().getInt(QUEUE_SIZE_KEY, 2000);
-  }
-
-  /**
-   * getNamespaceConfigFilename
-   * 
-   * @return String
-   */
-  public String getNamespaceConfigFilename() {
-
-    return cr.getConfiguration().getString(NAMESPACE_CONFIG_FILENAME_KEY, "namespace.xml");
-  }
-
-  /**
-   * Retrieve the namespace schema file name from the first line (attribute) of namespace.xml.
-   * 
-   * @return String
-   */
-  public String getNamespaceSchemaFilename() {
-
-    return cr.getConfiguration().getString(NAMESPACE_SCHEMA_FILENAME_KEY, "Schema UNKNOWN!");
-  }
-
-  public int getNamespaceConfigRefreshRateInSeconds() {
-
-    return cr.getConfiguration().getInt(NAMESPACE_CONFIG_REFRESH_RATE_IN_SECONDS_KEY, 3);
-  }
-
-  /**
-   * getNamespaceAutomaticReloading
-   * 
-   * @return boolean Method used by Namespace Configuration Reloading Strategy (Peeper). If "peeper"
-   *         found namespace.xml config file changed it checks if it can perform an automatic
-   *         reload. If no value is found in the configuration medium, then the default one is used
-   *         instead. key="namespace.automatic-config-reload"; default value=false
-   */
-  public boolean getNamespaceAutomaticReloading() {
-
-    return cr.getConfiguration().getBoolean(NAMESPACE_AUTOMATIC_RELOADING_KEY, false);
+    return cr.getConfiguration().getInt(QUEUE_SIZE_KEY, QUEUE_SIZE);
   }
 
   /**
    * Method used by PtPChunk to find out if missing local directories should be created
-   * automatically or not. SRM 2.2 specification forbids automatic creation. If no value is found in
-   * the configuration medium, then the default one is used instead.
-   * key="automatic.directory.creation"; default value=false
+   * automatically or not. SRM 2.2 specification forbids automatic creation.
    */
   public boolean getAutomaticDirectoryCreation() {
 
-    return cr.getConfiguration().getBoolean(AUTOMATIC_DIRECTORY_CREATION_KEY, false);
-  }
-
-  /**
-   * Method used by TOverwriteModeConverter to establish the default OverwriteMode to use. If no
-   * value is found in the configuration medium, then the default one is used instead.
-   * key="default.overwrite"; default value="N"
-   */
-  public String getDefaultOverwriteMode() {
-
-    return cr.getConfiguration().getString(DEFAULT_OVERWRITE_MODE_KEY, "N");
-  }
-
-  /**
-   * Method used by FileStorageTypeConverter to establish the default TFileStorageType to use. If no
-   * value is found in the configuration medium, then the default one is used instead.
-   * key="default.storagetype"; default value="V"
-   */
-  public String getDefaultFileStorageType() {
-
-    return cr.getConfiguration().getString(DEFAULT_FILE_STORAGE_TYPE_KEY, "V");
-  }
-
-  /**
-   * Method used by RequestSummaryDAO to establish the batch size for removing expired requests. If
-   * no value is found in the configuration medium, then the default one is used instead.
-   * key="purge.size"; default value=800
-   */
-  public int getPurgeBatchSize() {
-
-    return cr.getConfiguration().getInt(PURGE_BATCH_SIZE_KEY, 800);
-  }
-
-  /**
-   * Method used by RequestSummaryDAO to establish the time that must be elapsed for considering a
-   * request expired. The time measure specified in the configuration medium is in _days_. The value
-   * returned by this method, is expressed in _seconds_ If no value is found in the configuration
-   * medium, then the default one is used instead. key="expired.request.time"; default value=7 (days
-   * - which correspond to 7 * 24 * 60 * 60 seconds)
-   */
-  public long getExpiredRequestTime() {
-
-    return cr.getConfiguration().getInt(EXPIRED_REQUEST_TIME_KEY, 604800);
-  }
-
-  /**
-   * Method used by RequestSummaryCatalog to establish the initial delay before starting the purging
-   * thread, in _seconds_. If no value is found in the configuration medium, then the default one is
-   * used instead. key="purge.delay"; default value=10
-   */
-  public int getRequestPurgerDelay() {
-
-    return cr.getConfiguration().getInt(REQUEST_PURGER_DELAY_KEY, 10);
-  }
-
-  /**
-   * Method used by RequestSummaryCatalog to establish the time interval in _seconds_ between
-   * successive purging checks. If no value is found in the configuration medium, then the default
-   * one is used instead. key="purge.interval"; default value=600 (1o minutes)
-   */
-  public int getRequestPurgerPeriod() {
-
-    return cr.getConfiguration().getInt(REQUEST_PURGER_PERIOD_KEY, 600);
-  }
-
-  /**
-   * Method used by RequestSummaryCatalog to establish if the purging of expired requests should be
-   * enabled or not. If no value is found in the configuration medium, then the default one is used
-   * instead. key="purging"; default value=true
-   */
-  public boolean getExpiredRequestPurging() {
-
-    return cr.getConfiguration().getBoolean(EXPIRED_REQUEST_PURGING_KEY, true);
-  }
-
-  /**
-   * Method used by TURLBuilder to adding (in case) extra slashes after the "authority" part of a
-   * TURL If no value is found in the configuration medium, then the default one is used instead.
-   * key="extraslashes.file"; default value="" (that is 'file:///) value = "/" ==> file:////
-   */
-  public String getExtraSlashesForFileTURL() {
-
-    return cr.getConfiguration().getString(EXTRA_SLASHES_FOR_FILE_TURL_KEY, "");
-  }
-
-  /**
-   * Method used by TURLBuilder to adding (in case) extra slashes after the "authority" part of a
-   * TURL If no value is found in the configuration medium, then the default one is used instead.
-   * key="extraslashes.rfio"; default value="" (that is 'rfio://<hostname>:port<PhysicalFN>')) value
-   * = "/" ==> 'rfio://<hostname>:port/<PhysicalFN>'
-   */
-  public String getExtraSlashesForRFIOTURL() {
-
-    return cr.getConfiguration().getString(EXTRA_SLASHES_FOR_RFIO_TURL_KEY, "");
-  }
-
-  /**
-   * Method used by TURLBuilder to adding (in case) extra slashes after the "authority" part of a
-   * TURL If no value is found in the configuration medium, then the default one is used instead.
-   * key="extraslashes.gsiftp"; default value="" (that is 'gsiftp://<hostname>:port<PhysicalFN>'))
-   * value = "/" ==> 'gsiftp://<hostname>:port/<PhysicalFN>'
-   */
-  public String getExtraSlashesForGsiFTPTURL() {
-
-    return cr.getConfiguration().getString(EXTRA_SLASHES_FOR_GSIFTP_TURL_KEY, "");
-  }
-
-  /**
-   * Method used by TURLBuilder to adding (in case) extra slashes after the "authority" part of a
-   * TURL If no value is found in the configuration medium, then the default one is used instead.
-   * key="extraslashes.root"; default value="/" (that is 'root://<hostname>:port<PhysicalFN>'))
-   * value = "" ==> 'root://<hostname>:port<PhysicalFN>'
-   */
-  public String getExtraSlashesForROOTTURL() {
-
-    return cr.getConfiguration().getString(EXTRA_SLASHES_FOR_ROOT_TURL_KEY, "/");
-  }
-
-  /**
-   * Method used by Ping Executor to retrieve the Properties File Name where the properties
-   * <key,value> are stored. If no value is found in the configuration medium, then the default one
-   * is used instead. key="ping-properties.filename"; default value="" (that is
-   * 'gsiftp://<hostname>:port<PhysicalFN>')) value = "/" ==>
-   * 'gsiftp://<hostname>:port/<PhysicalFN>'
-   */
-  public String getPingValuesPropertiesFilename() {
-
-    final String KEY = "ping-values.properties";
-    return cr.getConfiguration().getString(PING_VALUES_PROPERTIES_FILENAME_KEY, KEY);
-  }
-
-  /**
-   * If no value is found in the configuration medium, then the default one is used instead.
-   * key="health.electrocardiogram.period"; default value=60 (1 min)
-   */
-  public int getHearthbeatPeriod() {
-
-    return cr.getConfiguration().getInt(HEARTHBEAT_PERIOD_KEY, 60);
-  }
-
-  /**
-   * getPerformanceGlancePeriod
-   * 
-   * @return int If no value is found in the configuration medium, then the default one is used
-   *         instead. key="health.performance.glance.timeInterval"; default value=15 (15 sec)
-   */
-  public int getPerformanceGlanceTimeInterval() {
-
-    return cr.getConfiguration().getInt(PERFORMANCE_GLANCE_TIME_INTERVAL_KEY, 15);
-  }
-
-  /**
-   * getPerformanceGlancePeriod
-   * 
-   * @return int If no value is found in the configuration medium, then the default one is used
-   *         instead. key="health.performance.logbook.timeInterval"; default value=15 (15 sec)
-   */
-  public int getPerformanceLogbookTimeInterval() {
-
-    return cr.getConfiguration().getInt(PERFORMANCE_LOGBOOK_TIME_INTERVAL_KEY, 15);
-  }
-
-  /**
-   * getPerformanceMeasuring
-   * 
-   * @return boolean If no value is found in the configuration medium, then the default one is used
-   *         instead. key="health.performance.mesauring.enabled"; default value=false
-   */
-  public boolean getPerformanceMeasuring() {
-
-    return cr.getConfiguration().getBoolean(PERFORMANCE_MEASURING_KEY, false);
-  }
-
-  /**
-   * getBookKeppeingEnabled
-   * 
-   * @return boolean Method used by Namespace Configuration Reloading Strategy (Peeper). If "peeper"
-   *         found namespace.xml config file changed it checks if it can perform an automatic
-   *         reload. If no value is found in the configuration medium, then the default one is used
-   *         instead. key="health.bookkeeping.enabled"; default value=false
-   */
-  public boolean getBookKeepingEnabled() {
-
-    return cr.getConfiguration().getBoolean(BOOK_KEEPING_ENABLED_KEY, false);
+    return cr.getConfiguration()
+      .getBoolean(AUTOMATIC_DIRECTORY_CREATION_KEY, AUTOMATIC_DIRECTORY_CREATION);
   }
 
   /**
@@ -1040,270 +871,223 @@ public class Configuration {
    */
   public boolean getEnableWritePermOnDirectory() {
 
-    return cr.getConfiguration().getBoolean(ENABLE_WRITE_PERM_ON_DIRECTORY_KEY, false);
+    return cr.getConfiguration()
+      .getBoolean(ENABLE_WRITE_PERM_ON_DIRECTORY_KEY, ENABLE_WRITE_PERM_ON_DIRECTORY);
+  }
+
+  /**
+   * Method used by TOverwriteModeConverter to establish the default OverwriteMode to use.
+   */
+  public String getDefaultOverwriteMode() {
+
+    return cr.getConfiguration().getString(DEFAULT_OVERWRITE_MODE_KEY, DEFAULT_OVERWRITE_MODE);
+  }
+
+  /**
+   * Method used by FileStorageTypeConverter to establish the default TFileStorageType to use.
+   */
+  public String getDefaultFileStorageType() {
+
+    return cr.getConfiguration()
+      .getString(DEFAULT_FILE_STORAGE_TYPE_KEY, DEFAULT_FILE_STORAGE_TYPE);
+  }
+
+  /**
+   * Method used by RequestSummaryDAO to establish the batch size for removing expired requests.
+   */
+  public int getPurgeBatchSize() {
+
+    return cr.getConfiguration().getInt(PURGE_BATCH_SIZE_KEY, PURGE_BATCH_SIZE);
+  }
+
+  /**
+   * Method used by RequestSummaryDAO to establish the time that must be elapsed for considering a
+   * request expired. The time measure specified in the configuration medium is in _days_. The value
+   * returned by this method, is expressed in _seconds_.
+   */
+  public long getExpiredRequestTime() {
+
+    return cr.getConfiguration().getLong(EXPIRED_REQUEST_TIME_KEY, EXPIRED_REQUEST_TIME);
+  }
+
+  /**
+   * Method used by RequestSummaryCatalog to establish the initial delay before starting the purging
+   * thread, in _seconds_.
+   */
+  public int getRequestPurgerDelay() {
+
+    return cr.getConfiguration().getInt(REQUEST_PURGER_DELAY_KEY, REQUEST_PURGER_DELAY);
+  }
+
+  /**
+   * Method used by RequestSummaryCatalog to establish the time interval in _seconds_ between
+   * successive purging checks.
+   */
+  public int getRequestPurgerPeriod() {
+
+    return cr.getConfiguration().getInt(REQUEST_PURGER_PERIOD_KEY, REQUEST_PURGER_PERIOD);
+  }
+
+  /**
+   * Method used by RequestSummaryCatalog to establish if the purging of expired requests should be
+   * enabled or not. If no value is found in the configuration medium, then the default one is used
+   * instead. key="purging"; default value=true
+   */
+  public boolean getExpiredRequestPurging() {
+
+    return cr.getConfiguration().getBoolean(EXPIRED_REQUEST_PURGING_KEY, EXPIRED_REQUEST_PURGING);
+  }
+
+  public long getInProgressPtpExpirationTime() {
+
+    return cr.getConfiguration()
+      .getLong(EXPIRED_INPROGRESS_PTP_TIME_KEY, EXPIRED_INPROGRESS_PTP_TIME);
+  }
+
+  /**
+   * Method used by TURLBuilder to adding (in case) extra slashes after the "authority" part of a
+   * TURL.
+   */
+  public String getExtraSlashesForFileTURL() {
+
+    return cr.getConfiguration()
+      .getString(EXTRA_SLASHES_FOR_FILE_TURL_KEY, EXTRA_SLASHES_FOR_FILE_TURL);
+  }
+
+  /**
+   * Method used by TURLBuilder to adding (in case) extra slashes after the "authority" part of a
+   * TURL.
+   */
+  public String getExtraSlashesForRFIOTURL() {
+
+    return cr.getConfiguration()
+      .getString(EXTRA_SLASHES_FOR_RFIO_TURL_KEY, EXTRA_SLASHES_FOR_RFIO_TURL);
+  }
+
+  /**
+   * Method used by TURLBuilder to adding (in case) extra slashes after the "authority" part of a
+   * TURL.
+   */
+  public String getExtraSlashesForGsiFTPTURL() {
+
+    return cr.getConfiguration()
+      .getString(EXTRA_SLASHES_FOR_GSIFTP_TURL_KEY, EXTRA_SLASHES_FOR_GSIFTP_TURL);
+  }
+
+  /**
+   * Method used by TURLBuilder to adding (in case) extra slashes after the "authority" part of a
+   * TURL.
+   */
+  public String getExtraSlashesForROOTTURL() {
+
+    return cr.getConfiguration()
+      .getString(EXTRA_SLASHES_FOR_ROOT_TURL_KEY, EXTRA_SLASHES_FOR_ROOT_TURL);
+  }
+
+  /**
+   * Method used by Ping Executor to retrieve the Properties File Name where the properties
+   * <key,value> are stored.
+   */
+  public String getPingValuesPropertiesFilename() {
+
+    return cr.getConfiguration()
+      .getString(PING_VALUES_PROPERTIES_FILENAME_KEY, PING_VALUES_PROPERTIES_FILENAME);
+  }
+
+
+  public int getHearthbeatPeriod() {
+
+    return cr.getConfiguration().getInt(HEARTHBEAT_PERIOD_KEY, HEARTHBEAT_PERIOD);
+  }
+
+  public int getPerformanceGlanceTimeInterval() {
+
+    return cr.getConfiguration()
+      .getInt(PERFORMANCE_GLANCE_TIME_INTERVAL_KEY, PERFORMANCE_GLANCE_TIME_INTERVAL);
+  }
+
+  public int getPerformanceLogbookTimeInterval() {
+
+    return cr.getConfiguration()
+      .getInt(PERFORMANCE_LOGBOOK_TIME_INTERVAL_KEY, PERFORMANCE_LOGBOOK_TIME_INTERVAL);
+  }
+
+  public boolean getPerformanceMeasuring() {
+
+    return cr.getConfiguration().getBoolean(PERFORMANCE_MEASURING_KEY, PERFORMANCE_MEASURING);
+  }
+
+  public boolean getBookKeepingEnabled() {
+
+    return cr.getConfiguration().getBoolean(BOOK_KEEPING_ENABLED_KEY, BOOK_KEEPING_ENABLED);
   }
 
   public int getMaxLoop() {
 
-    return cr.getConfiguration().getInt(MAX_LOOP_KEY, 10);
+    return cr.getConfiguration().getInt(MAX_LOOP_KEY, MAX_LOOP);
   }
 
-  /**
-   * Method used to retrieve the ClassName for the User Mapper Class If no value is found in the
-   * configuration medium, then the default one is used instead, that is
-   * "it.grid.storm.griduser.LcmapsJNAMapper" key="griduser.mapper.classname";
-   */
   public String getGridUserMapperClassname() {
 
-    final String CLASSNAME = "it.grid.storm.griduser.StormLcmapsJNAMapper";
-    return cr.getConfiguration().getString(GRID_USER_MAPPER_CLASSNAME_KEY, CLASSNAME);
+    return "it.grid.storm.griduser.StormLcmapsJNAMapper";
   }
 
-  /**
-   * Method used to retrieve the default path where the AuthzDB file are stored If no value is found
-   * in the configuration medium, then the default one is used instead, that is the "configuration
-   * directory" key="authzdb.path";
-   */
-  public String getAuthzDBPath() {
-
-    return cr.getConfiguration().getString(AUTHZ_DB_PATH_KEY, cr.configurationDirectory());
-  }
-
-  /**
-   * Method used to retrieve the default refresh rate of the AuthzDB files If no value is found in
-   * the configuration medium, then the default one is used instead, that is the "5 sec"
-   * key="authzdb.refreshrate";
-   */
-  public int getRefreshRateAuthzDBfilesInSeconds() {
-
-    return cr.getConfiguration().getInt(REFRESH_RATE_AUTHZDB_FILES_IN_SECONDS_KEY, 5);
-  }
-
-  public boolean getRecallTableTestingMode() {
-
-    return cr.getConfiguration().getBoolean(RECALL_TABLE_TESTING_MODE_KEY, false);
-  }
-
-  /**
-   * Method used to retrieve the PORT where RESTful services listen (like the Recall Table service)
-   * If no value is found in the configuration medium, then the default one is used instead, that is
-   * the "9998" key="tape.recalltable.service.port";
-   */
-  public int getRestServicesPort() {
-
-    return cr.getConfiguration().getInt(REST_SERVICES_PORT_KEY, 9998);
-  }
-
-  public int getRestServicesMaxThreads() {
-
-    return cr.getConfiguration()
-      .getInt(REST_SERVICES_MAX_THREAD, RestServer.DEFAULT_MAX_THREAD_NUM);
-  }
-
-  public int getRestServicesMaxQueueSize() {
-
-    return cr.getConfiguration()
-      .getInt(REST_SERVICES_MAX_QUEUE_SIZE, RestServer.DEFAULT_MAX_QUEUE_SIZE);
-  }
-
-  /**
-   * Method used to retrieve the key string used to pass RETRY-VALUE parameter to Recall Table
-   * service key="tape.recalltable.service.param.retry-value";
-   */
   public String getRetryValueKey() {
 
-    return cr.getConfiguration().getString(RETRY_VALUE_KEY_KEY, "retry-value");
+    return "retry-value";
   }
 
-  /**
-   * Method used to retrieve the key string used to pass RETRY-VALUE parameter to Recall Table
-   * service key="tape.recalltable.service.param.status";
-   */
   public String getStatusKey() {
 
-    return cr.getConfiguration().getString(STATUS_KEY_KEY, "status");
+    return "status";
   }
 
-  /**
-   * Method used to retrieve the key string used to pass RETRY-VALUE parameter to Recall Table
-   * service key="tape.recalltable.service.param.takeover";
-   */
   public String getTaskoverKey() {
 
-    return cr.getConfiguration().getString(TASKOVER_KEY_KEY, "first");
+    return "first";
   }
 
-  public String getStoRMPropertiesVersion() {
-
-    return cr.getConfiguration().getString(STORM_PROPERTIES_VERSION_KEY, "No version specified");
-  }
-
-  /**
-   * Flag to support or not the TAPE integration. Default value is false.
-   * 
-   * @return
-   */
-  public boolean getTapeSupportEnabled() {
-
-    return cr.getConfiguration().getBoolean(TAPE_SUPPORT_ENABLED_KEY, false);
-  }
-
-  /**
-   * @return
-   */
-  public boolean getSynchronousQuotaCheckEnabled() {
-
-    return cr.getConfiguration().getBoolean(SYNCHRONOUS_QUOTA_CHECK_ENABLED_KEY, false);
-  }
-
-  /**
-   * 
-   * @return the refresh period in seconds
-   */
   public int getGPFSQuotaRefreshPeriod() {
 
-    return cr.getConfiguration().getInt(GPFS_QUOTA_REFRESH_PERIOD_KEY, 900);
+    return cr.getConfiguration().getInt(GPFS_QUOTA_REFRESH_PERIOD_KEY, GPFS_QUOTA_REFRESH_PERIOD);
   }
 
-  /**
-   * @return
-   */
-  public boolean getFastBootstrapEnabled() {
+  public long getServerPoolStatusCheckTimeout() {
 
-    return cr.getConfiguration().getBoolean(FAST_BOOTSTRAP_ENABLED_KEY, true);
+    return cr.getConfiguration()
+      .getLong(SERVER_POOL_STATUS_CHECK_TIMEOUT_KEY, SERVER_POOL_STATUS_CHECK_TIMEOUT);
   }
 
-  /**
-   * @return
-   */
-  public Long getServerPoolStatusCheckTimeout() {
+  public boolean getPTGSkipACLSetup() {
 
-    return cr.getConfiguration().getLong(SERVER_POOL_STATUS_CHECK_TIMEOUT_KEY, 20000);
+    return cr.getConfiguration().getBoolean(PTG_SKIP_ACL_SETUP_KEY, PTG_SKIP_ACL_SETUP);
   }
 
-  public boolean getSanityCheckEnabled() {
+  public String getHTTPTURLPrefix() {
 
-    return cr.getConfiguration().getBoolean(SANITY_CHECK_ENABLED_KEY, true);
+    return cr.getConfiguration().getString(HTTP_TURL_PREFIX_KEY, HTTP_TURL_PREFIX);
   }
 
-  public Boolean getXmlRpcTokenEnabled() {
-
-    return cr.getConfiguration().getBoolean(XMLRPC_SECURITY_ENABLED_KEY, false);
+  public int getNetworkAddressCacheTtl() {
+    return 0;
   }
 
-  public String getXmlRpcToken() {
-
-    return cr.getConfiguration().getString(XMLRPC_SECURITY_TOKEN_KEY);
-  }
-
-  public Boolean getPTGSkipACLSetup() {
-
-    return cr.getConfiguration().getBoolean(PTG_SKIP_ACL_SETUP, false);
+  public int getNetworkAddressCacheNegativeTtl() {
+    return 0;
   }
 
   @Override
   public String toString() {
 
-    StringBuilder configurationStringBuilder = new StringBuilder();
-    try {
-      // This class methods
-      Method[] methods = Configuration.instance.getClass().getDeclaredMethods();
-
-      // This class fields
-      Field[] fields = Configuration.instance.getClass().getDeclaredFields();
-      HashMap<String, String> methodKeyMap = new HashMap<>();
-      for (Field field : fields) {
-        String fieldName = field.getName();
-        if (fieldName.endsWith("KEY") && field.getType().equals(String.class)) {
-          // from a field like GROUP_TAPE_WRITE_BUFFER_KEY =
-          // "tape.buffer.group.write"
-          // puts in the map the pair
-          // <getgrouptapewritebuffer,tape.buffer.group.write>
-          String mapKey = "get"
-              + fieldName.substring(0, fieldName.lastIndexOf('_')).replace("_", "").toLowerCase();
-          if (methodKeyMap.containsKey(mapKey)) {
-            String value = methodKeyMap.get(mapKey);
-            methodKeyMap.put(mapKey, value + " , " + (String) field.get(Configuration.instance));
-          } else {
-            methodKeyMap.put(mapKey, (String) field.get(Configuration.instance));
-          }
-        }
-      }
-
-      Object field = null;
-      Object[] dummyArray = new Object[0];
-      for (Method method : methods) {
-        /*
-         * with method.getModifiers() == 1 we check that the method is public (otherwise he can
-         * request real parameters)
-         */
-        if (method.getName().substring(0, 3).equals("get")
-            && (!method.getName().equals("getInstance")) && method.getModifiers() == 1) {
-          field = method.invoke(Configuration.instance, dummyArray);
-          if (field.getClass().isArray()) {
-            field = ArrayUtils.toString(field);
-          }
-          String value = methodKeyMap.get(method.getName().toLowerCase());
-          if (value == null) {
-            configurationStringBuilder.insert(0,
-                "!! Unable to find method " + method.getName() + " in methode key map!");
-          } else {
-            configurationStringBuilder.append("Property " + value + " : ");
-          }
-          if (field.getClass().equals(String.class)) {
-            field = '\'' + ((String) field) + '\'';
-          }
-          configurationStringBuilder.append(method.getName() + "() == " + field.toString() + "\n");
-        }
-      }
-      return configurationStringBuilder.toString();
-    } catch (Exception e) {
-      if (e.getClass().isAssignableFrom(java.lang.reflect.InvocationTargetException.class)) {
-        configurationStringBuilder.insert(0,
-            "!!! Cannot do toString! Got an Exception: " + e.getCause() + "\n");
-      } else {
-        configurationStringBuilder.insert(0,
-            "!!! Cannot do toString! Got an Exception: " + e + "\n");
-      }
-      return configurationStringBuilder.toString();
+    StringBuilder sb = new StringBuilder();
+    sb.append("Configuration={");
+    Iterator<String> keys = cr.getConfiguration().getKeys();
+    while (keys.hasNext()) {
+      String name = keys.next();
+      sb.append(name + "=" + cr.getConfiguration().getString(name));
     }
+    sb.append("}");
+    return sb.toString();
   }
 
-  public String getHTTPTURLPrefix() {
-    return cr.getConfiguration().getString(HTTP_TURL_PREFIX, "/fileTransfer");
-  }
-
-  public long getInProgressPutRequestExpirationTime() {
-    return cr.getConfiguration().getLong(EXPIRED_INPROGRESS_PTP_TIME_KEY, 2592000L);
-  }
-
-  public int getNetworkAddressCacheTtl() {
-    return cr.getConfiguration().getInt(NETWORKADDRESS_CACHE_TTL, 0);
-  }
-
-  public int getNetworkAddressCacheNegativeTtl() {
-    return cr.getConfiguration().getInt(NETWORKADDRESS_CACHE_NEGATIVE_TTL, 0);
-  }
-
-  public boolean getDiskUsageServiceEnabled() {
-
-    return cr.getConfiguration().getBoolean(DISKUSAGE_SERVICE_ENABLED, false);
-  }
-
-  public int getDiskUsageServiceInitialDelay() {
-
-    return cr.getConfiguration().getInt(DISKUSAGE_SERVICE_INITIAL_DELAY, DEFAULT_INITIAL_DELAY);
-  }
-
-  public int getDiskUsageServiceTasksInterval() {
-
-    // default: 604800 s => 1 week
-    return cr.getConfiguration().getInt(DISKUSAGE_SERVICE_TASKS_INTERVAL, DEFAULT_TASKS_INTERVAL);
-  }
-
-  public boolean getDiskUsageServiceTasksParallel() {
-
-    return cr.getConfiguration()
-      .getBoolean(DISKUSAGE_SERVICE_TASKS_PARALLEL, DEFAULT_TASKS_PARALLEL);
-  }
 }

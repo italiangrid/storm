@@ -66,9 +66,6 @@ public final class XMLRPCHttpServer {
    */
   private boolean running = false;
 
-  public static final int DEFAULT_MAX_THREAD_NUM = 256;
-  public static final int DEFAULT_MAX_QUEUE_SIZE = 1000;
-
   /**
    * @param port
    * @param maxThreadNum
@@ -82,17 +79,9 @@ public final class XMLRPCHttpServer {
 
 
   private void configureThreadPool(Server s, int maxThreadNum, int maxQueueSize) {
+
     int threadNumber = maxThreadNum;
-
-    if (threadNumber <= 0) {
-      threadNumber = DEFAULT_MAX_THREAD_NUM;
-    }
-
     int queueSize = maxQueueSize;
-
-    if (queueSize <= 0) {
-      queueSize = DEFAULT_MAX_QUEUE_SIZE;
-    }
 
     NamedInstrumentedThreadPool tp =
         new NamedInstrumentedThreadPool("xmlrpc", METRIC_REGISTRY.getRegistry());
@@ -120,7 +109,7 @@ public final class XMLRPCHttpServer {
     ServletContextHandler servletContextHandler = new ServletContextHandler();
     servletContextHandler.addServlet(new ServletHolder(servlet), "/");
 
-    Boolean isTokenEnabled = Configuration.getInstance().getXmlRpcTokenEnabled();
+    Boolean isTokenEnabled = Configuration.getInstance().getXmlRpcSecurityEnabled();
 
     if (isTokenEnabled) {
 

@@ -65,6 +65,4 @@ public interface NamespaceParser {
 
 	public Map<String, ApproachableRule> getApproachableRules();
 
-	public long getLastUpdateTime();
-
 }

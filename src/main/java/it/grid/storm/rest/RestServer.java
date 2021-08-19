@@ -66,9 +66,6 @@ import it.grid.storm.tape.recalltable.resources.TasksResource;
  */
 public class RestServer {
 
-  public static final int DEFAULT_MAX_THREAD_NUM = 100;
-  public static final int DEFAULT_MAX_QUEUE_SIZE = 1000;
-
   private static final Logger LOG = LoggerFactory.getLogger(RestServer.class);
 
   private final Server server;
