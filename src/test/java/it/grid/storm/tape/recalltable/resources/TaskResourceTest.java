@@ -1,6 +1,6 @@
 package it.grid.storm.tape.recalltable.resources;
 
-import static it.grid.storm.config.Configuration.CONFIG_FILE_PATH;
+import static it.grid.storm.Main.DEFAULT_REFRESH_RATE;
 import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.BOL;
 import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.PTG;
 import static it.grid.storm.tape.recalltable.resources.TaskInsertRequest.MAX_RETRY_ATTEMPTS;
@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 
+import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.VONameMatchingRule;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
@@ -67,7 +68,7 @@ public class TaskResourceTest {
   private TapeRecallCatalog BROKEN_RECALL_CATALOG = getTapeRecallCatalogInsertError();
 
   static {
-    System.setProperty(CONFIG_FILE_PATH, "storm.properties");
+    Configuration.init("storm.properties", DEFAULT_REFRESH_RATE);
   }
 
   private TapeRecallTO createRandom(Date date, String voName) {

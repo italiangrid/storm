@@ -1,6 +1,6 @@
 package it.grid.storm.config;
 
-import static it.grid.storm.config.Configuration.CONFIG_FILE_PATH;
+import static it.grid.storm.Main.DEFAULT_REFRESH_RATE;
 import static it.grid.storm.config.ConfigurationDefaults.AUTOMATIC_DIRECTORY_CREATION;
 import static it.grid.storm.config.ConfigurationDefaults.BOL_CORE_POOL_SIZE;
 import static it.grid.storm.config.ConfigurationDefaults.BOL_MAX_POOL_SIZE;
@@ -89,7 +89,7 @@ import it.grid.storm.namespace.model.Authority;
 public class DefaultConfigurationTest {
 
   static {
-    System.setProperty(CONFIG_FILE_PATH, "empty.properties");
+    Configuration.init("empty.properties", DEFAULT_REFRESH_RATE);
   }
 
   @Test

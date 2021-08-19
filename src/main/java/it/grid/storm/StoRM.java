@@ -67,40 +67,50 @@ public class StoRM {
   private XMLRPCHttpServer xmlrpcServer;
 
   // Timer object in charge to call periodically the Space Garbage Collector
-  private final Timer gc = new Timer();
+  private final Timer gc;
   private TimerTask cleaningTask;
-  private boolean isSpaceGCRunning = false;
+  private boolean isSpaceGCRunning;
 
   /*
    * Agent in charge of transit expired ptg/ptp/bol requests to final statuses
    */
   private RequestFinalizerService expiredAgent;
-  private boolean isExpiredAgentRunning = false;
+  private boolean isExpiredAgentRunning;
 
   /* Requests Garbage Collector */
-  private final Timer rgc = new Timer();
+  private final Timer rgc;
   private TimerTask rgcTask;
-  private boolean isRequestGCRunning = false;
+  private boolean isRequestGCRunning;
 
-  private boolean isDiskUsageServiceEnabled = false;
+  private boolean isDiskUsageServiceEnabled;
   private DiskUsageService duService;
 
-  private final ReservedSpaceCatalog spaceCatalog;
+  private boolean isPickerRunning;
+  private boolean isXmlrpcServerRunning;
 
-  private boolean isPickerRunning = false;
-  private boolean isXmlrpcServerRunning = false;
-
-  private boolean isRestServerRunning = false;
+  private boolean isRestServerRunning;
   private RestServer restServer;
 
-  private final Configuration config;
+  private final Configuration config = Configuration.getInstance();
+  private final ReservedSpaceCatalog spaceCatalog = ReservedSpaceCatalog.getInstance();
 
   public StoRM() {
 
-    config = Configuration.getInstance();
-    picker = new AdvancedPicker();
-    spaceCatalog = ReservedSpaceCatalog.getInstance();
+    this.picker = new AdvancedPicker();
+    this.isPickerRunning = false;
 
+    this.isXmlrpcServerRunning = false;
+
+    this.isRestServerRunning = false;
+
+    this.gc = new Timer();
+    this.isSpaceGCRunning = false;
+    this.isExpiredAgentRunning = false;
+
+    this.rgc = new Timer();
+    this.isRequestGCRunning = false;
+
+    this.isDiskUsageServiceEnabled = false;
   }
 
   public void init() throws BootstrapException {

@@ -122,17 +122,9 @@ public class Configuration {
 
   private Logger log = NamespaceDirector.getLogger();
 
-  public static final String DEFAULT_STORM_CONFIG_FILE =
-      "/etc/storm/backend-server/storm.properties";
-  public static final int DEFAULT_STORM_CONFIG_REFRESH_RATE = 5000;
-
   private final ConfigReader cr;
 
   private static Configuration instance;
-
-  /* System properties */
-  public static final String CONFIG_FILE_PATH = "storm.configuration.file";
-  public static final String REFRESH_RATE = "storm.configuration.refresh";
 
   /* Configuration file properties */
 
@@ -252,23 +244,16 @@ public class Configuration {
   private static final String SERVER_POOL_STATUS_CHECK_TIMEOUT_KEY =
       "server_pool_status_check_timeout";
 
-  static {
+  public static void init(String filePath, int refreshRate) {
     try {
-      instance = new Configuration();
+      instance = new Configuration(filePath, refreshRate);
     } catch (ConfigurationException e) {
       throw new ExceptionInInitializerError(e);
     }
   }
 
-  private Configuration() throws ConfigurationException {
+  private Configuration(String filePath, int refreshRate) throws ConfigurationException {
 
-    String filePath = getProperty(CONFIG_FILE_PATH, DEFAULT_STORM_CONFIG_FILE);
-    int refreshRate;
-    try {
-      refreshRate = Integer.valueOf(getProperty(REFRESH_RATE));
-    } catch (NumberFormatException e) {
-      refreshRate = DEFAULT_STORM_CONFIG_REFRESH_RATE;
-    }
     cr = new ConfigReader(filePath, refreshRate);
   }
 
