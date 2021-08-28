@@ -119,26 +119,6 @@ public class XMLParserUtil implements XMLConst {
     return result;
   }
 
-  /**
-   * public String getAuthorizationSource(String nameOfFS) throws NamespaceException { int numOfFS =
-   * retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME); String result = null; //Optional element
-   * if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.FS_AUTHZ))) { result =
-   * getStringProperty(substituteNumberInFSElement(numOfFS, XMLConst.FS_AUTHZ)); } else { //Default
-   * value needed. result = XMLConst.DEFAULT_AUTHZ_SOURCE; log.debug("AuthZ source for
-   * VFS(+'"+nameOfFS+ "') is absent. Default value ('"+result+"') will be used."); } return result;
-   * }
-   **/
-
-  /**
-   * public boolean getQuotaCheck(String nameOfFS) throws NamespaceException { int numOfFS =
-   * retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME); boolean result = false; //Optional element
-   * if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.QUOTA_CHECK))) { result =
-   * getBooleanProperty(substituteNumberInFSElement(numOfFS, XMLConst.QUOTA_CHECK)); } else {
-   * //Default value needed. result = XMLConst.DEFAULT_CHECKING_QUOTA; log.debug("Checking quota
-   * flag in VFS(+'"+nameOfFS +"') is absent. Default value ('"+result+"') will be used."); } return
-   * result; }
-   **/
-
   public String getRetentionPolicyType(String nameOfFS) throws NamespaceException {
 
     int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
@@ -224,18 +204,14 @@ public class XMLParserUtil implements XMLConst {
 
   public String getFSType(String nameOfFS) throws NamespaceException {
 
-    // log.debug("-----FSTYPE------START");
     int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
-    // log.debug("-----FSTYPE------END");
     return getStringProperty(substituteNumberInFSElement(numOfFS, XMLConst.FILESYSTEM_TYPE));
   }
 
   public String getFSRoot(String nameOfFS) throws NamespaceException {
 
     int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
-    String result = getStringProperty(substituteNumberInFSElement(numOfFS, XMLConst.FS_ROOT));
-    // log.debug("VFS ROOT = "+result);
-    return result;
+    return getStringProperty(substituteNumberInFSElement(numOfFS, XMLConst.FS_ROOT));
   }
 
   public String getFSDriver(String nameOfFS) throws NamespaceException {
@@ -253,10 +229,7 @@ public class XMLParserUtil implements XMLConst {
   public boolean isDefaultElementPresent(String nameOfFS) throws NamespaceException {
 
     int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
-    boolean result = false;
-    // FS_DEFAULTVALUES
-    result = isPresent(substituteNumberInFSElement(numOfFS, XMLConst.FS_DEFAULTVALUES));
-    return result;
+    return isPresent(substituteNumberInFSElement(numOfFS, XMLConst.FS_DEFAULTVALUES));
   }
 
   public String getDefaultSpaceType(String nameOfFS) throws NamespaceException {
@@ -309,7 +282,6 @@ public class XMLParserUtil implements XMLConst {
     }
     String protCount =
         substitutionNumber(XMLConst.PROTOCOL_COUNTING, XMLConst.FS_SUB_PATTERN, numOfFS);
-    // log.debug( configuration.getString(protCount));
     return getPropertyNumber(protCount);
   }
 
@@ -323,7 +295,6 @@ public class XMLParserUtil implements XMLConst {
 
     int numFS = getFSNumber(nameOfFS);
     String collElem = substituteNumberInFSElement(numFS, XMLConst.PROTOCOL_BY_NAME);
-    // log.debug("COLLECTION = "+collElem);
     return retrieveNumberByName(nameOfProt, collElem);
   }
 
@@ -345,7 +316,7 @@ public class XMLParserUtil implements XMLConst {
         substituteNumberInProtocolElement(nameOfFS, numOfProt, XMLConst.PROT_PORT));
   }
 
-  /*****************************************************************************
+  /*
    * MAPPING RULES METHODS
    */
 
@@ -373,7 +344,7 @@ public class XMLParserUtil implements XMLConst {
         substituteNumberInMAPElement(numOfMapRule, XMLConst.MAP_RULE_MAPPED_FS));
   }
 
-  /*****************************************************************************
+  /*
    * APPROACHING METHODS
    */
 
@@ -419,7 +390,7 @@ public class XMLParserUtil implements XMLConst {
         substituteNumberInAPPElement(numOfAppRule, XMLConst.APP_ANONYMOUS_HTTP_READ));
   }
 
-  /*****************************************************************************
+  /*
    * QUOTA METHODS
    */
 
@@ -467,58 +438,41 @@ public class XMLParserUtil implements XMLConst {
   public boolean getQuotaFilesetDefined(String nameOfFS) throws NamespaceException {
 
     int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
-    boolean result = false;
-    if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.QUOTA_FILE_SET_NAME))) {
-      result = true;
-    }
-    return result;
+    return isPresent(substituteNumberInFSElement(numOfFS, XMLConst.QUOTA_FILE_SET_NAME));
   }
 
   public String getQuotaFileset(String nameOfFS) throws NamespaceException {
 
-    String result = null;
     int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
-    if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.QUOTA_FILE_SET_NAME))) {
-      result =
-          getStringProperty(substituteNumberInFSElement(numOfFS, XMLConst.QUOTA_FILE_SET_NAME));
-    } else {
-      throw new NamespaceException("Unable to find the element '" + XMLConst.QUOTA_FILE_SET_NAME
-          + "' for the VFS:'" + nameOfFS + "'");
+    if (!isPresent(substituteNumberInFSElement(numOfFS, XMLConst.QUOTA_FILE_SET_NAME))) {
+      String errorMessage = String.format("Unable to find the element '%s' for the VFS:'%s'",
+          XMLConst.QUOTA_FILE_SET_NAME, nameOfFS);
+      throw new NamespaceException(errorMessage);
     }
-    return result;
+    return getStringProperty(substituteNumberInFSElement(numOfFS, XMLConst.QUOTA_FILE_SET_NAME));
   }
 
   public boolean getQuotaGroupIDDefined(String nameOfFS) throws NamespaceException {
 
     int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
-    boolean result = false;
-    if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.QUOTA_GROUP_NAME))) {
-      result = true;
-    }
-    return result;
+    return isPresent(substituteNumberInFSElement(numOfFS, XMLConst.QUOTA_GROUP_NAME));
   }
 
   public String getQuotaGroupID(String nameOfFS) throws NamespaceException {
 
-    String result = null;
     int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
-    if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.QUOTA_GROUP_NAME))) {
-      result = getStringProperty(substituteNumberInFSElement(numOfFS, XMLConst.QUOTA_GROUP_NAME));
-    } else {
-      throw new NamespaceException("Unable to find the element '" + XMLConst.QUOTA_GROUP_NAME
-          + "' for the VFS:'" + nameOfFS + "'");
+    if (!isPresent(substituteNumberInFSElement(numOfFS, XMLConst.QUOTA_GROUP_NAME))) {
+      String errorMessage = String.format("Unable to find the element '%s' for the VFS:'%s'",
+          XMLConst.QUOTA_GROUP_NAME, nameOfFS);
+      throw new NamespaceException(errorMessage);
     }
-    return result;
+    return getStringProperty(substituteNumberInFSElement(numOfFS, XMLConst.QUOTA_GROUP_NAME));
   }
 
   public boolean getQuotaUserIDDefined(String nameOfFS) throws NamespaceException {
 
     int numOfFS = retrieveNumberByName(nameOfFS, XMLConst.FS_BY_NAME);
-    boolean result = false;
-    if (isPresent(substituteNumberInFSElement(numOfFS, XMLConst.QUOTA_USER_NAME))) {
-      result = true;
-    }
-    return result;
+    return isPresent(substituteNumberInFSElement(numOfFS, XMLConst.QUOTA_USER_NAME));
   }
 
   public String getQuotaUserID(String nameOfFS) throws NamespaceException {
@@ -534,7 +488,7 @@ public class XMLParserUtil implements XMLConst {
     return result;
   }
 
-  /*****************************************************************************
+  /*
    * STORAGE CLASS METHODs
    */
   public String getStorageClass(String nameOfFS) throws NamespaceException {
@@ -634,8 +588,7 @@ public class XMLParserUtil implements XMLConst {
     if (numberOfMapRule > numMapRule) {
       throw new NamespaceException("Invalid pointing of Mapping Rule");
     }
-    String new_element = substitutionNumber(element, XMLConst.MAP_SUB_PATTERN, numberOfMapRule);
-    return new_element;
+    return substitutionNumber(element, XMLConst.MAP_SUB_PATTERN, numberOfMapRule);
   }
 
   private String substituteNumberInAPPElement(int numberOfAppRule, String element)
@@ -645,8 +598,7 @@ public class XMLParserUtil implements XMLConst {
     if (numberOfAppRule > numAppRule) {
       throw new NamespaceException("Invalid pointing of Approachable Rule");
     }
-    String new_element = substitutionNumber(element, XMLConst.APPRULE_SUB_PATTERN, numberOfAppRule);
-    return new_element;
+    return substitutionNumber(element, XMLConst.APPRULE_SUB_PATTERN, numberOfAppRule);
   }
 
   private int retrieveNumberByName(String name, String collectionElement) {
@@ -656,7 +608,9 @@ public class XMLParserUtil implements XMLConst {
     if (prop != null) {
       result = prop.indexOf(name);
     } else {
-      log.warn("[retrieveNumberByName_2] Element <{}> does not exists in namespace configuration file", collectionElement);
+      log.warn(
+          "[retrieveNumberByName_2] Element <{}> does not exists in namespace configuration file",
+          collectionElement);
     }
     return result;
   }
@@ -681,7 +635,8 @@ public class XMLParserUtil implements XMLConst {
         result = ((Collection<?>) prop).size();
       }
     } else {
-      log.warn("[getPropertyNumber] Element <{}> does not exists in namespace configuration file", element);
+      log.warn("[getPropertyNumber] Element <{}> does not exists in namespace configuration file",
+          element);
     }
 
     return result;
@@ -689,10 +644,7 @@ public class XMLParserUtil implements XMLConst {
 
   private boolean isPresent(String element) {
 
-    boolean result = false;
-    result = configuration.containsKey(element);
-    // log.debug("XMLPArserUtil: isPresent('"+element+"')="+result);
-    return result;
+    return configuration.containsKey(element);
   }
 
   /**
@@ -705,12 +657,11 @@ public class XMLParserUtil implements XMLConst {
     String prop = null;
     try {
       prop = configuration.getString(element);
-      // log.debug("ELEMENT = "+element+" VALUE = "+prop);
     } catch (ConversionException ce) {
-      log.warn("[getStringProperty] Element <" + element + "> does not contains a String value");
+      log.warn("[getStringProperty] Element <{}> does not contains a String value", element);
     } catch (NoSuchElementException note) {
-      log.warn("[getStringProperty] Element <" + element
-          + "> does not exists in namespace configuration file");
+      log.warn("[getStringProperty] Element <{}> does not exists in namespace configuration file",
+          element);
     }
     return prop;
   }
@@ -726,10 +677,10 @@ public class XMLParserUtil implements XMLConst {
     try {
       result = configuration.getBoolean(element);
     } catch (ConversionException ce) {
-      log.warn("[getLongProperty] Element <" + element + "> does not contains a String value");
+      log.warn("[getLongProperty] Element <{}> does not contains a String value", element);
     } catch (NoSuchElementException note) {
-      log.warn("[getLongProperty] Element <" + element
-          + "> does not exists in namespace configuration file");
+      log.warn("[getLongProperty] Element <{}> does not exists in namespace configuration file",
+          element);
     }
     return result;
   }
@@ -745,10 +696,10 @@ public class XMLParserUtil implements XMLConst {
     try {
       prop = configuration.getLong(element);
     } catch (ConversionException ce) {
-      log.warn("[getLongProperty] Element <" + element + "> does not contains a String value");
+      log.warn("[getLongProperty] Element <{}> does not contains a String value", element);
     } catch (NoSuchElementException note) {
-      log.warn("[getLongProperty] Element <" + element
-          + "> does not exists in namespace configuration file");
+      log.warn("[getLongProperty] Element <{}> does not exists in namespace configuration file",
+          element);
     }
     return prop;
   }
@@ -764,10 +715,10 @@ public class XMLParserUtil implements XMLConst {
     try {
       prop = configuration.getInt(element);
     } catch (ConversionException ce) {
-      log.warn("[getIntProperty] Element <" + element + "> does not contains a String value");
+      log.warn("[getIntProperty] Element <{}> does not contains a String value", element);
     } catch (NoSuchElementException note) {
-      log.warn("[getIntProperty] Element <" + element
-          + "> does not exists in namespace configuration file");
+      log.warn("[getIntProperty] Element <{}> does not exists in namespace configuration file",
+          element);
     }
     return prop;
   }
@@ -782,11 +733,12 @@ public class XMLParserUtil implements XMLConst {
       prop.add(element.trim());
     }
 
-    log.debug("LIST - prop : " + prop);
-    log.debug("Nr. of elements : " + prop.size());
+    log.debug("LIST - prop : {}", prop);
+    log.debug("Nr. of elements : {}", prop.size());
     if (prop.size() == 0) {
-      log.warn("[retrieveNumberByName_2] Element <" + collectionElement
-          + "> does not exists in namespace configuration file");
+      log.warn(
+          "[retrieveNumberByName_2] Element <{}> does not exists in namespace configuration file",
+          collectionElement);
     }
     return prop;
   }
@@ -809,7 +761,7 @@ public class XMLParserUtil implements XMLConst {
     }
     String aclCount =
         substitutionNumber(XMLConst.ACL_ENTRY_COUNTING, XMLConst.FS_SUB_PATTERN, numOfFS);
-    log.debug("ACL Count = " + aclCount);
+    log.debug("ACL Count = {}", aclCount);
     return getPropertyNumber(aclCount);
   }
 
@@ -832,7 +784,8 @@ public class XMLParserUtil implements XMLConst {
         }
       }
     } else {
-      log.warn("[getPropertyNumber] Element <{}> does not exists in namespace configuration file", aclCount);
+      log.warn("[getPropertyNumber] Element <{}> does not exists in namespace configuration file",
+          aclCount);
     }
     return result;
   }
@@ -860,14 +813,7 @@ public class XMLParserUtil implements XMLConst {
           + "> does not exists in namespace configuration file");
     }
     return result;
-
-    // return getStringProperty(substituteNumberInACLEntryElement(nameOfFS,
-    // aclEntryNumber, XMLConst.PERMISSIONS));
   }
-
-  /**
-   * ********************************** VERSION 1.4.0
-   ***************************************/
 
   public String getStorageAreaAuthz(String nameOfFS, SAAuthzType type) throws NamespaceException {
 
@@ -912,9 +858,7 @@ public class XMLParserUtil implements XMLConst {
 
   public int getProtId(String nameOfFS, int numOfProt) throws NamespaceException {
 
-    // int numOfProt = getProtNumberByName(nameOfFS, protName);
     String protId = substituteNumberInProtocolElement(nameOfFS, numOfProt, XMLConst.PROT_ID);
-    // log.debug("ProtID : "+protId);
     if (isPresent(protId)) {
       return getIntProperty(
           substituteNumberInProtocolElement(nameOfFS, numOfProt, XMLConst.PROT_ID));
@@ -977,13 +921,13 @@ public class XMLParserUtil implements XMLConst {
     Object members = sub.getProperty("members.member[@member-id]");
     int numOfMembers = -1;
     if (members != null) {
-      if (members instanceof Collection) {
-        numOfMembers = ((Collection) members).size();
+      if (members instanceof Collection<?>) {
+        numOfMembers = ((Collection<?>) members).size();
       } else {
         numOfMembers = 1;
       }
     } else {
-      log.error("Error during the retrieve of the number of pool member of " + nameOfFS);
+      log.error("Error during the retrieve of the number of pool member of {}", nameOfFS);
     }
     return numOfMembers;
   }
