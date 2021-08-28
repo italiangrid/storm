@@ -30,10 +30,11 @@ public class ConfigurationDefaults {
   public static final int XMLRPC_MAX_THREADS = 256;
   public static final int XMLRPC_MAX_QUEUE_SIZE = 1000;
   public static final int XMLRPC_SERVER_PORT = 8080;
-  public static final boolean XMLRPC_SECURITY_ENABLED = false;
+  public static final boolean XMLRPC_SECURITY_ENABLED = true;
+  public static final String XMLRPC_SECURITY_TOKEN = "secret";
 
   /* Disk usage service */
-  public static final Boolean DISKUSAGE_SERVICE_ENABLED = false;
+  public static final boolean DISKUSAGE_SERVICE_ENABLED = false;
   public static final int DISKUSAGE_SERVICE_INITIAL_DELAY = 0;
   public static final int DISKUSAGE_SERVICE_TASKS_INTERVAL = 604800;
   public static final boolean DISKUSAGE_SERVICE_PARALLEL_TASKS_ENABLED = false;

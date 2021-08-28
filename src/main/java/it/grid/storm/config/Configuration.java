@@ -90,6 +90,7 @@ import static it.grid.storm.config.ConfigurationDefaults.TRANSIT_TIME_INTERVAL;
 import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_MAX_QUEUE_SIZE;
 import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_MAX_THREADS;
 import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_SECURITY_ENABLED;
+import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_SECURITY_TOKEN;
 import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_SERVER_PORT;
 import static java.lang.System.getProperty;
 
@@ -460,10 +461,6 @@ public class Configuration {
     return value < 0 ? XMLRPC_MAX_QUEUE_SIZE : value;
   }
 
-  /**
-   * Method used by the Synch Component to set the binding port for the _unsecure_ xmlrpc server in
-   * the BE.
-   */
   public int getXmlRpcServerPort() {
 
     return cr.getConfiguration().getInt(XMLRPC_SERVER_PORT_KEY, XMLRPC_SERVER_PORT);
@@ -476,7 +473,7 @@ public class Configuration {
 
   public String getXmlRpcToken() {
 
-    return cr.getConfiguration().getString(XMLRPC_SECURITY_TOKEN_KEY);
+    return cr.getConfiguration().getString(XMLRPC_SECURITY_TOKEN_KEY, XMLRPC_SECURITY_TOKEN);
   }
 
   public boolean getDiskUsageServiceEnabled() {
