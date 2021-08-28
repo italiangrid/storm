@@ -55,7 +55,7 @@ sanity_check_enabled = true
 xmlrpc_server_port = 8080
 xmlrpc_max_threads = 256
 xmlrpc_max_queue_size = 1000
-xmlrpc_security_enabled = true
+xmlrpc_security_enabled = false
 xmlrpc_security_token =
 
 # ================================
@@ -70,11 +70,11 @@ xmlrpc_security_token =
 # Enable/Disable the periodic run of the service
 du_service_enabled = false
 # Enable/Disable parallel du execution
-du_service_parallel_tasks = false
+du_service_parallel_tasks_enabled = false
 # Initial delay of service start in seconds. Default: 60s
-du_service_delay = 60
+du_service_initial_delay = 60
 # Interval of execution of the du in seconds. Default: 86400s (24h)
-du_service_period = 86400
+du_service_tasks_interval = 86400
 
 
 # ================================
