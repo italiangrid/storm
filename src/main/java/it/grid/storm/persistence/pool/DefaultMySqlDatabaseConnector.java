@@ -46,7 +46,7 @@ public class DefaultMySqlDatabaseConnector implements DatabaseConnector {
     if (properties.isEmpty()) {
       this.url = format("jdbc:mysql://%s:%d/%s", hostname, port, database);
     } else {
-      this.url = format("jdbc:mysqk://%s:%d/%s?%s", hostname, port, database, properties);
+      this.url = format("jdbc:mysql://%s:%d/%s?%s", hostname, port, database, properties);
     }
   }
 
