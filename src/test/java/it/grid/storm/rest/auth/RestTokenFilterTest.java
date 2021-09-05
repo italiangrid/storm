@@ -1,6 +1,5 @@
 package it.grid.storm.rest.auth;
 
-import static it.grid.storm.Main.DEFAULT_REFRESH_RATE;
 import static it.grid.storm.rest.auth.RestTokenFilter.TOKEN_HEADER_NAME;
 import static it.grid.storm.rest.auth.RestTokenFilter.TOKEN_INIT_PARAM_NAME;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
@@ -21,6 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -32,10 +32,6 @@ public class RestTokenFilterTest {
   private final static String WRONG_TOKEN = "alakazam";
 
   private final static String TMP_FILENAME = "tmp.txt";
-
-  static {
-    Configuration.init("storm.properties", DEFAULT_REFRESH_RATE);
-  }
 
   private HttpServletRequest getMockRequest(String token) {
     HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
@@ -60,6 +56,12 @@ public class RestTokenFilterTest {
     filterHolder.setInitParameter(TOKEN_INIT_PARAM_NAME, token);
     filterHolder.start();
     return (RestTokenFilter) filterHolder.getFilter();
+  }
+
+  @Before
+  public void init() {
+
+    Configuration.init("src/test/resources/storm.properties");
   }
 
   @Test

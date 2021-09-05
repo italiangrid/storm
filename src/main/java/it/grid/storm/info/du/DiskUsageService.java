@@ -22,10 +22,10 @@ public class DiskUsageService {
   private ScheduledExecutorService executor;
   private boolean running;
   private int delay;
-  private int period;
+  private long period;
 
   private DiskUsageService(List<VirtualFSInterface> vfss, ScheduledExecutorService executor,
-      int delay, int period) {
+      int delay, long period) {
 
     Preconditions.checkNotNull(vfss, "Invalid null list of Virtual FS");
     Preconditions.checkNotNull(executor, "Invalid null scheduled executor service");
@@ -42,7 +42,7 @@ public class DiskUsageService {
     return delay;
   }
 
-  public int getPeriod() {
+  public long getPeriod() {
 
     return period;
   }
@@ -52,19 +52,19 @@ public class DiskUsageService {
     this.delay = delay;
   }
 
-  public void setPeriod(int period) {
+  public void setPeriod(long period) {
 
     this.period = period;
   }
 
   public static DiskUsageService getSingleThreadScheduledService(List<VirtualFSInterface> vfss,
-      int delay, int period) {
+      int delay, long period) {
 
     return new DiskUsageService(vfss, Executors.newSingleThreadScheduledExecutor(), delay, period);
   }
 
   public static DiskUsageService getScheduledThreadPoolService(List<VirtualFSInterface> vfss,
-      int delay, int period) {
+      int delay, long period) {
 
     return new DiskUsageService(vfss, Executors.newScheduledThreadPool(vfss.size()), delay, period);
   }

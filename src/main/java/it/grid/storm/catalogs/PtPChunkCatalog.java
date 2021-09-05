@@ -111,7 +111,7 @@ public class PtPChunkCatalog {
     to.setPinLifetime(PinLifetimeConverter.getInstance().toDB(chunkData.pinLifetime().value()));
     to.setFileLifetime(FileLifetimeConverter.getInstance().toDB(chunkData.fileLifetime().value()));
     to.setFileStorageType(FileStorageTypeConverter.getInstance().toDB(chunkData.fileStorageType()));
-    to.setOverwriteOption(OverwriteModeConverter.getInstance().toDB(chunkData.overwriteOption()));
+    to.setOverwriteOption(OverwriteModeConverter.toDB(chunkData.overwriteOption()).name());
     to.setNormalizedStFN(chunkData.getSURL().normalizedStFN());
     to.setSurlUniqueID(Integer.valueOf(chunkData.getSURL().uniqueId()));
     to.setClientDN(chunkData.getUser().getDn());
@@ -249,7 +249,7 @@ public class PtPChunkCatalog {
     }
     // overwriteOption!
     TOverwriteMode overwriteOption =
-        OverwriteModeConverter.getInstance().toSTORM(auxTO.overwriteOption());
+        OverwriteModeConverter.toSTORM(auxTO.overwriteOption());
     if (overwriteOption == TOverwriteMode.EMPTY) {
       errorSb.append("\nTOverwriteMode could not be translated "
           + "from its String representation! String: " + auxTO.overwriteOption());

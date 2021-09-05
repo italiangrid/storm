@@ -49,7 +49,7 @@ public class NamespaceDirector {
 
     log.info("NAMESPACE : Initializing ...");
     Configuration config = Configuration.getInstance();
-    String configurationDir = config.configurationDir();
+    String configurationDir = config.configurationDir().getAbsolutePath();
     String namespaceFileName = config.getNamespaceConfigFilename();
     String namespaceAbsoluteFilePath = getNamespaceFileAbsolutePath(configurationDir, namespaceFileName);
 

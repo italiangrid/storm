@@ -21,7 +21,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import it.grid.storm.common.types.TURLPrefix;
+import it.grid.storm.config.model.OverwriteMode;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.persistence.converter.OverwriteModeConverter;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TSURL;
@@ -87,26 +89,17 @@ public class PrepareToPutRequestConverter extends
 			inputData.setFileSize(fileSize);
 		}
 
-		String overwriteModeString = (String) inputParam
-			.get(OVERWRITE_MODE_PARAMETER_NAME);
-		if (overwriteModeString != null) {
-			TOverwriteMode overwriteMode;
-			try {
-				overwriteMode = TOverwriteMode.getTOverwriteMode(overwriteModeString);
-			} catch (IllegalArgumentException e) {
-				log.error("Unable to build TOverwriteMode from '{}'. IllegalArgumentException: {}"
-					, overwriteModeString
-					, e.getMessage()
-					, e);
-				throw new StoRMXmlRpcException("Unable to build PrepareToPutInputData");
-			}
-			if (!overwriteMode.equals(TOverwriteMode.EMPTY)) {
-				inputData.setOverwriteMode(overwriteMode);
-			} else {
-				log
-					.warn("Unable to use the received '{}', interpreted as an empty value" , OVERWRITE_MODE_PARAMETER_NAME);
-			}
-		}
+        String overwriteModeString = (String) inputParam.get(OVERWRITE_MODE_PARAMETER_NAME);
+        if (overwriteModeString != null) {
+          TOverwriteMode overwriteMode =
+              OverwriteModeConverter.toSTORM(OverwriteMode.valueOf(overwriteModeString));
+          if (!overwriteMode.equals(TOverwriteMode.EMPTY)) {
+            inputData.setOverwriteMode(overwriteMode);
+          } else {
+            log.warn("Unable to use the received '{} = {}', interpreted as an empty value",
+                OVERWRITE_MODE_PARAMETER_NAME, overwriteModeString);
+          }
+        }
 		log.debug("PrepareToPutInputData Created!");
 		return inputData;
 	}

@@ -91,10 +91,13 @@ public class StoRM {
   private boolean isRestServerRunning;
   private RestServer restServer;
 
-  private final Configuration config = Configuration.getInstance();
-  private final ReservedSpaceCatalog spaceCatalog = ReservedSpaceCatalog.getInstance();
+  private final Configuration config;
+  private final ReservedSpaceCatalog spaceCatalog;
 
-  public StoRM() {
+  public StoRM(Configuration config) {
+
+    this.config = config;
+    this.spaceCatalog = ReservedSpaceCatalog.getInstance();
 
     this.picker = new AdvancedPicker();
     this.isPickerRunning = false;
@@ -141,8 +144,8 @@ public class StoRM {
 
   private void configureLogging() {
 
-    String configurationDir = config.configurationDir();
-    String logFile = configurationDir + "logging.xml";
+    String logFile = String.format("%s/logging.xml", config.configurationDir());
+    log.debug("Configure logging from %s file ...", logFile);
     Bootstrap.configureLogging(logFile);
   }
 
@@ -278,11 +281,11 @@ public class StoRM {
 
   private void configureRestService() {
 
-    int restServicePort = Configuration.getInstance().getRestServicesPort();
-    boolean isTokenEnabled = Configuration.getInstance().getXmlRpcSecurityEnabled();
-    String token = Configuration.getInstance().getXmlRpcToken();
-    int maxThreads = Configuration.getInstance().getRestServicesMaxThreads();
-    int maxQueueSize = Configuration.getInstance().getRestServicesMaxQueueSize();
+    int restServicePort = config.getRestServicesPort();
+    boolean isTokenEnabled = config.getXmlRpcSecurityEnabled();
+    String token = config.getXmlRpcToken();
+    int maxThreads = config.getRestServicesMaxThreads();
+    int maxQueueSize = config.getRestServicesMaxQueueSize();
 
     restServer = new RestServer(restServicePort, maxThreads, maxQueueSize, isTokenEnabled, token);
   }
@@ -419,7 +422,7 @@ public class StoRM {
 
     isDiskUsageServiceEnabled = config.getDiskUsageServiceEnabled();
     int delay = config.getDiskUsageServiceInitialDelay();
-    int period = config.getDiskUsageServiceTasksInterval();
+    long period = config.getDiskUsageServiceTasksInterval();
 
     NamespaceInterface namespace = NamespaceDirector.getNamespace();
     List<VirtualFSInterface> quotaEnabledVfs = namespace.getVFSWithQuotaEnabled();

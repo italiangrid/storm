@@ -104,7 +104,7 @@ public class ResourceServiceTest {
     return new ResourceService(Collections.<VirtualFSInterface>emptyList(),
         Lists.newArrayList(rule));
   }
-
+  
   @Before
   public void initLocalTmpDirectory() throws IOException {
     new File(DIR_PATH).mkdirs();

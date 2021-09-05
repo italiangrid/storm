@@ -17,16 +17,16 @@
 
 package it.grid.storm.persistence.converter;
 
-import java.util.Map;
-
-import com.google.common.collect.Maps;
-
 import static it.grid.storm.srm.types.TOverwriteMode.ALWAYS;
 import static it.grid.storm.srm.types.TOverwriteMode.NEVER;
 import static it.grid.storm.srm.types.TOverwriteMode.WHENFILESAREDIFFERENT;
 
+import java.util.Map;
+
+import com.google.common.collect.Maps;
+
+import it.grid.storm.config.model.OverwriteMode;
 import it.grid.storm.srm.types.TOverwriteMode;
-import it.grid.storm.config.Configuration;
 
 /**
  * Package private auxiliary class used to convert between DB and StoRM object model representation
@@ -38,66 +38,41 @@ import it.grid.storm.config.Configuration;
  */
 public class OverwriteModeConverter {
 
-  private Map<String, TOverwriteMode> DBtoSTORM = Maps.newHashMap();
-  private Map<TOverwriteMode, String> STORMtoDB = Maps.newHashMap();
+  private static Map<TOverwriteMode, OverwriteMode> STORMtoDB = Maps.newHashMap();
 
-  private static OverwriteModeConverter c = new OverwriteModeConverter();
+  static {
 
-  /**
-   * Private constructor that fills in the conversion table; in particular, DB uses String values to
-   * represent TOverwriteMode:
-   * 
-   * N NEVER A ALWAYS D WHENFILESAREDIFFERENT
-   */
-  private OverwriteModeConverter() {
-
-    DBtoSTORM.put("N", NEVER);
-    DBtoSTORM.put("A", ALWAYS);
-    DBtoSTORM.put("D", WHENFILESAREDIFFERENT);
-    STORMtoDB.put(NEVER, "N");
-    STORMtoDB.put(ALWAYS, "A");
-    STORMtoDB.put(WHENFILESAREDIFFERENT, "D");
+    STORMtoDB.put(NEVER, OverwriteMode.N);
+    STORMtoDB.put(ALWAYS, OverwriteMode.A);
+    STORMtoDB.put(WHENFILESAREDIFFERENT, OverwriteMode.D);
   }
 
-  /**
-   * Method that returns the only instance of OverwriteModeConverter.
-   */
-  public static OverwriteModeConverter getInstance() {
+  public static OverwriteMode toDB(TOverwriteMode om) {
 
-    return c;
+    if (STORMtoDB.containsKey(om)) {
+      return STORMtoDB.get(om);
+    }
+    return OverwriteMode.N;
   }
 
-  /**
-   * Method that returns the int used by DPM to represent the given TOverwriteMode. "" is returned
-   * if no match is found.
-   */
-  public String toDB(TOverwriteMode om) {
+  public static TOverwriteMode toSTORM(String s) {
 
-    String aux = (String) STORMtoDB.get(om);
-    if (aux == null)
-      return "";
-    return aux;
+    OverwriteMode om = OverwriteMode.valueOf(s.trim().toUpperCase());
+    return toSTORM(om);
   }
 
-  /**
-   * Method that returns the TOverwriteMode used by StoRM to represent the supplied String
-   * representation of DPM. A configured default TOverwriteMode is returned in case no corresponding
-   * StoRM type is found. TOverwriteMode.EMPTY is returned if there are configuration errors.
-   */
-  public TOverwriteMode toSTORM(String s) {
+  public static TOverwriteMode toSTORM(OverwriteMode om) {
 
-    TOverwriteMode aux = (TOverwriteMode) DBtoSTORM.get(s);
-    if (aux == null)
-      aux = (TOverwriteMode) DBtoSTORM.get(Configuration.getInstance().getDefaultOverwriteMode());
-    if (aux == null)
-      return TOverwriteMode.EMPTY;
-    else
-      return aux;
-  }
-
-  public String toString() {
-
-    return "OverWriteModeConverter.\nDBtoSTORM map:" + DBtoSTORM + "\nSTORMtoDB map:" + STORMtoDB;
+    switch (om) {
+      case N:
+        return TOverwriteMode.NEVER;
+      case A:
+        return TOverwriteMode.ALWAYS;
+      case D:
+        return TOverwriteMode.WHENFILESAREDIFFERENT;
+      default:
+        return TOverwriteMode.EMPTY;
+    }
   }
 
 }

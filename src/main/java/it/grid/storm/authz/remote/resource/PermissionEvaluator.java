@@ -55,8 +55,8 @@ class PermissionEvaluator {
 
   public static Boolean isOverwriteAllowed() {
 
-    return OverwriteModeConverter.getInstance()
-      .toSTORM(Configuration.getInstance().getDefaultOverwriteMode())
+    return OverwriteModeConverter
+      .toSTORM(Configuration.getInstance().getDefaultOverwriteMode().toString())
       .equals(TOverwriteMode.ALWAYS);
   }
 

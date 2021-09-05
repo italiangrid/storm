@@ -79,7 +79,7 @@ public class PtPChunkDataTO {
     TURLPrefix protocolPreferences = new TURLPrefix();
     protocolPreferences.addProtocol(Protocol.GSIFTP);
     this.protocolList = TransferProtocolListConverter.toDB(protocolPreferences);
-    this.overwriteOption = OverwriteModeConverter.getInstance().toDB(TOverwriteMode.NEVER);
+    this.overwriteOption = OverwriteModeConverter.toDB(TOverwriteMode.NEVER).name();
     this.status = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED);
   }
 

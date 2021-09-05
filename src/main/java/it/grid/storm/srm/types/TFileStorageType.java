@@ -19,6 +19,8 @@ package it.grid.storm.srm.types;
 
 import java.util.Map;
 
+import it.grid.storm.config.model.StorageType;
+
 /**
  * This class represents the TFileStorageType of an Srm request.
  * 
@@ -68,6 +70,20 @@ public class TFileStorageType {
       return DURABLE;
     } else {
       return EMPTY;
+    }
+  }
+
+  public static TFileStorageType getTFileStorageType(StorageType type) {
+
+    switch (type) {
+      case V:
+        return VOLATILE;
+      case P:
+        return PERMANENT;
+      case D:
+        return DURABLE;
+      default:
+        return EMPTY;
     }
   }
 

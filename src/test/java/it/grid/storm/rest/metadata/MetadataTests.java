@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import it.grid.storm.config.Configuration;
 import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.FilesystemError;
 import it.grid.storm.namespace.NamespaceException;
@@ -37,7 +38,7 @@ public class MetadataTests {
 
   private VirtualFSInterface vfs;
   private StoriMetadata expected;
-
+  
   private VirtualFSInterface getVirtualFS(String name, String rootPath) throws NamespaceException {
 
     VirtualFSInterface vfs = Mockito.mock(VirtualFSInterface.class);
@@ -80,6 +81,9 @@ public class MetadataTests {
 
   @Before
   public void init() throws NamespaceException {
+
+    Configuration.init("src/test/resources/storm.properties");
+
     vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
     expected = StoriMetadata.builder()
       .absolutePath(FILE_PATH)

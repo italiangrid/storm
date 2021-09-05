@@ -9,54 +9,54 @@
 # SRM service parameters
 # ============================
 
-# StoRM SRM default host and port used to initialize SURLs starting from SFN and also to
-# publish info
-srm_public_host =
-srm_public_port = 8444
-
-# List of comma separated strings identifying the accepted StoRM SRM end-points.
-# Each end-point must be composed of [host]:[port]. This is used by StoRM to understand if a
-# SURL is valid (managed or not).
-srm_endpoints =
+# List of accepted StoRM SRM end-points.
+# srm_endpoints.1.host = storm.example
+# srm_endpoints.1.port = 8444
+# srm_endpoints.2.host = alias.example
+# srm_endpoints.2.port = 8444
 
 # ============================
 # FE/BE DBMS parameters
 # ============================
 
 # Database connection configuration
-db_username = storm
-db_password =
-db_hostname =
-db_port = 3306
-db_properties = serverTimezone=UTC&autoReconnect=true
+db.hostname =
+db.username = storm
+db.password = storm
+db.port = 3306
+db.properties = serverTimezone=UTC&autoReconnect=true
 
 # Database connection pool configuration
-db_pool_size = -1
-db_pool_min_idle = 10
-db_pool_max_wait_millis = 5000
-db_pool_test_on_borrow = true
-db_pool_test_while_idle = true 
+db.pool.size = -1
+db.pool.min_idle = 10
+db.pool.max_wait_millis = 5000
+db.pool.test_on_borrow = true
+db.pool.test_while_idle = true 
 
 # ============================
 # REST Services parameter
 # ============================
-rest_services_port = 9998
-rest_services_max_threads = 100
-rest_services_max_queue_size = 1000
+rest.port = 9998
+rest.max_threads = 100
+rest.max_queue_size = 1000
 
 # ============================
 # Sanity Check enabled
 # ============================
-sanity_check_enabled = true
+sanity_checks_enabled = true
 
 # ============================
 # XMLRPC Server parameter
 # ============================
-xmlrpc_server_port = 8080
-xmlrpc_max_threads = 256
-xmlrpc_max_queue_size = 1000
-xmlrpc_security_enabled = false
-xmlrpc_security_token =
+xmlrpc.port = 8080
+xmlrpc.max_threads = 256
+xmlrpc.max_queue_size = 1000
+
+# ============================
+# XMLRPC & REST security token
+# ============================
+security_enabled = true
+security_token = secret-token
 
 # ================================
 # Disk Usage Service Configuration
@@ -68,13 +68,13 @@ xmlrpc_security_token =
 # The initial starting delay of the service and the period can also be configured.
 #
 # Enable/Disable the periodic run of the service
-du_service_enabled = false
+du.enabled = false
 # Enable/Disable parallel du execution
-du_service_parallel_tasks_enabled = false
+du.parallel_tasks_enabled = false
 # Initial delay of service start in seconds. Default: 60s
-du_service_initial_delay = 60
+du.initial_delay = 60
 # Interval of execution of the du in seconds. Default: 86400s (24h)
-du_service_tasks_interval = 86400
+du.tasks_interval = 86400
 
 
 # ================================
@@ -82,106 +82,106 @@ du_service_tasks_interval = 86400
 # ================================
 
 # Enable/disable the automatic directory creation during srmPrepareToPut requests.
-directory_automatic_creation = false
+directories.enable_automatic_creation = false
 # Enable/disable write permission on directory created through srmMkDir requests.
-directory_writeperm = false
+directories.enable_writeperm_on_creation = false
 
 # Default pinLifetime in seconds used for pinning files in case of srmPrepareToPut or srmPrapareToGet requests
-pinlifetime_default = 259200
+pinlifetime.default = 259200
 # Maximum allowed value for pinLifeTime. Values beyond the max will be dropped to max value.
-pinlifetime_maximum = 1814400
+pinlifetime.maximum = 1814400
 
 # Add extra slashes after the “authority” part of a TURL for FILE protocol.
-extraslashes_file=
+extraslashes.file =
 # Add extra slashes after the “authority” part of a TURL for RFIO protocol.
-extraslashes_rfio=
+extraslashes.rfio =
 # Add extra slashes after the “authority” part of a TURL for GSIFTP protocol.
-extraslashes_gsiftp=/
+extraslashes.gsiftp = /
 # Add extra slashes after the “authority” part of a TURL for ROOT protocol.
-extraslashes_root=/
+extraslashes.root = /
 
 # Initial delay in seconds before starting the garbage collector thread
-gc_pinnedfiles_cleaning_delay = 10
+expired_spaces_agent.delay = 10
 # Garbage Collector time interval in seconds.
-gc_pinnedfiles_cleaning_interval = 300
+expired_spaces_agent.interval = 300
 
 # Default FileSize
-filesize_default = 1000000
+files.default_size = 1000000
 # Default FileLifetime in seconds used for VOLATILE file in case of SRM request.
-filelifetime_default = 259200
+files.default_lifetime = 259200
 # Default file overwrite mode to use upon srmPrepareToPut requests.
 # Possible values are N (Never), A (Always), D (when files Differs).
-default_overwrite = A
+files.default_overwrite = A
 # Default File Storage Type to be used for srmPrepareToPut requests.
 # Possible values are  V (Volatile), P (Permanent) and  D (Durable)      
-default_storagetype = P   
+files.default_storagetype = P   
 
 # Crusher Scheduler worker pool base size.
-scheduler_crusher_worker_core_pool_size = 10
+requests_scheduler.core_pool_size = 10
 # Crusher Schedule worker pool max size.
-scheduler_crusher_worker_max_pool_size = 50
+requests_scheduler.max_pool_size = 50
 # Request queue maximum size.
-scheduler_crusher_queue_size = 2000
+requests_scheduler.queue_size = 2000
 # PrepareToPut worker pool base size.
-scheduler_chunksched_ptp_worker_core_pool_size = 50
+ptp_scheduler.core_pool_size = 50
 # PrepareToPut worker pool max size.
-scheduler_chunksched_ptp_worker_max_pool_size = 200
+ptp_scheduler.max_pool_size = 200
 # PrepareToPut request queue maximum size.
-scheduler_chunksched_ptp_queue_size = 1000
+ptp_scheduler.queue_size = 1000
 # PrepareToGet worker pool base size.
-scheduler_chunksched_ptg_worker_core_pool_size = 50
+ptg_scheduler.core_pool_size = 50
 # PrepareToGet worker pool max size. 
-scheduler_chunksched_ptg_worker_max_pool_size = 200
+ptg_scheduler.max_pool_size = 200
 # PrepareToGet request queue maximum size.
-scheduler_chunksched_ptg_queue_size = 2000
+ptg_scheduler.queue_size = 2000
 # BringOnline worker pool base size.
-scheduler_chunksched_bol_worker_core_pool_size = 50
+bol_scheduler.core_pool_size = 50
 # BringOnline Worker pool max size. 
-scheduler_chunksched_bol_worker_max_pool_size = 200
+bol_scheduler.max_pool_size = 200
 # BringOnline request queue maximum size. 
-scheduler_chunksched_bol_queue_size = 2000
+bol_scheduler.queue_size = 2000
 
 # Initial delay before starting to pick requests from the DB, in seconds.
-asynch_picking_initial_delay = 1
+requests_picker_agent.delay = 1
 # Polling interval in seconds to pick up new SRM requests. 
-asynch_picking_time_interval = 2
+requests_picker_agent.interval = 2
 # Maximum number of requests picked up at each polling time.
-asynch_picking_max_batch_size = 100
+requests_picker_agent.max_fetched_size = 100
 
 # Maximum number of entries returned by an srmLs call.
 # Since in case of recursive srmLs results can be in order of million,
 # this prevent a server overload.
-synch_ls_max_entries = 2000
+synch_ls.max_entries = 2000
 # Default value for the parameter "allLevelRecursive" of the srmLS request.
-synch_ls_default_all_level_recursive = false
+synch_ls.default_all_level_recursive = false
 # Default value for the parameter "numOfLevels" of the srmLS request.
-synch_ls_default_num_levels = 1
+synch_ls.default_num_levels = 1
 # Default value for the parameter "offset" of the LS request.
-synch_ls_default_offset = 0
+synch_ls.default_offset = 0
 
 # Enable/Disable Garbage Collector
-purging = true
+completed_requests_agent.enabled = true
 # Time interval for between two requests in garbage collection. In seconds
-purge_interval = 600
+completed_requests_agent.interval = 600
 # Initial delay before starting the requests garbage collection process, in seconds.
-purge_delay = 10
+completed_requests_agent.delay = 10
 # Number of requests removed at each run. Every run purge max 800 requests in final status 
-purge_size = 800
-
+completed_requests_agent.purge_size = 800
 # Time after that the GC consider a _terminated_ request as garbage in seconds
-expired_request_time = 21600
-# Time in seconds to consider an in-progress ptp request as expired.
-expired_inprogress_time = 2592000
+completed_requests_agent.purge_age = 21600
+
 
 # Expired-Put-Requests-Agent transits expired put requests to a final state.
 # A put request is expired if pinLifetime is reached.
 # Time interval between two agent executions. In seconds
-transit_interval = 300
+inprogress_requests_agent.interval = 300
 # Delay on starting agent. In seconds
-transit_delay = 10
+inprogress_requests_agent.delay = 10
+# Time in seconds to consider an in-progress ptp request as expired.
+inprogress_requests_agent.ptp_expiration_time = 2592000
 
 # Skip ACL setup for PtG requests
-ptg_skip_acl_setup = false
+skip_ptg_acl_setup = false
 
 info_quota_refresh_period = 900
 http_turl_prefix =
@@ -189,8 +189,8 @@ server_pool_status_check_timeout = 20000
 abort_maxloop = 10
 ping_properties_filename = ping-values.properties
 
-health_bookkeeping_enabled = false
-health_performance_measuring_enabled = false
-health_electrocardiogram_period = 60
-health_performance_logbook_time_interval = 15
-health_performance_glance_time_interval = 15
+hearthbeat.bookkeeping_enabled = false
+hearthbeat.performance_measuring_enabled = false
+hearthbeat.period = 60
+hearthbeat.performance_logbook_time_interval = 15
+hearthbeat.performance_glance_time_interval = 15
