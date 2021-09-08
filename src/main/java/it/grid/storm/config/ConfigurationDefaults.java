@@ -55,7 +55,6 @@ public class ConfigurationDefaults {
   public static final boolean COMPLETED_REQUESTS_AGENT_ENABLED = true;
   public static final int COMPLETED_REQUESTS_AGENT_DELAY = 10;
   public static final int COMPLETED_REQUESTS_AGENT_INTERVAL = 600;
-  public static final boolean COMPLETED_REQUESTS_AGENT_IS_DYNAMIC = true;
   public static final long COMPLETED_REQUESTS_AGENT_PURGE_AGE = 604800L;
   public static final int COMPLETED_REQUESTS_AGENT_PURGE_SIZE = 800;
 

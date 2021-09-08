@@ -3,7 +3,6 @@ package it.grid.storm.config.model;
 import static it.grid.storm.config.ConfigurationDefaults.COMPLETED_REQUESTS_AGENT_DELAY;
 import static it.grid.storm.config.ConfigurationDefaults.COMPLETED_REQUESTS_AGENT_ENABLED;
 import static it.grid.storm.config.ConfigurationDefaults.COMPLETED_REQUESTS_AGENT_INTERVAL;
-import static it.grid.storm.config.ConfigurationDefaults.COMPLETED_REQUESTS_AGENT_IS_DYNAMIC;
 import static it.grid.storm.config.ConfigurationDefaults.COMPLETED_REQUESTS_AGENT_PURGE_AGE;
 import static it.grid.storm.config.ConfigurationDefaults.COMPLETED_REQUESTS_AGENT_PURGE_SIZE;
 
@@ -18,7 +17,6 @@ public class CompletedRequestsAgent {
   public boolean enabled;
   public int delay;
   public int interval;
-  public boolean isDynamic;
   public long purgeAge;
   public int purgeSize;
 
@@ -26,7 +24,6 @@ public class CompletedRequestsAgent {
     enabled = COMPLETED_REQUESTS_AGENT_ENABLED;
     delay = COMPLETED_REQUESTS_AGENT_DELAY;
     interval = COMPLETED_REQUESTS_AGENT_INTERVAL;
-    isDynamic = COMPLETED_REQUESTS_AGENT_IS_DYNAMIC;
     purgeAge = COMPLETED_REQUESTS_AGENT_PURGE_AGE;
     purgeSize = COMPLETED_REQUESTS_AGENT_PURGE_SIZE;
   }
@@ -35,7 +32,6 @@ public class CompletedRequestsAgent {
     log.info("{}.enabled: {}", prefix, enabled);
     log.info("{}.delay: {}", prefix, delay);
     log.info("{}.interval: {}", prefix, interval);
-    log.info("{}.is_dynamic: {}", prefix, isDynamic);
     log.info("{}.purge_age: {}", prefix, purgeAge);
     log.info("{}.purge_size: {}", prefix, purgeSize);
   }

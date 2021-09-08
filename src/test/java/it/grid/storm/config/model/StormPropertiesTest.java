@@ -140,7 +140,6 @@ public class StormPropertiesTest {
     assertEquals(properties.completedRequestsAgent.interval, 400);
     assertEquals(properties.completedRequestsAgent.purgeSize, 1800);
     assertEquals(properties.completedRequestsAgent.purgeAge, 22200);
-    assertEquals(properties.completedRequestsAgent.isDynamic, true);
     assertEquals(properties.requestsScheduler.corePoolSize, 10);
     assertEquals(properties.requestsScheduler.maxPoolSize, 50);
     assertEquals(properties.requestsScheduler.queueSize, 2000);
@@ -234,7 +233,6 @@ public class StormPropertiesTest {
     assertEquals(properties.completedRequestsAgent.interval, COMPLETED_REQUESTS_AGENT_INTERVAL);
     assertEquals(properties.completedRequestsAgent.purgeSize, COMPLETED_REQUESTS_AGENT_PURGE_SIZE);
     assertEquals(properties.completedRequestsAgent.purgeAge, COMPLETED_REQUESTS_AGENT_PURGE_AGE);
-    assertEquals(properties.completedRequestsAgent.isDynamic, COMPLETED_REQUESTS_AGENT_ENABLED);
     assertEquals(properties.requestsScheduler.corePoolSize, REQUESTS_SCHEDULER_CORE_POOL_SIZE);
     assertEquals(properties.requestsScheduler.maxPoolSize, REQUESTS_SCHEDULER_MAX_POOL_SIZE);
     assertEquals(properties.requestsScheduler.queueSize, REQUESTS_SCHEDULER_QUEUE_SIZE);
