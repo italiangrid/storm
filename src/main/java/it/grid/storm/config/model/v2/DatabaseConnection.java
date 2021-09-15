@@ -1,4 +1,4 @@
-package it.grid.storm.config.model;
+package it.grid.storm.config.model.v2;
 
 import static it.grid.storm.config.ConfigurationDefaults.DB_PASSWORD;
 import static it.grid.storm.config.ConfigurationDefaults.DB_PORT;
@@ -7,8 +7,6 @@ import static it.grid.storm.config.ConfigurationDefaults.DB_USERNAME;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
-import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -33,13 +31,22 @@ public class DatabaseConnection {
     pool = new DatabasePoolProperties();
   }
 
-  public void log(Logger log, String prefix) {
-    log.info("{}.hostname: {}", prefix, hostname);
-    log.info("{}.username: {}", prefix, username);
-    log.info("{}.password: {}", prefix, password);
-    log.info("{}.port: {}", prefix, port);
-    log.info("{}.properties: {}", prefix, properties);
-    pool.log(log, prefix + ".pool");
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("DatabaseConnection [username=");
+    builder.append(username);
+    builder.append(", password=");
+    builder.append(password);
+    builder.append(", hostname=");
+    builder.append(hostname);
+    builder.append(", port=");
+    builder.append(port);
+    builder.append(", properties=");
+    builder.append(properties);
+    builder.append(", pool=");
+    builder.append(pool);
+    builder.append("]");
+    return builder.toString();
   }
-
 }

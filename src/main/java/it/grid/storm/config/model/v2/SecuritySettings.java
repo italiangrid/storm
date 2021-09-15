@@ -1,9 +1,7 @@
-package it.grid.storm.config.model;
+package it.grid.storm.config.model.v2;
 
 import static it.grid.storm.config.ConfigurationDefaults.SECURITY_ENABLED;
 import static it.grid.storm.config.ConfigurationDefaults.SECURITY_TOKEN;
-
-import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -17,10 +15,5 @@ public class SecuritySettings {
   public SecuritySettings() {
     enabled = SECURITY_ENABLED;
     token = SECURITY_TOKEN;
-  }
-
-  public void log(Logger log, String prefix) {
-    log.info("{}.enabled: {}", prefix, enabled);
-    log.info("{}.token: {}", prefix, token);
   }
 }

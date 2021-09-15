@@ -1,10 +1,8 @@
-package it.grid.storm.config.model;
+package it.grid.storm.config.model.v2;
 
 import static it.grid.storm.config.ConfigurationDefaults.INPROGRESS_REQUESTS_AGENT_DELAY;
 import static it.grid.storm.config.ConfigurationDefaults.INPROGRESS_REQUESTS_AGENT_INTERVAL;
 import static it.grid.storm.config.ConfigurationDefaults.INPROGRESS_REQUESTS_AGENT_PTP_EXPIRATION_TIME;
-
-import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -22,9 +20,17 @@ public class InProgressRequestsAgent {
     ptpExpirationTime = INPROGRESS_REQUESTS_AGENT_PTP_EXPIRATION_TIME;
   }
 
-  public void log(Logger log, String prefix) {
-    log.info("{}.delay: {}", prefix, delay);
-    log.info("{}.interval: {}", prefix, interval);
-    log.info("{}.ptp_expiration_time: {}", prefix, ptpExpirationTime);
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("InProgressRequestsAgent [delay=");
+    builder.append(delay);
+    builder.append(", interval=");
+    builder.append(interval);
+    builder.append(", ptpExpirationTime=");
+    builder.append(ptpExpirationTime);
+    builder.append("]");
+    return builder.toString();
   }
+
 }

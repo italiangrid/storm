@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import it.grid.storm.config.model.OverwriteMode;
+import it.grid.storm.config.model.v2.OverwriteMode;
 import it.grid.storm.srm.types.TOverwriteMode;
 
 public class OverwriteModeConverterTest {

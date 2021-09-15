@@ -1,10 +1,8 @@
-package it.grid.storm.config.model;
+package it.grid.storm.config.model.v2;
 
 import static it.grid.storm.config.ConfigurationDefaults.PTG_SCHEDULER_CORE_POOL_SIZE;
 import static it.grid.storm.config.ConfigurationDefaults.PTG_SCHEDULER_MAX_POOL_SIZE;
 import static it.grid.storm.config.ConfigurationDefaults.PTG_SCHEDULER_QUEUE_SIZE;
-
-import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -22,9 +20,16 @@ public class PtgScheduler {
     queueSize = PTG_SCHEDULER_QUEUE_SIZE;
   }
 
-  public void log(Logger log, String prefix) {
-    log.info("{}.core_pool_size: {}", prefix, corePoolSize);
-    log.info("{}.max_pool_size: {}", prefix, maxPoolSize);
-    log.info("{}.queue_size: {}", prefix, queueSize);
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("PtgScheduler [corePoolSize=");
+    builder.append(corePoolSize);
+    builder.append(", maxPoolSize=");
+    builder.append(maxPoolSize);
+    builder.append(", queueSize=");
+    builder.append(queueSize);
+    builder.append("]");
+    return builder.toString();
   }
 }

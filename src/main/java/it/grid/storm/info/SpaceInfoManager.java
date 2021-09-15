@@ -45,7 +45,7 @@ public class SpaceInfoManager {
   private static final SpaceInfoManager instance = new SpaceInfoManager();
 
   private static final String USED_SPACE_INI_FILEPATH =
-      Configuration.getInstance().configurationDir() + "/used-space.ini".replaceAll("/+", "/");
+      Configuration.getInstance().getConfigurationDir() + "/used-space.ini".replaceAll("/+", "/");
 
   private static final Logger log = LoggerFactory.getLogger(SpaceInfoManager.class);
 
@@ -82,7 +82,7 @@ public class SpaceInfoManager {
       return;
     }
 
-    if (Configuration.getInstance().getDiskUsageServiceEnabled()) {
+    if (Configuration.getInstance().isDiskUsageServiceEnabled()) {
       log.info("The remaining {} storage spaces will be initialized by DiskUsage service",
           ssni.size());
     } else {

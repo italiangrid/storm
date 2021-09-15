@@ -123,7 +123,7 @@ public class PingCommand extends DiscoveryCommand implements Command {
     Properties properties = new Properties();
 
     Configuration config = Configuration.getInstance();
-    String configurationPATH = config.namespaceConfigPath();
+    String configurationPATH = config.getConfigurationDir().getAbsolutePath();
     String pingPropertiesFileName = config.getPingValuesPropertiesFilename();
     String propertiesFile = configurationPATH + File.separator + pingPropertiesFileName;
 

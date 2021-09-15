@@ -1,11 +1,9 @@
-package it.grid.storm.config.model;
+package it.grid.storm.config.model.v2;
 
 import static it.grid.storm.config.ConfigurationDefaults.DEFAULT_FILE_STORAGE_TYPE;
 import static it.grid.storm.config.ConfigurationDefaults.DEFAULT_OVERWRITE_MODE;
 import static it.grid.storm.config.ConfigurationDefaults.FILE_DEFAULT_SIZE;
 import static it.grid.storm.config.ConfigurationDefaults.FILE_LIFETIME_DEFAULT;
-
-import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -24,11 +22,20 @@ public class AdvancedFileSettings {
     defaultOverwrite = DEFAULT_OVERWRITE_MODE;
     defaultStoragetype = DEFAULT_FILE_STORAGE_TYPE;
   }
-  
-  public void log(Logger log, String prefix) {
-    log.info("{}.default_size: {}", prefix, defaultSize);
-    log.info("{}.default_lifetime: {}", prefix, defaultLifetime);
-    log.info("{}.default_overwrite: {}", prefix, defaultOverwrite);
-    log.info("{}.default_storagetype: {}", prefix, defaultStoragetype);
+
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("AdvancedFileSettings [defaultSize=");
+    builder.append(defaultSize);
+    builder.append(", defaultLifetime=");
+    builder.append(defaultLifetime);
+    builder.append(", defaultOverwrite=");
+    builder.append(defaultOverwrite);
+    builder.append(", defaultStoragetype=");
+    builder.append(defaultStoragetype);
+    builder.append("]");
+    return builder.toString();
   }
+  
 }

@@ -1,12 +1,10 @@
-package it.grid.storm.config.model;
+package it.grid.storm.config.model.v2;
 
 import static it.grid.storm.config.ConfigurationDefaults.COMPLETED_REQUESTS_AGENT_DELAY;
 import static it.grid.storm.config.ConfigurationDefaults.COMPLETED_REQUESTS_AGENT_ENABLED;
 import static it.grid.storm.config.ConfigurationDefaults.COMPLETED_REQUESTS_AGENT_INTERVAL;
 import static it.grid.storm.config.ConfigurationDefaults.COMPLETED_REQUESTS_AGENT_PURGE_AGE;
 import static it.grid.storm.config.ConfigurationDefaults.COMPLETED_REQUESTS_AGENT_PURGE_SIZE;
-
-import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -28,11 +26,21 @@ public class CompletedRequestsAgent {
     purgeSize = COMPLETED_REQUESTS_AGENT_PURGE_SIZE;
   }
 
-  public void log(Logger log, String prefix) {
-    log.info("{}.enabled: {}", prefix, enabled);
-    log.info("{}.delay: {}", prefix, delay);
-    log.info("{}.interval: {}", prefix, interval);
-    log.info("{}.purge_age: {}", prefix, purgeAge);
-    log.info("{}.purge_size: {}", prefix, purgeSize);
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("CompletedRequestsAgent [enabled=");
+    builder.append(enabled);
+    builder.append(", delay=");
+    builder.append(delay);
+    builder.append(", interval=");
+    builder.append(interval);
+    builder.append(", purgeAge=");
+    builder.append(purgeAge);
+    builder.append(", purgeSize=");
+    builder.append(purgeSize);
+    builder.append("]");
+    return builder.toString();
   }
+
 }

@@ -688,7 +688,7 @@ public class PtP implements Delegable, Chooser, Request {
           return false;
         } else {
           if (!sp.isSAInitialized(PtP.log, fileStoRI)
-              && Configuration.getInstance().getDiskUsageServiceEnabled()) {
+              && Configuration.getInstance().isDiskUsageServiceEnabled()) {
             /* Trust we got space, let the request pass */
             log.debug("PtPChunk: ReserveSpaceStep: the storage area space "
                 + "initialization is in progress, optimistic approach, considering "

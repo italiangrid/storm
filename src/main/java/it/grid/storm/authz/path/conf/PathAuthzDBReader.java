@@ -55,12 +55,7 @@ public class PathAuthzDBReader {
 
     log.info("Path Authorization : Initializing...");
     if (!(existsAuthzDBFile(filename))) {
-      String configurationPATH = Configuration.getInstance().namespaceConfigPath();
-      if (configurationPATH.length() == 0) {
-        String userDir = System.getProperty("user.dir");
-        log.debug("Unable to found the configuration path. Assume: '{}'", userDir);
-        configurationPATH = userDir + File.separator + "etc";
-      }
+      String configurationPATH = Configuration.getInstance().getConfigurationDir().getAbsolutePath();
       authzDBFilename = configurationPATH + File.separator + filename;
     } else {
       authzDBFilename = filename;

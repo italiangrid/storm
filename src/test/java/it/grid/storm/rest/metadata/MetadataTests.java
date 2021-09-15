@@ -80,7 +80,7 @@ public class MetadataTests {
   }
 
   @Before
-  public void init() throws NamespaceException {
+  public void init() throws NamespaceException, IOException {
 
     Configuration.init("src/test/resources/storm.properties");
 

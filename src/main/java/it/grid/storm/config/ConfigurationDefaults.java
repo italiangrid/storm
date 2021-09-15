@@ -1,7 +1,7 @@
 package it.grid.storm.config;
 
-import it.grid.storm.config.model.OverwriteMode;
-import it.grid.storm.config.model.StorageType;
+import it.grid.storm.config.model.v2.OverwriteMode;
+import it.grid.storm.config.model.v2.StorageType;
 
 public class ConfigurationDefaults {
 

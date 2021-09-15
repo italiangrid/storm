@@ -31,6 +31,7 @@
     <commonsHttpClientVersion>3.1</commonsHttpClientVersion>
     <activationVersion>1.1.1</activationVersion>
     <commonsValidatorVersion>1.7</commonsValidatorVersion>
+    <commonsCollections4Version>4.4</commonsCollections4Version>
     <wsdl4jVersion>1.5.1</wsdl4jVersion>
     <xalanVersion>2.7.1</xalanVersion>
     <mailVersion>1.4.6</mailVersion>
@@ -381,6 +382,13 @@
       <artifactId>xercesImpl</artifactId>
       <version>${xercesImplVersion}</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>${commonsCollections4Version}</version>
+    </dependency>
+
 
   </dependencies>
 

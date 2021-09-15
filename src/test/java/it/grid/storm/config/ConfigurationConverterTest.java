@@ -1,7 +1,9 @@
 package it.grid.storm.config;
 
 import static it.grid.storm.config.ConfigurationDefaults.BOOK_KEEPING_ENABLED;
+import static it.grid.storm.config.ConfigurationDefaults.DB_POOL_MAX_WAIT_MILLIS;
 import static it.grid.storm.config.ConfigurationDefaults.DB_POOL_MIN_IDLE;
+import static it.grid.storm.config.ConfigurationDefaults.DB_POOL_SIZE;
 import static it.grid.storm.config.ConfigurationDefaults.DB_POOL_TEST_ON_BORROW;
 import static it.grid.storm.config.ConfigurationDefaults.DB_POOL_TEST_WHILE_IDLE;
 import static it.grid.storm.config.ConfigurationDefaults.DB_PORT;
@@ -20,25 +22,26 @@ import static it.grid.storm.config.ConfigurationDefaults.SERVER_POOL_STATUS_CHEC
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
-import it.grid.storm.config.model.OverwriteMode;
-import it.grid.storm.config.model.StorageType;
+import it.grid.storm.config.model.v2.OverwriteMode;
+import it.grid.storm.config.model.v2.StorageType;
 import it.grid.storm.namespace.model.Authority;
 
 public class ConfigurationConverterTest {
   
   @Test
-  public void testLoadedConfigurationFromOldProperties() {
+  public void testLoadedConfigurationFromOldProperties() throws IOException {
 
     Configuration.init("src/test/resources/v1.properties");
     Configuration config = Configuration.getInstance();
 
     // SRM service
-    assertEquals(config.getSrmServiceHostname(), "fe.example.org");
+    assertEquals("fe.example.org", config.getSrmServiceHostname());
     assertEquals(config.getSrmServicePort(), 8444);
     assertEquals(config.getManagedSrmEndpoints(),
         Lists.newArrayList(new Authority("fe.example.org", 8444),
@@ -49,9 +52,9 @@ public class ConfigurationConverterTest {
     assertEquals(config.getDbPassword(), "my-secret-password");
     assertEquals(config.getDbProperties(), DB_PROPERTIES);
     assertEquals(config.getDbPort(), DB_PORT);
-    assertEquals(config.getDbPoolSize(), 10);
+    assertEquals(config.getDbPoolSize(), DB_POOL_SIZE);
     assertEquals(config.getDbPoolMinIdle(), DB_POOL_MIN_IDLE);
-    assertEquals(config.getDbPoolMaxWaitMillis(), 50);
+    assertEquals(config.getDbPoolMaxWaitMillis(), DB_POOL_MAX_WAIT_MILLIS);
     assertEquals(config.isDbPoolTestOnBorrow(), DB_POOL_TEST_ON_BORROW);
     assertEquals(config.isDbPoolTestWhileIdle(), DB_POOL_TEST_WHILE_IDLE);
     // REST
@@ -64,13 +67,13 @@ public class ConfigurationConverterTest {
     assertEquals(config.getXmlRpcServerPort(), 8080);
     assertEquals(config.getXmlrpcMaxThreads(), 100);
     assertEquals(config.getXmlrpcMaxQueueSize(), 500);
-    assertEquals(config.getXmlRpcSecurityEnabled(), true);
-    assertEquals(config.getXmlRpcToken(), "abracadabra");
+    assertEquals(config.isSecurityEnabled(), true);
+    assertEquals(config.getSecurityToken(), "abracadabra");
     // disk usage
-    assertEquals(config.getDiskUsageServiceEnabled(), true);
+    assertEquals(config.isDiskUsageServiceEnabled(), true);
     assertEquals(config.getDiskUsageServiceInitialDelay(), 60);
     assertEquals(config.getDiskUsageServiceTasksInterval(), 360);
-    assertEquals(config.getDiskUsageServiceTasksParallel(),
+    assertEquals(config.isDiskUsageServiceTasksParallel(),
         DISKUSAGE_SERVICE_PARALLEL_TASKS_ENABLED);
     //
     assertEquals(config.getCleaningInitialDelay(), 10);

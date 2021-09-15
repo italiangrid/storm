@@ -19,7 +19,7 @@ package it.grid.storm.srm.types;
 
 import java.util.Map;
 
-import it.grid.storm.config.model.StorageType;
+import it.grid.storm.config.model.v2.StorageType;
 
 /**
  * This class represents the TFileStorageType of an Srm request.

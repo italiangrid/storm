@@ -74,7 +74,7 @@ import static it.grid.storm.config.ConfigurationDefaults.SERVER_POOL_STATUS_CHEC
 import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_MAX_QUEUE_SIZE;
 import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_MAX_THREADS;
 import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_SERVER_PORT;
-import static it.grid.storm.config.model.StormProperties.UNRECOGNIZED_VERSION;
+import static it.grid.storm.config.model.v2.StormProperties.UNRECOGNIZED_VERSION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -83,26 +83,25 @@ import java.io.IOException;
 import java.net.InetAddress;
 
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
+
+import it.grid.storm.config.model.v2.StormProperties;
 
 public class StormPropertiesTest {
 
-  private static final Logger log = LoggerFactory.getLogger(StormPropertiesTest.class);
-
   @Test
-  public void testConfigurationLoadFromPropertiesV2() throws JsonParseException, JsonMappingException, IOException {
+  public void testLoadingConfigurationFromFullPropertiesV2() throws JsonParseException, JsonMappingException, IOException {
 
     JavaPropsMapper mapper = new JavaPropsMapper();
     ClassLoader classLoader = getClass().getClassLoader();
     File file = new File(classLoader.getResource("storm.properties").getFile());
     StormProperties properties = mapper.readValue(file, StormProperties.class);
-    properties.log(log);
-    assertEquals(properties.version, "2");
+    System.out.println(properties);
+    assertEquals(properties.version, StormProperties.VERSION);
     assertFalse(properties.srmEndpoints.isEmpty());
     assertEquals(properties.srmEndpoints.size(), 2);
     assertEquals(properties.srmEndpoints.get(0).host, "storm.example");
@@ -187,7 +186,7 @@ public class StormPropertiesTest {
   }
 
   @Test
-  public void testEmptyConfiguration()
+  public void testDefaultConfigurationStartingFromEmptyFile()
       throws JsonParseException, JsonMappingException, IOException {
 
     String hostname = InetAddress.getLocalHost().getHostName();
@@ -281,13 +280,12 @@ public class StormPropertiesTest {
     assertEquals(properties.pingPropertiesFilename, PING_VALUES_PROPERTIES_FILENAME);
   }
   
-  @Test
+  @Test(expected = UnrecognizedPropertyException.class)
   public void testNewConfigurationVersionOverOldFile() throws JsonParseException, JsonMappingException, IOException {
 
     JavaPropsMapper mapper = new JavaPropsMapper();
     ClassLoader classLoader = getClass().getClassLoader();
     File file = new File(classLoader.getResource("v1.properties").getFile());
-    StormProperties properties = mapper.readValue(file, StormProperties.class);
-    assertEquals(properties.version, UNRECOGNIZED_VERSION);
+    mapper.readValue(file, StormProperties.class);
   }
 }

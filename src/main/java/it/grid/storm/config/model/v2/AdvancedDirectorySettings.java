@@ -1,9 +1,7 @@
-package it.grid.storm.config.model;
+package it.grid.storm.config.model.v2;
 
 import static it.grid.storm.config.ConfigurationDefaults.AUTOMATIC_DIRECTORY_CREATION;
 import static it.grid.storm.config.ConfigurationDefaults.ENABLE_WRITE_PERM_ON_DIRECTORY;
-
-import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -18,9 +16,16 @@ public class AdvancedDirectorySettings {
     enableAutomaticCreation = AUTOMATIC_DIRECTORY_CREATION;
     enableWritepermOnCreation = ENABLE_WRITE_PERM_ON_DIRECTORY;
   }
-  
-  public void log(Logger log, String prefix) {
-    log.info("{}.enable_automatic_creation: {}", prefix, enableAutomaticCreation);
-    log.info("{}.enable_writeperm_on_creation: {}", prefix, enableWritepermOnCreation);
+
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("AdvancedDirectorySettings [enableAutomaticCreation=");
+    builder.append(enableAutomaticCreation);
+    builder.append(", enableWritepermOnCreation=");
+    builder.append(enableWritepermOnCreation);
+    builder.append("]");
+    return builder.toString();
   }
+  
 }

@@ -1,10 +1,8 @@
-package it.grid.storm.config.model;
+package it.grid.storm.config.model.v2;
 
 import static it.grid.storm.config.ConfigurationDefaults.REQUESTS_PICKER_AGENT_DELAY;
 import static it.grid.storm.config.ConfigurationDefaults.REQUESTS_PICKER_AGENT_INTERVAL;
 import static it.grid.storm.config.ConfigurationDefaults.REQUESTS_PICKER_AGENT_MAX_FETCHED_SIZE;
-
-import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -22,9 +20,16 @@ public class RequestsPickerAgent {
     maxFetchedSize = REQUESTS_PICKER_AGENT_MAX_FETCHED_SIZE;
   }
 
-  public void log(Logger log, String prefix) {
-    log.info("{}.delay: {}", prefix, delay);
-    log.info("{}.interval: {}", prefix, interval);
-    log.info("{}.max_fetched_size: {}", prefix, maxFetchedSize);
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("RequestsPickerAgent [delay=");
+    builder.append(delay);
+    builder.append(", interval=");
+    builder.append(interval);
+    builder.append(", maxFetchedSize=");
+    builder.append(maxFetchedSize);
+    builder.append("]");
+    return builder.toString();
   }
 }

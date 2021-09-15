@@ -21,7 +21,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import it.grid.storm.common.types.TURLPrefix;
-import it.grid.storm.config.model.OverwriteMode;
+import it.grid.storm.config.model.v2.OverwriteMode;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.persistence.converter.OverwriteModeConverter;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;

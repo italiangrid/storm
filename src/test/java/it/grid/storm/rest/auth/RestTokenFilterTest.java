@@ -59,7 +59,7 @@ public class RestTokenFilterTest {
   }
 
   @Before
-  public void init() {
+  public void init() throws IOException {
 
     Configuration.init("src/test/resources/storm.properties");
   }

@@ -194,7 +194,7 @@ public class TaskResourceTest {
   }
 
   @Before
-  public void init() throws DataAccessException {
+  public void init() throws DataAccessException, IOException {
 
     Configuration.init("src/test/resources/storm.properties");
 

@@ -118,8 +118,6 @@ public class StoRM {
 
   public void init() throws BootstrapException {
 
-    configureLogging();
-
     configureSecurity();
 
     configureMetricsReporting();
@@ -140,13 +138,6 @@ public class StoRM {
 
     performSanityChecks();
 
-  }
-
-  private void configureLogging() {
-
-    String logFile = String.format("%s/logging.xml", config.configurationDir());
-    log.debug("Configure logging from %s file ...", logFile);
-    Bootstrap.configureLogging(logFile);
   }
 
   private void configureSecurity() {
@@ -173,7 +164,7 @@ public class StoRM {
 
   private void loadPathAuthzDBConfiguration() throws BootstrapException {
 
-    String pathAuthzDBFileName = config.configurationDir() + "path-authz.db";
+    String pathAuthzDBFileName = config.getConfigurationDir() + "path-authz.db";
 
     Bootstrap.initializePathAuthz(pathAuthzDBFileName);
   }
@@ -282,8 +273,8 @@ public class StoRM {
   private void configureRestService() {
 
     int restServicePort = config.getRestServicesPort();
-    boolean isTokenEnabled = config.getXmlRpcSecurityEnabled();
-    String token = config.getXmlRpcToken();
+    boolean isTokenEnabled = config.isSecurityEnabled();
+    String token = config.getSecurityToken();
     int maxThreads = config.getRestServicesMaxThreads();
     int maxQueueSize = config.getRestServicesMaxQueueSize();
 
@@ -420,7 +411,7 @@ public class StoRM {
 
   private void configureDiskUsageService() {
 
-    isDiskUsageServiceEnabled = config.getDiskUsageServiceEnabled();
+    isDiskUsageServiceEnabled = config.isDiskUsageServiceEnabled();
     int delay = config.getDiskUsageServiceInitialDelay();
     long period = config.getDiskUsageServiceTasksInterval();
 
@@ -431,7 +422,7 @@ public class StoRM {
       .filter(vfs -> !quotaEnabledVfs.contains(vfs))
       .collect(Collectors.toList());
 
-    if (config.getDiskUsageServiceTasksParallel()) {
+    if (config.isDiskUsageServiceTasksParallel()) {
       duService = DiskUsageService.getScheduledThreadPoolService(sas, delay, period);
     } else {
       duService = DiskUsageService.getSingleThreadScheduledService(sas, delay, period);

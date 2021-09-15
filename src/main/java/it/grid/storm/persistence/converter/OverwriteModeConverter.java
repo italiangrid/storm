@@ -25,7 +25,7 @@ import java.util.Map;
 
 import com.google.common.collect.Maps;
 
-import it.grid.storm.config.model.OverwriteMode;
+import it.grid.storm.config.model.v2.OverwriteMode;
 import it.grid.storm.srm.types.TOverwriteMode;
 
 /**

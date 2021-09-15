@@ -1,4 +1,4 @@
-package it.grid.storm.config.model;
+package it.grid.storm.config.model.v2;
 
 import static it.grid.storm.config.ConfigurationDefaults.GPFS_QUOTA_REFRESH_PERIOD;
 import static it.grid.storm.config.ConfigurationDefaults.HTTP_TURL_PREFIX;
@@ -11,19 +11,15 @@ import static it.grid.storm.config.ConfigurationDefaults.SERVER_POOL_STATUS_CHEC
 import java.net.UnknownHostException;
 import java.util.List;
 
-import org.slf4j.Logger;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import jersey.repackaged.com.google.common.collect.Lists;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class StormProperties {
 
-  public static final String VERSION = "v2";
+  public static final String VERSION = "2.0";
   public static final String UNRECOGNIZED_VERSION = "unknown";
   
   public String version;
@@ -86,43 +82,68 @@ public class StormProperties {
     pingPropertiesFilename = PING_VALUES_PROPERTIES_FILENAME;
   }
 
-  public boolean hasVersion() {
-    return !UNRECOGNIZED_VERSION.equals(version);
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("StormProperties [version=");
+    builder.append(version);
+    builder.append(", srmEndpoints=");
+    builder.append(srmEndpoints);
+    builder.append(", db=");
+    builder.append(db);
+    builder.append(", rest=");
+    builder.append(rest);
+    builder.append(", xmlrpc=");
+    builder.append(xmlrpc);
+    builder.append(", security=");
+    builder.append(security);
+    builder.append(", du=");
+    builder.append(du);
+    builder.append(", inprogressRequestsAgent=");
+    builder.append(inprogressRequestsAgent);
+    builder.append(", expiredSpacesAgent=");
+    builder.append(expiredSpacesAgent);
+    builder.append(", completedRequestsAgent=");
+    builder.append(completedRequestsAgent);
+    builder.append(", requestsPickerAgent=");
+    builder.append(requestsPickerAgent);
+    builder.append(", requestsScheduler=");
+    builder.append(requestsScheduler);
+    builder.append(", ptpScheduler=");
+    builder.append(ptpScheduler);
+    builder.append(", ptgScheduler=");
+    builder.append(ptgScheduler);
+    builder.append(", bolScheduler=");
+    builder.append(bolScheduler);
+    builder.append(", sanityChecksEnabled=");
+    builder.append(sanityChecksEnabled);
+    builder.append(", extraslashes=");
+    builder.append(extraslashes);
+    builder.append(", synchLs=");
+    builder.append(synchLs);
+    builder.append(", pinlifetime=");
+    builder.append(pinlifetime);
+    builder.append(", skipPtgAclSetup=");
+    builder.append(skipPtgAclSetup);
+    builder.append(", files=");
+    builder.append(files);
+    builder.append(", directories=");
+    builder.append(directories);
+    builder.append(", hearthbeat=");
+    builder.append(hearthbeat);
+    builder.append(", infoQuotaRefreshPeriod=");
+    builder.append(infoQuotaRefreshPeriod);
+    builder.append(", httpTurlPrefix=");
+    builder.append(httpTurlPrefix);
+    builder.append(", serverPoolStatusCheckTimeout=");
+    builder.append(serverPoolStatusCheckTimeout);
+    builder.append(", abortMaxloop=");
+    builder.append(abortMaxloop);
+    builder.append(", pingPropertiesFilename=");
+    builder.append(pingPropertiesFilename);
+    builder.append("]");
+    return builder.toString();
   }
+
   
-  public void log(Logger log) {
-
-    log.info("version: {}", version);
-    for (int i = 0; i < srmEndpoints.size(); i++) {
-      log.info("srm_endpoints.{}.host: {}", i+1, srmEndpoints.get(i).host);
-      log.info("srm_endpoints.{}.port: {}", i+1, srmEndpoints.get(i).port);
-    }
-    db.log(log, "db");
-    rest.log(log, "rest");
-    xmlrpc.log(log, "xmlrpc");
-    security.log(log, "security");
-    du.log(log, "du");
-    inprogressRequestsAgent.log(log, "inprogress_requests_agent");
-    expiredSpacesAgent.log(log, "expired_spaces_agent");
-    completedRequestsAgent.log(log, "completed_requests_agent");
-    requestsPickerAgent.log(log, "requests_picker_agent");
-    requestsScheduler.log(log, "requests_scheduler");
-    ptpScheduler.log(log, "ptp_scheduler");
-    ptgScheduler.log(log, "ptg_scheduler");
-    bolScheduler.log(log, "bol_scheduler");
-    log.info("sanity_checks_enabled: {}", sanityChecksEnabled);
-    extraslashes.log(log, "extraslashes");
-    synchLs.log(log, "synch_ls");
-    pinlifetime.log(log, "pinlifetime");
-    log.info("skip_ptg_acl_setup: {}", skipPtgAclSetup);
-    files.log(log, "files");
-    directories.log(log, "directories");
-    hearthbeat.log(log, "hearthbeat");
-    log.info("info_quota_refresh_period: {}", infoQuotaRefreshPeriod);
-    log.info("http_turl_prefix: {}", httpTurlPrefix);
-    log.info("server_pool_status_check_timeout: {}", serverPoolStatusCheckTimeout);
-    log.info("abort_max_loop: {}", abortMaxloop);
-    log.info("ping_properties_filename: {}", pingPropertiesFilename);
-  }
-
 }

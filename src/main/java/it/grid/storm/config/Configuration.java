@@ -17,79 +17,65 @@
 
 package it.grid.storm.config;
 
-import static java.lang.System.getProperty;
-
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.List;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
 
 import it.grid.storm.config.converter.StormPropertiesConverter;
-import it.grid.storm.config.model.OverwriteMode;
-import it.grid.storm.config.model.StorageType;
-import it.grid.storm.config.model.StormProperties;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.config.model.v2.OverwriteMode;
+import it.grid.storm.config.model.v2.StorageType;
+import it.grid.storm.config.model.v2.StormProperties;
 import it.grid.storm.namespace.model.Authority;
-
-/**
- * Singleton holding all configuration values that any other object in the StoRM backend reads from
- * configuration files, databases, etc. Implements a 'get<something>' method for each value that
- * should be looked up this way. In fact, this is a "read-only" class. If no value is specified in
- * the configuration medium, a default one is used instead; some properties may hold several comma
- * separated values without any white spaces in-between; the name of the property in the
- * configuration medium, default values, as well as the option of holding multiple values, is
- * specified in each method comment.
- */
 
 public class Configuration {
 
   private static Configuration instance = null;
 
-  public static final String CURRENT_PROPERTIES_VERSION = "v2";
-
-  private Logger log = NamespaceDirector.getLogger();
+  private static final Logger log = LoggerFactory.getLogger(Configuration.class);
 
   private File configFile;
   private StormProperties properties;
 
-  public static void init(String filePath) {
+  public static void init(String filePath) throws IOException {
     instance = new Configuration(filePath);
   }
 
-  private Configuration(String filePath) {
+  private Configuration(String filePath) throws IOException {
 
     configFile = new File(filePath);
+    loadConfiguration();
+  }
+
+  private void loadConfiguration() throws IOException {
 
     JavaPropsMapper mapper = new JavaPropsMapper();
     try {
       properties = mapper.readValue(configFile, StormProperties.class);
-      if (properties.hasVersion()) {
-        log.info("Configuration properties:");
-        properties.log(log);
-      } else {
-        // storm.properties before v1.12.0
-        log.warn("It seems that your {} is not compliant with this StoRM Backend version.",
-            filePath);
-        log.warn("StoRM Backend will try to convert your old configuration to the latest ...");
-        Properties old = new Properties();
-        old.load(new FileInputStream(filePath));
-        properties = StormPropertiesConverter.from(old);
-        log.info("This is your generated configuration:");
-        properties.log(log);
-        File configFileV2 = new File(filePath + ".new");
-        mapper.writeValue(configFileV2, properties);
-        log.info("Your configuration has been saved into {}", configFileV2);
+    } catch (UnrecognizedPropertyException e) {
+      log.error("Malformed configuration file: {}", e.getMessage());
+      properties = null;
+    }
+    if (properties == null) {
+      log.warn("It seems that '{}' is not compliant with this StoRM version.", configFile);
+      File configTarget = new File(configFile + ".new");
+      log.info("Converting your configuration into {} ...", configTarget);
+      StormPropertiesConverter.convert(configFile, configTarget);
+      log.warn("The automatic convertion has been done.");
+      log.warn("Pleas check the generated configuration and properly update your '{}'", configFile);
+      log.info("Loading configuration from {} ...", configTarget);
+      try {
+        properties = mapper.readValue(configTarget, StormProperties.class);
+      } catch (UnrecognizedPropertyException e) {
+        log.error("Malformed configuration file: {}", e.getMessage());
+        throw new RuntimeException("Unable to load configuration!");
       }
-    } catch (IOException e) {
-      e.printStackTrace();
-      System.exit(1);
     }
   }
 
@@ -98,19 +84,9 @@ public class Configuration {
     return instance;
   }
 
-  public File configurationDir() {
+  public File getConfigurationDir() {
 
     return configFile.getParentFile();
-  }
-
-  /**
-   * getNamespaceConfigPath
-   * 
-   * @return String
-   */
-  public String namespaceConfigPath() {
-
-    return String.format("%s%setc", getProperty("user.dir"), File.separator);
   }
 
   /**
@@ -121,12 +97,6 @@ public class Configuration {
     return getManagedSrmEndpoints().get(0).getServiceHostname();
   }
 
-  /**
-   * MANDATORY CONFIGURATION PARAMETER! Define the SURL end-points.
-   * 
-   * @return String[]
-   * @throws UnknownHostException
-   */
   public List<Authority> getManagedSrmEndpoints() {
 
     return properties.srmEndpoints.stream()
@@ -265,17 +235,17 @@ public class Configuration {
     return properties.xmlrpc.port;
   }
 
-  public Boolean getXmlRpcSecurityEnabled() {
+  public Boolean isSecurityEnabled() {
 
     return properties.security.enabled;
   }
 
-  public String getXmlRpcToken() {
+  public String getSecurityToken() {
 
     return properties.security.token;
   }
 
-  public boolean getDiskUsageServiceEnabled() {
+  public boolean isDiskUsageServiceEnabled() {
 
     return properties.du.enabled;
   }
@@ -290,7 +260,7 @@ public class Configuration {
     return properties.du.tasksInterval;
   }
 
-  public boolean getDiskUsageServiceTasksParallel() {
+  public boolean isDiskUsageServiceTasksParallel() {
 
     return properties.du.parallelTasksEnabled;
   }

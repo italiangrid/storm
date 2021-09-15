@@ -1,4 +1,4 @@
-package it.grid.storm.config.model;
+package it.grid.storm.config.model.v2;
 
 import static it.grid.storm.config.ConfigurationDefaults.DEFAULT_SRM_PORT;
 
@@ -48,5 +48,15 @@ public class Endpoint {
     return Objects.equals(host, other.host) && port == other.port;
   }
 
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("Endpoint [host=");
+    builder.append(host);
+    builder.append(", port=");
+    builder.append(port);
+    builder.append("]");
+    return builder.toString();
+  }
 
 }

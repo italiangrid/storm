@@ -1,12 +1,10 @@
-package it.grid.storm.config.model;
+package it.grid.storm.config.model.v2;
 
 import static it.grid.storm.config.ConfigurationDefaults.BOOK_KEEPING_ENABLED;
 import static it.grid.storm.config.ConfigurationDefaults.HEARTHBEAT_PERIOD;
 import static it.grid.storm.config.ConfigurationDefaults.PERFORMANCE_GLANCE_TIME_INTERVAL;
 import static it.grid.storm.config.ConfigurationDefaults.PERFORMANCE_LOGBOOK_TIME_INTERVAL;
 import static it.grid.storm.config.ConfigurationDefaults.PERFORMANCE_MEASURING;
-
-import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -28,11 +26,21 @@ public class HearthbeatSettings {
     performanceGlanceTimeInterval = PERFORMANCE_GLANCE_TIME_INTERVAL;
   }
 
-  public void log(Logger log, String prefix) {
-    log.info("{}.bookkeeping_enabled: {}", prefix, bookkeepingEnabled);
-    log.info("{}.performance_measuring_enabled: {}", prefix, performanceMeasuringEnabled);
-    log.info("{}.period: {}", prefix, period);
-    log.info("{}.performance_logbook_time_interval: {}", prefix, performanceLogbookTimeInterval);
-    log.info("{}.performance_glance_time_interval: {}", prefix, performanceGlanceTimeInterval);
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("HearthbeatSettings [bookkeepingEnabled=");
+    builder.append(bookkeepingEnabled);
+    builder.append(", performanceMeasuringEnabled=");
+    builder.append(performanceMeasuringEnabled);
+    builder.append(", period=");
+    builder.append(period);
+    builder.append(", performanceLogbookTimeInterval=");
+    builder.append(performanceLogbookTimeInterval);
+    builder.append(", performanceGlanceTimeInterval=");
+    builder.append(performanceGlanceTimeInterval);
+    builder.append("]");
+    return builder.toString();
   }
+
 }

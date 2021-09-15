@@ -109,13 +109,13 @@ public final class XMLRPCHttpServer {
     ServletContextHandler servletContextHandler = new ServletContextHandler();
     servletContextHandler.addServlet(new ServletHolder(servlet), "/");
 
-    Boolean isTokenEnabled = Configuration.getInstance().getXmlRpcSecurityEnabled();
+    Boolean isTokenEnabled = Configuration.getInstance().isSecurityEnabled();
 
     if (isTokenEnabled) {
 
       LOG.info("Enabling security filter for XML-RPC requests");
 
-      String token = Configuration.getInstance().getXmlRpcToken();
+      String token = Configuration.getInstance().getSecurityToken();
 
       if (token == null || token.isEmpty()) {
 

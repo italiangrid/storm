@@ -1,11 +1,9 @@
-package it.grid.storm.config.model;
+package it.grid.storm.config.model.v2;
 
 import static it.grid.storm.config.ConfigurationDefaults.DISKUSAGE_SERVICE_ENABLED;
 import static it.grid.storm.config.ConfigurationDefaults.DISKUSAGE_SERVICE_INITIAL_DELAY;
 import static it.grid.storm.config.ConfigurationDefaults.DISKUSAGE_SERVICE_PARALLEL_TASKS_ENABLED;
 import static it.grid.storm.config.ConfigurationDefaults.DISKUSAGE_SERVICE_TASKS_INTERVAL;
-
-import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -25,10 +23,19 @@ public class DiskUsageService {
     tasksInterval = DISKUSAGE_SERVICE_TASKS_INTERVAL;
   }
 
-  public void log(Logger log, String prefix) {
-    log.info("{}.enabled: {}", prefix, enabled);
-    log.info("{}.parallel_tasks_enabled: {}", prefix, parallelTasksEnabled);
-    log.info("{}.initial_delay: {}", prefix, initialDelay);
-    log.info("{}.tasks_interval: {}", prefix, tasksInterval);
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("DiskUsageService [enabled=");
+    builder.append(enabled);
+    builder.append(", parallelTasksEnabled=");
+    builder.append(parallelTasksEnabled);
+    builder.append(", initialDelay=");
+    builder.append(initialDelay);
+    builder.append(", tasksInterval=");
+    builder.append(tasksInterval);
+    builder.append("]");
+    return builder.toString();
   }
+
 }

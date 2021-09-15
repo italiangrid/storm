@@ -1,9 +1,7 @@
-package it.grid.storm.config.model;
+package it.grid.storm.config.model.v2;
 
 import static it.grid.storm.config.ConfigurationDefaults.EXPIRED_SPACES_AGENT_DELAY;
 import static it.grid.storm.config.ConfigurationDefaults.EXPIRED_SPACES_AGENT_INTERVAL;
-
-import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -19,8 +17,15 @@ public class ExpiredSpacesAgent {
     interval = EXPIRED_SPACES_AGENT_INTERVAL;
   }
 
-  public void log(Logger log, String prefix) {
-    log.info("{}.delay: {}", prefix, delay);
-    log.info("{}.interval: {}", prefix, interval);
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("ExpiredSpacesAgent [delay=");
+    builder.append(delay);
+    builder.append(", interval=");
+    builder.append(interval);
+    builder.append("]");
+    return builder.toString();
   }
+
 }

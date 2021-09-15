@@ -86,7 +86,7 @@ public class FileStorageTypeConverter {
     TFileStorageType aux = DBtoSTORM.get(s);
     if (aux == null)
       // This case is that the String s is different from V,P or D.
-      aux = DBtoSTORM.get(Configuration.getInstance().getDefaultFileStorageType());
+      aux = DBtoSTORM.get(Configuration.getInstance().getDefaultFileStorageType().name());
     if (aux == null)
       // This case should never happen, but in case we prefer ponder PERMANENT.
       return TFileStorageType.EMPTY;

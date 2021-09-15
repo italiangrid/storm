@@ -1,423 +1,104 @@
 package it.grid.storm.config.model.v1;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class StormProperties {
 
-  @JsonProperty("storm.service.SURL.endpoint")
-  public String managedSurls;
+  /* Configuration file properties */
+  public static final String MANAGED_SURLS_KEY = "storm.service.SURL.endpoint";
+  public static final String SERVICE_DEFAULT_PORTS = "storm.service.SURL.default-ports";
+  public static final String SERVICE_HOSTNAME_KEY = "storm.service.FE-public.hostname";
+  public static final String SERVICE_PORT_KEY = "storm.service.port";
+  public static final String DB_URL_HOSTNAME_KEY = "storm.service.request-db.host";
+  public static final String DB_URL_PROPERTIES_KEY = "storm.service.request-db.properties";
+  public static final String DB_USER_NAME_KEY = "storm.service.request-db.username";
+  public static final String DB_PASSWORD_KEY = "storm.service.request-db.passwd";
+  public static final String BE_PERSISTENCE_POOL_DB_MAX_ACTIVE_KEY =
+      "persistence.internal-db.connection-pool.maxActive";
+  public static final String BE_PERSISTENCE_POOL_DB_MAX_WAIT_KEY =
+      "persistence.internal-db.connection-pool.maxWait";
+  public static final String XMLRPC_SERVER_PORT_KEY = "synchcall.xmlrpc.unsecureServerPort";
+  public static final String XMLRPC_MAX_THREAD_KEY = "synchcall.xmlrpc.maxthread";
+  public static final String XMLRPC_MAX_QUEUE_SIZE_KEY = "synchcall.xmlrpc.max_queue_size";
+  public static final String REST_SERVICES_PORT_KEY = "storm.rest.services.port";
+  public static final String REST_SERVICES_MAX_THREAD = "storm.rest.services.maxthread";
+  public static final String REST_SERVICES_MAX_QUEUE_SIZE = "storm.rest.services.max_queue_size";
+  public static final String XMLRPC_SECURITY_ENABLED_KEY = "synchcall.xmlrpc.security.enabled";
+  public static final String XMLRPC_SECURITY_TOKEN_KEY = "synchcall.xmlrpc.security.token";
+
+  public static final String DISKUSAGE_SERVICE_ENABLED = "storm.service.du.enabled";
+  public static final String DISKUSAGE_SERVICE_INITIAL_DELAY = "storm.service.du.delaySecs";
+  public static final String DISKUSAGE_SERVICE_TASKS_INTERVAL = "storm.service.du.periodSecs";
+  public static final String DISKUSAGE_SERVICE_TASKS_PARALLEL = "storm.service.du.parallelTasks";
+
+  public static final String SANITY_CHECK_ENABLED_KEY = "sanity-check.enabled";
+
+  public static final String LS_MAX_NUMBER_OF_ENTRY_KEY = "synchcall.directoryManager.maxLsEntry";
+  public static final String LS_ALL_LEVEL_RECURSIVE_KEY =
+      "synchcall.directoryManager.default.AllLevelRecursive";
+  public static final String LS_NUM_OF_LEVELS_KEY = "synchcall.directoryManager.default.Levels";
+  public static final String LS_OFFSET_KEY = "synchcall.directoryManager.default.Offset";
+
+  public static final String AUTOMATIC_DIRECTORY_CREATION_KEY = "directory.automatic-creation";
+  public static final String ENABLE_WRITE_PERM_ON_DIRECTORY_KEY = "directory.writeperm";
+
+  public static final String FILE_DEFAULT_SIZE_KEY = "fileSize.default";
+  public static final String FILE_LIFETIME_DEFAULT_KEY = "fileLifetime.default";
+  public static final String DEFAULT_OVERWRITE_MODE_KEY = "default.overwrite";
+  public static final String DEFAULT_FILE_STORAGE_TYPE_KEY = "default.storagetype";
+
+  public static final String EXTRA_SLASHES_FOR_FILE_TURL_KEY = "extraslashes.file";
+  public static final String EXTRA_SLASHES_FOR_RFIO_TURL_KEY = "extraslashes.rfio";
+  public static final String EXTRA_SLASHES_FOR_GSIFTP_TURL_KEY = "extraslashes.gsiftp";
+  public static final String EXTRA_SLASHES_FOR_ROOT_TURL_KEY = "extraslashes.root";
+
+  public static final String PTG_SKIP_ACL_SETUP = "ptg.skip-acl-setup";
+
+  public static final String HEARTHBEAT_PERIOD_KEY = "health.electrocardiogram.period";
+  public static final String PERFORMANCE_GLANCE_TIME_INTERVAL_KEY =
+      "health.performance.glance.timeInterval";
+  public static final String PERFORMANCE_LOGBOOK_TIME_INTERVAL_KEY =
+      "health.performance.logbook.timeInterval";
+  public static final String PERFORMANCE_MEASURING_KEY = "health.performance.mesauring.enabled";
+  public static final String BOOK_KEEPING_ENABLED_KEY = "health.bookkeeping.enabled";
+
+  public static final String PICKING_INITIAL_DELAY_KEY = "asynch.PickingInitialDelay";
+  public static final String PICKING_TIME_INTERVAL_KEY = "asynch.PickingTimeInterval";
+  public static final String PICKING_MAX_BATCH_SIZE_KEY = "asynch.PickingMaxBatchSize";
+
+  public static final String CORE_POOL_SIZE_KEY = "scheduler.crusher.workerCorePoolSize";
+  public static final String MAX_POOL_SIZE_KEY = "scheduler.crusher.workerMaxPoolSize";
+  public static final String QUEUE_SIZE_KEY = "scheduler.crusher.queueSize";
+
+  public static final String PTP_CORE_POOL_SIZE_KEY = "scheduler.chunksched.ptp.workerCorePoolSize";
+  public static final String PTP_MAX_POOL_SIZE_KEY = "scheduler.chunksched.ptp.workerMaxPoolSize";
+  public static final String PTP_QUEUE_SIZE_KEY = "scheduler.chunksched.ptp.queueSize";
+  public static final String PTG_CORE_POOL_SIZE_KEY = "scheduler.chunksched.ptg.workerCorePoolSize";
+  public static final String PTG_MAX_POOL_SIZE_KEY = "scheduler.chunksched.ptg.workerMaxPoolSize";
+  public static final String PTG_QUEUE_SIZE_KEY = "scheduler.chunksched.ptg.queueSize";
+  public static final String BOL_CORE_POOL_SIZE_KEY = "scheduler.chunksched.bol.workerCorePoolSize";
+  public static final String BOL_MAX_POOL_SIZE_KEY = "scheduler.chunksched.bol.workerMaxPoolSize";
+  public static final String BOL_QUEUE_SIZE_KEY = "scheduler.chunksched.bol.queueSize";
+
+  public static final String PIN_LIFETIME_DEFAULT_KEY = "pinLifetime.default";
+  public static final String PIN_LIFETIME_MAXIMUM_KEY = "pinLifetime.maximum";
+
+  public static final String CLEANING_INITIAL_DELAY_KEY = "gc.pinnedfiles.cleaning.delay";
+  public static final String CLEANING_TIME_INTERVAL_KEY = "gc.pinnedfiles.cleaning.interval";
+
+  public static final String TRANSIT_INITIAL_DELAY_KEY = "transit.delay";
+  public static final String TRANSIT_TIME_INTERVAL_KEY = "transit.interval";
+  public static final String EXPIRED_INPROGRESS_PTP_TIME_KEY = "expired.inprogress.time";
+
+  public static final String PURGE_BATCH_SIZE_KEY = "purge.size";
+  public static final String EXPIRED_REQUEST_TIME_KEY = "expired.request.time";
+  public static final String REQUEST_PURGER_DELAY_KEY = "purge.delay";
+  public static final String REQUEST_PURGER_PERIOD_KEY = "purge.interval";
+  public static final String EXPIRED_REQUEST_PURGING_KEY = "purging";
+
+  public static final String PING_VALUES_PROPERTIES_FILENAME_KEY = "ping-properties.filename";
+  public static final String MAX_LOOP_KEY = "abort.maxloop";
+  public static final String GPFS_QUOTA_REFRESH_PERIOD_KEY = "info.quota.refresh.period";
+  public static final String SERVER_POOL_STATUS_CHECK_TIMEOUT_KEY =
+      "server-pool.status-check.timeout";
+  public static final String HTTP_TURL_PREFIX = "http.turl_prefix";
 
-  @JsonProperty("storm.service.SURL.default-ports")
-  public String defaultPorts;
-
-  @JsonProperty("storm.service.FE-public.hostname")
-  public String srmPublicHostname;
-
-  @JsonProperty("storm.service.port")
-  public int srmPublicPort;
-
-  @JsonProperty("storm.service.request-db.host")
-  public String dbHostname;
-
-  @JsonProperty("storm.service.request-db.properties")
-  public String dbProperties;
-
-  @JsonProperty("storm.service.request-db.username")
-  public String dbUsername;
-
-  @JsonProperty("storm.service.request-db.passwd")
-  public String dbPassword;
-
-  @JsonProperty("asynch.db.ReconnectPeriod")
-  public int dbReconnectPeriod;
-
-  @JsonProperty("asynch.db.DelayPeriod")
-  public int dbDelayPeriod;
-
-  @JsonProperty("gc.pinnedfiles.cleaning.delay")
-  public int gcPinnedfilesCleaningDelay;
-
-  @JsonProperty("gc.pinnedfiles.cleaning.interval")
-  public int gcPinnedfilesCleaningInterval;
-
-  @JsonProperty("fileSize.default")
-  public long filesizeDefault;
-
-  @JsonProperty("fileLifetime.default")
-  public long fileLifetimeDefault;
-
-  @JsonProperty("pinLifetime.default")
-  public long pinLifetimeDefault;
-
-  @JsonProperty("pinLifetime.maximum")
-  public long pinLifetimeMaximum;
-
-  @JsonProperty("transit.delay")
-  public int expiredRequestsAgentDelay;
-
-  @JsonProperty("transit.interval")
-  public int expiredRequestsAgentInterval;
-
-  @JsonProperty("asynch.PickingInitialDelay")
-  public int requestsPickerAgentDelay;
-
-  @JsonProperty("asynch.PickingTimeInterval")
-  public int requestsPickerAgentInterval;
-
-  @JsonProperty("asynch.PickingMaxBatchSize")
-  public int requestsPickerAgentMaxFetchedSize;
-
-  @JsonProperty("synchcall.xmlrpc.maxthread")
-  public int xmlrpcMaxThreads;
-
-  @JsonProperty("synchcall.xmlrpc.max_queue_size")
-  public int xmlrpcMaxQueueSize;
-
-  @JsonProperty("persistence.internal-db.connection-pool.maxActive")
-  public int dbPoolMaxActiveConnections;
-
-  @JsonProperty("persistence.internal-db.connection-pool.maxWait")
-  public int dbPoolMaxWait;
-
-  @JsonProperty("synchcall.xmlrpc.unsecureServerPort")
-  public int xmlrpcPort;
-
-  @JsonProperty("synchcall.directoryManager.maxLsEntry")
-  public int synchLsMaxEntries;
-
-  @JsonProperty("synchcall.directoryManager.default.AllLevelRecursive")
-  public boolean synchLsDefaultAllLevelRecursive;
-
-  @JsonProperty("synchcall.directoryManager.default.Levels")
-  public int synchLsDefaultNumLevels;
-
-  @JsonProperty("synchcall.directoryManager.default.Offset")
-  public int synchLsDefaultOffset;
-
-  @JsonProperty("scheduler.chunksched.ptp.workerCorePoolSize")
-  public int ptpSchedulerCorePoolSize;
-
-  @JsonProperty("scheduler.chunksched.ptp.workerMaxPoolSize")
-  public int ptpSchedulerMaxPoolSize;
-
-  @JsonProperty("scheduler.chunksched.ptp.queueSize")
-  public int ptpSchedulerQueueSize;
-
-  @JsonProperty("scheduler.chunksched.ptg.workerCorePoolSize")
-  public int ptgSchedulerCorePoolSize;
-
-  @JsonProperty("scheduler.chunksched.ptg.workerMaxPoolSize")
-  public int ptgSchedulerMaxPoolSize;
-
-  @JsonProperty("scheduler.chunksched.ptg.queueSize")
-  public int ptgSchedulerQueueSize;
-
-  @JsonProperty("scheduler.chunksched.bol.workerCorePoolSize")
-  public int bolSchedulerCorePoolSize;
-
-  @JsonProperty("scheduler.chunksched.bol.workerMaxPoolSize")
-  public int bolSchedulerMaxPoolSize;
-
-  @JsonProperty("scheduler.chunksched.bol.queueSize")
-  public int bolSchedulerQueueSize;
-
-  @JsonProperty("scheduler.crusher.workerCorePoolSize")
-  public int requestsSchedulerCorePoolSize;
-
-  @JsonProperty("scheduler.crusher.workerMaxPoolSize")
-  public int requestsSchedulerMaxPoolSize;
-
-  @JsonProperty("scheduler.crusher.queueSize")
-  public int requestsSchedulerQueueSize;
-
-  @JsonProperty("namespace.filename")
-  public String namespaceFilename;
-
-  @JsonProperty("namespace.schema.filename")
-  public String namespaceSchemaFilename;
-
-  @JsonProperty("namespace.refreshrate")
-  public int namespaceRefreshRate;
-
-  @JsonProperty("namespace.automatic-config-reload")
-  public boolean namespaceAutomaticConfigReload;
-
-  @JsonProperty("directory.automatic-creation")
-  public boolean directoriesAutomaticCreation;
-
-  @JsonProperty("default.overwrite")
-  public String defaultOverwriteMode;
-
-  @JsonProperty("default.storagetype")
-  public String defaultFileStorageType;
-
-  @JsonProperty("purge.size")
-  public int completedRequestsAgentPurgeSize;
-
-  @JsonProperty("expired.request.time")
-  public long completedRequestsAgentPurgeAge;
-
-  @JsonProperty("expired.inprogress.time")
-  public long inProgressRequestsAgentPtpExpirationTime;
-
-  @JsonProperty("purge.delay")
-  public int completedRequestsAgentPurgeDelay;
-
-  @JsonProperty("purge.interval")
-  public int completedRequestsAgentInterval;
-
-  @JsonProperty("purging")
-  public boolean completedRequestsAgentEnabled;
-
-  @JsonProperty("extraslashes.file")
-  public String extraslashesFile;
-  
-  @JsonProperty("extraslashes.rfio")
-  public String extraslashesRfio;
-  
-  @JsonProperty("extraslashes.gsiftp")
-  public String extraslashesGsiftp;
-
-  @JsonProperty("extraslashes.root")
-  public String extraslashesRoot;
-
-  @JsonProperty("ping-properties.filename")
-  public String pingPropertiesFilename;
-
-  @JsonProperty("health.electrocardiogram.period")
-  public int hearthbeatPeriod;
-
-  @JsonProperty("health.performance.glance.timeInterval")
-  public int hearthbeatPerformanceGlanceTimeInterval;
-
-  @JsonProperty("health.performance.logbook.timeInterval")
-  public int hearthbeatPerformanceLogbookTimeInterval;
-
-  @JsonProperty("health.performance.mesauring.enabled")
-  public boolean hearthbeatPerformanceMeasuringEnabled;
-
-  @JsonProperty("health.bookkeeping.enabled")
-  public boolean hearthbeatBookKeepingEnabled;
-
-  @JsonProperty("directory.writeperm")
-  public boolean enabledWritePermOnDirectory;
-
-  @JsonProperty("abort.maxloop")
-  public int abortMaxLoop;
-
-  @JsonProperty("storm.rest.services.port")
-  public int restServicesPort;
-
-  @JsonProperty("storm.rest.services.maxthread")
-  public int restServicesMaxThreads;
-
-  @JsonProperty("storm.rest.services.max_queue_size")
-  public int restServicesMaxQueueSize;
-
-  @JsonProperty("info.quota.refresh.period")
-  public int gpfsQuotaRefreshPeriod;
-
-  @JsonProperty("server-pool.status-check.timeout")
-  public long serverPoolStatusCheckTimeout;
-
-  @JsonProperty("sanity-check.enabled")
-  public boolean sanityCheckEnabled;
-
-  @JsonProperty("synchcall.xmlrpc.security.enabled")
-  public boolean securityEnabled;
-
-  @JsonProperty("synchcall.xmlrpc.security.token")
-  public String securityTokenValue;
-
-  @JsonProperty("ptg.skip-acl-setup")
-  public boolean ptgSkipAclSetup;
-
-  @JsonProperty("http.turl_prefix")
-  public String httpTurlPrefix;
-
-  @JsonProperty("storm.service.du.enabled")
-  public boolean diskUsageServiceEnabled;
-
-  @JsonProperty("storm.service.du.delaySecs")
-  public int diskUsageServiceInitialDelay;
-
-  @JsonProperty("storm.service.du.periodSecs")
-  public int diskUsageServiceTasksInterval;
-
-  @JsonProperty("storm.service.du.parallelTasks")
-  public boolean diskUsageServiceParallelTasksEnabled;
-
-  @Override
-  public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append("StormProperties [managedSurls=");
-    builder.append(managedSurls);
-    builder.append(", defaultPorts=");
-    builder.append(defaultPorts);
-    builder.append(", srmPublicHostname=");
-    builder.append(srmPublicHostname);
-    builder.append(", srmPublicPort=");
-    builder.append(srmPublicPort);
-    builder.append(", dbHostname=");
-    builder.append(dbHostname);
-    builder.append(", dbProperties=");
-    builder.append(dbProperties);
-    builder.append(", dbUsername=");
-    builder.append(dbUsername);
-    builder.append(", dbPassword=");
-    builder.append(dbPassword);
-    builder.append(", dbReconnectPeriod=");
-    builder.append(dbReconnectPeriod);
-    builder.append(", dbDelayPeriod=");
-    builder.append(dbDelayPeriod);
-    builder.append(", gcPinnedfilesCleaningDelay=");
-    builder.append(gcPinnedfilesCleaningDelay);
-    builder.append(", gcPinnedfilesCleaningInterval=");
-    builder.append(gcPinnedfilesCleaningInterval);
-    builder.append(", filesizeDefault=");
-    builder.append(filesizeDefault);
-    builder.append(", fileLifetimeDefault=");
-    builder.append(fileLifetimeDefault);
-    builder.append(", pinLifetimeDefault=");
-    builder.append(pinLifetimeDefault);
-    builder.append(", pinLifetimeMaximum=");
-    builder.append(pinLifetimeMaximum);
-    builder.append(", expiredRequestsAgentDelay=");
-    builder.append(expiredRequestsAgentDelay);
-    builder.append(", expiredRequestsAgentInterval=");
-    builder.append(expiredRequestsAgentInterval);
-    builder.append(", requestsPickerAgentDelay=");
-    builder.append(requestsPickerAgentDelay);
-    builder.append(", requestsPickerAgentInterval=");
-    builder.append(requestsPickerAgentInterval);
-    builder.append(", requestsPickerAgentMaxFetchedSize=");
-    builder.append(requestsPickerAgentMaxFetchedSize);
-    builder.append(", xmlrpcMaxThreads=");
-    builder.append(xmlrpcMaxThreads);
-    builder.append(", xmlrpcMaxQueueSize=");
-    builder.append(xmlrpcMaxQueueSize);
-    builder.append(", dbPoolMaxActiveConnections=");
-    builder.append(dbPoolMaxActiveConnections);
-    builder.append(", dbPoolMaxWait=");
-    builder.append(dbPoolMaxWait);
-    builder.append(", xmlrpcPort=");
-    builder.append(xmlrpcPort);
-    builder.append(", synchLsMaxEntries=");
-    builder.append(synchLsMaxEntries);
-    builder.append(", synchLsDefaultAllLevelRecursive=");
-    builder.append(synchLsDefaultAllLevelRecursive);
-    builder.append(", synchLsDefaultNumLevels=");
-    builder.append(synchLsDefaultNumLevels);
-    builder.append(", synchLsDefaultOffset=");
-    builder.append(synchLsDefaultOffset);
-    builder.append(", ptpSchedulerCorePoolSize=");
-    builder.append(ptpSchedulerCorePoolSize);
-    builder.append(", ptpSchedulerMaxPoolSize=");
-    builder.append(ptpSchedulerMaxPoolSize);
-    builder.append(", ptpSchedulerQueueSize=");
-    builder.append(ptpSchedulerQueueSize);
-    builder.append(", ptgSchedulerCorePoolSize=");
-    builder.append(ptgSchedulerCorePoolSize);
-    builder.append(", ptgSchedulerMaxPoolSize=");
-    builder.append(ptgSchedulerMaxPoolSize);
-    builder.append(", ptgSchedulerQueueSize=");
-    builder.append(ptgSchedulerQueueSize);
-    builder.append(", bolSchedulerCorePoolSize=");
-    builder.append(bolSchedulerCorePoolSize);
-    builder.append(", bolSchedulerMaxPoolSize=");
-    builder.append(bolSchedulerMaxPoolSize);
-    builder.append(", bolSchedulerQueueSize=");
-    builder.append(bolSchedulerQueueSize);
-    builder.append(", requestsSchedulerCorePoolSize=");
-    builder.append(requestsSchedulerCorePoolSize);
-    builder.append(", requestsSchedulerMaxPoolSize=");
-    builder.append(requestsSchedulerMaxPoolSize);
-    builder.append(", requestsSchedulerQueueSize=");
-    builder.append(requestsSchedulerQueueSize);
-    builder.append(", namespaceFilename=");
-    builder.append(namespaceFilename);
-    builder.append(", namespaceSchemaFilename=");
-    builder.append(namespaceSchemaFilename);
-    builder.append(", namespaceRefreshRate=");
-    builder.append(namespaceRefreshRate);
-    builder.append(", namespaceAutomaticConfigReload=");
-    builder.append(namespaceAutomaticConfigReload);
-    builder.append(", directoriesAutomaticCreation=");
-    builder.append(directoriesAutomaticCreation);
-    builder.append(", defaultOverwriteMode=");
-    builder.append(defaultOverwriteMode);
-    builder.append(", defaultFileStorageType=");
-    builder.append(defaultFileStorageType);
-    builder.append(", completedRequestsAgentPurgeSize=");
-    builder.append(completedRequestsAgentPurgeSize);
-    builder.append(", completedRequestsAgentPurgeAge=");
-    builder.append(completedRequestsAgentPurgeAge);
-    builder.append(", inProgressRequestsAgentPtpExpirationTime=");
-    builder.append(inProgressRequestsAgentPtpExpirationTime);
-    builder.append(", completedRequestsAgentPurgeDelay=");
-    builder.append(completedRequestsAgentPurgeDelay);
-    builder.append(", completedRequestsAgentInterval=");
-    builder.append(completedRequestsAgentInterval);
-    builder.append(", completedRequestsAgentEnabled=");
-    builder.append(completedRequestsAgentEnabled);
-    builder.append(", extraslashesFile=");
-    builder.append(extraslashesFile);
-    builder.append(", extraslashesRfio=");
-    builder.append(extraslashesRfio);
-    builder.append(", extraslashesGsiftp=");
-    builder.append(extraslashesGsiftp);
-    builder.append(", extraslashesRoot=");
-    builder.append(extraslashesRoot);
-    builder.append(", pingPropertiesFilename=");
-    builder.append(pingPropertiesFilename);
-    builder.append(", hearthbeatPeriod=");
-    builder.append(hearthbeatPeriod);
-    builder.append(", hearthbeatPerformanceGlanceTimeInterval=");
-    builder.append(hearthbeatPerformanceGlanceTimeInterval);
-    builder.append(", hearthbeatPerformanceLogbookTimeInterval=");
-    builder.append(hearthbeatPerformanceLogbookTimeInterval);
-    builder.append(", hearthbeatPerformanceMeasuringEnabled=");
-    builder.append(hearthbeatPerformanceMeasuringEnabled);
-    builder.append(", hearthbeatBookKeepingEnabled=");
-    builder.append(hearthbeatBookKeepingEnabled);
-    builder.append(", enabledWritePermOnDirectory=");
-    builder.append(enabledWritePermOnDirectory);
-    builder.append(", abortMaxLoop=");
-    builder.append(abortMaxLoop);
-    builder.append(", restServicesPort=");
-    builder.append(restServicesPort);
-    builder.append(", restServicesMaxThreads=");
-    builder.append(restServicesMaxThreads);
-    builder.append(", restServicesMaxQueueSize=");
-    builder.append(restServicesMaxQueueSize);
-    builder.append(", gpfsQuotaRefreshPeriod=");
-    builder.append(gpfsQuotaRefreshPeriod);
-    builder.append(", serverPoolStatusCheckTimeout=");
-    builder.append(serverPoolStatusCheckTimeout);
-    builder.append(", sanityCheckEnabled=");
-    builder.append(sanityCheckEnabled);
-    builder.append(", securityEnabled=");
-    builder.append(securityEnabled);
-    builder.append(", securityTokenValue=");
-    builder.append(securityTokenValue);
-    builder.append(", ptgSkipAclSetup=");
-    builder.append(ptgSkipAclSetup);
-    builder.append(", httpTurlPrefix=");
-    builder.append(httpTurlPrefix);
-    builder.append(", diskUsageServiceEnabled=");
-    builder.append(diskUsageServiceEnabled);
-    builder.append(", diskUsageServiceInitialDelay=");
-    builder.append(diskUsageServiceInitialDelay);
-    builder.append(", diskUsageServiceTasksInterval=");
-    builder.append(diskUsageServiceTasksInterval);
-    builder.append(", diskUsageServiceParallelTasksEnabled=");
-    builder.append(diskUsageServiceParallelTasksEnabled);
-    builder.append("]");
-    return builder.toString();
-  }
-
-  
-  
 }

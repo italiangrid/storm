@@ -1,10 +1,8 @@
-package it.grid.storm.config.model;
+package it.grid.storm.config.model.v2;
 
 import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_MAX_QUEUE_SIZE;
 import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_MAX_THREADS;
 import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_SERVER_PORT;
-
-import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -21,7 +19,7 @@ public class XmlRpcServer {
     maxThreads = XMLRPC_MAX_THREADS;
     maxQueueSize = XMLRPC_MAX_QUEUE_SIZE;
   }
-  
+
   public void setMaxThreads(int maxThreads) {
     this.maxThreads = maxThreads > 0 ? maxThreads : XMLRPC_MAX_THREADS;
   }
@@ -30,9 +28,17 @@ public class XmlRpcServer {
     this.maxQueueSize = maxQueueSize > 0 ? maxQueueSize : XMLRPC_MAX_QUEUE_SIZE;
   }
 
-  public void log(Logger log, String prefix) {
-    log.info("{}.port: {}", prefix, port);
-    log.info("{}.max_threads: {}", prefix, maxThreads);
-    log.info("{}.max_queue_size: {}", prefix, maxQueueSize);
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("XmlRpcServer [port=");
+    builder.append(port);
+    builder.append(", maxThreads=");
+    builder.append(maxThreads);
+    builder.append(", maxQueueSize=");
+    builder.append(maxQueueSize);
+    builder.append("]");
+    return builder.toString();
   }
+
 }
