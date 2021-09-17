@@ -25,7 +25,7 @@ public class Main {
 
     log.debug("Configure logging from {} ...", DEFAULT_LOGGING_FILE);
     Bootstrap.configureLogging(DEFAULT_LOGGING_FILE);
-    log.debug("Load configuration from %s ...", DEFAULT_CONFIG_FILE);
+    log.debug("Load configuration from {} ...", DEFAULT_CONFIG_FILE);
     try {
       Configuration.init(DEFAULT_CONFIG_FILE);
     } catch (IOException e) {
