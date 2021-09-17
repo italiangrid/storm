@@ -164,7 +164,7 @@ public class StoRM {
 
   private void loadPathAuthzDBConfiguration() throws BootstrapException {
 
-    String pathAuthzDBFileName = config.getConfigurationDir() + "path-authz.db";
+    String pathAuthzDBFileName = config.getConfigurationDir() + "/path-authz.db";
 
     Bootstrap.initializePathAuthz(pathAuthzDBFileName);
   }

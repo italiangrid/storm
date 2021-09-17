@@ -205,7 +205,7 @@ public class XMLNamespaceParser implements NamespaceParser {
 
   private void refreshCache() {
 
-    log.info("  ##############  REFRESHING NAMESPACE CONFIGURATION CACHE : start  ###############");
+    log.debug("  ##############  REFRESHING NAMESPACE CONFIGURATION CACHE : start  ###############");
 
     /**************************
      * Retrieve Version Number
@@ -260,7 +260,7 @@ public class XMLNamespaceParser implements NamespaceParser {
        * @todo Manage this exceptional status!
        */
     }
-    log.info("  ##############  REFRESHING NAMESPACE CONFIGURATION CACHE : end ###############");
+    log.debug("  ##############  REFRESHING NAMESPACE CONFIGURATION CACHE : end ###############");
 
     handleTotalOnlineSizeFromGPFSQuota();
     // Update SA within Reserved Space Catalog

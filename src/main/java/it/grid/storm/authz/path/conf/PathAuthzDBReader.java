@@ -20,22 +20,21 @@
  */
 package it.grid.storm.authz.path.conf;
 
-import it.grid.storm.authz.AuthzException;
-import it.grid.storm.authz.path.model.PathACE;
-import it.grid.storm.authz.path.model.PathAuthzEvaluationAlgorithm;
-import it.grid.storm.config.Configuration;
-
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
-import java.io.FileNotFoundException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.grid.storm.authz.AuthzException;
+import it.grid.storm.authz.path.model.PathACE;
+import it.grid.storm.authz.path.model.PathAuthzEvaluationAlgorithm;
 
 /**
  * @author zappi
@@ -44,7 +43,6 @@ public class PathAuthzDBReader {
 
   private static final Logger log = LoggerFactory.getLogger(PathAuthzDBReader.class);
 
-  private final String authzDBFilename;
   private PathAuthzDB pathAuthzDB;
 
   private static enum LineType {
@@ -53,17 +51,9 @@ public class PathAuthzDBReader {
 
   public PathAuthzDBReader(String filename) throws Exception {
 
-    log.info("Path Authorization : Initializing...");
-    if (!(existsAuthzDBFile(filename))) {
-      String configurationPATH = Configuration.getInstance().getConfigurationDir().getAbsolutePath();
-      authzDBFilename = configurationPATH + File.separator + filename;
-    } else {
-      authzDBFilename = filename;
-    }
-    log.debug("Loading Path Authz DB : '{}'", authzDBFilename);
-    pathAuthzDB = loadPathAuthzDB(authzDBFilename);
+    log.debug("Loading Path Authz DB : '{}'", filename);
+    pathAuthzDB = loadPathAuthzDB(filename);
     log.info("Path Authz DB ('{}') loaded.", pathAuthzDB.getPathAuthzDBID());
-    log.info(pathAuthzDB.toString());
   }
 
   public PathAuthzDB getPathAuthzDB() {

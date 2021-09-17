@@ -297,7 +297,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
           result.add(ssTO);
         } while (res.next());
       } else {
-        log.info("No rows found for query : {}", ps);
+        log.debug("No rows found for query : {}", ps);
       }
     } catch (SQLException e) {
       e.printStackTrace();

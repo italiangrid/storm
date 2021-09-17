@@ -82,7 +82,7 @@ public class NamespaceCheck {
 	private boolean checkGroups(boolean vfsCheckResult) {
 
 		log
-			.info("Namespace check. Checking of the existence of the needed Local group ...");
+			.debug("Namespace check. Checking of the existence of the needed Local group ...");
 		boolean result = true;
 		if (!vfsCheckResult) {
 			log
@@ -112,7 +112,7 @@ public class NamespaceCheck {
 			}
 		}
 		if (result) {
-			log.info("All local groups are defined. ");
+			log.debug("All local groups are defined. ");
 		} else {
 			log.warn("Please check the local group needed to StoRM");
 		}
@@ -129,7 +129,7 @@ public class NamespaceCheck {
 	 */
 	private boolean checkVFS() {
 
-		log.info("Namespace checking VFSs ..");
+		log.debug("Namespace checking VFSs ..");
 		boolean result = true;
 		if (vfss == null) {
 			log.error("Anyone VFS is defined in namespace!");
@@ -153,7 +153,7 @@ public class NamespaceCheck {
 			}
 		}
 		if (result) {
-			log.info(" VFSs are well-defined.");
+			log.debug(" VFSs are well-defined.");
 		}
 		return result;
 	}

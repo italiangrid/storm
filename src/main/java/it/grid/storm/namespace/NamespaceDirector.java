@@ -47,19 +47,13 @@ public class NamespaceDirector {
 
   public static void init() {
 
-    log.info("NAMESPACE : Initializing ...");
+    log.debug("NAMESPACE INITIALIZATION : ... started!");
     Configuration config = Configuration.getInstance();
     String configurationDir = config.getConfigurationDir().getAbsolutePath();
     String namespaceFileName = config.getNamespaceConfigFilename();
     String namespaceAbsoluteFilePath = getNamespaceFileAbsolutePath(configurationDir, namespaceFileName);
 
-    log.info(" +++++++++++++++++++++++ ");
-    log.info("    Production Mode      ");
-    log.info(" +++++++++++++++++++++++ ");
-
-    log.debug("Namespace Configuration PATH : {}", configurationDir);
-    log.debug("Namespace Configuration FILENAME : {}", namespaceFileName);
-
+    log.info("Initializing Namespace from {} ...", namespaceAbsoluteFilePath);
     try {
       loader = new XMLNamespaceLoader(namespaceAbsoluteFilePath);
     } catch (DOMException | ConfigurationException | ParserConfigurationException | SAXException

@@ -20,7 +20,6 @@ package it.grid.storm.namespace.config.xml;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Observable;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -40,7 +39,7 @@ import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceValidator;
 import it.grid.storm.namespace.config.NamespaceLoader;
 
-public class XMLNamespaceLoader extends Observable implements NamespaceLoader {
+public class XMLNamespaceLoader implements NamespaceLoader {
 
   private static Logger log = LoggerFactory.getLogger(XMLNamespaceLoader.class);
 
