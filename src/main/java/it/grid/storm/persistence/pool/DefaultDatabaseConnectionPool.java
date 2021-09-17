@@ -68,10 +68,10 @@ public class DefaultDatabaseConnectionPool implements DatabaseConnectionPool {
     bds.setTestOnBorrow(isTestOnBorrow);
     bds.setTestWhileIdle(isTestWhileIdle);
 
-    log.info(
-        "Connected as {} at '{}' [max-total: {}, min-idle: {}, max-conn-lifetime-millis: {}, test-on-borrow: {}, test-while-idle: {}]",
-        dbs.getDbUsername(), dbs.getDbURL(), maxTotal, minIdle, maxConnLifetimeMillis,
-        isTestOnBorrow, isTestWhileIdle);
+    log.info("Connecting to database '{}' as user '{}'", dbs.getDbName(), dbs.getDbUsername());
+    log.debug("Database URL: {}", dbs.getDbURL());
+    log.debug("Pool settings: [max-total: {}, min-idle: {}, max-conn-lifetime-millis: {}, test-on-borrow: {}, test-while-idle: {}]",
+        maxTotal, minIdle, maxConnLifetimeMillis, isTestOnBorrow, isTestWhileIdle);
 
   }
 
