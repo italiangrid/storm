@@ -55,7 +55,8 @@ public class DefaultDatabaseConnectionPool implements DatabaseConnectionPool {
 
   private void init() {
 
-    bds = new InstrumentedBasicDataSource(dbs.getDbName(), StormMetricRegistry.METRIC_REGISTRY.getRegistry());
+    bds = new InstrumentedBasicDataSource(dbs.getDbName(),
+        StormMetricRegistry.METRIC_REGISTRY.getRegistry());
 
     bds.setDriverClassName(dbs.getDriverName());
     bds.setUrl(dbs.getDbURL());
@@ -70,7 +71,8 @@ public class DefaultDatabaseConnectionPool implements DatabaseConnectionPool {
 
     log.info("Connecting to database '{}' as user '{}'", dbs.getDbName(), dbs.getDbUsername());
     log.debug("Database URL: {}", dbs.getDbURL());
-    log.debug("Pool settings: [max-total: {}, min-idle: {}, max-conn-lifetime-millis: {}, test-on-borrow: {}, test-while-idle: {}]",
+    log.debug(
+        "Pool settings: [max-total: {}, min-idle: {}, max-conn-lifetime-millis: {}, test-on-borrow: {}, test-while-idle: {}]",
         maxTotal, minIdle, maxConnLifetimeMillis, isTestOnBorrow, isTestWhileIdle);
 
   }
