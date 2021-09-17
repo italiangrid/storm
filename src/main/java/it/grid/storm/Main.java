@@ -23,7 +23,7 @@ public class Main {
 
   public static void main(String[] args) {
 
-    log.debug("Configure logging from %s ...", DEFAULT_LOGGING_FILE);
+    log.debug("Configure logging from {} ...", DEFAULT_LOGGING_FILE);
     Bootstrap.configureLogging(DEFAULT_LOGGING_FILE);
     log.debug("Load configuration from %s ...", DEFAULT_CONFIG_FILE);
     try {
