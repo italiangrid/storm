@@ -34,13 +34,13 @@ the package repository **has been migrated**. Be sure to upgrade your repository
 Install StoRM RHEL7 package repository as follow:
 
 ```shell
-yum-config-manager --add-repo https://repo.cloud.cnaf.infn.it/repository/storm/stable/storm-stable-centos7.repo
+yum-config-manager --add-repo https://repo.cloud.cnaf.infn.it/repository/storm/storm-stable-centos7.repo
 ```
 
 StoRM RHEL6 package repository is still available and can be installed as follow:
 
 ```shell
-yum-config-manager --add-repo https://repo.cloud.cnaf.infn.it/repository/storm/stable/storm-stable-centos6.repo
+yum-config-manager --add-repo https://repo.cloud.cnaf.infn.it/repository/storm/storm-stable-centos6.repo
 ```
 
 
