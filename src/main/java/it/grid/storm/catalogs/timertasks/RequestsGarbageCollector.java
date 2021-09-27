@@ -37,14 +37,14 @@ public class RequestsGarbageCollector extends TimerTask {
       if (gd.getTotalPurged() == 0) {
 
         log.trace("GARBAGE COLLECTOR didn't find completed requests older than {} seconds",
-            config.getExpiredRequestTime());
+            config.getCompletedRequestsAgentPurgeAge());
 
       } else {
 
         log.info(
             "GARBAGE COLLECTOR removed < {} > completed requests (< {} > recall) older than {} seconds",
             gd.getTotalPurgedRequests(), gd.getTotalPurgedRecalls(),
-            config.getExpiredRequestTime());
+            config.getCompletedRequestsAgentPurgeAge());
 
       }
 
@@ -79,8 +79,8 @@ public class RequestsGarbageCollector extends TimerTask {
       return TGarbageData.EMPTY;
     }
 
-    long expirationTime = config.getExpiredRequestTime();
-    int purgeSize = config.getPurgeBatchSize();
+    long expirationTime = config.getCompletedRequestsAgentPurgeAge();
+    int purgeSize = config.getCompletedRequestsAgentPurgeSize();
 
     int nRequests = purgeExpiredRequests(expirationTime, purgeSize);
     int nRecalls = purgeExpiredRecallRequests(expirationTime, purgeSize);
@@ -95,7 +95,7 @@ public class RequestsGarbageCollector extends TimerTask {
    */
   private boolean enabled() {
 
-    return config.getExpiredRequestPurging();
+    return config.isCompletedRequestsAgentEnabled();
   }
 
   /**
@@ -134,14 +134,14 @@ public class RequestsGarbageCollector extends TimerTask {
   private long computeNextDelay(TGarbageData gd) {
 
     /* max delay from configuration in milliseconds */
-    long maxDelay = config.getRequestPurgerPeriod() * 1000L;
+    long maxDelay = config.getCompletedRequestsAgentPeriod() * 1000L;
     /* min delay accepted in milliseconds */
     long minDelay = 10000L;
 
     long nextDelay;
 
     /* Check purged requests value */
-    if (gd.getTotalPurged() >= config.getPurgeBatchSize()) {
+    if (gd.getTotalPurged() >= config.getCompletedRequestsAgentPurgeSize()) {
 
       /* bunch size reached: decrease interval */
       nextDelay = Math.max(delay / 2, minDelay);

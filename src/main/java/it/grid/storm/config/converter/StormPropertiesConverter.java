@@ -72,17 +72,20 @@ import static it.grid.storm.config.model.v1.StormProperties.XMLRPC_MAX_THREAD_KE
 import static it.grid.storm.config.model.v1.StormProperties.XMLRPC_SECURITY_ENABLED_KEY;
 import static it.grid.storm.config.model.v1.StormProperties.XMLRPC_SECURITY_TOKEN_KEY;
 import static it.grid.storm.config.model.v1.StormProperties.XMLRPC_SERVER_PORT_KEY;
+import static java.lang.String.format;
+import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.properties.SortedProperties;
 import org.slf4j.Logger;
@@ -96,19 +99,21 @@ public class StormPropertiesConverter {
 
   private static final Logger log = LoggerFactory.getLogger(StormPropertiesConverter.class);
 
-
   private static final List<String> MANDATORY_KEYS =
       Lists.newArrayList(SERVICE_HOSTNAME_KEY, SERVICE_PORT_KEY, MANAGED_SURLS_KEY);
 
-  public static void convert(File source, File target) throws IOException {
+  public static void convert(File source, File target)
+      throws IOException, StormPropertiesConversionException {
 
     Properties old = new Properties();
     old.load(new FileInputStream(source));
 
-    for (String mandatoryKey : MANDATORY_KEYS) {
-      if (!old.containsKey(mandatoryKey)) {
-        throw new RuntimeException("Missing mandatory properties for conversion");
-      }
+    List<String> missingProps =
+        MANDATORY_KEYS.stream().filter(k -> !old.containsKey(k)).collect(Collectors.toList());
+    if (missingProps.size() > 0) {
+      String message = format("Missing mandatory properties '%s' for conversion", missingProps);
+      log.error(message);
+      throw new StormPropertiesConversionException(message);
     }
 
     SortedProperties properties = new SortedProperties();
@@ -425,15 +430,20 @@ public class StormPropertiesConverter {
           old.getProperty(PING_VALUES_PROPERTIES_FILENAME_KEY).trim());
     }
 
-    log.debug("This is your generated configuration:");
+    String description = format("Configuration generated from '%s'", source);
+    saveToFile(target, properties, description);
+  }
+
+  private static void saveToFile(File target, Properties properties, String description)
+      throws IOException {
+
     Enumeration<Object> keys = properties.keys();
     FileWriter fw = new FileWriter(target);
-    fw.write(String.format("# Configuration generated from '%s' %n", source.toString()));
-    fw.write(String.format("# %s %n", new Date().toString()));
+    fw.write(format("# %s%n", description));
+    fw.write(format("# Created at %s%n", ISO_DATE_TIME.format(LocalDateTime.now())));
     while (keys.hasMoreElements()) {
       String key = String.valueOf(keys.nextElement());
       String value = String.valueOf(properties.get(key));
-      //log.debug("{}: {}", key, value);
       fw.write(String.format("%s: %s%n", key, value));
     }
     fw.close();

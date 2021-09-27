@@ -25,9 +25,10 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
 
+import it.grid.storm.config.converter.StormPropertiesConversionException;
 import it.grid.storm.config.converter.StormPropertiesConverter;
 import it.grid.storm.config.model.v2.OverwriteMode;
 import it.grid.storm.config.model.v2.StorageType;
@@ -39,9 +40,11 @@ public class Configuration {
   private static Configuration instance = null;
 
   private static final Logger log = LoggerFactory.getLogger(Configuration.class);
+  private static final JavaPropsMapper mapper = new JavaPropsMapper();
 
   private File configFile;
   private StormProperties properties;
+
 
   public static void init(String filePath) throws IOException {
     instance = new Configuration(filePath);
@@ -55,10 +58,9 @@ public class Configuration {
 
   private void loadConfiguration() throws IOException {
 
-    JavaPropsMapper mapper = new JavaPropsMapper();
     try {
-      properties = mapper.readValue(configFile, StormProperties.class);
-    } catch (UnrecognizedPropertyException e) {
+      properties = mapper.readerFor(StormProperties.class).readValue(configFile);
+    } catch (JsonMappingException e) {
       log.error("Malformed configuration file: {}", e.getMessage());
       properties = null;
     }
@@ -66,13 +68,18 @@ public class Configuration {
       log.warn("It seems that '{}' is not compliant with this StoRM version.", configFile);
       File configTarget = new File(configFile + ".new");
       log.info("Converting your configuration into {} ...", configTarget);
-      StormPropertiesConverter.convert(configFile, configTarget);
+      try {
+        StormPropertiesConverter.convert(configFile, configTarget);
+      } catch (IOException | StormPropertiesConversionException e) {
+        log.error(e.getMessage());
+        throw new RuntimeException("Unable to load configuration!");
+      }
       log.warn("The automatic convertion has been done.");
       log.warn("Pleas check the generated configuration and properly update your '{}'", configFile);
       log.info("Loading configuration from {} ...", configTarget);
       try {
-        properties = mapper.readValue(configTarget, StormProperties.class);
-      } catch (UnrecognizedPropertyException e) {
+        properties = mapper.readerFor(StormProperties.class).readValue(configTarget);
+      } catch (JsonMappingException e) {
         log.error("Malformed configuration file: {}", e.getMessage());
         throw new RuntimeException("Unable to load configuration!");
       }
@@ -82,6 +89,11 @@ public class Configuration {
   public synchronized static Configuration getInstance() {
 
     return instance;
+  }
+
+  public String getVersion() {
+
+    return properties.version;
   }
 
   public File getConfigurationDir() {
@@ -212,7 +224,7 @@ public class Configuration {
     return properties.rest.maxQueueSize;
   }
 
-  public boolean getSanityCheckEnabled() {
+  public boolean isSanityCheckEnabled() {
 
     return properties.sanityChecksEnabled;
   }
@@ -274,7 +286,7 @@ public class Configuration {
    * Used by PinnedFilesCatalog to get the initial delay in _seconds_ before starting the cleaning
    * thread.
    */
-  public long getCleaningInitialDelay() {
+  public long getExpiredSpacesAgentInitialDelay() {
 
     return properties.expiredSpacesAgent.delay;
   }
@@ -282,7 +294,7 @@ public class Configuration {
   /**
    * Used by PinnedFilesCatalog to get the cleaning time interval, in _seconds_.
    */
-  public long getCleaningTimeInterval() {
+  public long getExpiredSpacesAgentInterval() {
 
     return properties.expiredSpacesAgent.interval;
   }
@@ -326,7 +338,7 @@ public class Configuration {
    * Method used by PtPChunkCatalog to get the initial delay in _seconds_ before starting the
    * transiting thread.
    */
-  public long getTransitInitialDelay() {
+  public long getInProgressAgentInitialDelay() {
 
     return properties.inprogressRequestsAgent.delay;
   }
@@ -334,7 +346,7 @@ public class Configuration {
   /**
    * Method used by PtPChunkCatalog to get the transiting time interval, in _seconds_.
    */
-  public long getTransitTimeInterval() {
+  public long getInProgressAgentInterval() {
 
     return properties.inprogressRequestsAgent.interval;
   }
@@ -343,7 +355,7 @@ public class Configuration {
    * Method used by AdvancedPicker to get the initial delay before starting to pick data from the
    * DB, in _seconds_.
    */
-  public long getPickingInitialDelay() {
+  public long getRequestsPickerAgentInitialDelay() {
 
     return properties.requestsPickerAgent.delay;
   }
@@ -351,7 +363,7 @@ public class Configuration {
   /**
    * Method used by AdvancedPicker to get the time interval of successive pickings, in _seconds_.
    */
-  public long getPickingTimeInterval() {
+  public long getRequestsPickerAgentInterval() {
 
     return properties.requestsPickerAgent.interval;
   }
@@ -360,7 +372,7 @@ public class Configuration {
    * Method used by RequestSummaryDAO to establish the maximum number of requests to retrieve with
    * each polling.
    */
-  public int getPickingMaxBatchSize() {
+  public int getRequestsPickerAgentMaxFetchedSize() {
 
     return properties.requestsPickerAgent.maxFetchedSize;
   }
@@ -377,7 +389,7 @@ public class Configuration {
   /**
    * Default value for the parameter "allLevelRecursive" of the LS request.
    */
-  public boolean getLsAllLevelRecursive() {
+  public boolean isLsDefaultAllLevelRecursive() {
 
     return properties.synchLs.defaultAllLevelRecursive;
   }
@@ -385,7 +397,7 @@ public class Configuration {
   /**
    * Default value for the parameter "numOfLevels" of the LS request.
    */
-  public short getLsNumOfLevels() {
+  public short getLsDefaultNumOfLevels() {
 
     return properties.synchLs.defaultNumLevels;
   }
@@ -393,7 +405,7 @@ public class Configuration {
   /**
    * Default value for the parameter "offset" of the LS request.
    */
-  public short getLsOffset() {
+  public short getLsDefaultOffset() {
 
     return properties.synchLs.defaultOffset;
   }
@@ -603,7 +615,7 @@ public class Configuration {
    * Method used by PtPChunk to find out if missing local directories should be created
    * automatically or not. SRM 2.2 specification forbids automatic creation.
    */
-  public boolean getAutomaticDirectoryCreation() {
+  public boolean isAutomaticDirectoryCreationEnabled() {
 
     return properties.directories.enableAutomaticCreation;
   }
@@ -613,7 +625,7 @@ public class Configuration {
    * 
    * @return false by default, otherwise what is specified in the properties
    */
-  public boolean getEnableWritePermOnDirectory() {
+  public boolean isDirectoryWritePermOnCreationEnabled() {
 
     return properties.directories.enableWritepermOnCreation;
   }
@@ -637,7 +649,7 @@ public class Configuration {
   /**
    * Method used by RequestSummaryDAO to establish the batch size for removing expired requests.
    */
-  public int getPurgeBatchSize() {
+  public int getCompletedRequestsAgentPurgeSize() {
 
     return properties.completedRequestsAgent.purgeSize;
   }
@@ -647,7 +659,7 @@ public class Configuration {
    * request expired. The time measure specified in the configuration medium is in _days_. The value
    * returned by this method, is expressed in _seconds_.
    */
-  public long getExpiredRequestTime() {
+  public long getCompletedRequestsAgentPurgeAge() {
 
     return properties.completedRequestsAgent.purgeAge;
   }
@@ -656,7 +668,7 @@ public class Configuration {
    * Method used by RequestSummaryCatalog to establish the initial delay before starting the purging
    * thread, in _seconds_.
    */
-  public int getRequestPurgerDelay() {
+  public int getCompletedRequestsAgentDelay() {
 
     return properties.completedRequestsAgent.delay;
   }
@@ -665,7 +677,7 @@ public class Configuration {
    * Method used by RequestSummaryCatalog to establish the time interval in _seconds_ between
    * successive purging checks.
    */
-  public int getRequestPurgerPeriod() {
+  public int getCompletedRequestsAgentPeriod() {
 
     return properties.completedRequestsAgent.interval;
   }
@@ -675,7 +687,7 @@ public class Configuration {
    * enabled or not. If no value is found in the configuration medium, then the default one is used
    * instead. key="purging"; default value=true
    */
-  public boolean getExpiredRequestPurging() {
+  public boolean isCompletedRequestsAgentEnabled() {
 
     return properties.completedRequestsAgent.enabled;
   }
@@ -716,7 +728,7 @@ public class Configuration {
    * Method used by TURLBuilder to adding (in case) extra slashes after the "authority" part of a
    * TURL.
    */
-  public String getExtraSlashesForROOTTURL() {
+  public String getExtraSlashesForRootTURL() {
 
     return properties.extraslashes.root;
   }
@@ -730,28 +742,27 @@ public class Configuration {
     return properties.pingPropertiesFilename;
   }
 
-
   public int getHearthbeatPeriod() {
 
     return properties.hearthbeat.period;
   }
 
-  public int getPerformanceGlanceTimeInterval() {
+  public int getHearthbeatPerformanceGlanceTimeInterval() {
 
     return properties.hearthbeat.performanceGlanceTimeInterval;
   }
 
-  public int getPerformanceLogbookTimeInterval() {
+  public int getHearthbeatPerformanceLogbookTimeInterval() {
 
     return properties.hearthbeat.performanceLogbookTimeInterval;
   }
 
-  public boolean getPerformanceMeasuring() {
+  public boolean isHearthbeatPerformanceMeasuringEnabled() {
 
     return properties.hearthbeat.performanceMeasuringEnabled;
   }
 
-  public boolean getBookKeepingEnabled() {
+  public boolean isHearthbeatBookkeepingEnabled() {
 
     return properties.hearthbeat.bookkeepingEnabled;
   }
@@ -791,7 +802,7 @@ public class Configuration {
     return properties.serverPoolStatusCheckTimeout;
   }
 
-  public boolean getPTGSkipACLSetup() {
+  public boolean isSkipPtgACLSetup() {
 
     return properties.skipPtgAclSetup;
   }

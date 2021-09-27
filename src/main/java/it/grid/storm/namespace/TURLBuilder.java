@@ -77,7 +77,7 @@ public class TURLBuilder {
 	public static TTURL buildROOTTURL(Authority authority, PFN physicalFN) {
 
 		String extraSlashesForROOT = Configuration.getInstance()
-			.getExtraSlashesForROOTTURL();
+			.getExtraSlashesForRootTURL();
 		return buildTURL(Protocol.ROOT, authority, extraSlashesForROOT, physicalFN);
 	}
 	

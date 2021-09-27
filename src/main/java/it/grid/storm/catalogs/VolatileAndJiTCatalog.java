@@ -94,9 +94,9 @@ public class VolatileAndJiTCatalog {
   /** Timer object in charge of cleaning periodically the Catalog! */
   private final Timer cleaner = new Timer();
   /** Delay time before starting cleaning thread! Set to 1 minute */
-  private final long delay = Configuration.getInstance().getCleaningInitialDelay() * 1000;
+  private final long delay = Configuration.getInstance().getExpiredSpacesAgentInitialDelay() * 1000;
   /** Period of execution of cleaning! Set to 1 hour */
-  private final long period = Configuration.getInstance().getCleaningTimeInterval() * 1000;
+  private final long period = Configuration.getInstance().getExpiredSpacesAgentInterval() * 1000;
   /** fileLifetime to use if user specified a non-positive value */
   private final long defaultFileLifetime = Configuration.getInstance().getFileLifetimeDefault();
   /** Number of seconds to use as default if the supplied lifetime is zero! */

@@ -185,7 +185,7 @@ public class StoRM {
 
   private void performSanityChecks() throws BootstrapException {
 
-    if (config.getSanityCheckEnabled()) {
+    if (config.isSanityCheckEnabled()) {
 
       CheckManager checkManager = new SimpleCheckManager();
       checkManager.init();
@@ -329,11 +329,11 @@ public class StoRM {
 
     log.debug("Starting Space Garbage Collector ...");
     // Delay time before starting
-    long delay = config.getCleaningInitialDelay() * 1000;
+    long delay = config.getExpiredSpacesAgentInitialDelay() * 1000;
 
     // cleaning thread! Set to 1 minute
     // Period of execution of cleaning
-    long period = config.getCleaningTimeInterval() * 1000;
+    long period = config.getExpiredSpacesAgentInterval() * 1000;
 
     // Set to 1 hour
     cleaningTask = new TimerTask() {
@@ -478,9 +478,9 @@ public class StoRM {
     }
 
     /* Delay time before starting cleaning thread */
-    final long delay = config.getRequestPurgerDelay() * 1000L;
+    final long delay = config.getCompletedRequestsAgentDelay() * 1000L;
     /* Period of execution of cleaning */
-    final long period = config.getRequestPurgerPeriod() * 1000L;
+    final long period = config.getCompletedRequestsAgentPeriod() * 1000L;
 
     log.debug("Starting Requests Garbage Collector .");
     rgcTask = new RequestsGarbageCollector(rgc, period);

@@ -1,24 +1,11 @@
 package it.grid.storm.config;
 
-import static it.grid.storm.config.ConfigurationDefaults.BOOK_KEEPING_ENABLED;
 import static it.grid.storm.config.ConfigurationDefaults.DB_POOL_MAX_WAIT_MILLIS;
 import static it.grid.storm.config.ConfigurationDefaults.DB_POOL_MIN_IDLE;
 import static it.grid.storm.config.ConfigurationDefaults.DB_POOL_SIZE;
 import static it.grid.storm.config.ConfigurationDefaults.DB_POOL_TEST_ON_BORROW;
 import static it.grid.storm.config.ConfigurationDefaults.DB_POOL_TEST_WHILE_IDLE;
 import static it.grid.storm.config.ConfigurationDefaults.DB_PORT;
-import static it.grid.storm.config.ConfigurationDefaults.DB_PROPERTIES;
-import static it.grid.storm.config.ConfigurationDefaults.DISKUSAGE_SERVICE_PARALLEL_TASKS_ENABLED;
-import static it.grid.storm.config.ConfigurationDefaults.GPFS_QUOTA_REFRESH_PERIOD;
-import static it.grid.storm.config.ConfigurationDefaults.HEARTHBEAT_PERIOD;
-import static it.grid.storm.config.ConfigurationDefaults.HTTP_TURL_PREFIX;
-import static it.grid.storm.config.ConfigurationDefaults.MAX_LOOP;
-import static it.grid.storm.config.ConfigurationDefaults.PERFORMANCE_GLANCE_TIME_INTERVAL;
-import static it.grid.storm.config.ConfigurationDefaults.PERFORMANCE_LOGBOOK_TIME_INTERVAL;
-import static it.grid.storm.config.ConfigurationDefaults.PERFORMANCE_MEASURING;
-import static it.grid.storm.config.ConfigurationDefaults.PING_VALUES_PROPERTIES_FILENAME;
-import static it.grid.storm.config.ConfigurationDefaults.PTG_SKIP_ACL_SETUP;
-import static it.grid.storm.config.ConfigurationDefaults.SERVER_POOL_STATUS_CHECK_TIMEOUT;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
@@ -26,133 +13,121 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.google.common.collect.Lists;
+import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
 
-import it.grid.storm.config.model.v2.OverwriteMode;
-import it.grid.storm.config.model.v2.StorageType;
-import it.grid.storm.namespace.model.Authority;
+import it.grid.storm.config.converter.StormPropertiesConversionException;
+import it.grid.storm.config.converter.StormPropertiesConverter;
+import it.grid.storm.config.model.v2.StormProperties;
 
 public class ConfigurationConverterTest {
-  
-  @Test
-  public void testLoadedConfigurationFromOldProperties() throws IOException {
 
-    Configuration.init("src/test/resources/v1.properties");
-    Configuration config = Configuration.getInstance();
+  @Test
+  public void testLoadedConfigurationFromOldProperties()
+      throws IOException, StormPropertiesConversionException {
+
+    ClassLoader classLoader = getClass().getClassLoader();
+    File source = new File(classLoader.getResource("v1.properties").getFile());
+    File target = new File("/tmp/converted.properties");
+
+    // convert source configuration file and save it into target file:
+    StormPropertiesConverter.convert(source, target);
+
+    // load new configuration from file
+    JavaPropsMapper mapper = new JavaPropsMapper();
+    StormProperties properties = mapper.readValue(target, StormProperties.class);
+
+    // not converted
+    assertEquals(DB_PORT, properties.db.port);
+    assertEquals(DB_POOL_SIZE, properties.db.pool.size);
+    assertEquals(DB_POOL_MIN_IDLE, properties.db.pool.minIdle);
+    assertEquals(DB_POOL_MAX_WAIT_MILLIS, properties.db.pool.maxWaitMillis);
+    assertEquals(DB_POOL_TEST_ON_BORROW, properties.db.pool.testOnBorrow);
+    assertEquals(DB_POOL_TEST_WHILE_IDLE, properties.db.pool.testWhileIdle);
 
     // SRM service
-    assertEquals("fe.example.org", config.getSrmServiceHostname());
-    assertEquals(config.getSrmServicePort(), 8444);
-    assertEquals(config.getManagedSrmEndpoints(),
-        Lists.newArrayList(new Authority("fe.example.org", 8444),
-            new Authority("fe-01.example.org", 8444),
-            new Authority("fe-02.example.org", 8444)));
-    // database
-    assertEquals(config.getDbUsername(), "storm");
-    assertEquals(config.getDbPassword(), "my-secret-password");
-    assertEquals(config.getDbProperties(), DB_PROPERTIES);
-    assertEquals(config.getDbPort(), DB_PORT);
-    assertEquals(config.getDbPoolSize(), DB_POOL_SIZE);
-    assertEquals(config.getDbPoolMinIdle(), DB_POOL_MIN_IDLE);
-    assertEquals(config.getDbPoolMaxWaitMillis(), DB_POOL_MAX_WAIT_MILLIS);
-    assertEquals(config.isDbPoolTestOnBorrow(), DB_POOL_TEST_ON_BORROW);
-    assertEquals(config.isDbPoolTestWhileIdle(), DB_POOL_TEST_WHILE_IDLE);
-    // REST
-    assertEquals(config.getRestServicesPort(), 9998);
-    assertEquals(config.getRestServicesMaxThreads(), 256);
-    assertEquals(config.getRestServicesMaxQueueSize(), 1000);
-    // sanity check
-    assertEquals(config.getSanityCheckEnabled(), true);
-    // xmlrpc
-    assertEquals(config.getXmlRpcServerPort(), 8080);
-    assertEquals(config.getXmlrpcMaxThreads(), 100);
-    assertEquals(config.getXmlrpcMaxQueueSize(), 500);
-    assertEquals(config.isSecurityEnabled(), true);
-    assertEquals(config.getSecurityToken(), "abracadabra");
-    // disk usage
-    assertEquals(config.isDiskUsageServiceEnabled(), true);
-    assertEquals(config.getDiskUsageServiceInitialDelay(), 60);
-    assertEquals(config.getDiskUsageServiceTasksInterval(), 360);
-    assertEquals(config.isDiskUsageServiceTasksParallel(),
-        DISKUSAGE_SERVICE_PARALLEL_TASKS_ENABLED);
-    //
-    assertEquals(config.getCleaningInitialDelay(), 10);
-    assertEquals(config.getCleaningTimeInterval(), 300);
-    //
-    assertEquals(config.getFileDefaultSize(), 2000000);
-    assertEquals(config.getFileLifetimeDefault(), 300000);
-    assertEquals(config.getPinLifetimeDefault(), 310000);
-    assertEquals(config.getPinLifetimeMaximum(), 1900000);
+    assertEquals("fe.example.org", properties.srmEndpoints.get(0).host);
+    assertEquals(8444, properties.srmEndpoints.get(0).port);
+    assertEquals("fe-01.example.org", properties.srmEndpoints.get(1).host);
+    assertEquals(8444, properties.srmEndpoints.get(1).port);
+    assertEquals("fe-02.example.org", properties.srmEndpoints.get(2).host);
+    assertEquals(8444, properties.srmEndpoints.get(2).port);
+    assertEquals("be.example.org", properties.db.hostname);
+    assertEquals("storm", properties.db.username);
+    assertEquals("my-secret-password", properties.db.password);
+    assertEquals("prop=1", properties.db.properties);
+    assertEquals(9999, properties.rest.port);
+    assertEquals(512, properties.rest.maxThreads);
+    assertEquals(2000, properties.rest.maxQueueSize);
+    assertEquals(8081, properties.xmlrpc.port);
+    assertEquals(512, properties.xmlrpc.maxThreads);
+    assertEquals(2000, properties.xmlrpc.maxQueueSize);
+    assertEquals(true, properties.security.enabled);
+    assertEquals("ilovejava", properties.security.token);
+    assertEquals(true, properties.du.enabled);
+    assertEquals(true, properties.du.parallelTasksEnabled);
+    assertEquals(60, properties.du.initialDelay);
+    assertEquals(360, properties.du.tasksInterval);
+    assertEquals(true, properties.sanityChecksEnabled);
+    assertEquals(true, properties.directories.enableAutomaticCreation);
+    assertEquals(true, properties.directories.enableWritepermOnCreation);
+    assertEquals(310000, properties.pinlifetime.defaultValue);
+    assertEquals(1900000, properties.pinlifetime.maximum);
+    assertEquals("/file", properties.extraslashes.file);
+    assertEquals("/rfio", properties.extraslashes.rfio);
+    assertEquals("/root", properties.extraslashes.root);
+    assertEquals("/gsiftp", properties.extraslashes.gsiftp);
+    assertEquals(2000000, properties.files.defaultSize);
+    assertEquals(300000, properties.files.defaultLifetime);
+    assertEquals("N", properties.files.defaultOverwrite);
+    assertEquals("P", properties.files.defaultStoragetype);
+    assertEquals(20, properties.requestsScheduler.corePoolSize);
+    assertEquals(60, properties.requestsScheduler.maxPoolSize);
+    assertEquals(3000, properties.requestsScheduler.queueSize);
+    assertEquals(60, properties.ptpScheduler.corePoolSize);
+    assertEquals(300, properties.ptpScheduler.maxPoolSize);
+    assertEquals(2000, properties.ptpScheduler.queueSize);
+    assertEquals(70, properties.ptgScheduler.corePoolSize);
+    assertEquals(400, properties.ptgScheduler.maxPoolSize);
+    assertEquals(3000, properties.ptgScheduler.queueSize);
+    assertEquals(40, properties.bolScheduler.corePoolSize);
+    assertEquals(100, properties.bolScheduler.maxPoolSize);
+    assertEquals(1000, properties.bolScheduler.queueSize);
+    assertEquals(15, properties.requestsPickerAgent.delay);
+    assertEquals(25, properties.requestsPickerAgent.interval);
+    assertEquals(150, properties.requestsPickerAgent.maxFetchedSize);
+    assertEquals(true, properties.synchLs.defaultAllLevelRecursive);
+    assertEquals(3, properties.synchLs.defaultNumLevels);
+    assertEquals(2, properties.synchLs.defaultOffset);
+    assertEquals(3000, properties.synchLs.maxEntries);
+    assertEquals(false, properties.skipPtgAclSetup);
 
-    assertEquals(config.getPickingInitialDelay(), 15);
-    assertEquals(config.getPickingTimeInterval(), 25);
-    assertEquals(config.getPickingMaxBatchSize(), 150);
-    // LS
-    assertEquals(config.getLsMaxNumberOfEntry(), 3000);
-    assertEquals(config.getLsAllLevelRecursive(), true);
-    assertEquals(config.getLsNumOfLevels(), 3);
-    assertEquals(config.getLsOffset(), 2);
-    //
-    assertEquals(config.getPtPCorePoolSize(), 60);
-    assertEquals(config.getPtPMaxPoolSize(), 300);
-    assertEquals(config.getPtPQueueSize(), 2000);
+    assertEquals(60, properties.inprogressRequestsAgent.delay);
+    assertEquals(600, properties.inprogressRequestsAgent.interval);
+    assertEquals(7000, properties.inprogressRequestsAgent.ptpExpirationTime);
 
-    assertEquals(config.getPtGCorePoolSize(), 70);
-    assertEquals(config.getPtGMaxPoolSize(), 400);
-    assertEquals(config.getPtGQueueSize(), 3000);
+    assertEquals(10, properties.expiredSpacesAgent.delay);
+    assertEquals(300, properties.expiredSpacesAgent.interval);
 
-    assertEquals(config.getBoLCorePoolSize(), 40);
-    assertEquals(config.getBoLMaxPoolSize(), 100);
-    assertEquals(config.getBoLQueueSize(), 1000);
+    assertEquals(false, properties.completedRequestsAgent.enabled);
+    assertEquals(100, properties.completedRequestsAgent.delay);
+    assertEquals(600, properties.completedRequestsAgent.interval);
+    assertEquals(1000, properties.completedRequestsAgent.purgeSize);
+    assertEquals(7200, properties.completedRequestsAgent.purgeAge);
 
-    assertEquals(config.getCorePoolSize(), 20);
-    assertEquals(config.getMaxPoolSize(), 60);
-    assertEquals(config.getQueueSize(), 3000);
+    assertEquals(true, properties.hearthbeat.bookkeepingEnabled);
+    assertEquals(true, properties.hearthbeat.performanceMeasuringEnabled);
+    assertEquals(30, properties.hearthbeat.period);
+    assertEquals(10, properties.hearthbeat.performanceLogbookTimeInterval);
+    assertEquals(10, properties.hearthbeat.performanceGlanceTimeInterval);
 
-    assertEquals(config.getAutomaticDirectoryCreation(), true);
-    assertEquals(config.getEnableWritePermOnDirectory(), true);
+    assertEquals(900, properties.infoQuotaRefreshPeriod);
+    assertEquals("/", properties.httpTurlPrefix);
+    assertEquals(20000, properties.serverPoolStatusCheckTimeout);
+    assertEquals(10, properties.abortMaxloop);
+    assertEquals("ping-values.properties", properties.pingPropertiesFilename);
 
-    assertEquals(config.getDefaultOverwriteMode(), OverwriteMode.N);
-    assertEquals(config.getDefaultFileStorageType(), StorageType.P);
-
-    assertEquals(config.getExpiredRequestPurging(), false);
-    assertEquals(config.getRequestPurgerDelay(), 100);
-    assertEquals(config.getRequestPurgerPeriod(), 600);
-    assertEquals(config.getPurgeBatchSize(), 1000);
-    assertEquals(config.getExpiredRequestTime(), 7200);
-    
-    assertEquals(config.getTransitInitialDelay(), 60);
-    assertEquals(config.getTransitTimeInterval(), 600);
-    assertEquals(config.getInProgressPtpExpirationTime(), 7000);
-
-    assertEquals(config.getExtraSlashesForFileTURL(), "/file");
-    assertEquals(config.getExtraSlashesForRFIOTURL(), "/rfio");
-    assertEquals(config.getExtraSlashesForGsiFTPTURL(), "/gsiftp");
-    assertEquals(config.getExtraSlashesForROOTTURL(), "/root");
-
-    assertEquals(config.getPingValuesPropertiesFilename(), PING_VALUES_PROPERTIES_FILENAME);
-
-    assertEquals(config.getHearthbeatPeriod(), HEARTHBEAT_PERIOD);
-    assertEquals(config.getPerformanceGlanceTimeInterval(), PERFORMANCE_GLANCE_TIME_INTERVAL);
-    assertEquals(config.getPerformanceLogbookTimeInterval(), PERFORMANCE_LOGBOOK_TIME_INTERVAL);
-    assertEquals(config.getPerformanceMeasuring(), PERFORMANCE_MEASURING);
-    assertEquals(config.getBookKeepingEnabled(), BOOK_KEEPING_ENABLED);
-
-    assertEquals(config.getMaxLoop(), MAX_LOOP);
-
-    assertEquals(config.getGPFSQuotaRefreshPeriod(), GPFS_QUOTA_REFRESH_PERIOD);
-
-    assertEquals(config.getServerPoolStatusCheckTimeout(), SERVER_POOL_STATUS_CHECK_TIMEOUT);
-
-    assertEquals(config.getPTGSkipACLSetup(), PTG_SKIP_ACL_SETUP);
-
-    assertEquals(config.getHTTPTURLPrefix(), HTTP_TURL_PREFIX);
-    
-    // check new file created
-    File exported = new File("src/test/resources/v1.properties.new");
-    assertEquals(exported.exists(), true);
-    // clear file
-    exported.delete();
+    // delete temporary file
+    target.delete();
 
   }
 }

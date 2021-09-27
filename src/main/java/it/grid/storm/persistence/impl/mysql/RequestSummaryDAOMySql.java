@@ -133,7 +133,7 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
 
   private final StatusCodeConverter statusCodeConverter;
   private final RequestTypeConverter requestTypeConverter;
-  private final int MAX_FETCHED_REQUESTS = Configuration.getInstance().getPickingMaxBatchSize();
+  private final int MAX_FETCHED_REQUESTS = Configuration.getInstance().getRequestsPickerAgentMaxFetchedSize();
 
   public static synchronized RequestSummaryDAO getInstance() {
     if (instance == null) {
@@ -872,7 +872,7 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
       con = getConnection();
 
       ps = con.prepareStatement(COUNT_PURGEABLE_REQUESTS);
-      ps.setLong(1, Configuration.getInstance().getExpiredRequestTime());
+      ps.setLong(1, Configuration.getInstance().getCompletedRequestsAgentPurgeAge());
       ps.setInt(2, statusCodeConverter.toDB(SRM_REQUEST_QUEUED));
       ps.setInt(3, statusCodeConverter.toDB(SRM_REQUEST_INPROGRESS));
 

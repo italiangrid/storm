@@ -154,14 +154,14 @@ public class LsCommand extends DirectoryCommand implements Command {
 
     boolean allLevelRecursive;
     if (inputData.getAllLevelRecursive() == null) {
-      allLevelRecursive = DirectoryCommand.config.getLsAllLevelRecursive();
+      allLevelRecursive = DirectoryCommand.config.isLsDefaultAllLevelRecursive();
     } else {
       allLevelRecursive = inputData.getAllLevelRecursive().booleanValue();
     }
 
     int numOfLevels;
     if (inputData.getNumOfLevels() == null) {
-      numOfLevels = DirectoryCommand.config.getLsNumOfLevels();
+      numOfLevels = DirectoryCommand.config.getLsDefaultNumOfLevels();
     } else {
       numOfLevels = inputData.getNumOfLevels().intValue();
       if (numOfLevels < 0) {
@@ -197,7 +197,7 @@ public class LsCommand extends DirectoryCommand implements Command {
     int offset;
     if (inputData.getOffset() == null) {
       // Set to the default value.
-      offset = DirectoryCommand.config.getLsOffset();
+      offset = DirectoryCommand.config.getLsDefaultOffset();
     } else {
       offset = inputData.getOffset().intValue();
       if (offset < 0) {

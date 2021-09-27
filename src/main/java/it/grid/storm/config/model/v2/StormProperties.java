@@ -11,6 +11,8 @@ import static it.grid.storm.config.ConfigurationDefaults.SERVER_POOL_STATUS_CHEC
 import java.net.UnknownHostException;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
@@ -21,7 +23,7 @@ public class StormProperties {
 
   public static final String VERSION = "2.0";
   public static final String UNRECOGNIZED_VERSION = "unknown";
-  
+
   public String version;
   public List<Endpoint> srmEndpoints;
   public DatabaseConnection db;
@@ -49,10 +51,12 @@ public class StormProperties {
   public String httpTurlPrefix;
   public long serverPoolStatusCheckTimeout;
   public int abortMaxloop;
-  public String pingPropertiesFilename;  
+  public String pingPropertiesFilename;
 
-  public StormProperties() throws UnknownHostException {
-    version = UNRECOGNIZED_VERSION;
+  @JsonCreator
+  public StormProperties(@JsonProperty(value = "version", required = true) String version)
+      throws UnknownHostException {
+    this.version = version;
     srmEndpoints = Lists.newArrayList(Endpoint.DEFAULT());
     db = new DatabaseConnection();
     rest = new RestServer();
@@ -145,5 +149,5 @@ public class StormProperties {
     return builder.toString();
   }
 
-  
+
 }

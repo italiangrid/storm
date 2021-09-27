@@ -40,11 +40,11 @@ public class HealthDirector {
   private static long bornInstant = -1L;
 
   public static int timeToLiveLogEventInSec =
-      Configuration.getInstance().getPerformanceLogbookTimeInterval();
+      Configuration.getInstance().getHearthbeatPerformanceLogbookTimeInterval();
 
   public static void initializeDirector() {
 
-    bookKeepingEnabled = Configuration.getInstance().getBookKeepingEnabled();
+    bookKeepingEnabled = Configuration.getInstance().isHearthbeatBookkeepingEnabled();
     if (bookKeepingEnabled) {
       bookKeepingConfigured = true;
     }
@@ -55,9 +55,9 @@ public class HealthDirector {
     healthMonitorIstance = new HealthMonitor(1, statusPeriod);
 
     // Setting performance rate
-    performanceMonitorEnabled = Configuration.getInstance().getPerformanceMeasuring();
+    performanceMonitorEnabled = Configuration.getInstance().isHearthbeatPerformanceMeasuringEnabled();
     if (performanceMonitorEnabled) {
-      int glanceTimeInterval = Configuration.getInstance().getPerformanceGlanceTimeInterval();
+      int glanceTimeInterval = Configuration.getInstance().getHearthbeatPerformanceGlanceTimeInterval();
 
       LOGGER.debug("----- Performance GLANCE Time Interval = {}", glanceTimeInterval);
       LOGGER.debug("----- Performance LOGBOOK Time Interval = {}", timeToLiveLogEventInSec);

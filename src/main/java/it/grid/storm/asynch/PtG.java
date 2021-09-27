@@ -108,7 +108,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
     requestData = reqData;
     start = Calendar.getInstance();
 
-    if (Configuration.getInstance().getPTGSkipACLSetup()) {
+    if (Configuration.getInstance().isSkipPtgACLSetup()) {
       setupACLs = false;
       log.debug("Skipping ACL setup on PTG as requested by configuration.");
     }

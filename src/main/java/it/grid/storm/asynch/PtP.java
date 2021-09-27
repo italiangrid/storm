@@ -447,7 +447,7 @@ public class PtP implements Delegable, Chooser, Request {
   private boolean prepareDirectory(LocalFile dir) {
 
     boolean automaticDirectoryCreation =
-        Configuration.getInstance().getAutomaticDirectoryCreation();
+        Configuration.getInstance().isAutomaticDirectoryCreationEnabled();
 
     if (dir.exists()) {
       if (!dir.isDirectory()) {

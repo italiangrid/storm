@@ -43,7 +43,7 @@ public class TRequestToken implements Serializable {
 
   private final Calendar expiration;
 
-  private final long defaultExpirationTime = Configuration.getInstance().getExpiredRequestTime();
+  private final long defaultExpirationTime = Configuration.getInstance().getCompletedRequestsAgentPurgeAge();
 
   public TRequestToken(String requestToken, Date timestamp)
       throws InvalidTRequestTokenAttributesException {

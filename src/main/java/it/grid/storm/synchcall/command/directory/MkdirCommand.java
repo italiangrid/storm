@@ -269,7 +269,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
   private void manageAcl(StoRI stori, GridUserInterface user) {
 
     FilesystemPermission permission =
-        configuration.getEnableWritePermOnDirectory() ? ListTraverseWrite : ListTraverse;
+        configuration.isDirectoryWritePermOnCreationEnabled() ? ListTraverseWrite : ListTraverse;
 
     try {
       if (!isAnonymous(user)) {

@@ -74,19 +74,21 @@ import static it.grid.storm.config.ConfigurationDefaults.SERVER_POOL_STATUS_CHEC
 import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_MAX_QUEUE_SIZE;
 import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_MAX_THREADS;
 import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_SERVER_PORT;
-import static it.grid.storm.config.model.v2.StormProperties.UNRECOGNIZED_VERSION;
+import static it.grid.storm.config.model.v2.StormProperties.VERSION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
 
 import it.grid.storm.config.model.v2.StormProperties;
@@ -94,94 +96,95 @@ import it.grid.storm.config.model.v2.StormProperties;
 public class StormPropertiesTest {
 
   @Test
-  public void testLoadingConfigurationFromFullPropertiesV2() throws JsonParseException, JsonMappingException, IOException {
+  public void testLoadingConfigurationFromFullPropertiesV2()
+      throws JsonParseException, JsonMappingException, IOException {
 
     JavaPropsMapper mapper = new JavaPropsMapper();
     ClassLoader classLoader = getClass().getClassLoader();
     File file = new File(classLoader.getResource("storm.properties").getFile());
     StormProperties properties = mapper.readValue(file, StormProperties.class);
     System.out.println(properties);
-    assertEquals(properties.version, StormProperties.VERSION);
+    assertEquals(StormProperties.VERSION, properties.version);
     assertFalse(properties.srmEndpoints.isEmpty());
-    assertEquals(properties.srmEndpoints.size(), 2);
-    assertEquals(properties.srmEndpoints.get(0).host, "storm.example");
-    assertEquals(properties.srmEndpoints.get(0).port, 8444);
-    assertEquals(properties.srmEndpoints.get(1).host, "alias.example");
-    assertEquals(properties.srmEndpoints.get(1).port, 8445);
-    assertEquals(properties.db.hostname, "storm.example");
-    assertEquals(properties.db.username, "test");
-    assertEquals(properties.db.password, "secret");
-    assertEquals(properties.db.port, 3308);
-    assertEquals(properties.db.properties, "test");
-    assertEquals(properties.db.pool.size, 200);
-    assertEquals(properties.db.pool.maxWaitMillis, 1200);
-    assertEquals(properties.db.pool.testOnBorrow, false);
-    assertEquals(properties.db.pool.testWhileIdle, false);
-    assertEquals(properties.rest.port, 9999);
-    assertEquals(properties.rest.maxThreads, 150);
-    assertEquals(properties.rest.maxQueueSize, 1500);
-    assertEquals(properties.xmlrpc.port, 9090);
-    assertEquals(properties.xmlrpc.maxThreads, 512);
-    assertEquals(properties.xmlrpc.maxQueueSize, 2000);
-    assertEquals(properties.security.enabled, true);
-    assertEquals(properties.security.token, "ilovejava");
-    assertEquals(properties.du.enabled, true);
-    assertEquals(properties.du.parallelTasksEnabled, true);
-    assertEquals(properties.du.initialDelay, 120);
-    assertEquals(properties.du.tasksInterval, 200000);
-    assertEquals(properties.inprogressRequestsAgent.delay, 20);
-    assertEquals(properties.inprogressRequestsAgent.interval, 400);
-    assertEquals(properties.inprogressRequestsAgent.ptpExpirationTime, 333000);
-    assertEquals(properties.expiredSpacesAgent.delay, 20);
-    assertEquals(properties.expiredSpacesAgent.interval, 400);
-    assertEquals(properties.completedRequestsAgent.enabled, true);
-    assertEquals(properties.completedRequestsAgent.delay, 20);
-    assertEquals(properties.completedRequestsAgent.interval, 400);
-    assertEquals(properties.completedRequestsAgent.purgeSize, 1800);
-    assertEquals(properties.completedRequestsAgent.purgeAge, 22200);
-    assertEquals(properties.requestsScheduler.corePoolSize, 10);
-    assertEquals(properties.requestsScheduler.maxPoolSize, 50);
-    assertEquals(properties.requestsScheduler.queueSize, 2000);
-    assertEquals(properties.ptpScheduler.corePoolSize, 50);
-    assertEquals(properties.ptpScheduler.maxPoolSize, 200);
-    assertEquals(properties.ptpScheduler.queueSize, 1000);
-    assertEquals(properties.ptgScheduler.corePoolSize, 50);
-    assertEquals(properties.ptgScheduler.maxPoolSize, 200);
-    assertEquals(properties.ptgScheduler.queueSize, 2000);
-    assertEquals(properties.bolScheduler.corePoolSize, 50);
-    assertEquals(properties.bolScheduler.maxPoolSize, 200);
-    assertEquals(properties.bolScheduler.queueSize, 2000);
-    assertEquals(properties.requestsPickerAgent.delay, 10);
-    assertEquals(properties.requestsPickerAgent.interval, 20);
-    assertEquals(properties.requestsPickerAgent.maxFetchedSize, 1000);
-    assertEquals(properties.sanityChecksEnabled, false);
-    assertEquals(properties.extraslashes.file, "/file");
-    assertEquals(properties.extraslashes.rfio, "/rfio");
-    assertEquals(properties.extraslashes.root, "/root");
-    assertEquals(properties.extraslashes.gsiftp, "/gsiftp");
-    assertEquals(properties.synchLs.defaultAllLevelRecursive, true);
-    assertEquals(properties.synchLs.defaultNumLevels, 2);
-    assertEquals(properties.synchLs.defaultOffset, 1);
-    assertEquals(properties.synchLs.maxEntries, 3000);
-    assertEquals(properties.pinlifetime.defaultValue, 300000);
-    assertEquals(properties.pinlifetime.maximum, 18000000);
-    assertEquals(properties.skipPtgAclSetup, true);
-    assertEquals(properties.files.defaultSize, 100000);
-    assertEquals(properties.files.defaultLifetime, 300000);
-    assertEquals(properties.files.defaultOverwrite, "N");
-    assertEquals(properties.files.defaultStoragetype, "P");
-    assertEquals(properties.directories.enableAutomaticCreation, true);
-    assertEquals(properties.directories.enableWritepermOnCreation, true);
-    assertEquals(properties.hearthbeat.bookkeepingEnabled, true);
-    assertEquals(properties.hearthbeat.performanceMeasuringEnabled, true);
-    assertEquals(properties.hearthbeat.period, 30);
-    assertEquals(properties.hearthbeat.performanceLogbookTimeInterval, 10);
-    assertEquals(properties.hearthbeat.performanceGlanceTimeInterval, 10);
-    assertEquals(properties.infoQuotaRefreshPeriod, 900);
-    assertEquals(properties.httpTurlPrefix, "/");
-    assertEquals(properties.serverPoolStatusCheckTimeout, 20000);
-    assertEquals(properties.abortMaxloop, 10);
-    assertEquals(properties.pingPropertiesFilename, "ping-values.properties");
+    assertEquals(2, properties.srmEndpoints.size());
+    assertEquals("storm.example", properties.srmEndpoints.get(0).host);
+    assertEquals(8444, properties.srmEndpoints.get(0).port);
+    assertEquals("alias.example", properties.srmEndpoints.get(1).host);
+    assertEquals(8445, properties.srmEndpoints.get(1).port);
+    assertEquals("storm.example", properties.db.hostname);
+    assertEquals("test", properties.db.username);
+    assertEquals("secret", properties.db.password);
+    assertEquals(3308, properties.db.port);
+    assertEquals("test", properties.db.properties);
+    assertEquals(200, properties.db.pool.size);
+    assertEquals(1200, properties.db.pool.maxWaitMillis);
+    assertEquals(false, properties.db.pool.testOnBorrow);
+    assertEquals(false, properties.db.pool.testWhileIdle);
+    assertEquals(9999, properties.rest.port);
+    assertEquals(150, properties.rest.maxThreads);
+    assertEquals(1500, properties.rest.maxQueueSize);
+    assertEquals(9090, properties.xmlrpc.port);
+    assertEquals(512, properties.xmlrpc.maxThreads);
+    assertEquals(2000, properties.xmlrpc.maxQueueSize);
+    assertEquals(true, properties.security.enabled);
+    assertEquals("ilovejava", properties.security.token);
+    assertEquals(true, properties.du.enabled);
+    assertEquals(true, properties.du.parallelTasksEnabled);
+    assertEquals(120, properties.du.initialDelay);
+    assertEquals(200000, properties.du.tasksInterval);
+    assertEquals(20, properties.inprogressRequestsAgent.delay);
+    assertEquals(400, properties.inprogressRequestsAgent.interval);
+    assertEquals(333000, properties.inprogressRequestsAgent.ptpExpirationTime);
+    assertEquals(20, properties.expiredSpacesAgent.delay);
+    assertEquals(400, properties.expiredSpacesAgent.interval);
+    assertEquals(true, properties.completedRequestsAgent.enabled);
+    assertEquals(20, properties.completedRequestsAgent.delay);
+    assertEquals(400, properties.completedRequestsAgent.interval);
+    assertEquals(1800, properties.completedRequestsAgent.purgeSize);
+    assertEquals(22200, properties.completedRequestsAgent.purgeAge);
+    assertEquals(10, properties.requestsScheduler.corePoolSize);
+    assertEquals(50, properties.requestsScheduler.maxPoolSize);
+    assertEquals(2000, properties.requestsScheduler.queueSize);
+    assertEquals(50, properties.ptpScheduler.corePoolSize);
+    assertEquals(200, properties.ptpScheduler.maxPoolSize);
+    assertEquals(1000, properties.ptpScheduler.queueSize);
+    assertEquals(50, properties.ptgScheduler.corePoolSize);
+    assertEquals(200, properties.ptgScheduler.maxPoolSize);
+    assertEquals(2000, properties.ptgScheduler.queueSize);
+    assertEquals(50, properties.bolScheduler.corePoolSize);
+    assertEquals(200, properties.bolScheduler.maxPoolSize);
+    assertEquals(2000, properties.bolScheduler.queueSize);
+    assertEquals(10, properties.requestsPickerAgent.delay);
+    assertEquals(20, properties.requestsPickerAgent.interval);
+    assertEquals(1000, properties.requestsPickerAgent.maxFetchedSize);
+    assertEquals(false, properties.sanityChecksEnabled);
+    assertEquals("/file", properties.extraslashes.file);
+    assertEquals("/rfio", properties.extraslashes.rfio);
+    assertEquals("/root", properties.extraslashes.root);
+    assertEquals("/gsiftp", properties.extraslashes.gsiftp);
+    assertEquals(true, properties.synchLs.defaultAllLevelRecursive);
+    assertEquals(2, properties.synchLs.defaultNumLevels);
+    assertEquals(1, properties.synchLs.defaultOffset);
+    assertEquals(3000, properties.synchLs.maxEntries);
+    assertEquals(300000, properties.pinlifetime.defaultValue);
+    assertEquals(18000000, properties.pinlifetime.maximum);
+    assertEquals(true, properties.skipPtgAclSetup);
+    assertEquals(100000, properties.files.defaultSize);
+    assertEquals(300000, properties.files.defaultLifetime);
+    assertEquals("N", properties.files.defaultOverwrite);
+    assertEquals("P", properties.files.defaultStoragetype);
+    assertEquals(true, properties.directories.enableAutomaticCreation);
+    assertEquals(true, properties.directories.enableWritepermOnCreation);
+    assertEquals(true, properties.hearthbeat.bookkeepingEnabled);
+    assertEquals(true, properties.hearthbeat.performanceMeasuringEnabled);
+    assertEquals(30, properties.hearthbeat.period);
+    assertEquals(10, properties.hearthbeat.performanceLogbookTimeInterval);
+    assertEquals(10, properties.hearthbeat.performanceGlanceTimeInterval);
+    assertEquals(900, properties.infoQuotaRefreshPeriod);
+    assertEquals("/", properties.httpTurlPrefix);
+    assertEquals(20000, properties.serverPoolStatusCheckTimeout);
+    assertEquals(10, properties.abortMaxloop);
+    assertEquals("ping-values.properties", properties.pingPropertiesFilename);
 
   }
 
@@ -194,98 +197,117 @@ public class StormPropertiesTest {
     ClassLoader classLoader = getClass().getClassLoader();
     File file = new File(classLoader.getResource("empty.properties").getFile());
     StormProperties properties = mapper.readValue(file, StormProperties.class);
-    assertEquals(properties.version, UNRECOGNIZED_VERSION);
+    assertEquals(VERSION, properties.version);
     assertFalse(properties.srmEndpoints.isEmpty());
-    assertEquals(properties.srmEndpoints.size(), 1);
-    assertEquals(properties.srmEndpoints.get(0).host, hostname);
-    assertEquals(properties.srmEndpoints.get(0).port, 8444);
-    assertEquals(properties.db.hostname, hostname);
-    assertEquals(properties.db.username, DB_USERNAME);
-    assertEquals(properties.db.password, DB_PASSWORD);
-    assertEquals(properties.db.port, DB_PORT);
-    assertEquals(properties.db.properties, DB_PROPERTIES);
-    assertEquals(properties.db.pool.size, DB_POOL_SIZE);
-    assertEquals(properties.db.pool.maxWaitMillis, DB_POOL_MAX_WAIT_MILLIS);
-    assertEquals(properties.db.pool.minIdle, DB_POOL_MIN_IDLE);
-    assertEquals(properties.db.pool.testOnBorrow, DB_POOL_TEST_ON_BORROW);
-    assertEquals(properties.db.pool.testWhileIdle, DB_POOL_TEST_WHILE_IDLE);
-    assertEquals(properties.rest.port, REST_SERVICES_PORT);
-    assertEquals(properties.rest.maxThreads, REST_SERVICES_MAX_THREADS);
-    assertEquals(properties.rest.maxQueueSize, REST_SERVICES_MAX_QUEUE_SIZE);
-    assertEquals(properties.xmlrpc.port, XMLRPC_SERVER_PORT);
-    assertEquals(properties.xmlrpc.maxThreads, XMLRPC_MAX_THREADS);
-    assertEquals(properties.xmlrpc.maxQueueSize, XMLRPC_MAX_QUEUE_SIZE);
-    assertEquals(properties.security.enabled, SECURITY_ENABLED);
-    assertEquals(properties.security.token, SECURITY_TOKEN);
-    assertEquals(properties.du.enabled, DISKUSAGE_SERVICE_ENABLED);
-    assertEquals(properties.du.parallelTasksEnabled, DISKUSAGE_SERVICE_PARALLEL_TASKS_ENABLED);
-    assertEquals(properties.du.initialDelay, DISKUSAGE_SERVICE_INITIAL_DELAY);
-    assertEquals(properties.du.tasksInterval, DISKUSAGE_SERVICE_TASKS_INTERVAL);
-    assertEquals(properties.inprogressRequestsAgent.delay, INPROGRESS_REQUESTS_AGENT_DELAY);
-    assertEquals(properties.inprogressRequestsAgent.interval, INPROGRESS_REQUESTS_AGENT_INTERVAL);
-    assertEquals(properties.inprogressRequestsAgent.ptpExpirationTime,
-        INPROGRESS_REQUESTS_AGENT_PTP_EXPIRATION_TIME);
-    assertEquals(properties.expiredSpacesAgent.delay, EXPIRED_SPACES_AGENT_DELAY);
-    assertEquals(properties.expiredSpacesAgent.interval, EXPIRED_SPACES_AGENT_INTERVAL);
-    assertEquals(properties.completedRequestsAgent.enabled, COMPLETED_REQUESTS_AGENT_ENABLED);
-    assertEquals(properties.completedRequestsAgent.delay, COMPLETED_REQUESTS_AGENT_DELAY);
-    assertEquals(properties.completedRequestsAgent.interval, COMPLETED_REQUESTS_AGENT_INTERVAL);
-    assertEquals(properties.completedRequestsAgent.purgeSize, COMPLETED_REQUESTS_AGENT_PURGE_SIZE);
-    assertEquals(properties.completedRequestsAgent.purgeAge, COMPLETED_REQUESTS_AGENT_PURGE_AGE);
-    assertEquals(properties.requestsScheduler.corePoolSize, REQUESTS_SCHEDULER_CORE_POOL_SIZE);
-    assertEquals(properties.requestsScheduler.maxPoolSize, REQUESTS_SCHEDULER_MAX_POOL_SIZE);
-    assertEquals(properties.requestsScheduler.queueSize, REQUESTS_SCHEDULER_QUEUE_SIZE);
-    assertEquals(properties.ptpScheduler.corePoolSize, PTP_SCHEDULER_CORE_POOL_SIZE);
-    assertEquals(properties.ptpScheduler.maxPoolSize, PTP_SCHEDULER_MAX_POOL_SIZE);
-    assertEquals(properties.ptpScheduler.queueSize, PTP_SCHEDULER_QUEUE_SIZE);
-    assertEquals(properties.ptgScheduler.corePoolSize, PTG_SCHEDULER_CORE_POOL_SIZE);
-    assertEquals(properties.ptgScheduler.maxPoolSize, PTG_SCHEDULER_MAX_POOL_SIZE);
-    assertEquals(properties.ptgScheduler.queueSize, PTG_SCHEDULER_QUEUE_SIZE);
-    assertEquals(properties.bolScheduler.corePoolSize, BOL_SCHEDULER_CORE_POOL_SIZE);
-    assertEquals(properties.bolScheduler.maxPoolSize, BOL_SCHEDULER_MAX_POOL_SIZE);
-    assertEquals(properties.bolScheduler.queueSize, BOL_SCHEDULER_QUEUE_SIZE);
-    assertEquals(properties.requestsPickerAgent.delay, REQUESTS_PICKER_AGENT_DELAY);
-    assertEquals(properties.requestsPickerAgent.interval, REQUESTS_PICKER_AGENT_INTERVAL);
-    assertEquals(properties.requestsPickerAgent.maxFetchedSize,
-        REQUESTS_PICKER_AGENT_MAX_FETCHED_SIZE);
-    assertEquals(properties.sanityChecksEnabled, SANITY_CHECK_ENABLED);
-    assertEquals(properties.extraslashes.file, EXTRA_SLASHES_FOR_FILE_TURL);
-    assertEquals(properties.extraslashes.rfio, EXTRA_SLASHES_FOR_RFIO_TURL);
-    assertEquals(properties.extraslashes.root, EXTRA_SLASHES_FOR_ROOT_TURL);
-    assertEquals(properties.extraslashes.gsiftp, EXTRA_SLASHES_FOR_GSIFTP_TURL);
-    assertEquals(properties.synchLs.defaultAllLevelRecursive, LS_DEFAULT_ALL_LEVEL_RECURSIVE);
-    assertEquals(properties.synchLs.defaultNumLevels, LS_DEFAULT_NUM_OF_LEVELS);
-    assertEquals(properties.synchLs.defaultOffset, LS_DEFAULT_OFFSET);
-    assertEquals(properties.synchLs.maxEntries, LS_MAX_NUMBER_OF_ENTRY);
-    assertEquals(properties.pinlifetime.defaultValue, PIN_LIFETIME_DEFAULT);
-    assertEquals(properties.pinlifetime.maximum, PIN_LIFETIME_MAXIMUM);
-    assertEquals(properties.skipPtgAclSetup, PTG_SKIP_ACL_SETUP);
-    assertEquals(properties.files.defaultSize, FILE_DEFAULT_SIZE);
-    assertEquals(properties.files.defaultLifetime, FILE_LIFETIME_DEFAULT);
-    assertEquals(properties.files.defaultOverwrite, DEFAULT_OVERWRITE_MODE);
-    assertEquals(properties.files.defaultStoragetype, DEFAULT_FILE_STORAGE_TYPE);
-    assertEquals(properties.directories.enableAutomaticCreation, AUTOMATIC_DIRECTORY_CREATION);
-    assertEquals(properties.directories.enableWritepermOnCreation, ENABLE_WRITE_PERM_ON_DIRECTORY);
-    assertEquals(properties.hearthbeat.bookkeepingEnabled, BOOK_KEEPING_ENABLED);
-    assertEquals(properties.hearthbeat.performanceMeasuringEnabled, PERFORMANCE_MEASURING);
-    assertEquals(properties.hearthbeat.period, HEARTHBEAT_PERIOD);
-    assertEquals(properties.hearthbeat.performanceLogbookTimeInterval,
-        PERFORMANCE_LOGBOOK_TIME_INTERVAL);
-    assertEquals(properties.hearthbeat.performanceGlanceTimeInterval,
-        PERFORMANCE_GLANCE_TIME_INTERVAL);
-    assertEquals(properties.infoQuotaRefreshPeriod, GPFS_QUOTA_REFRESH_PERIOD);
-    assertEquals(properties.httpTurlPrefix, HTTP_TURL_PREFIX);
-    assertEquals(properties.serverPoolStatusCheckTimeout, SERVER_POOL_STATUS_CHECK_TIMEOUT);
-    assertEquals(properties.abortMaxloop, MAX_LOOP);
-    assertEquals(properties.pingPropertiesFilename, PING_VALUES_PROPERTIES_FILENAME);
+    assertEquals(1, properties.srmEndpoints.size());
+    assertEquals(hostname, properties.srmEndpoints.get(0).host);
+    assertEquals(8444, properties.srmEndpoints.get(0).port);
+    assertEquals(hostname, properties.db.hostname);
+    assertEquals(DB_USERNAME, properties.db.username);
+    assertEquals(DB_PASSWORD, properties.db.password);
+    assertEquals(DB_PORT, properties.db.port);
+    assertEquals(DB_PROPERTIES, properties.db.properties);
+    assertEquals(DB_POOL_SIZE, properties.db.pool.size);
+    assertEquals(DB_POOL_MAX_WAIT_MILLIS, properties.db.pool.maxWaitMillis);
+    assertEquals(DB_POOL_MIN_IDLE, properties.db.pool.minIdle);
+    assertEquals(DB_POOL_TEST_ON_BORROW, properties.db.pool.testOnBorrow);
+    assertEquals(DB_POOL_TEST_WHILE_IDLE, properties.db.pool.testWhileIdle);
+    assertEquals(REST_SERVICES_PORT, properties.rest.port);
+    assertEquals(REST_SERVICES_MAX_THREADS, properties.rest.maxThreads);
+    assertEquals(REST_SERVICES_MAX_QUEUE_SIZE, properties.rest.maxQueueSize);
+    assertEquals(XMLRPC_SERVER_PORT, properties.xmlrpc.port);
+    assertEquals(XMLRPC_MAX_THREADS, properties.xmlrpc.maxThreads);
+    assertEquals(XMLRPC_MAX_QUEUE_SIZE, properties.xmlrpc.maxQueueSize);
+    assertEquals(SECURITY_ENABLED, properties.security.enabled);
+    assertEquals(SECURITY_TOKEN, properties.security.token);
+    assertEquals(DISKUSAGE_SERVICE_ENABLED, properties.du.enabled);
+    assertEquals(DISKUSAGE_SERVICE_PARALLEL_TASKS_ENABLED, properties.du.parallelTasksEnabled);
+    assertEquals(DISKUSAGE_SERVICE_INITIAL_DELAY, properties.du.initialDelay);
+    assertEquals(DISKUSAGE_SERVICE_TASKS_INTERVAL, properties.du.tasksInterval);
+    assertEquals(INPROGRESS_REQUESTS_AGENT_DELAY, properties.inprogressRequestsAgent.delay);
+    assertEquals(INPROGRESS_REQUESTS_AGENT_INTERVAL, properties.inprogressRequestsAgent.interval);
+    assertEquals(INPROGRESS_REQUESTS_AGENT_PTP_EXPIRATION_TIME,
+        properties.inprogressRequestsAgent.ptpExpirationTime);
+    assertEquals(EXPIRED_SPACES_AGENT_DELAY, properties.expiredSpacesAgent.delay);
+    assertEquals(EXPIRED_SPACES_AGENT_INTERVAL, properties.expiredSpacesAgent.interval);
+    assertEquals(COMPLETED_REQUESTS_AGENT_ENABLED, properties.completedRequestsAgent.enabled);
+    assertEquals(COMPLETED_REQUESTS_AGENT_DELAY, properties.completedRequestsAgent.delay);
+    assertEquals(COMPLETED_REQUESTS_AGENT_INTERVAL, properties.completedRequestsAgent.interval);
+    assertEquals(COMPLETED_REQUESTS_AGENT_PURGE_SIZE, properties.completedRequestsAgent.purgeSize);
+    assertEquals(COMPLETED_REQUESTS_AGENT_PURGE_AGE, properties.completedRequestsAgent.purgeAge);
+    assertEquals(REQUESTS_SCHEDULER_CORE_POOL_SIZE, properties.requestsScheduler.corePoolSize);
+    assertEquals(REQUESTS_SCHEDULER_MAX_POOL_SIZE, properties.requestsScheduler.maxPoolSize);
+    assertEquals(REQUESTS_SCHEDULER_QUEUE_SIZE, properties.requestsScheduler.queueSize);
+    assertEquals(PTP_SCHEDULER_CORE_POOL_SIZE, properties.ptpScheduler.corePoolSize);
+    assertEquals(PTP_SCHEDULER_MAX_POOL_SIZE, properties.ptpScheduler.maxPoolSize);
+    assertEquals(PTP_SCHEDULER_QUEUE_SIZE, properties.ptpScheduler.queueSize);
+    assertEquals(PTG_SCHEDULER_CORE_POOL_SIZE, properties.ptgScheduler.corePoolSize);
+    assertEquals(PTG_SCHEDULER_MAX_POOL_SIZE, properties.ptgScheduler.maxPoolSize);
+    assertEquals(PTG_SCHEDULER_QUEUE_SIZE, properties.ptgScheduler.queueSize);
+    assertEquals(BOL_SCHEDULER_CORE_POOL_SIZE, properties.bolScheduler.corePoolSize);
+    assertEquals(BOL_SCHEDULER_MAX_POOL_SIZE, properties.bolScheduler.maxPoolSize);
+    assertEquals(BOL_SCHEDULER_QUEUE_SIZE, properties.bolScheduler.queueSize);
+    assertEquals(REQUESTS_PICKER_AGENT_DELAY, properties.requestsPickerAgent.delay);
+    assertEquals(REQUESTS_PICKER_AGENT_INTERVAL, properties.requestsPickerAgent.interval);
+    assertEquals(REQUESTS_PICKER_AGENT_MAX_FETCHED_SIZE, properties.requestsPickerAgent.maxFetchedSize);
+    assertEquals(SANITY_CHECK_ENABLED, properties.sanityChecksEnabled);
+    assertEquals(EXTRA_SLASHES_FOR_FILE_TURL, properties.extraslashes.file);
+    assertEquals(EXTRA_SLASHES_FOR_RFIO_TURL, properties.extraslashes.rfio);
+    assertEquals(EXTRA_SLASHES_FOR_ROOT_TURL, properties.extraslashes.root);
+    assertEquals(EXTRA_SLASHES_FOR_GSIFTP_TURL, properties.extraslashes.gsiftp);
+    assertEquals(LS_DEFAULT_ALL_LEVEL_RECURSIVE, properties.synchLs.defaultAllLevelRecursive);
+    assertEquals(LS_DEFAULT_NUM_OF_LEVELS, properties.synchLs.defaultNumLevels);
+    assertEquals(LS_DEFAULT_OFFSET, properties.synchLs.defaultOffset);
+    assertEquals(LS_MAX_NUMBER_OF_ENTRY, properties.synchLs.maxEntries);
+    assertEquals(PIN_LIFETIME_DEFAULT, properties.pinlifetime.defaultValue);
+    assertEquals(PIN_LIFETIME_MAXIMUM, properties.pinlifetime.maximum);
+    assertEquals(PTG_SKIP_ACL_SETUP, properties.skipPtgAclSetup);
+    assertEquals(FILE_DEFAULT_SIZE, properties.files.defaultSize);
+    assertEquals(FILE_LIFETIME_DEFAULT, properties.files.defaultLifetime);
+    assertEquals(DEFAULT_OVERWRITE_MODE, properties.files.defaultOverwrite);
+    assertEquals(DEFAULT_FILE_STORAGE_TYPE, properties.files.defaultStoragetype);
+    assertEquals(AUTOMATIC_DIRECTORY_CREATION, properties.directories.enableAutomaticCreation);
+    assertEquals(ENABLE_WRITE_PERM_ON_DIRECTORY, properties.directories.enableWritepermOnCreation);
+    assertEquals(BOOK_KEEPING_ENABLED, properties.hearthbeat.bookkeepingEnabled);
+    assertEquals(PERFORMANCE_MEASURING, properties.hearthbeat.performanceMeasuringEnabled);
+    assertEquals(HEARTHBEAT_PERIOD, properties.hearthbeat.period);
+    assertEquals(PERFORMANCE_LOGBOOK_TIME_INTERVAL, properties.hearthbeat.performanceLogbookTimeInterval);
+    assertEquals(PERFORMANCE_GLANCE_TIME_INTERVAL, properties.hearthbeat.performanceGlanceTimeInterval);
+    assertEquals(GPFS_QUOTA_REFRESH_PERIOD, properties.infoQuotaRefreshPeriod);
+    assertEquals(HTTP_TURL_PREFIX, properties.httpTurlPrefix);
+    assertEquals(SERVER_POOL_STATUS_CHECK_TIMEOUT, properties.serverPoolStatusCheckTimeout);
+    assertEquals(MAX_LOOP, properties.abortMaxloop);
+    assertEquals(PING_VALUES_PROPERTIES_FILENAME, properties.pingPropertiesFilename);
   }
-  
-  @Test(expected = UnrecognizedPropertyException.class)
-  public void testNewConfigurationVersionOverOldFile() throws JsonParseException, JsonMappingException, IOException {
+
+  @Test(expected = JsonMappingException.class)
+  public void testNewConfigurationVersionOverOldFile()
+      throws JsonParseException, JsonMappingException, IOException {
 
     JavaPropsMapper mapper = new JavaPropsMapper();
     ClassLoader classLoader = getClass().getClassLoader();
     File file = new File(classLoader.getResource("v1.properties").getFile());
     mapper.readValue(file, StormProperties.class);
+  }
+
+  @Test
+  public void testSrmEndpointsWithoutHostname()
+      throws JsonParseException, JsonMappingException, IOException {
+
+    final String TEST_FILE = "/tmp/test-srm-endpoints.properties";
+    PrintWriter writer = new PrintWriter(TEST_FILE, "UTF-8");
+    writer.println("srm_endpoints[0].port: 8444");
+    writer.close();
+    JavaPropsMapper mapper = new JavaPropsMapper();
+    File file = new File(TEST_FILE);
+    try {
+      mapper.readValue(file, StormProperties.class);
+      fail("Expected JsonMappingException");
+    } catch (JsonMappingException e) {
+      assertTrue(
+          e.getMessage().indexOf("Missing required creator property 'host' (index 0)") != -1);
+    } finally {
+      file.delete();
+    }
   }
 }

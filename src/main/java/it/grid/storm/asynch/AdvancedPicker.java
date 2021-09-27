@@ -53,10 +53,10 @@ public class AdvancedPicker {
   private TimerTask retrievingTask = null;
 
   /* delay time before starting retriever thread, in mssec */
-  private final long delay = Configuration.getInstance().getPickingInitialDelay() * 1000;
+  private final long delay = Configuration.getInstance().getRequestsPickerAgentInitialDelay() * 1000;
 
   /* period of execution of retrieving, in mssec */
-  private final long period = Configuration.getInstance().getPickingTimeInterval() * 1000;
+  private final long period = Configuration.getInstance().getRequestsPickerAgentInterval() * 1000;
 
   /* boolean that indicates there is a token to abort! */
   private boolean abort = false;

@@ -6,6 +6,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
@@ -15,20 +17,16 @@ public class Endpoint {
   public String host;
   public int port;
 
-  public Endpoint() {
-    host = "localhost";
-    port = DEFAULT_SRM_PORT;;
-  }
-
-  public static Endpoint build(String host, int port) {
-    Endpoint e = new Endpoint();
-    e.host = host;
-    e.port = port;
-    return e;
+  @JsonCreator
+  public Endpoint(@JsonProperty(value = "host", required = true) String host) {
+    this.host = host;
+    port = DEFAULT_SRM_PORT;
   }
 
   public static Endpoint DEFAULT() throws UnknownHostException {
-    return build(InetAddress.getLocalHost().getHostName(), DEFAULT_SRM_PORT);
+    Endpoint e = new Endpoint(InetAddress.getLocalHost().getHostName());
+    e.port = DEFAULT_SRM_PORT;
+    return e;
   }
 
   @Override
