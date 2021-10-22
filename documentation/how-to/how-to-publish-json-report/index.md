@@ -55,7 +55,7 @@ Run YAIM to apply configuration.
 ### Puppet configuration
 
 There's no need to add the `info` storage area to the ones managed by StoRM Backend. We can add the `info` storage area only to `storm::webdav` class in order to implicit say that this storage area will be accessed only through HTTP and not through SRM. 
-Configure this storage area with all the VOs for which users are allowed to read the report and set `authenticated_read_enabled` as true to allow browsing the report with your personal x509 certificate.
+Configure this storage area with no VOs and set `authenticated_read_enabled` as true to allow browsing the report with your personal x509 certificate.
 
 ```puppet
 class { 'storm::webdav':
@@ -64,7 +64,7 @@ class { 'storm::webdav':
     'name'                       => 'info',
     'root_path'                  => '/storage/info',
     'access_points'              => ['/info'],
-    'vos'                        => ['dteam', 'atlas', 'lhc'],
+    'vos'                        => [],
     'authenticated_read_enabled' => true,
   },
   # ...
