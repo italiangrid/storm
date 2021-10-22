@@ -43,7 +43,7 @@ Deny write access to `/info` path to all users through path-authz.db file:
 $ vim /etc/storm/backend-server/path-authz.db
 ...
 #--------+----------------------+---------------+----------
-# user   |            Path          |   Permission  |   ACE
+# user   |        Path          |   Permission  |   ACE
 # class  |                      |   mask        |   Type
 #--------+----------------------+---------------+----------
   @ALL@     /info                    WFDMN            deny
