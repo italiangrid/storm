@@ -661,12 +661,10 @@ public class SURLStatusDAOMySql extends AbstractDAO implements SURLStatusDAO {
       String query = "SELECT rq.ID, rg.ID, sg.statusCode "
           + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
           + "ON (rg.request_queueID = rq.ID AND sg.request_GetID = rg.ID) "
-          + "WHERE ( rg.sourceSURL = ? and rg.sourceSURL_uniqueID = ? "
-          + "and sg.statusCode = 22 )";
+          + "WHERE ( rg.sourceSURL_uniqueID = ? and sg.statusCode = 22 )";
 
       stat = con.prepareStatement(query);
-      stat.setString(1, surl.getSURLString());
-      stat.setInt(2, surl.uniqueId());
+      stat.setInt(1, surl.uniqueId());
 
       rs = stat.executeQuery();
       result = rs.next();
@@ -702,18 +700,17 @@ public class SURLStatusDAOMySql extends AbstractDAO implements SURLStatusDAO {
       String query = "SELECT rq.ID, rp.ID, sp.statusCode "
           + "FROM request_queue rq JOIN (request_Put rp, status_Put sp) "
           + "ON (rp.request_queueID=rq.ID AND sp.request_PutID=rp.ID) "
-          + "WHERE ( rp.targetSURL = ? and rp.targetSURL_uniqueID = ? " + "and sp.statusCode=24 )";
+          + "WHERE ( rp.targetSURL_uniqueID = ? and sp.statusCode = 24 )";
 
       if (ptpRequestToken != null) {
-        query += " AND rq.r_token != ?";
+        query += " AND ( rq.r_token != ? )";
       }
 
       stat = con.prepareStatement(query);
-      stat.setString(1, surl.getSURLString());
-      stat.setInt(2, surl.uniqueId());
+      stat.setInt(1, surl.uniqueId());
 
       if (ptpRequestToken != null) {
-        stat.setString(3, ptpRequestToken.getValue());
+        stat.setString(2, ptpRequestToken.getValue());
       }
 
       rs = stat.executeQuery();
