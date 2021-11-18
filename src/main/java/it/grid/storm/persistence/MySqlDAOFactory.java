@@ -17,7 +17,9 @@
 
 package it.grid.storm.persistence;
 
-import it.grid.storm.config.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.persistence.dao.PtGChunkDAO;
 import it.grid.storm.persistence.dao.PtPChunkDAO;
 import it.grid.storm.persistence.dao.RequestSummaryDAO;
@@ -25,15 +27,8 @@ import it.grid.storm.persistence.dao.StorageAreaDAO;
 import it.grid.storm.persistence.dao.StorageSpaceDAO;
 import it.grid.storm.persistence.dao.TapeRecallDAO;
 import it.grid.storm.persistence.exceptions.DataAccessException;
-import it.grid.storm.persistence.exceptions.PersistenceException;
 import it.grid.storm.persistence.impl.mysql.StorageSpaceDAOMySql;
 import it.grid.storm.persistence.impl.mysql.TapeRecallDAOMySql;
-import it.grid.storm.persistence.util.db.DBConnection;
-import it.grid.storm.persistence.util.db.DBConnectionPool;
-import it.grid.storm.persistence.util.db.DataBaseStrategy;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class MySqlDAOFactory implements DAOFactory {
 
@@ -42,13 +37,7 @@ public class MySqlDAOFactory implements DAOFactory {
 	private static final Logger log = LoggerFactory
 		.getLogger(MySqlDAOFactory.class);
 
-	private static final DataBaseStrategy datasource = DataBaseStrategy.MYSQL;
-	private static DataSourceConnectionFactory connFactory = null;
 	private static MySqlDAOFactory factory = new MySqlDAOFactory();
-
-	static {
-		MySqlDAOFactory.initializeDataSource();
-	}
 
 	/**
      *
@@ -60,36 +49,6 @@ public class MySqlDAOFactory implements DAOFactory {
 	public static MySqlDAOFactory getInstance() {
 
 		return MySqlDAOFactory.factory;
-	}
-
-	private static void initializeDataSource() {
-
-		Configuration config = Configuration.getInstance();
-
-		datasource.setDbUrl(config.getBEPersistenceDBMSUrl());
-		datasource.setDbName(config.getBEPersistenceDBName());
-		datasource.setDbUsr(config.getBEPersistenceDBUserName());
-		datasource.setDbPwd(config.getBEPersistenceDBPassword());
-
-		boolean pool = config.getBEPersistencePoolDB();
-		if (pool) {
-			int maxActive = config.getBEPersistencePoolDBMaxActive();
-			int maxWait = config.getBEPersistencePoolDBMaxWait();
-			try {
-				DBConnectionPool.initPool(MySqlDAOFactory.datasource, maxActive,
-					maxWait);
-			} catch (PersistenceException e) {
-			  log.error(e.getMessage(), e);
-			}
-			MySqlDAOFactory.connFactory = DBConnectionPool.getPoolInstance();
-		} else {
-			try {
-				MySqlDAOFactory.connFactory = new DBConnection(
-					MySqlDAOFactory.datasource);
-			} catch (PersistenceException e) {
-			  log.error(e.getMessage(), e);
-			}
-		}
 	}
 
 	/**

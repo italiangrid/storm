@@ -25,7 +25,7 @@ public abstract class SQLHelper {
 	protected SQLHelper(String dbmsVendor) {
 
 		this.dbmsVendor = dbmsVendor;
-		this.formatter = DataBaseStrategy.getInstance(dbmsVendor).getFormatter();
+		this.formatter = Databases.getDataBaseStrategy(dbmsVendor).getFormatter();
 	}
 
 	public String format(Object value) {
