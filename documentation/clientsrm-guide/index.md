@@ -374,58 +374,9 @@ Request token from srmPrepareToGet must be provided. To check the status of the 
 
 #### srmCopy <a name="srmCopy">&nbsp;</a>
 
-Copy files from source storage sites into the target storage sites.
-
-The source storage site or the target storage site needs to be the SRM itself that the client makes the srmCopy request. If both source and target are local to the SRM, it is performed a local copy. There are two cases for remote copies: 1. Target SRM is where client makes a srmCopy request (PULL case), 2. Source SRM is where client makes a srmCopy request (PUSH case).
-
-1. PULL case: Upon the client’s srmCopy request, the target SRM makes a space at the target storage, and makes a request srmPrepareToGet to the source SRM. When TURL is ready at the source SRM, the target SRM transfers the file from the source TURL into the prepared target storage. After the file transfer completes, srmReleaseFiles is issued to the source SRM.
-2. PUSH case: Upon the client’s srmCopy request, the source SRM prepares a file to be transferred out to the target SRM, and makes a request srmPrepareToPut to the target SRM. When TURL is ready at the target SRM, the source SRM transfers the file from the prepared source into the prepared target TURL. After the file transfer completes, srmPutDone is issued to the target SRM.
-
-When specified target space token is provided, the files will be located finally in the targeted space associated with the space token. It is an asynchronous operation, and the status may be checked through srmStatusOfCopyRequest with the returned request token.
-
-Actually StoRM supports the srmCopy operation in PUSH mode.
-
-In the following example we copy the file *test\_file01.txt* in the directory test_dir from the SRM ibm139.cnaf.infn.it to the CNAF root directory in the SRM testbed006.cnaf.infn.it.
-
-	$ clientSRM copy -e httpg://ibm139.cnaf.infn.it:8444/ -s srm://ibm139.cnaf.infn.it:8444/infngrid/test_dir/test_file01.txt srm://testbed006.cnaf.infn.it:8443/cnaf/test_file01.txt -p
-	
-	============================================================
-	Polling request status:
-	Current status: SRM_REQUEST_QUEUED (Ctrl+c to stop).
-	Current status: SRM_REQUEST_INPROGRESS (Ctrl+c to stop)...............
-	============================================================
-	Request status:
-	  statusCode="SRM_SUCCESS"(0)
-	  explanation="Request handled!"
-	============================================================
-	SRM Response:
-	  requestToken="33ab86ee-ddf7-4e19-8e42-356a90f52646"
-	  remainingTotalRequestTime=0
-	  arrayOfFileStatuses (size=1)
-	      [0] sourceSURL="srm://ibm139.cnaf.infn.it:8444/infngrid/test_dir/test_file01.txt"
-	      [0] targetSURL="srm://testbed006.cnaf.infn.it:8443/cnaf/test_file01.txt"
-	      [0] status: statusCode="SRM_SUCCESS"(0)
-	                  explanation="srmCopy successfully handled!"
-	============================================================
+StoRM current version doesn't support SRM copy requests and it will return SRM\_NOT\_SUPPORTED as response. 
 
 #### srmStatusOfCopy <a name="srmStatusOfCopy">&nbsp;</a>
 
-Check the status of the previously requested srmCopy. Request token from srmCopy must be provided.
+StoRM current version doesn't support SRM copy status requests and it will return SRM\_NOT\_SUPPORTED as response.
 
-In this example we check the status of the srmCopy operation of the previous example:
-
-	$ clientSRM statuscopy -e httpg://ibm139.cnaf.infn.it:8444/ -t 33ab86ee-ddf7-4e19-8e42-356a90f52646
-	
-	============================================================
-	Request status:
-	  statusCode="SRM_SUCCESS"(0)
-	  explanation="Request handled!"
-	============================================================
-	SRM Response:
-	  remainingTotalRequestTime=0
-	  arrayOfFileStatuses (size=1)
-	      [0] sourceSURL="srm://ibm139.cnaf.infn.it:8444/infngrid/test_dir/test_file01.txt"
-	      [0] targetSURL="srm://testbed006.cnaf.infn.it:8443/cnaf/test_file01.txt"
-	      [0] status: statusCode="SRM_SUCCESS"(0)
-	                  explanation="srmCopy successfully handled!"
-	============================================================
