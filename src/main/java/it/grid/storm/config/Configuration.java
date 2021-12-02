@@ -151,8 +151,6 @@ public class Configuration {
   private static final String REST_SERVICES_PORT_KEY = "storm.rest.services.port";
   private static final String REST_SERVICES_MAX_THREAD = "storm.rest.services.maxthread";
   private static final String REST_SERVICES_MAX_QUEUE_SIZE = "storm.rest.services.max_queue_size";
-  private static final String RETRY_VALUE_KEY_KEY = "tape.recalltable.service.param.retry-value";
-  private static final String STATUS_KEY_KEY = "tape.recalltable.service.param.status";
   private static final String TASKOVER_KEY_KEY = "tape.recalltable.service.param.takeover";
   private static final String STORM_PROPERTIES_VERSION_KEY = "storm.properties.version";
   private static final String TAPE_SUPPORT_ENABLED_KEY = "tape.support.enabled";
@@ -185,12 +183,15 @@ public class Configuration {
 
   private Configuration() throws ConfigurationException {
 
-    String filePath = getProperty(CONFIG_FILE_PATH, DEFAULT_STORM_CONFIG_FILE);
+    final int DEFAULT_REFRESH_RATE = 0;
+    final String DEFAULT_CONFIG_FILE_PATH = "/etc/storm/backend-server/storm.properties";
+
+    String filePath = getProperty(CONFIG_FILE_PATH, DEFAULT_CONFIG_FILE_PATH);
     int refreshRate;
     try {
       refreshRate = Integer.valueOf(getProperty(REFRESH_RATE));
     } catch (NumberFormatException e) {
-      refreshRate = DEFAULT_STORM_CONFIG_REFRESH_RATE;
+      refreshRate = DEFAULT_REFRESH_RATE;
     }
     cr = new ConfigReader(filePath, refreshRate);
   }
@@ -200,7 +201,7 @@ public class Configuration {
    */
   public static Configuration getInstance() {
 
-    return Configuration.instance;
+    return instance;
   }
 
   /**
@@ -1142,24 +1143,6 @@ public class Configuration {
   public int getRestServicesMaxQueueSize() {
 
     return cr.getConfiguration().getInt(REST_SERVICES_MAX_QUEUE_SIZE, RestServer.DEFAULT_MAX_QUEUE_SIZE);
-  }
-
-  /**
-   * Method used to retrieve the key string used to pass RETRY-VALUE parameter to Recall Table
-   * service key="tape.recalltable.service.param.retry-value";
-   */
-  public String getRetryValueKey() {
-
-    return cr.getConfiguration().getString(RETRY_VALUE_KEY_KEY, "retry-value");
-  }
-
-  /**
-   * Method used to retrieve the key string used to pass RETRY-VALUE parameter to Recall Table
-   * service key="tape.recalltable.service.param.status";
-   */
-  public String getStatusKey() {
-
-    return cr.getConfiguration().getString(STATUS_KEY_KEY, "status");
   }
 
   /**

@@ -70,13 +70,9 @@ public class TapeRecallCatalog {
    *
    * @param groupTaskId @param newValue
    */
-  public void changeGroupTaskRetryValue(UUID groupTaskId, int newValue) {
+  public void changeGroupTaskRetryValue(UUID groupTaskId, int newValue) throws DataAccessException {
 
-    try {
-      tapeRecallDAO.setGroupTaskRetryValue(groupTaskId, newValue);
-    } catch (DataAccessException e) {
-      log.error("Unable to takeover a task", e);
-    }
+    tapeRecallDAO.setGroupTaskRetryValue(groupTaskId, newValue);
   }
 
   /**
