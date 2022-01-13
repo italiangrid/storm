@@ -175,8 +175,7 @@ public class SpaceHelper {
 
     if (tokenArray == null || tokenArray.size() == 0) {
       // the VOSpaceArea does not exist yet
-      SpaceHelper.log.debug("VoSpaceArea {} still does not exists. Start creation process.",
-          spaceTokenAlias);
+      log.debug("VoSpaceArea {} still does not exists. Start creation process.", spaceTokenAlias);
 
       PFN sfname = null;
       try {

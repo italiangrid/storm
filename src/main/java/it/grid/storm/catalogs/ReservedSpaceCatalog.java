@@ -158,22 +158,11 @@ public class ReservedSpaceCatalog {
    */
   public void updateStorageSpace(StorageSpaceData ssd) throws DataAccessException {
 
-    updateStorageSpace(ssd, null);
-  }
-
-  /**
-   * @param ssd
-   * @param updateTime
-   * 
-   * @throws DataAccessException
-   */
-  public void updateStorageSpace(StorageSpaceData ssd, Date updateTime) throws DataAccessException {
-
     log.debug("Storage Space DAO retrieved.");
 
     StorageSpaceTO ssTO = new StorageSpaceTO(ssd);
-    updateTime = updateTime == null ? new Date() : updateTime;
-    ssTO.setUpdateTime(updateTime);
+    ssTO.setCreated(null); // we don't want to update the creation timestamp
+    ssTO.setUpdateTime(new Date());
 
     ssDAO.updateStorageSpace(ssTO);
     log.debug("StorageSpaceTO updated in Persistence");
