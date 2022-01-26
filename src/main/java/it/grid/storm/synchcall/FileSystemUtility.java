@@ -21,13 +21,14 @@ import static it.grid.storm.filesystem.RandomWaitFilesystemAdapter.maybeWrapFile
 import static it.grid.storm.metrics.StormMetricRegistry.METRIC_REGISTRY;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import it.grid.storm.filesystem.Filesystem;
 import it.grid.storm.filesystem.FilesystemIF;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.MetricsFilesystemAdapter;
 import it.grid.storm.filesystem.swig.genericfs;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 
@@ -53,7 +54,7 @@ import it.grid.storm.namespace.VirtualFSInterface;
  */
 public class FileSystemUtility {
 
-	private static Logger log = NamespaceDirector.getLogger();
+	private static Logger log = LoggerFactory.getLogger(FileSystemUtility.class);
 
 	public static LocalFile getLocalFileByAbsolutePath(String absolutePath)
 		throws NamespaceException {
@@ -63,8 +64,7 @@ public class FileSystemUtility {
 		genericfs fsDriver = null;
 		FilesystemIF fs = null;
 		try {
-			vfs = NamespaceDirector.getNamespace().resolveVFSbyAbsolutePath(
-				absolutePath);
+			vfs = Namespace.getInstance().resolveVFSbyAbsolutePath(absolutePath);
 		} catch (NamespaceException ex) {
 			log.error("Unable to retrieve VFS by Absolute Path", ex);
 		}

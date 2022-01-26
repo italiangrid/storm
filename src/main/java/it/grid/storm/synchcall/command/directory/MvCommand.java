@@ -29,7 +29,7 @@ import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.namespace.InvalidSURLException;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
@@ -65,7 +65,7 @@ public class MvCommand extends DirectoryCommand implements Command {
 
   public MvCommand() {
 
-    namespace = NamespaceDirector.getNamespace();
+    namespace = Namespace.getInstance();
 
   }
 

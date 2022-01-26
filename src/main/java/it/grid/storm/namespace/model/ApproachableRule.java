@@ -17,16 +17,16 @@
 
 package it.grid.storm.namespace.model;
 
-import it.grid.storm.griduser.AbstractGridUser;
-import it.grid.storm.griduser.DistinguishedName;
-import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.VirtualFSInterface;
-
 import java.util.LinkedList;
 import java.util.List;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import it.grid.storm.griduser.AbstractGridUser;
+import it.grid.storm.griduser.DistinguishedName;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.VirtualFSInterface;
 
 /**
  * <p>
@@ -50,7 +50,7 @@ import org.slf4j.Logger;
  */
 public class ApproachableRule implements Comparable<ApproachableRule> {
 
-  private Logger log = NamespaceDirector.getLogger();
+  private Logger log = LoggerFactory.getLogger(ApproachableRule.class);
 
   private final String ruleName;
   private final SubjectRules subjectRules;

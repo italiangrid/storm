@@ -17,6 +17,15 @@
 
 package it.grid.storm.synchcall.command.datatransfer;
 
+import java.util.Calendar;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
@@ -24,7 +33,7 @@ import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.InvalidSURLException;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
@@ -49,15 +58,6 @@ import it.grid.storm.synchcall.data.datatransfer.ExtendFileLifeTimeOutputData;
 import it.grid.storm.synchcall.data.datatransfer.IdentityExtendFileLifeTimeInputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
-
-import java.util.Calendar;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
@@ -217,7 +217,7 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements
 			ExtendFileLifeTimeCommand.log
 				.debug("Function manageExtendSURLLifetime, class ExtendFileLifeTimeExecutor: parameter details is NULL");
 		}
-		NamespaceInterface namespace = NamespaceDirector.getNamespace();
+		NamespaceInterface namespace = Namespace.getInstance();
 		VolatileAndJiTCatalog catalog = VolatileAndJiTCatalog.getInstance();
 		boolean requestSuccess = true;
 		boolean requestFailure = true;
@@ -423,7 +423,7 @@ public class ExtendFileLifeTimeCommand extends DataTransferCommand implements
 					ExtendFileLifeTimeCommand.log.debug("Found SURL: "
 						+ surl.getSURLString() + " (status: " + statusOfTheSURL.toString()
 						+ ")");
-					NamespaceInterface namespace = NamespaceDirector.getNamespace();
+					NamespaceInterface namespace = Namespace.getInstance();
 					StoRI stori = null;
 					try {
 						stori = namespace.resolveStoRIbySURL(surl, guser);

@@ -29,7 +29,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 import it.grid.storm.griduser.VONameMatchingRule;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
@@ -103,7 +103,7 @@ public class NamespaceUtil {
 	 */
 	public static Collection<VirtualFSInterface> getResidentVFS(String mountPointPath) {
 
-		List<VirtualFSInterface> vfsSet = NamespaceDirector.getNamespace().getAllDefinedVFS();
+		List<VirtualFSInterface> vfsSet = Namespace.getInstance().getAllDefinedVFS();
 		for (VirtualFSInterface vfs : vfsSet) {
 			String vfsRootPath;
 			boolean enclosed;

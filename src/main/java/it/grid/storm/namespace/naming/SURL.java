@@ -17,20 +17,20 @@
 
 package it.grid.storm.namespace.naming;
 
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.model.Protocol;
-
 import java.net.URI;
 import java.util.Set;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.model.Protocol;
+
 public class SURL extends SRMURL {
 
-  private static Logger log = NamespaceDirector.getLogger();
+  private static Logger log = LoggerFactory.getLogger(SURL.class);
   private static Set<String> schemes = Sets.newHashSet("srm");
   private static Set<String> servicePaths = Sets.newHashSet("/srm/managerv2", "/srm/managerv1");
 

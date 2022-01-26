@@ -17,12 +17,22 @@
 
 package it.grid.storm.synchcall.command.datatransfer;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.TRequestToken;
@@ -40,16 +50,6 @@ import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferFilesInputDat
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferOutputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestInputData;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -382,7 +382,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
       try {
 
-        stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
+        stori = Namespace.getInstance().resolveStoRIbySURL(surl);
 
       } catch (Throwable e) {
 

@@ -37,7 +37,7 @@ import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.ExpiredSpaceTokenException;
 import it.grid.storm.namespace.InvalidGetTURLProtocolException;
 import it.grid.storm.namespace.InvalidSURLException;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.TURLBuildingException;
@@ -181,10 +181,10 @@ public class PtP implements Delegable, Chooser, Request {
     try {
 
       if (requestData instanceof IdentityInputData) {
-        fileStoRI = NamespaceDirector.getNamespace()
+        fileStoRI = Namespace.getInstance()
           .resolveStoRIbySURL(surl, ((IdentityInputData) requestData).getUser());
       } else {
-        fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
+        fileStoRI = Namespace.getInstance().resolveStoRIbySURL(surl);
       }
 
     } catch (UnapprochableSurlException e) {
@@ -487,7 +487,7 @@ public class PtP implements Delegable, Chooser, Request {
 
     VirtualFSInterface vfs;
     try {
-      vfs = NamespaceDirector.getNamespace().resolveVFSbyLocalFile(dir);
+      vfs = Namespace.getInstance().resolveVFSbyLocalFile(dir);
     } catch (NamespaceException e) {
       log.error("srmPtP: Error during used space update - {}", e.getMessage());
       return;

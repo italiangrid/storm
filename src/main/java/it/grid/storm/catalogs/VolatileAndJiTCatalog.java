@@ -37,7 +37,7 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.LocalUser;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.persistence.dao.VolatileAndJiTDAO;
 import it.grid.storm.persistence.impl.mysql.VolatileAndJiTDAOMySql;
 import it.grid.storm.persistence.model.JiTData;
@@ -277,7 +277,7 @@ public class VolatileAndJiTCatalog {
         log.info("VolatileAndJiT CATALOG. Removing ACL {} on file {} for " + "user {},{}", jitacl,
             jitfile, jituid, jitgid);
         LocalFile auxFile =
-            NamespaceDirector.getNamespace().resolveStoRIbyPFN(PFN.make(jitfile)).getLocalFile();
+            Namespace.getInstance().resolveStoRIbyPFN(PFN.make(jitfile)).getLocalFile();
         LocalUser auxUser = new LocalUser(jituid, jitgid);
         FilesystemPermission auxACL = new FilesystemPermission(jitacl);
 
@@ -308,7 +308,7 @@ public class VolatileAndJiTCatalog {
       try {
         log.info("VolatileAndJiT CATALOG. Deleting file {}", auxPFN);
         LocalFile auxFile =
-            NamespaceDirector.getNamespace().resolveStoRIbyPFN(PFN.make(auxPFN)).getLocalFile();
+            Namespace.getInstance().resolveStoRIbyPFN(PFN.make(auxPFN)).getLocalFile();
         boolean ok = auxFile.delete();
         if (!ok) {
           throw new Exception("Java File deletion failed!");

@@ -1,0 +1,523 @@
+<namespace xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="namespace-1.5.0.xsd" version="1.5.0">
+  <filesystems>
+    <filesystem name="TESTVO-FS" fs_type="ext3">
+      <space-token-description>TESTVO_TOKEN</space-token-description>
+      <storage-class>T0D1</storage-class>
+      <root>/storage/test.vo</root>
+      <filesystem-driver>it.grid.storm.filesystem.swig.posixfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.MockSpaceSystem</spacesystem-driver>
+      <storage-area-authz>
+        <fixed>permit-all</fixed>
+      </storage-area-authz>
+      <properties>
+        <RetentionPolicy>replica</RetentionPolicy>
+        <AccessLatency>online</AccessLatency>
+        <ExpirationMode>neverExpire</ExpirationMode>
+        <TotalOnlineSize unit="Byte" limited-size="true">4000000000</TotalOnlineSize>
+        <TotalNearlineSize unit="Byte">0</TotalNearlineSize>
+      </properties>
+      <capabilities>
+        <aclMode>AoT</aclMode>
+        <trans-prot>
+          <prot name="file">
+            <schema>file</schema>
+          </prot>
+          <prot name="gsiftp">
+            <id>0</id>
+            <schema>gsiftp</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="root">
+            <schema>root</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>1094</port>
+          </prot>
+          <prot name="xroot">
+            <id>1</id>
+            <schema>xroot</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>1094</port>
+          </prot>
+          <prot name="https">
+            <id>2</id>
+            <schema>https</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>8443</port>
+          </prot>
+          <prot name="http">
+            <id>3</id>
+            <schema>http</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>8085</port>
+          </prot>
+        </trans-prot>
+        <pool>
+          <balance-strategy>round-robin</balance-strategy>
+          <members>
+            <member member-id="0">
+            </member>
+          </members>
+        </pool>
+      </capabilities>
+    </filesystem>
+    <filesystem name="TESTVO2-FS" fs_type="ext3">
+      <space-token-description>TESTVO2_TOKEN</space-token-description>
+      <storage-class>T0D1</storage-class>
+      <root>/storage/test.vo.2</root>
+      <filesystem-driver>it.grid.storm.filesystem.swig.posixfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.MockSpaceSystem</spacesystem-driver>
+      <storage-area-authz>
+        <fixed>permit-all</fixed>
+      </storage-area-authz>
+      <properties>
+        <RetentionPolicy>replica</RetentionPolicy>
+        <AccessLatency>online</AccessLatency>
+        <ExpirationMode>neverExpire</ExpirationMode>
+        <TotalOnlineSize unit="Byte" limited-size="true">4000000000</TotalOnlineSize>
+        <TotalNearlineSize unit="Byte">0</TotalNearlineSize>
+      </properties>
+      <capabilities>
+        <aclMode>AoT</aclMode>
+        <trans-prot>
+          <prot name="file">
+            <schema>file</schema>
+          </prot>
+          <prot name="gsiftp">
+            <id>0</id>
+            <schema>gsiftp</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="root">
+            <schema>root</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>1094</port>
+          </prot>
+          <prot name="xroot">
+            <id>1</id>
+            <schema>xroot</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>1094</port>
+          </prot>
+          <prot name="https">
+            <id>2</id>
+            <schema>https</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>8443</port>
+          </prot>
+          <prot name="http">
+            <id>3</id>
+            <schema>http</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>8085</port>
+          </prot>
+        </trans-prot>
+        <pool>
+          <balance-strategy>round-robin</balance-strategy>
+          <members>
+            <member member-id="0">
+            </member>
+          </members>
+        </pool>
+      </capabilities>
+    </filesystem>
+    <filesystem name="IGI-FS" fs_type="ext3">
+      <space-token-description>IGI_TOKEN</space-token-description>
+      <storage-class>T0D1</storage-class>
+      <root>/storage/igi</root>
+      <filesystem-driver>it.grid.storm.filesystem.swig.posixfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.MockSpaceSystem</spacesystem-driver>
+      <storage-area-authz>
+        <fixed>permit-all</fixed>
+      </storage-area-authz>
+      <properties>
+        <RetentionPolicy>replica</RetentionPolicy>
+        <AccessLatency>online</AccessLatency>
+        <ExpirationMode>neverExpire</ExpirationMode>
+        <TotalOnlineSize unit="Byte" limited-size="true">4000000000</TotalOnlineSize>
+        <TotalNearlineSize unit="Byte">0</TotalNearlineSize>
+      </properties>
+      <capabilities>
+        <aclMode>AoT</aclMode>
+        <trans-prot>
+          <prot name="file">
+            <schema>file</schema>
+          </prot>
+          <prot name="gsiftp">
+            <id>0</id>
+            <schema>gsiftp</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="root">
+            <schema>root</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>1094</port>
+          </prot>
+          <prot name="xroot">
+            <id>1</id>
+            <schema>xroot</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>1094</port>
+          </prot>
+          <prot name="https">
+            <id>2</id>
+            <schema>https</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>8443</port>
+          </prot>
+          <prot name="http">
+            <id>3</id>
+            <schema>http</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>8085</port>
+          </prot>
+        </trans-prot>
+        <pool>
+          <balance-strategy>round-robin</balance-strategy>
+          <members>
+            <member member-id="0">
+            </member>
+          </members>
+        </pool>
+      </capabilities>
+    </filesystem>
+    <filesystem name="NOAUTH-FS" fs_type="ext3">
+      <space-token-description>NOAUTH_TOKEN</space-token-description>
+      <storage-class>T0D1</storage-class>
+      <root>/storage/noauth</root>
+      <filesystem-driver>it.grid.storm.filesystem.swig.posixfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.MockSpaceSystem</spacesystem-driver>
+      <storage-area-authz>
+        <fixed>permit-all</fixed>
+      </storage-area-authz>
+      <properties>
+        <RetentionPolicy>replica</RetentionPolicy>
+        <AccessLatency>online</AccessLatency>
+        <ExpirationMode>neverExpire</ExpirationMode>
+        <TotalOnlineSize unit="Byte" limited-size="true">4000000000</TotalOnlineSize>
+        <TotalNearlineSize unit="Byte">0</TotalNearlineSize>
+      </properties>
+      <capabilities>
+        <aclMode>AoT</aclMode>
+        <trans-prot>
+          <prot name="file">
+            <schema>file</schema>
+          </prot>
+          <prot name="gsiftp">
+            <id>0</id>
+            <schema>gsiftp</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="root">
+            <schema>root</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>1094</port>
+          </prot>
+          <prot name="xroot">
+            <id>1</id>
+            <schema>xroot</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>1094</port>
+          </prot>
+          <prot name="https">
+            <id>2</id>
+            <schema>https</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>8443</port>
+          </prot>
+          <prot name="http">
+            <id>3</id>
+            <schema>http</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>8085</port>
+          </prot>
+        </trans-prot>
+        <pool>
+          <balance-strategy>round-robin</balance-strategy>
+          <members>
+            <member member-id="0">
+            </member>
+          </members>
+        </pool>
+      </capabilities>
+    </filesystem>
+    <filesystem name="TESTVOBIS-FS" fs_type="ext3">
+      <space-token-description>TESTVOBIS_TOKEN</space-token-description>
+      <storage-class>T0D1</storage-class>
+      <root>/storage/test.vo.bis</root>
+      <filesystem-driver>it.grid.storm.filesystem.swig.posixfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.MockSpaceSystem</spacesystem-driver>
+      <storage-area-authz>
+        <fixed>permit-all</fixed>
+      </storage-area-authz>
+      <properties>
+        <RetentionPolicy>replica</RetentionPolicy>
+        <AccessLatency>online</AccessLatency>
+        <ExpirationMode>neverExpire</ExpirationMode>
+        <TotalOnlineSize unit="Byte" limited-size="true">4000000000</TotalOnlineSize>
+        <TotalNearlineSize unit="Byte">0</TotalNearlineSize>
+      </properties>
+      <capabilities>
+        <aclMode>AoT</aclMode>
+        <trans-prot>
+          <prot name="file">
+            <schema>file</schema>
+          </prot>
+          <prot name="gsiftp">
+            <id>0</id>
+            <schema>gsiftp</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="root">
+            <schema>root</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>1094</port>
+          </prot>
+          <prot name="xroot">
+            <id>1</id>
+            <schema>xroot</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>1094</port>
+          </prot>
+          <prot name="https">
+            <id>2</id>
+            <schema>https</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>8443</port>
+          </prot>
+          <prot name="http">
+            <id>3</id>
+            <schema>http</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>8085</port>
+          </prot>
+        </trans-prot>
+        <pool>
+          <balance-strategy>round-robin</balance-strategy>
+          <members>
+            <member member-id="0">
+            </member>
+          </members>
+        </pool>
+      </capabilities>
+    </filesystem>
+    <filesystem name="NESTED-FS" fs_type="ext3">
+      <space-token-description>NESTED_TOKEN</space-token-description>
+      <storage-class>T0D1</storage-class>
+      <root>/storage/nested</root>
+      <filesystem-driver>it.grid.storm.filesystem.swig.posixfs</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.MockSpaceSystem</spacesystem-driver>
+      <storage-area-authz>
+        <fixed>permit-all</fixed>
+      </storage-area-authz>
+      <properties>
+        <RetentionPolicy>replica</RetentionPolicy>
+        <AccessLatency>online</AccessLatency>
+        <ExpirationMode>neverExpire</ExpirationMode>
+        <TotalOnlineSize unit="Byte" limited-size="true">4000000000</TotalOnlineSize>
+        <TotalNearlineSize unit="Byte">0</TotalNearlineSize>
+      </properties>
+      <capabilities>
+        <aclMode>AoT</aclMode>
+        <trans-prot>
+          <prot name="file">
+            <schema>file</schema>
+          </prot>
+          <prot name="gsiftp">
+            <id>0</id>
+            <schema>gsiftp</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="root">
+            <schema>root</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>1094</port>
+          </prot>
+          <prot name="xroot">
+            <id>1</id>
+            <schema>xroot</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>1094</port>
+          </prot>
+          <prot name="https">
+            <id>2</id>
+            <schema>https</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>8443</port>
+          </prot>
+          <prot name="http">
+            <id>3</id>
+            <schema>http</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>8085</port>
+          </prot>
+        </trans-prot>
+        <pool>
+          <balance-strategy>round-robin</balance-strategy>
+          <members>
+            <member member-id="0">
+            </member>
+          </members>
+        </pool>
+      </capabilities>
+    </filesystem>
+    <filesystem name="TAPE-FS" fs_type="ext3">
+      <space-token-description>TAPE_TOKEN</space-token-description>
+      <storage-class>T1D0</storage-class>
+      <root>/storage/tape</root>
+      <filesystem-driver>it.grid.storm.filesystem.swig.test</filesystem-driver>
+      <spacesystem-driver>it.grid.storm.filesystem.MockSpaceSystem</spacesystem-driver>
+      <storage-area-authz>
+        <fixed>permit-all</fixed>
+      </storage-area-authz>
+      <properties>
+        <RetentionPolicy>custodial</RetentionPolicy>
+        <AccessLatency>nearline</AccessLatency>
+        <ExpirationMode>neverExpire</ExpirationMode>
+        <TotalOnlineSize unit="Byte" limited-size="true">4000000000</TotalOnlineSize>
+        <TotalNearlineSize unit="Byte">8000000000</TotalNearlineSize>
+      </properties>
+      <capabilities>
+        <aclMode>AoT</aclMode>
+        <trans-prot>
+          <prot name="file">
+            <schema>file</schema>
+          </prot>
+          <prot name="gsiftp">
+            <id>0</id>
+            <schema>gsiftp</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="root">
+            <schema>root</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>1094</port>
+          </prot>
+          <prot name="xroot">
+            <id>1</id>
+            <schema>xroot</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>1094</port>
+          </prot>
+          <prot name="https">
+            <id>2</id>
+            <schema>https</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>8443</port>
+          </prot>
+          <prot name="http">
+            <id>3</id>
+            <schema>http</schema>
+            <host>omii005-vm03.cnaf.infn.it</host>
+            <port>8085</port>
+          </prot>
+        </trans-prot>
+        <pool>
+          <balance-strategy>round-robin</balance-strategy>
+          <members>
+            <member member-id="0">
+            </member>
+          </members>
+        </pool>
+      </capabilities>
+    </filesystem>
+  </filesystems>
+  <mapping-rules>
+    <map-rule name="test.vo-maprule-0">
+      <stfn-root>/test.vo</stfn-root>
+      <mapped-fs>TESTVO-FS</mapped-fs>
+    </map-rule>
+    <map-rule name="test.vo.2-maprule-0">
+      <stfn-root>/test.vo.2</stfn-root>
+      <mapped-fs>TESTVO2-FS</mapped-fs>
+    </map-rule>
+    <map-rule name="igi-maprule-0">
+      <stfn-root>/igi</stfn-root>
+      <mapped-fs>IGI-FS</mapped-fs>
+    </map-rule>
+    <map-rule name="noauth-maprule-0">
+      <stfn-root>/noauth</stfn-root>
+      <mapped-fs>NOAUTH-FS</mapped-fs>
+    </map-rule>
+    <map-rule name="test.vo.bis-maprule-0">
+      <stfn-root>/test.vo.bis</stfn-root>
+      <mapped-fs>TESTVOBIS-FS</mapped-fs>
+    </map-rule>
+    <map-rule name="nested-maprule-0">
+      <stfn-root>/test.vo.2/nested</stfn-root>
+      <mapped-fs>NESTED-FS</mapped-fs>
+    </map-rule>
+    <map-rule name="nested-maprule-1">
+      <stfn-root>/alias</stfn-root>
+      <mapped-fs>NESTED-FS</mapped-fs>
+    </map-rule>
+    <map-rule name="tape-maprule-0">
+      <stfn-root>/tape</stfn-root>
+      <mapped-fs>TAPE-FS</mapped-fs>
+    </map-rule>
+  </mapping-rules>
+  <approachable-rules>
+    <app-rule name="test.vo-rule-0">
+      <subjects>
+        <dn>*</dn>
+        <vo-name>test.vo</vo-name>
+      </subjects>
+      <approachable-fs>TESTVO-FS</approachable-fs>
+      <anonymous-http-read>false</anonymous-http-read>
+    </app-rule>
+    <app-rule name="test.vo.2-rule-0">
+      <subjects>
+        <dn>*</dn>
+        <vo-name>test.vo.2</vo-name>
+      </subjects>
+      <approachable-fs>TESTVO2-FS</approachable-fs>
+      <anonymous-http-read>false</anonymous-http-read>
+    </app-rule>
+    <app-rule name="igi-rule-0">
+      <subjects>
+        <dn>*</dn>
+        <vo-name>test.vo</vo-name>
+      </subjects>
+      <approachable-fs>IGI-FS</approachable-fs>
+      <anonymous-http-read>false</anonymous-http-read>
+    </app-rule>
+    <app-rule name="noauth-rule-0">
+      <subjects>
+        <dn>*</dn>
+        <vo-name>test.vo</vo-name>
+      </subjects>
+      <approachable-fs>NOAUTH-FS</approachable-fs>
+      <anonymous-http-read>false</anonymous-http-read>
+    </app-rule>
+    <app-rule name="test.vo.bis-rule-0">
+      <subjects>
+        <dn>*</dn>
+        <vo-name>test.vo.2</vo-name>
+      </subjects>
+      <approachable-fs>TESTVOBIS-FS</approachable-fs>
+      <anonymous-http-read>false</anonymous-http-read>
+    </app-rule>
+    <app-rule name="nested-rule-0">
+      <subjects>
+        <dn>*</dn>
+        <vo-name>test.vo.2</vo-name>
+      </subjects>
+      <approachable-fs>NESTED-FS</approachable-fs>
+      <anonymous-http-read>false</anonymous-http-read>
+    </app-rule>
+    <app-rule name="tape-rule-0">
+      <subjects>
+        <dn>*</dn>
+        <vo-name>test.vo.2</vo-name>
+      </subjects>
+      <approachable-fs>TAPE-FS</approachable-fs>
+      <anonymous-http-read>false</anonymous-http-read>
+    </app-rule>
+  </approachable-rules>
+</namespace>

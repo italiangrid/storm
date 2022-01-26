@@ -40,7 +40,6 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.health.HealthDirector;
 import it.grid.storm.info.du.DiskUsageService;
 import it.grid.storm.metrics.StormMetricsReporter;
-import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.rest.RestServer;
@@ -93,10 +92,12 @@ public class StoRM {
 
   private final Configuration config;
   private final ReservedSpaceCatalog spaceCatalog;
+  private final NamespaceInterface namespace;
 
-  public StoRM(Configuration config) {
+  public StoRM(Configuration config, NamespaceInterface namespace) {
 
     this.config = config;
+    this.namespace = namespace;
     this.spaceCatalog = ReservedSpaceCatalog.getInstance();
 
     this.picker = new AdvancedPicker();
@@ -121,8 +122,6 @@ public class StoRM {
     configureSecurity();
 
     configureMetricsReporting();
-
-    NamespaceDirector.init();
 
     HealthDirector.initializeDirector();
 
@@ -415,7 +414,6 @@ public class StoRM {
     int delay = config.getDiskUsageServiceInitialDelay();
     long period = config.getDiskUsageServiceTasksInterval();
 
-    NamespaceInterface namespace = NamespaceDirector.getNamespace();
     List<VirtualFSInterface> quotaEnabledVfs = namespace.getVFSWithQuotaEnabled();
     List<VirtualFSInterface> sas = namespace.getAllDefinedVFS()
       .stream()

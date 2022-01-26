@@ -17,15 +17,6 @@
 
 package it.grid.storm.namespace.config;
 
-import it.grid.storm.namespace.CapabilityInterface;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.VirtualFSInterface;
-import it.grid.storm.namespace.model.ACLEntry;
-import it.grid.storm.namespace.model.ApproachableRule;
-import it.grid.storm.namespace.model.DefaultACL;
-import it.grid.storm.namespace.model.MappingRule;
-import it.grid.storm.namespace.util.userinfo.LocalGroups;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -33,6 +24,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import it.grid.storm.namespace.CapabilityInterface;
+import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.ACLEntry;
+import it.grid.storm.namespace.model.ApproachableRule;
+import it.grid.storm.namespace.model.DefaultACL;
+import it.grid.storm.namespace.model.MappingRule;
+import it.grid.storm.namespace.util.userinfo.LocalGroups;
 
 /**
  * <p>
@@ -56,7 +56,7 @@ import org.slf4j.Logger;
  */
 public class NamespaceCheck {
 
-	private final Logger log = NamespaceDirector.getLogger();
+	private final Logger log = LoggerFactory.getLogger(NamespaceCheck.class);
 	private final Map<String, VirtualFSInterface> vfss;
 	private final Map<String, MappingRule> maprules;
 	private final Map<String, ApproachableRule> apprules;

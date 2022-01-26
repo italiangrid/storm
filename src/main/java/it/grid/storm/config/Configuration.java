@@ -17,6 +17,8 @@
 
 package it.grid.storm.config;
 
+import static java.io.File.separatorChar;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -280,6 +282,15 @@ public class Configuration {
   public String getNamespaceConfigFilename() {
 
     return "namespace.xml";
+  }
+
+  public String getNamespaceConfigFilePath() {
+
+    String configurationDir = getConfigurationDir().getAbsolutePath();
+    if (configurationDir.charAt(configurationDir.length() - 1) != separatorChar) {
+      configurationDir += Character.toString(separatorChar);
+    }
+    return configurationDir + getNamespaceConfigFilename();
   }
 
   /**

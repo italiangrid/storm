@@ -17,6 +17,11 @@
 
 package it.grid.storm.synchcall.command.space;
 
+import java.util.Date;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.acl.AclManager;
 import it.grid.storm.acl.AclManagerFS;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
@@ -29,7 +34,7 @@ import it.grid.storm.filesystem.Space;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
@@ -62,11 +67,6 @@ import it.grid.storm.synchcall.data.space.GetSpaceMetaDataOutputData;
 import it.grid.storm.synchcall.data.space.IdentityReserveSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReserveSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReserveSpaceOutputData;
-
-import java.util.Date;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008 Company: INFN-CNAF and
@@ -122,7 +122,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
   public ReserveSpaceCommand() {
 
-    namespace = NamespaceDirector.getNamespace();
+    namespace = Namespace.getInstance();
     catalog = ReservedSpaceCatalog.getInstance();
   }
 

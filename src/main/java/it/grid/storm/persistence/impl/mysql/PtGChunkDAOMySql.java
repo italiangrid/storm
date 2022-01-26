@@ -47,7 +47,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import it.grid.storm.ea.StormEA;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.naming.SURL;
@@ -975,7 +975,7 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
         expiredSurlList.add(surl);
         StoRI stori;
         try {
-          stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
+          stori = Namespace.getInstance().resolveStoRIbySURL(surl);
         } catch (Throwable e) {
           log.error("Invalid SURL {} cannot release the pin. {}: {}", surlEntry.getKey(),
               e.getClass().getCanonicalName(), e.getMessage(), e);

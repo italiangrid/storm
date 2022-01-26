@@ -29,7 +29,7 @@ import com.google.common.collect.Lists;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.config.Configuration;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.persistence.exceptions.DataAccessException;
@@ -51,8 +51,8 @@ public class SpaceInfoManager {
 
   // Reference to the Catalog
   private final ReservedSpaceCatalog spaceCatalog = ReservedSpaceCatalog.getInstance();
-  // Reference to the NamespaceDirector
-  private final NamespaceInterface namespace = NamespaceDirector.getNamespace();
+  // Reference to the Namespace
+  private final NamespaceInterface namespace = Namespace.getInstance();
 
   private SpaceInfoManager() {}
 

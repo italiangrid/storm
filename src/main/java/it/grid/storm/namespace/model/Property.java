@@ -17,18 +17,18 @@
 
 package it.grid.storm.namespace.model;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.common.types.SizeUnit;
-import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.PropertyInterface;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
 
-import org.slf4j.Logger;
-
 public class Property implements PropertyInterface {
 
-	private Logger log = NamespaceDirector.getLogger();
+	private Logger log = LoggerFactory.getLogger(Property.class);
 	private TSizeInBytes totalOnlineSize = TSizeInBytes.makeEmpty();
 	private TSizeInBytes totalNearlineSize = TSizeInBytes.makeEmpty();
 	private RetentionPolicy retentionPolicy = RetentionPolicy.UNKNOWN;
@@ -157,7 +157,7 @@ public class Property implements PropertyInterface {
 	 */
 	public static class SizeUnitType {
 
-		private Logger log = NamespaceDirector.getLogger();
+		private Logger log = LoggerFactory.getLogger(SizeUnitType.class);
 
 		/**
 		 * <xs:simpleType> <xs:restriction base="xs:string"> <xs:enumeration
@@ -166,23 +166,19 @@ public class Property implements PropertyInterface {
 		 **/
 
 		private String sizeTypeName;
-		private int ordinal;
 		private long size;
 
-		public final static SizeUnitType BYTE = new SizeUnitType("Byte", 0, 1);
-		public final static SizeUnitType KB = new SizeUnitType("KB", 1, 1000);
-		public final static SizeUnitType MB = new SizeUnitType("MB", 2, 1000000);
-		public final static SizeUnitType GB = new SizeUnitType("GB", 3, 1000000000);
-		public final static SizeUnitType TB = new SizeUnitType("TB", 4,
-			1000000000000L);
-		public final static SizeUnitType UNKNOWN = new SizeUnitType("UNKNOWN", -1,
-			-1);
+		public final static SizeUnitType BYTE = new SizeUnitType("Byte", 1);
+		public final static SizeUnitType KB = new SizeUnitType("KB", 1000);
+		public final static SizeUnitType MB = new SizeUnitType("MB", 1000000);
+		public final static SizeUnitType GB = new SizeUnitType("GB", 1000000000);
+		public final static SizeUnitType TB = new SizeUnitType("TB", 1000000000000L);
+		public final static SizeUnitType UNKNOWN = new SizeUnitType("UNKNOWN", -1);
 
-		private SizeUnitType(String sizeTypeName, int ordinal, long size) {
+		private SizeUnitType(String sizeTypeName, long size) {
 
 			this.sizeTypeName = sizeTypeName;
 			this.size = size;
-			this.ordinal = ordinal;
 		}
 
 		public String getTypeName() {

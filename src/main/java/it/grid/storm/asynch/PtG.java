@@ -36,7 +36,7 @@ import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.InvalidGetTURLProtocolException;
 import it.grid.storm.namespace.InvalidSURLException;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.TURLBuildingException;
@@ -142,7 +142,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
     try {
       if (!downgradedToAnonymous && requestData instanceof IdentityInputData) {
         try {
-          fileStoRI = NamespaceDirector.getNamespace()
+          fileStoRI = Namespace.getInstance()
             .resolveStoRIbySURL(surl, ((IdentityInputData) requestData).getUser());
         } catch (UnapprochableSurlException e) {
           unapprochableSurl = true;
@@ -161,7 +161,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
         }
       } else {
         try {
-          fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL());
+          fileStoRI = Namespace.getInstance().resolveStoRIbySURL(requestData.getSURL());
         } catch (UnapprochableSurlException e) {
           failure = true;
           log.info("Unable to build a stori for surl {}. " + "UnapprochableSurlException: {}", surl,
@@ -198,7 +198,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
       } else {
         if (requestData.getTransferProtocols().allows(Protocol.HTTP)) {
           try {
-            fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL());
+            fileStoRI = Namespace.getInstance().resolveStoRIbySURL(requestData.getSURL());
           } catch (UnapprochableSurlException e) {
             failure = true;
             log.info("Unable to build a stori for surl {}. " + "UnapprochableSurlException: {}",

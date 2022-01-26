@@ -30,6 +30,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 
@@ -37,7 +38,6 @@ import it.grid.storm.balancer.BalancingStrategyType;
 import it.grid.storm.check.sanity.filesystem.SupportedFSType;
 import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.DefaultValuesInterface;
-import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.PropertyInterface;
 import it.grid.storm.namespace.VirtualFSInterface;
@@ -93,7 +93,7 @@ import it.grid.storm.util.GPFSSizeHelper;
 
 public class XMLNamespaceParser implements NamespaceParser {
 
-  private final Logger log = NamespaceDirector.getLogger();
+  private final Logger log = LoggerFactory.getLogger(XMLNamespaceParser.class);
 
   private String version;
   private Map<String, VirtualFSInterface> vfss;

@@ -25,6 +25,29 @@
  */
 package it.grid.storm.synchcall.command.datatransfer;
 
+import static it.grid.storm.srm.types.TStatusCode.SRM_ABORTED;
+import static it.grid.storm.srm.types.TStatusCode.SRM_AUTHORIZATION_FAILURE;
+import static it.grid.storm.srm.types.TStatusCode.SRM_FAILURE;
+import static it.grid.storm.srm.types.TStatusCode.SRM_INTERNAL_ERROR;
+import static it.grid.storm.srm.types.TStatusCode.SRM_INVALID_PATH;
+import static it.grid.storm.srm.types.TStatusCode.SRM_INVALID_REQUEST;
+import static it.grid.storm.srm.types.TStatusCode.SRM_PARTIAL_SUCCESS;
+import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_INPROGRESS;
+import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_QUEUED;
+import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_TIMED_OUT;
+import static it.grid.storm.srm.types.TStatusCode.SRM_SPACE_AVAILABLE;
+import static it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
+
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
@@ -34,7 +57,7 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.InvalidSURLException;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
@@ -59,29 +82,6 @@ import it.grid.storm.synchcall.data.datatransfer.AbortInputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
 
-import static it.grid.storm.srm.types.TStatusCode.SRM_ABORTED;
-import static it.grid.storm.srm.types.TStatusCode.SRM_AUTHORIZATION_FAILURE;
-import static it.grid.storm.srm.types.TStatusCode.SRM_FAILURE;
-import static it.grid.storm.srm.types.TStatusCode.SRM_INTERNAL_ERROR;
-import static it.grid.storm.srm.types.TStatusCode.SRM_INVALID_PATH;
-import static it.grid.storm.srm.types.TStatusCode.SRM_INVALID_REQUEST;
-import static it.grid.storm.srm.types.TStatusCode.SRM_PARTIAL_SUCCESS;
-import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_INPROGRESS;
-import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_QUEUED;
-import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_TIMED_OUT;
-import static it.grid.storm.srm.types.TStatusCode.SRM_SPACE_AVAILABLE;
-import static it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
-
 public class PtPAbortExecutor implements AbortExecutorInterface {
 
   private static final Logger log = LoggerFactory.getLogger(PtPAbortExecutor.class);
@@ -97,7 +97,7 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
   public AbortGeneralOutputData doIt(AbortInputData inputData) {
 
     // Used to delete the physical file
-    namespace = NamespaceDirector.getNamespace();
+    namespace = Namespace.getInstance();
 
     AbortGeneralOutputData outputData = new AbortGeneralOutputData();
     ArrayOfTSURLReturnStatus arrayOfTSurlRetStatus = new ArrayOfTSURLReturnStatus();
@@ -418,7 +418,7 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
       TSURL surl, TReturnStatus status, AbortInputData inputData) {
 
     boolean failure = false;
-    namespace = NamespaceDirector.getNamespace();
+    namespace = Namespace.getInstance();
 
     TSURLReturnStatus surlReturnStatus = new TSURLReturnStatus();
     surlReturnStatus.setSurl(surl);
@@ -587,8 +587,7 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
       surlReturnStatus
         .setStatus(new TReturnStatus(SRM_SUCCESS, "File request successfully aborted."));
       try {
-        NamespaceDirector.getNamespace()
-          .resolveVFSbyLocalFile(fileToRemove)
+        Namespace.getInstance().resolveVFSbyLocalFile(fileToRemove)
           .decreaseUsedSpace(sizeToRemove);
       } catch (NamespaceException e) {
         log.error(e.getMessage());

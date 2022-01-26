@@ -17,6 +17,9 @@
 
 package it.grid.storm.namespace;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.namespace.model.Authority;
@@ -24,11 +27,9 @@ import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.srm.types.InvalidTTURLAttributesException;
 import it.grid.storm.srm.types.TTURL;
 
-import org.slf4j.Logger;
-
 public class TURLBuilder {
 
-	private static Logger log = NamespaceDirector.getLogger();
+	private static Logger log = LoggerFactory.getLogger(TURLBuilder.class);
 
 	public TURLBuilder() {
 

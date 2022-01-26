@@ -17,19 +17,19 @@
 
 package it.grid.storm.tape.recalltable.model;
 
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.StoRI;
-import it.grid.storm.srm.types.InvalidTSURLAttributesException;
-import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.util.SURLValidator;
-import it.grid.storm.util.TokenValidator;
-
 import java.util.StringTokenizer;
 
 import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.grid.storm.namespace.Namespace;
+import it.grid.storm.namespace.StoRI;
+import it.grid.storm.srm.types.InvalidTSURLAttributesException;
+import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.util.SURLValidator;
+import it.grid.storm.util.TokenValidator;
 
 public class PutTapeRecallStatusValidator implements RequestValidator {
 
@@ -142,7 +142,7 @@ public class PutTapeRecallStatusValidator implements RequestValidator {
 			return false;
 		}
 		try {
-			stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
+			stori = Namespace.getInstance().resolveStoRIbySURL(surl);
 		} catch (Exception e) {
 			log.warn("Unable to build a stori for surl {} UnapprochableSurlException: {}" , surl , e.getMessage(),e);
 			return false;

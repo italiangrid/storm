@@ -29,7 +29,7 @@ import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.InvalidSURLException;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
@@ -197,7 +197,7 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 
     StoRI fileStoRI = null;
     try {
-      fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl, gu);
+      fileStoRI = Namespace.getInstance().resolveStoRIbySURL(surl, gu);
     } catch (IllegalArgumentException e) {
       log.error(
           "Unable to build a stori for surl '{}' and user '{}'. " + "IllegalArgumentException: {}",

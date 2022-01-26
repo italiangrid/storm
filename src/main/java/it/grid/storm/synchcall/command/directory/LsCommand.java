@@ -43,7 +43,7 @@ import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
 import it.grid.storm.namespace.InvalidDescendantsFileRequestException;
 import it.grid.storm.namespace.InvalidDescendantsPathRequestException;
 import it.grid.storm.namespace.InvalidSURLException;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
@@ -103,7 +103,7 @@ public class LsCommand extends DirectoryCommand implements Command {
 
   public LsCommand() {
 
-    namespace = NamespaceDirector.getNamespace();
+    namespace = Namespace.getInstance();
   }
 
   /**

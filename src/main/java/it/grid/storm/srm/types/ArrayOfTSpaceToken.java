@@ -26,7 +26,6 @@
 package it.grid.storm.srm.types;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -47,23 +46,7 @@ public class ArrayOfTSpaceToken implements Serializable {
 
   public static final String PNAME_ARRAYOFSPACETOKENS = "arrayOfSpaceTokens";
 
-  ArrayList<TSpaceToken> tokenList;
-
-  /**
-   * Constructor that requires a String. If it is null, then an
-   * InvalidArrayOfTTSpaceTokenAttributeException is thrown.
-   */
-  public ArrayOfTSpaceToken(TSpaceToken[] tokenArray)
-      throws InvalidArrayOfTSpaceTokenAttributeException {
-
-    if (tokenArray == null)
-      throw new InvalidArrayOfTSpaceTokenAttributeException(tokenArray);
-  }
-
-  public ArrayOfTSpaceToken() {
-
-    tokenList = new ArrayList<TSpaceToken>();
-  }
+  private List<TSpaceToken> tokenList = Lists.newArrayList();
 
   public static ArrayOfTSpaceToken decode(Map<String, Object> inputParam, String fieldName)
       throws InvalidArrayOfTSpaceTokenAttributeException {
@@ -94,13 +77,12 @@ public class ArrayOfTSpaceToken implements Serializable {
 
   public TSpaceToken getTSpaceToken(int i) {
 
-    return (TSpaceToken) tokenList.get(i);
+    return tokenList.get(i);
   }
 
   public TSpaceToken[] getTSpaceTokenArray() {
 
-    TSpaceToken[] array = new TSpaceToken[0];
-    return tokenList.toArray(array);
+    return tokenList.toArray(new TSpaceToken[0]);
   }
 
   public void addTSpaceToken(TSpaceToken token) {
@@ -124,7 +106,7 @@ public class ArrayOfTSpaceToken implements Serializable {
 
     List<Object> vector = Lists.newArrayList();
     for (int i = 0; i < tokenList.size(); i++) {
-      ((TSpaceToken) tokenList.get(i)).encode(vector);
+      tokenList.get(i).encode(vector);
     }
 
     outputParam.put(name, vector);

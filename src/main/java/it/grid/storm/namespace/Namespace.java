@@ -29,7 +29,13 @@ import java.util.SortedSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.commons.configuration.ConfigurationException;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.DOMException;
+import org.xml.sax.SAXException;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -43,7 +49,10 @@ import it.grid.storm.filesystem.Space;
 import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.config.NamespaceLoader;
 import it.grid.storm.namespace.config.NamespaceParser;
+import it.grid.storm.namespace.config.xml.XMLNamespaceLoader;
+import it.grid.storm.namespace.config.xml.XMLNamespaceParser;
 import it.grid.storm.namespace.model.ApproachableRule;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.Quota;
@@ -57,12 +66,33 @@ import it.grid.storm.srm.types.TSpaceToken;
 
 public class Namespace implements NamespaceInterface {
 
+  private static Namespace instance = null;
+
+  private static final Logger log = LoggerFactory.getLogger(Namespace.class);
+
   private static final String SPACE_FILE_NAME_SUFFIX = ".space";
   private static final char SPACE_FILE_NAME_SEPARATOR = '_';
-  private final Logger log = NamespaceDirector.getLogger();
+  
   private final NamespaceParser parser;
 
-  public Namespace(NamespaceParser parser) {
+  public static void init(String namespaceFilePath) throws DOMException, ConfigurationException,
+      ParserConfigurationException, SAXException, IOException, NamespaceException {
+    
+    NamespaceLoader loader = null;
+
+    log.info("Initializing Namespace from {} ...", namespaceFilePath);
+    loader = new XMLNamespaceLoader(namespaceFilePath);
+
+    instance = new Namespace(new XMLNamespaceParser(loader));
+
+    log.debug("NAMESPACE INITIALIZATION : ... done!");
+  }
+
+  public static Namespace getInstance() {
+    return instance;
+  }
+
+  private Namespace(NamespaceParser parser) {
 
     this.parser = parser;
   }

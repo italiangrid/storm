@@ -17,6 +17,19 @@
 
 package it.grid.storm.namespace;
 
+import static org.apache.commons.lang.StringUtils.join;
+
+import java.io.File;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.balancer.BalancingStrategyException;
 import it.grid.storm.balancer.Node;
@@ -49,21 +62,9 @@ import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TTURL;
 
-import static org.apache.commons.lang.StringUtils.join;
-
-import java.io.File;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-
-import org.slf4j.Logger;
-
 public class StoRIImpl implements StoRI {
 
-  private Logger log = NamespaceDirector.getLogger();
+  private Logger log = LoggerFactory.getLogger(StoRIImpl.class);
 
   private final Configuration config = Configuration.getInstance();
 
@@ -291,7 +292,7 @@ public class StoRIImpl implements StoRI {
         log.debug("SURL point to an EMPTY DIRECTORY");
         throw new InvalidDescendantsEmptyRequestException(fileHandle, pathList);
       } else { // Creation of StoRI LIST
-        NamespaceInterface namespace = NamespaceDirector.getNamespace();
+        NamespaceInterface namespace = Namespace.getInstance();
         for (String childPath : pathList) {
           log.debug("<GetChildren>:Creation of new StoRI with path: {}", childPath);
           try {

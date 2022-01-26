@@ -5,7 +5,7 @@ import java.util.List;
 import com.google.common.collect.Lists;
 
 import it.grid.storm.namespace.CapabilityInterface;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.Quota;
 
@@ -39,7 +39,7 @@ public class VirtualFSHelper {
   public static List<VirtualFSInterface> getGPFSQuotaEnabledFilesystems() {
 
     List<VirtualFSInterface> fss = Lists.newArrayList();
-    List<VirtualFSInterface> allVFS = NamespaceDirector.getNamespace().getAllDefinedVFS();
+    List<VirtualFSInterface> allVFS = Namespace.getInstance().getAllDefinedVFS();
 
     for (VirtualFSInterface vfs : allVFS) {
       if (isGPFSQuotaEnabledForVFS(vfs))

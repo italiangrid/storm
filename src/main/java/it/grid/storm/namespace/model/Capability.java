@@ -17,14 +17,6 @@
 
 package it.grid.storm.namespace.model;
 
-import it.grid.storm.balancer.BalancingStrategy;
-import it.grid.storm.balancer.BalancingStrategyFactory;
-import it.grid.storm.balancer.Node;
-import it.grid.storm.balancer.ftp.FTPNode;
-import it.grid.storm.namespace.CapabilityInterface;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
-
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.LinkedList;
@@ -32,6 +24,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import it.grid.storm.balancer.BalancingStrategy;
+import it.grid.storm.balancer.BalancingStrategyFactory;
+import it.grid.storm.balancer.Node;
+import it.grid.storm.balancer.ftp.FTPNode;
+import it.grid.storm.namespace.CapabilityInterface;
+import it.grid.storm.namespace.NamespaceException;
 
 /**
  * <p>
@@ -56,7 +56,7 @@ import org.slf4j.Logger;
 
 public class Capability implements CapabilityInterface {
 
-  private Logger log = NamespaceDirector.getLogger();
+  private Logger log = LoggerFactory.getLogger(Capability.class);
   private ACLMode aclMode = ACLMode.UNDEF;
   private Quota quota = null;
   // List of TransportProtocol by Protocol.

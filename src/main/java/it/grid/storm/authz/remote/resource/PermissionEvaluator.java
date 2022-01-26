@@ -41,7 +41,7 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.FQAN;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
@@ -68,7 +68,7 @@ class PermissionEvaluator {
 
     VirtualFSInterface fileVFS;
     try {
-      fileVFS = NamespaceDirector.getNamespace().resolveVFSbyAbsolutePath(filePathDecoded);
+      fileVFS = Namespace.getInstance().resolveVFSbyAbsolutePath(filePathDecoded);
     } catch (NamespaceException e) {
       log.error("Unable to determine a VFS that maps the requested file "
           + "path '{}'. NamespaceException: {}", filePathDecoded, e.getMessage());
@@ -110,7 +110,7 @@ class PermissionEvaluator {
 
     VirtualFSInterface fileVFS;
     try {
-      fileVFS = NamespaceDirector.getNamespace().resolveVFSbyAbsolutePath(filePathDecoded);
+      fileVFS = Namespace.getInstance().resolveVFSbyAbsolutePath(filePathDecoded);
     } catch (NamespaceException e) {
       log.error("Unable to determine a VFS that maps the requested file "
           + "path '{}'. NamespaceException: {}", filePathDecoded, e.getMessage());
@@ -134,7 +134,7 @@ class PermissionEvaluator {
 
     VirtualFSInterface fileVFS;
     try {
-      fileVFS = NamespaceDirector.getNamespace().resolveVFSbyAbsolutePath(filePathDecoded);
+      fileVFS = Namespace.getInstance().resolveVFSbyAbsolutePath(filePathDecoded);
     } catch (NamespaceException e) {
       log.error("Unable to determine a VFS that maps the requested file "
           + "path '{}'. NamespaceException: {}", filePathDecoded, e.getMessage());
@@ -156,7 +156,7 @@ class PermissionEvaluator {
 
     VirtualFSInterface fileVFS;
     try {
-      fileVFS = NamespaceDirector.getNamespace().resolveVFSbyAbsolutePath(filePathDecoded);
+      fileVFS = Namespace.getInstance().resolveVFSbyAbsolutePath(filePathDecoded);
     } catch (NamespaceException e) {
       log.error("Unable to determine a VFS that maps the requested file "
           + "path '{}'. NamespaceException: {}", filePathDecoded, e.getMessage());

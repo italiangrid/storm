@@ -23,11 +23,13 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.balancer.Node;
@@ -52,9 +54,8 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.DefaultValuesInterface;
 import it.grid.storm.namespace.ExpiredSpaceTokenException;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.PropertyInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.StoRIImpl;
@@ -84,7 +85,7 @@ import it.grid.storm.srm.types.TSpaceType;
  */
 public class VirtualFS implements VirtualFSInterface {
 
-  private final Logger log = NamespaceDirector.getLogger();
+  private final Logger log = LoggerFactory.getLogger(VirtualFS.class);
 
   String aliasName = null;
   String type = null;
@@ -101,8 +102,8 @@ public class VirtualFS implements VirtualFSInterface {
   genericfs genericFS = null;
   SpaceSystem spaceSystem = null;
   FilesystemIF fsWrapper = null;
-  List<MappingRule> mappingRules = new ArrayList<MappingRule>();
-  List<ApproachableRule> approachableRules = new ArrayList<ApproachableRule>();
+  List<MappingRule> mappingRules = Lists.newArrayList();
+  List<ApproachableRule> approachableRules = Lists.newArrayList();
   Configuration config;
   StorageClassType storageClass = null;
   TSpaceToken spaceToken;
@@ -1319,8 +1320,7 @@ public class VirtualFS implements VirtualFSInterface {
   public StoRI retrieveSpaceFileByPFN(PFN pfn, long totalSize)
     throws NamespaceException {
 
-    NamespaceInterface namespace = NamespaceDirector.getNamespace();
-    StoRI stori = namespace.resolveStoRIbyPFN(pfn);
+    StoRI stori = Namespace.getInstance().resolveStoRIbyPFN(pfn);
     stori.setStoRIType(StoRIType.SPACE);
     // Create the Space istance
     log.debug("VFS: retrieveSpace, relative {}-{}", stori.getRelativePath(), stori);
