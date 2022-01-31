@@ -10,9 +10,9 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class RequestsPickerAgent {
 
-  public int delay;
-  public int interval;
-  public int maxFetchedSize;
+  private int delay;
+  private int interval;
+  private int maxFetchedSize;
 
   public RequestsPickerAgent() {
     delay = REQUESTS_PICKER_AGENT_DELAY;
@@ -32,4 +32,30 @@ public class RequestsPickerAgent {
     builder.append("]");
     return builder.toString();
   }
+
+  public int getDelay() {
+    return delay;
+  }
+
+  public void setDelay(int delay) {
+    this.delay = delay;
+  }
+
+  public int getInterval() {
+    return interval;
+  }
+
+  public void setInterval(int interval) {
+    this.interval = interval;
+  }
+
+  public int getMaxFetchedSize() {
+    return maxFetchedSize;
+  }
+
+  public void setMaxFetchedSize(int maxFetchedSize) {
+    this.maxFetchedSize = maxFetchedSize;
+  }
+
+  
 }

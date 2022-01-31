@@ -33,6 +33,7 @@ import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
 import it.grid.storm.config.converter.StormPropertiesConversionException;
 import it.grid.storm.config.converter.StormPropertiesConverter;
 import it.grid.storm.config.model.v2.OverwriteMode;
+import it.grid.storm.config.model.v2.QualityLevel;
 import it.grid.storm.config.model.v2.StorageType;
 import it.grid.storm.config.model.v2.StormProperties;
 import it.grid.storm.namespace.model.Authority;
@@ -95,7 +96,7 @@ public class Configuration {
 
   public String getVersion() {
 
-    return properties.version;
+    return properties.getVersion();
   }
 
   public File getConfigurationDir() {
@@ -113,8 +114,8 @@ public class Configuration {
 
   public List<Authority> getManagedSrmEndpoints() {
 
-    return properties.srmEndpoints.stream()
-      .map(e -> new Authority(e.host, e.port))
+    return properties.getSrmEndpoints().stream()
+      .map(e -> new Authority(e.getHost(), e.getPort()))
       .collect(Collectors.toList());
   }
 
@@ -131,7 +132,7 @@ public class Configuration {
    */
   public String getDbHostname() {
 
-    return properties.db.hostname;
+    return properties.getDb().getHostname();
   }
 
   /**
@@ -139,7 +140,7 @@ public class Configuration {
    */
   public int getDbPort() {
 
-    return properties.db.port;
+    return properties.getDb().getPort();
   }
 
   /**
@@ -147,7 +148,7 @@ public class Configuration {
    */
   public String getDbUsername() {
 
-    return properties.db.username;
+    return properties.getDb().getUsername();
   }
 
   /**
@@ -155,7 +156,7 @@ public class Configuration {
    */
   public String getDbPassword() {
 
-    return properties.db.password;
+    return properties.getDb().getPassword();
   }
 
   /**
@@ -163,7 +164,7 @@ public class Configuration {
    */
   public String getDbProperties() {
 
-    return properties.db.properties;
+    return properties.getDb().getProperties();
   }
 
   /**
@@ -172,7 +173,7 @@ public class Configuration {
    */
   public int getDbPoolSize() {
 
-    return properties.db.pool.size;
+    return properties.getDb().getPool().getSize();
   }
 
   /**
@@ -180,7 +181,7 @@ public class Configuration {
    */
   public int getDbPoolMinIdle() {
 
-    return properties.db.pool.minIdle;
+    return properties.getDb().getPool().getMinIdle();
   }
 
   /**
@@ -188,7 +189,7 @@ public class Configuration {
    */
   public int getDbPoolMaxWaitMillis() {
 
-    return properties.db.pool.maxWaitMillis;
+    return properties.getDb().getPool().getMaxWaitMillis();
   }
 
   /**
@@ -197,7 +198,7 @@ public class Configuration {
    */
   public boolean isDbPoolTestOnBorrow() {
 
-    return properties.db.pool.testOnBorrow;
+    return properties.getDb().getPool().isTestOnBorrow();
   }
 
   /**
@@ -205,7 +206,7 @@ public class Configuration {
    */
   public boolean isDbPoolTestWhileIdle() {
 
-    return properties.db.pool.testWhileIdle;
+    return properties.getDb().getPool().isTestWhileIdle();
   }
 
   /**
@@ -213,22 +214,22 @@ public class Configuration {
    */
   public int getRestServicesPort() {
 
-    return properties.rest.port;
+    return properties.getRest().getPort();
   }
 
   public int getRestServicesMaxThreads() {
 
-    return properties.rest.maxThreads;
+    return properties.getRest().getMaxThreads();
   }
 
   public int getRestServicesMaxQueueSize() {
 
-    return properties.rest.maxQueueSize;
+    return properties.getRest().getMaxQueueSize();
   }
 
   public boolean isSanityCheckEnabled() {
 
-    return properties.sanityChecksEnabled;
+    return properties.isSanityChecksEnabled();
   }
 
   /**
@@ -236,47 +237,47 @@ public class Configuration {
    */
   public int getXmlrpcMaxThreads() {
 
-    return properties.xmlrpc.maxThreads;
+    return properties.getXmlrpc().getMaxThreads();
   }
 
   public int getXmlrpcMaxQueueSize() {
 
-    return properties.xmlrpc.maxQueueSize;
+    return properties.getXmlrpc().getMaxQueueSize();
   }
 
   public int getXmlRpcServerPort() {
 
-    return properties.xmlrpc.port;
+    return properties.getXmlrpc().getPort();
   }
 
   public Boolean isSecurityEnabled() {
 
-    return properties.security.enabled;
+    return properties.getSecurity().isEnabled();
   }
 
   public String getSecurityToken() {
 
-    return properties.security.token;
+    return properties.getSecurity().getToken();
   }
 
   public boolean isDiskUsageServiceEnabled() {
 
-    return properties.du.enabled;
+    return properties.getDu().isEnabled();
   }
 
   public int getDiskUsageServiceInitialDelay() {
 
-    return properties.du.initialDelay;
+    return properties.getDu().getInitialDelay();
   }
 
   public long getDiskUsageServiceTasksInterval() {
 
-    return properties.du.tasksInterval;
+    return properties.getDu().getTasksInterval();
   }
 
   public boolean isDiskUsageServiceTasksParallel() {
 
-    return properties.du.parallelTasksEnabled;
+    return properties.getDu().isParallelTasksEnabled();
   }
 
   public String getNamespaceConfigFilename() {
@@ -299,7 +300,7 @@ public class Configuration {
    */
   public long getExpiredSpacesAgentInitialDelay() {
 
-    return properties.expiredSpacesAgent.delay;
+    return properties.getExpiredSpacesAgent().getDelay();
   }
 
   /**
@@ -307,12 +308,12 @@ public class Configuration {
    */
   public long getExpiredSpacesAgentInterval() {
 
-    return properties.expiredSpacesAgent.interval;
+    return properties.getExpiredSpacesAgent().getInterval();
   }
 
   public long getFileDefaultSize() {
 
-    return properties.files.defaultSize;
+    return properties.getFiles().getDefaultSize();
   }
 
   /**
@@ -322,7 +323,7 @@ public class Configuration {
    */
   public long getFileLifetimeDefault() {
 
-    return properties.files.defaultLifetime;
+    return properties.getFiles().getDefaultLifetime();
   }
 
   /**
@@ -333,7 +334,7 @@ public class Configuration {
    */
   public long getPinLifetimeDefault() {
 
-    return properties.pinlifetime.defaultValue;
+    return properties.getPinlifetime().getDefaultValue();
   }
 
   /**
@@ -342,7 +343,7 @@ public class Configuration {
    */
   public long getPinLifetimeMaximum() {
 
-    return properties.pinlifetime.maximum;
+    return properties.getPinlifetime().getMaximum();
   }
 
   /**
@@ -351,7 +352,7 @@ public class Configuration {
    */
   public long getInProgressAgentInitialDelay() {
 
-    return properties.inprogressRequestsAgent.delay;
+    return properties.getInprogressRequestsAgent().getDelay();
   }
 
   /**
@@ -359,7 +360,7 @@ public class Configuration {
    */
   public long getInProgressAgentInterval() {
 
-    return properties.inprogressRequestsAgent.interval;
+    return properties.getInprogressRequestsAgent().getInterval();
   }
 
   /**
@@ -368,7 +369,7 @@ public class Configuration {
    */
   public long getRequestsPickerAgentInitialDelay() {
 
-    return properties.requestsPickerAgent.delay;
+    return properties.getRequestsPickerAgent().getDelay();
   }
 
   /**
@@ -376,7 +377,7 @@ public class Configuration {
    */
   public long getRequestsPickerAgentInterval() {
 
-    return properties.requestsPickerAgent.interval;
+    return properties.getRequestsPickerAgent().getInterval();
   }
 
   /**
@@ -385,7 +386,7 @@ public class Configuration {
    */
   public int getRequestsPickerAgentMaxFetchedSize() {
 
-    return properties.requestsPickerAgent.maxFetchedSize;
+    return properties.getRequestsPickerAgent().getMaxFetchedSize();
   }
 
   /**
@@ -394,7 +395,7 @@ public class Configuration {
    */
   public int getLsMaxNumberOfEntry() {
 
-    return properties.synchLs.maxEntries;
+    return properties.getSynchLs().getMaxEntries();
   }
 
   /**
@@ -402,7 +403,7 @@ public class Configuration {
    */
   public boolean isLsDefaultAllLevelRecursive() {
 
-    return properties.synchLs.defaultAllLevelRecursive;
+    return properties.getSynchLs().isDefaultAllLevelRecursive();
   }
 
   /**
@@ -410,7 +411,7 @@ public class Configuration {
    */
   public short getLsDefaultNumOfLevels() {
 
-    return properties.synchLs.defaultNumLevels;
+    return properties.getSynchLs().getDefaultNumLevels();
   }
 
   /**
@@ -418,7 +419,7 @@ public class Configuration {
    */
   public short getLsDefaultOffset() {
 
-    return properties.synchLs.defaultOffset;
+    return properties.getSynchLs().getDefaultOffset();
   }
 
   /**
@@ -434,7 +435,7 @@ public class Configuration {
    */
   public int getPtPCorePoolSize() {
 
-    return properties.ptpScheduler.corePoolSize;
+    return properties.getPtpScheduler().getCorePoolSize();
   }
 
   /**
@@ -450,7 +451,7 @@ public class Configuration {
    */
   public int getPtPMaxPoolSize() {
 
-    return properties.ptpScheduler.maxPoolSize;
+    return properties.getPtpScheduler().getMaxPoolSize();
   }
 
   /**
@@ -467,7 +468,7 @@ public class Configuration {
    */
   public int getPtPQueueSize() {
 
-    return properties.ptpScheduler.queueSize;
+    return properties.getPtpScheduler().getQueueSize();
   }
 
   /**
@@ -484,7 +485,7 @@ public class Configuration {
    */
   public int getPtGCorePoolSize() {
 
-    return properties.ptgScheduler.corePoolSize;
+    return properties.getPtgScheduler().getCorePoolSize();
   }
 
   /**
@@ -501,7 +502,7 @@ public class Configuration {
    */
   public int getPtGMaxPoolSize() {
 
-    return properties.ptgScheduler.maxPoolSize;
+    return properties.getPtgScheduler().getMaxPoolSize();
   }
 
   /**
@@ -518,7 +519,7 @@ public class Configuration {
    */
   public int getPtGQueueSize() {
 
-    return properties.ptgScheduler.queueSize;
+    return properties.getPtgScheduler().getQueueSize();
   }
 
   /**
@@ -535,7 +536,7 @@ public class Configuration {
    */
   public int getBoLCorePoolSize() {
 
-    return properties.bolScheduler.corePoolSize;
+    return properties.getBolScheduler().getCorePoolSize();
   }
 
   /**
@@ -552,7 +553,7 @@ public class Configuration {
    */
   public int getBoLMaxPoolSize() {
 
-    return properties.bolScheduler.maxPoolSize;
+    return properties.getBolScheduler().getMaxPoolSize();
   }
 
   /**
@@ -569,7 +570,7 @@ public class Configuration {
    */
   public int getBoLQueueSize() {
 
-    return properties.bolScheduler.queueSize;
+    return properties.getBolScheduler().getQueueSize();
   }
 
   /**
@@ -586,7 +587,7 @@ public class Configuration {
    */
   public int getCorePoolSize() {
 
-    return properties.requestsScheduler.corePoolSize;
+    return properties.getRequestsScheduler().getCorePoolSize();
   }
 
   /**
@@ -602,7 +603,7 @@ public class Configuration {
    */
   public int getMaxPoolSize() {
 
-    return properties.requestsScheduler.maxPoolSize;
+    return properties.getRequestsScheduler().getMaxPoolSize();
   }
 
   /**
@@ -619,7 +620,7 @@ public class Configuration {
    */
   public int getQueueSize() {
 
-    return properties.requestsScheduler.queueSize;
+    return properties.getRequestsScheduler().getQueueSize();
   }
 
   /**
@@ -628,7 +629,7 @@ public class Configuration {
    */
   public boolean isAutomaticDirectoryCreationEnabled() {
 
-    return properties.directories.enableAutomaticCreation;
+    return properties.getDirectories().isEnableAutomaticCreation();
   }
 
   /**
@@ -638,7 +639,7 @@ public class Configuration {
    */
   public boolean isDirectoryWritePermOnCreationEnabled() {
 
-    return properties.directories.enableWritepermOnCreation;
+    return properties.getDirectories().isEnableWritepermOnCreation();
   }
 
   /**
@@ -646,7 +647,7 @@ public class Configuration {
    */
   public OverwriteMode getDefaultOverwriteMode() {
 
-    return OverwriteMode.valueOf(properties.files.defaultOverwrite);
+    return OverwriteMode.valueOf(properties.getFiles().getDefaultOverwrite());
   }
 
   /**
@@ -654,7 +655,7 @@ public class Configuration {
    */
   public StorageType getDefaultFileStorageType() {
 
-    return StorageType.valueOf(properties.files.defaultStoragetype);
+    return StorageType.valueOf(properties.getFiles().getDefaultStoragetype());
   }
 
   /**
@@ -662,7 +663,7 @@ public class Configuration {
    */
   public int getCompletedRequestsAgentPurgeSize() {
 
-    return properties.completedRequestsAgent.purgeSize;
+    return properties.getCompletedRequestsAgent().getPurgeSize();
   }
 
   /**
@@ -672,7 +673,7 @@ public class Configuration {
    */
   public long getCompletedRequestsAgentPurgeAge() {
 
-    return properties.completedRequestsAgent.purgeAge;
+    return properties.getCompletedRequestsAgent().getPurgeAge();
   }
 
   /**
@@ -681,7 +682,7 @@ public class Configuration {
    */
   public int getCompletedRequestsAgentDelay() {
 
-    return properties.completedRequestsAgent.delay;
+    return properties.getCompletedRequestsAgent().getDelay();
   }
 
   /**
@@ -690,7 +691,7 @@ public class Configuration {
    */
   public int getCompletedRequestsAgentPeriod() {
 
-    return properties.completedRequestsAgent.interval;
+    return properties.getCompletedRequestsAgent().getInterval();
   }
 
   /**
@@ -700,12 +701,12 @@ public class Configuration {
    */
   public boolean isCompletedRequestsAgentEnabled() {
 
-    return properties.completedRequestsAgent.enabled;
+    return properties.getCompletedRequestsAgent().isEnabled();
   }
 
   public long getInProgressPtpExpirationTime() {
 
-    return properties.inprogressRequestsAgent.ptpExpirationTime;
+    return properties.getInprogressRequestsAgent().getPtpExpirationTime();
   }
 
   /**
@@ -714,7 +715,7 @@ public class Configuration {
    */
   public String getExtraSlashesForFileTURL() {
 
-    return properties.extraslashes.file;
+    return properties.getExtraslashes().getFile();
   }
 
   /**
@@ -723,7 +724,7 @@ public class Configuration {
    */
   public String getExtraSlashesForRFIOTURL() {
 
-    return properties.extraslashes.rfio;
+    return properties.getExtraslashes().getRfio();
   }
 
   /**
@@ -732,7 +733,7 @@ public class Configuration {
    */
   public String getExtraSlashesForGsiFTPTURL() {
 
-    return properties.extraslashes.gsiftp;
+    return properties.getExtraslashes().getGsiftp();
   }
 
   /**
@@ -741,7 +742,7 @@ public class Configuration {
    */
   public String getExtraSlashesForRootTURL() {
 
-    return properties.extraslashes.root;
+    return properties.getExtraslashes().getRoot();
   }
 
   /**
@@ -750,37 +751,37 @@ public class Configuration {
    */
   public String getPingValuesPropertiesFilename() {
 
-    return properties.pingPropertiesFilename;
+    return properties.getPingPropertiesFilename();
   }
 
   public int getHearthbeatPeriod() {
 
-    return properties.hearthbeat.period;
+    return properties.getHearthbeat().getPeriod();
   }
 
   public int getHearthbeatPerformanceGlanceTimeInterval() {
 
-    return properties.hearthbeat.performanceGlanceTimeInterval;
+    return properties.getHearthbeat().getPerformanceGlanceTimeInterval();
   }
 
   public int getHearthbeatPerformanceLogbookTimeInterval() {
 
-    return properties.hearthbeat.performanceLogbookTimeInterval;
+    return properties.getHearthbeat().getPerformanceLogbookTimeInterval();
   }
 
   public boolean isHearthbeatPerformanceMeasuringEnabled() {
 
-    return properties.hearthbeat.performanceMeasuringEnabled;
+    return properties.getHearthbeat().isPerformanceMeasuringEnabled();
   }
 
   public boolean isHearthbeatBookkeepingEnabled() {
 
-    return properties.hearthbeat.bookkeepingEnabled;
+    return properties.getHearthbeat().isBookkeepingEnabled();
   }
 
   public int getMaxLoop() {
 
-    return properties.abortMaxloop;
+    return properties.getAbortMaxloop();
   }
 
   public String getGridUserMapperClassname() {
@@ -805,22 +806,22 @@ public class Configuration {
 
   public int getGPFSQuotaRefreshPeriod() {
 
-    return properties.infoQuotaRefreshPeriod;
+    return properties.getInfoQuotaRefreshPeriod();
   }
 
   public long getServerPoolStatusCheckTimeout() {
 
-    return properties.serverPoolStatusCheckTimeout;
+    return properties.getServerPoolStatusCheckTimeout();
   }
 
   public boolean isSkipPtgACLSetup() {
 
-    return properties.skipPtgAclSetup;
+    return properties.isSkipPtgAclSetup();
   }
 
   public String getHTTPTURLPrefix() {
 
-    return properties.httpTurlPrefix;
+    return properties.getHttpTurlPrefix();
   }
 
   public int getNetworkAddressCacheTtl() {
@@ -833,4 +834,13 @@ public class Configuration {
     return 0;
   }
 
+  public String getSiteName() {
+
+    return properties.getSite().getName();
+  }
+
+  public QualityLevel getQualityLevel() {
+
+    return properties.getSite().getQualityLevel();
+  }
 }

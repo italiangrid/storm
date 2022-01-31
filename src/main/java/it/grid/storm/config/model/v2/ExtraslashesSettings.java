@@ -11,10 +11,10 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class ExtraslashesSettings {
 
-  public String file;
-  public String rfio;
-  public String root;
-  public String gsiftp;
+  private String file;
+  private String rfio;
+  private String root;
+  private String gsiftp;
 
   public ExtraslashesSettings() {
     file = EXTRA_SLASHES_FOR_FILE_TURL;
@@ -36,6 +36,38 @@ public class ExtraslashesSettings {
     builder.append(gsiftp);
     builder.append("]");
     return builder.toString();
+  }
+
+  public String getFile() {
+    return file;
+  }
+
+  public void setFile(String file) {
+    this.file = file;
+  }
+
+  public String getRfio() {
+    return rfio;
+  }
+
+  public void setRfio(String rfio) {
+    this.rfio = rfio;
+  }
+
+  public String getRoot() {
+    return root;
+  }
+
+  public void setRoot(String root) {
+    this.root = root;
+  }
+
+  public String getGsiftp() {
+    return gsiftp;
+  }
+
+  public void setGsiftp(String gsiftp) {
+    this.gsiftp = gsiftp;
   }
 
 }

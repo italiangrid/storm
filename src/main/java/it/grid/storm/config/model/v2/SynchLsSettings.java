@@ -11,10 +11,10 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class SynchLsSettings {
 
-  public int maxEntries;
-  public boolean defaultAllLevelRecursive;
-  public short defaultNumLevels;
-  public short defaultOffset;
+  private int maxEntries;
+  private boolean defaultAllLevelRecursive;
+  private short defaultNumLevels;
+  private short defaultOffset;
 
   public SynchLsSettings() {
     maxEntries = LS_MAX_NUMBER_OF_ENTRY;
@@ -36,6 +36,38 @@ public class SynchLsSettings {
     builder.append(defaultOffset);
     builder.append("]");
     return builder.toString();
+  }
+
+  public int getMaxEntries() {
+    return maxEntries;
+  }
+
+  public void setMaxEntries(int maxEntries) {
+    this.maxEntries = maxEntries;
+  }
+
+  public boolean isDefaultAllLevelRecursive() {
+    return defaultAllLevelRecursive;
+  }
+
+  public void setDefaultAllLevelRecursive(boolean defaultAllLevelRecursive) {
+    this.defaultAllLevelRecursive = defaultAllLevelRecursive;
+  }
+
+  public short getDefaultNumLevels() {
+    return defaultNumLevels;
+  }
+
+  public void setDefaultNumLevels(short defaultNumLevels) {
+    this.defaultNumLevels = defaultNumLevels;
+  }
+
+  public short getDefaultOffset() {
+    return defaultOffset;
+  }
+
+  public void setDefaultOffset(short defaultOffset) {
+    this.defaultOffset = defaultOffset;
   }
 
 }

@@ -1,10 +1,15 @@
 package it.grid.storm.config;
 
 import it.grid.storm.config.model.v2.OverwriteMode;
+import it.grid.storm.config.model.v2.QualityLevel;
 import it.grid.storm.config.model.v2.StorageType;
 
 public class ConfigurationDefaults {
 
+  /* Endpoint info */
+  public static final String DEFAULT_SITENAME = "StoRM site";
+  public static final QualityLevel DEFAULT_QUALITY_LEVEL = QualityLevel.PREPRODUCTION;
+  
   /* SRM port for endpoints */
   public static final int DEFAULT_SRM_PORT = 8444;
 

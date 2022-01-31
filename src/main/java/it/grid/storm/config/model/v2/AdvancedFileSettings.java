@@ -10,11 +10,11 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class AdvancedFileSettings {
-  
-  public long defaultSize;
-  public long defaultLifetime;
-  public String defaultOverwrite;
-  public String defaultStoragetype;
+
+  private long defaultSize;
+  private long defaultLifetime;
+  private String defaultOverwrite;
+  private String defaultStoragetype;
 
   public AdvancedFileSettings() {
     defaultSize = FILE_DEFAULT_SIZE;
@@ -37,5 +37,37 @@ public class AdvancedFileSettings {
     builder.append("]");
     return builder.toString();
   }
-  
+
+  public long getDefaultSize() {
+    return defaultSize;
+  }
+
+  public void setDefaultSize(long defaultSize) {
+    this.defaultSize = defaultSize;
+  }
+
+  public long getDefaultLifetime() {
+    return defaultLifetime;
+  }
+
+  public void setDefaultLifetime(long defaultLifetime) {
+    this.defaultLifetime = defaultLifetime;
+  }
+
+  public String getDefaultOverwrite() {
+    return defaultOverwrite;
+  }
+
+  public void setDefaultOverwrite(String defaultOverwrite) {
+    this.defaultOverwrite = defaultOverwrite;
+  }
+
+  public String getDefaultStoragetype() {
+    return defaultStoragetype;
+  }
+
+  public void setDefaultStoragetype(String defaultStoragetype) {
+    this.defaultStoragetype = defaultStoragetype;
+  }
+
 }

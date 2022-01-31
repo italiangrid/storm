@@ -14,13 +14,13 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class DatabaseConnection {
 
-  public String username;
-  public String password;
-  public String hostname;
-  public int port;
-  public String properties;
+  private String username;
+  private String password;
+  private String hostname;
+  private int port;
+  private String properties;
 
-  public DatabasePoolProperties pool;
+  private DatabasePoolProperties pool;
 
   public DatabaseConnection() throws UnknownHostException {
     username = DB_USERNAME;
@@ -49,4 +49,53 @@ public class DatabaseConnection {
     builder.append("]");
     return builder.toString();
   }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public void setUsername(String username) {
+    this.username = username;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
+  public String getHostname() {
+    return hostname;
+  }
+
+  public void setHostname(String hostname) {
+    this.hostname = hostname;
+  }
+
+  public int getPort() {
+    return port;
+  }
+
+  public void setPort(int port) {
+    this.port = port;
+  }
+
+  public String getProperties() {
+    return properties;
+  }
+
+  public void setProperties(String properties) {
+    this.properties = properties;
+  }
+
+  public DatabasePoolProperties getPool() {
+    return pool;
+  }
+
+  public void setPool(DatabasePoolProperties pool) {
+    this.pool = pool;
+  }
+
 }

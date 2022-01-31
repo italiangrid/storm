@@ -9,8 +9,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class ExpiredSpacesAgent {
 
-  public int delay;
-  public int interval;
+  private int delay;
+  private int interval;
 
   public ExpiredSpacesAgent() {
     delay = EXPIRED_SPACES_AGENT_DELAY;
@@ -26,6 +26,22 @@ public class ExpiredSpacesAgent {
     builder.append(interval);
     builder.append("]");
     return builder.toString();
+  }
+
+  public int getDelay() {
+    return delay;
+  }
+
+  public void setDelay(int delay) {
+    this.delay = delay;
+  }
+
+  public int getInterval() {
+    return interval;
+  }
+
+  public void setInterval(int interval) {
+    this.interval = interval;
   }
 
 }

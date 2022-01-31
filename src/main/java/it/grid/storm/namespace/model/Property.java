@@ -31,9 +31,9 @@ public class Property implements PropertyInterface {
 	private Logger log = LoggerFactory.getLogger(Property.class);
 	private TSizeInBytes totalOnlineSize = TSizeInBytes.makeEmpty();
 	private TSizeInBytes totalNearlineSize = TSizeInBytes.makeEmpty();
-	private RetentionPolicy retentionPolicy = RetentionPolicy.UNKNOWN;
+	private RetentionPolicy retentionPolicy;
 	private ExpirationMode expirationMode = ExpirationMode.UNKNOWN;
-	private AccessLatency accessLatency = AccessLatency.UNKNOWN;
+	private AccessLatency accessLatency;
 	private boolean hasLimitedSize = false;
 
 	public static Property from(PropertyInterface other) {
@@ -103,15 +103,14 @@ public class Property implements PropertyInterface {
 		}
 	}
 
-	public void setRetentionPolicy(String retentionPolicy)
-		throws NamespaceException {
+	public void setRetentionPolicy(RetentionPolicy retentionPolicy) {
 
-		this.retentionPolicy = RetentionPolicy.getRetentionPolicy(retentionPolicy);
+		this.retentionPolicy = retentionPolicy;
 	}
 
-	public void setAccessLatency(String accessLatency) throws NamespaceException {
+	public void setAccessLatency(AccessLatency accessLatency) {
 
-		this.accessLatency = AccessLatency.getAccessLatency(accessLatency);
+		this.accessLatency = accessLatency;
 	}
 
 	public void setExpirationMode(String expirationMode)

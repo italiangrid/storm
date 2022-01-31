@@ -11,8 +11,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 public class PinlifetimeSettings {
 
   @JsonProperty("default")
-  public long defaultValue;
-  public long maximum;
+  private long defaultValue;
+  private long maximum;
 
   public PinlifetimeSettings() {
     defaultValue = PIN_LIFETIME_DEFAULT;
@@ -28,6 +28,22 @@ public class PinlifetimeSettings {
     builder.append(maximum);
     builder.append("]");
     return builder.toString();
+  }
+
+  public long getDefaultValue() {
+    return defaultValue;
+  }
+
+  public void setDefaultValue(long defaultValue) {
+    this.defaultValue = defaultValue;
+  }
+
+  public long getMaximum() {
+    return maximum;
+  }
+
+  public void setMaximum(long maximum) {
+    this.maximum = maximum;
   }
 
 }

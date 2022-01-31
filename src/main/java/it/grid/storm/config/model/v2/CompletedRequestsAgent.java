@@ -12,11 +12,11 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class CompletedRequestsAgent {
 
-  public boolean enabled;
-  public int delay;
-  public int interval;
-  public long purgeAge;
-  public int purgeSize;
+  private boolean enabled;
+  private int delay;
+  private int interval;
+  private long purgeAge;
+  private int purgeSize;
 
   public CompletedRequestsAgent() {
     enabled = COMPLETED_REQUESTS_AGENT_ENABLED;
@@ -41,6 +41,46 @@ public class CompletedRequestsAgent {
     builder.append(purgeSize);
     builder.append("]");
     return builder.toString();
+  }
+
+  public boolean isEnabled() {
+    return enabled;
+  }
+
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
+
+  public int getDelay() {
+    return delay;
+  }
+
+  public void setDelay(int delay) {
+    this.delay = delay;
+  }
+
+  public int getInterval() {
+    return interval;
+  }
+
+  public void setInterval(int interval) {
+    this.interval = interval;
+  }
+
+  public long getPurgeAge() {
+    return purgeAge;
+  }
+
+  public void setPurgeAge(long purgeAge) {
+    this.purgeAge = purgeAge;
+  }
+
+  public int getPurgeSize() {
+    return purgeSize;
+  }
+
+  public void setPurgeSize(int purgeSize) {
+    this.purgeSize = purgeSize;
   }
 
 }

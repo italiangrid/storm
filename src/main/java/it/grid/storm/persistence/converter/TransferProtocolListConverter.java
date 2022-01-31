@@ -18,10 +18,11 @@
 package it.grid.storm.persistence.converter;
 
 import it.grid.storm.common.types.TURLPrefix;
+import it.grid.storm.namespace.model.Protocol;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
-import it.grid.storm.namespace.model.Protocol;
 
 /**
  * Package private auxiliary class used to convert between the DB raw data representation and StoRM

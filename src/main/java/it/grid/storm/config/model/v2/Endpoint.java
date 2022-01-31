@@ -2,8 +2,6 @@ package it.grid.storm.config.model.v2;
 
 import static it.grid.storm.config.ConfigurationDefaults.DEFAULT_SRM_PORT;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -14,19 +12,13 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class Endpoint {
 
-  public String host;
-  public int port;
+  private String host;
+  private int port;
 
   @JsonCreator
   public Endpoint(@JsonProperty(value = "host", required = true) String host) {
     this.host = host;
     port = DEFAULT_SRM_PORT;
-  }
-
-  public static Endpoint DEFAULT() throws UnknownHostException {
-    Endpoint e = new Endpoint(InetAddress.getLocalHost().getHostName());
-    e.port = DEFAULT_SRM_PORT;
-    return e;
   }
 
   @Override
@@ -55,6 +47,22 @@ public class Endpoint {
     builder.append(port);
     builder.append("]");
     return builder.toString();
+  }
+
+  public String getHost() {
+    return host;
+  }
+
+  public void setHost(String host) {
+    this.host = host;
+  }
+
+  public int getPort() {
+    return port;
+  }
+
+  public void setPort(int port) {
+    this.port = port;
   }
 
 }

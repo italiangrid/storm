@@ -1,4 +1,4 @@
-package it.grid.storm.namespace.model;
+package it.grid.storm.rest.info.storageareas.model;
 
 import java.util.Iterator;
 import java.util.List;
@@ -7,18 +7,22 @@ import com.google.common.collect.Lists;
 
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
-import it.grid.storm.namespace.remote.Constants.HttpPerms;
+import it.grid.storm.namespace.model.AccessLatency;
+import it.grid.storm.namespace.model.ApproachableRule;
+import it.grid.storm.namespace.model.Protocol;
+import it.grid.storm.namespace.model.RetentionPolicy;
+import it.grid.storm.namespace.model.StorageClassType;
 
 public class SAInfo {
 
   private String name;
   private String token;
   private List<String> vos;
-  private String root;
-  private String storageClass;
+  private String rootPath;
+  private StorageClassType storageClass;
   private List<String> accessPoints;
-  private String retentionPolicy;
-  private String accessLatency;
+  private RetentionPolicy retentionPolicy;
+  private AccessLatency accessLatency;
   private List<String> protocols;
   private HttpPerms anonymous;
   private long availableNearlineSpace;
@@ -63,22 +67,22 @@ public class SAInfo {
     this.vos.add(voName);
   }
 
-  public String getRoot() {
+  public String getRootPath() {
 
-    return root;
+    return rootPath;
   }
 
-  public void setRoot(String root) {
+  public void setRoot(String rootPath) {
 
-    this.root = root;
+    this.rootPath = rootPath;
   }
 
-  public String getStorageClass() {
+  public StorageClassType getStorageClass() {
 
     return storageClass;
   }
 
-  public void setStorageClass(String storageClass) {
+  public void setStorageClass(StorageClassType storageClass) {
 
     this.storageClass = storageClass;
   }
@@ -93,22 +97,22 @@ public class SAInfo {
     this.accessPoints.add(accessPoint);
   }
 
-  public String getRetentionPolicy() {
+  public RetentionPolicy getRetentionPolicy() {
 
     return retentionPolicy;
   }
 
-  public void setRetentionPolicy(String retentionPolicy) {
+  public void setRetentionPolicy(RetentionPolicy retentionPolicy) {
 
     this.retentionPolicy = retentionPolicy;
   }
 
-  public String getAccessLatency() {
+  public AccessLatency getAccessLatency() {
 
     return accessLatency;
   }
 
-  public void setAccessLatency(String accessLatency) {
+  public void setAccessLatency(AccessLatency accessLatency) {
 
     this.accessLatency = accessLatency;
   }
@@ -180,9 +184,9 @@ public class SAInfo {
     } else {
       sa.setAnonymous(HttpPerms.NOREAD);
     }
-    sa.setStorageClass(vfs.getStorageClassType().getStorageClassTypeString());
-    sa.setRetentionPolicy(vfs.getProperties().getRetentionPolicy().getRetentionPolicyName());
-    sa.setAccessLatency(vfs.getProperties().getAccessLatency().getAccessLatencyName());
+    sa.setStorageClass(vfs.getStorageClassType());
+    sa.setRetentionPolicy(vfs.getProperties().getRetentionPolicy());
+    sa.setAccessLatency(vfs.getProperties().getAccessLatency());
     sa.setAvailableNearlineSpace(vfs.getAvailableNearlineSpace().value());
 
     for (ApproachableRule rule : vfs.getApproachableRules()) {

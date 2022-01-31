@@ -1,4 +1,4 @@
-package it.grid.storm.namespace.remote.resource;
+package it.grid.storm.rest.info.storageareas;
 
 import java.util.List;
 import java.util.Map;
@@ -16,22 +16,17 @@ import com.google.common.collect.Maps;
 import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.VirtualFSInterface;
-import it.grid.storm.namespace.model.SAInfo;
-import it.grid.storm.namespace.remote.Constants;
+import it.grid.storm.rest.info.storageareas.model.SAInfo;
 
-/**
- * @author Michele Dibenedetto
- */
-@Path("/" + Constants.RESOURCE + "/" + Constants.VERSION)
-public class VirtualFSResource {
+@Path("/info/storage-areas")
+public class StorageAreasResource {
 
-  private static final Logger log = LoggerFactory.getLogger(VirtualFSResource.class);
+  private static final Logger log = LoggerFactory.getLogger(StorageAreasResource.class);
 
   /**
    * @return
    */
   @GET
-  @Path("/" + Constants.LIST_ALL_VFS)
   @Produces(MediaType.APPLICATION_JSON)
   public Map<String, SAInfo> listVFS() {
 

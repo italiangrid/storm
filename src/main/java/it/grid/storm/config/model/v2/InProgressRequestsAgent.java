@@ -10,9 +10,9 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class InProgressRequestsAgent {
 
-  public int delay;
-  public int interval;
-  public long ptpExpirationTime;
+  private int delay;
+  private int interval;
+  private long ptpExpirationTime;
 
   public InProgressRequestsAgent() {
     delay = INPROGRESS_REQUESTS_AGENT_DELAY;
@@ -31,6 +31,30 @@ public class InProgressRequestsAgent {
     builder.append(ptpExpirationTime);
     builder.append("]");
     return builder.toString();
+  }
+
+  public int getDelay() {
+    return delay;
+  }
+
+  public void setDelay(int delay) {
+    this.delay = delay;
+  }
+
+  public int getInterval() {
+    return interval;
+  }
+
+  public void setInterval(int interval) {
+    this.interval = interval;
+  }
+
+  public long getPtpExpirationTime() {
+    return ptpExpirationTime;
+  }
+
+  public void setPtpExpirationTime(long ptpExpirationTime) {
+    this.ptpExpirationTime = ptpExpirationTime;
   }
 
 }

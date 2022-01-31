@@ -9,8 +9,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class AdvancedDirectorySettings {
 
-  public boolean enableAutomaticCreation;
-  public boolean enableWritepermOnCreation;
+  private boolean enableAutomaticCreation;
+  private boolean enableWritepermOnCreation;
 
   public AdvancedDirectorySettings() {
     enableAutomaticCreation = AUTOMATIC_DIRECTORY_CREATION;
@@ -27,5 +27,21 @@ public class AdvancedDirectorySettings {
     builder.append("]");
     return builder.toString();
   }
-  
+
+  public boolean isEnableAutomaticCreation() {
+    return enableAutomaticCreation;
+  }
+
+  public void setEnableAutomaticCreation(boolean enableAutomaticCreation) {
+    this.enableAutomaticCreation = enableAutomaticCreation;
+  }
+
+  public boolean isEnableWritepermOnCreation() {
+    return enableWritepermOnCreation;
+  }
+
+  public void setEnableWritepermOnCreation(boolean enableWritepermOnCreation) {
+    this.enableWritepermOnCreation = enableWritepermOnCreation;
+  }
+
 }

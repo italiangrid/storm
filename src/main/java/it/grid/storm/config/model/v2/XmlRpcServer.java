@@ -10,9 +10,9 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class XmlRpcServer {
 
-  public int port;
-  public int maxThreads;
-  public int maxQueueSize;
+  private int port;
+  private int maxThreads;
+  private int maxQueueSize;
 
   public XmlRpcServer() {
     port = XMLRPC_SERVER_PORT;
@@ -41,4 +41,19 @@ public class XmlRpcServer {
     return builder.toString();
   }
 
+  public int getPort() {
+    return port;
+  }
+
+  public void setPort(int port) {
+    this.port = port;
+  }
+
+  public int getMaxThreads() {
+    return maxThreads;
+  }
+
+  public int getMaxQueueSize() {
+    return maxQueueSize;
+  }
 }

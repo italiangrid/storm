@@ -11,10 +11,10 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class DiskUsageService {
 
-  public boolean enabled;
-  public boolean parallelTasksEnabled;
-  public int initialDelay;
-  public long tasksInterval;
+  private boolean enabled;
+  private boolean parallelTasksEnabled;
+  private int initialDelay;
+  private long tasksInterval;
 
   public DiskUsageService() {
     enabled = DISKUSAGE_SERVICE_ENABLED;
@@ -36,6 +36,38 @@ public class DiskUsageService {
     builder.append(tasksInterval);
     builder.append("]");
     return builder.toString();
+  }
+
+  public boolean isEnabled() {
+    return enabled;
+  }
+
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
+
+  public boolean isParallelTasksEnabled() {
+    return parallelTasksEnabled;
+  }
+
+  public void setParallelTasksEnabled(boolean parallelTasksEnabled) {
+    this.parallelTasksEnabled = parallelTasksEnabled;
+  }
+
+  public int getInitialDelay() {
+    return initialDelay;
+  }
+
+  public void setInitialDelay(int initialDelay) {
+    this.initialDelay = initialDelay;
+  }
+
+  public long getTasksInterval() {
+    return tasksInterval;
+  }
+
+  public void setTasksInterval(long tasksInterval) {
+    this.tasksInterval = tasksInterval;
   }
 
 }

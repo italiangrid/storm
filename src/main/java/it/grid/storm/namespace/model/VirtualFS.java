@@ -184,7 +184,6 @@ public class VirtualFS implements VirtualFSInterface {
   public void setRoot(String rootPath) throws NamespaceException {
 
     this.rootPath = buildRootPath(rootPath);
-    buildStoRIRoot(rootPath);
   }
 
   public void addMappingRule(MappingRule mappingRule) {
@@ -223,15 +222,6 @@ public class VirtualFS implements VirtualFSInterface {
           + e.getMessage());
     }
     return rootPathUri.normalize().toString();
-  }
-
-  private void buildStoRIRoot(String rootPath) throws NamespaceException {
-
-    /**
-     * @todo
-     */
-
-    // storiRoot = new StoRIImpl(this, rootPath, StoRIType.FOLDER);
   }
 
   /*****************************************************************************

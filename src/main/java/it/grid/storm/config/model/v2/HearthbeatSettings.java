@@ -12,11 +12,11 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class HearthbeatSettings {
 
-  public boolean bookkeepingEnabled;
-  public boolean performanceMeasuringEnabled;
-  public int period;
-  public int performanceLogbookTimeInterval;
-  public int performanceGlanceTimeInterval;
+  private boolean bookkeepingEnabled;
+  private boolean performanceMeasuringEnabled;
+  private int period;
+  private int performanceLogbookTimeInterval;
+  private int performanceGlanceTimeInterval;
 
   public HearthbeatSettings() {
     bookkeepingEnabled = BOOK_KEEPING_ENABLED;
@@ -41,6 +41,46 @@ public class HearthbeatSettings {
     builder.append(performanceGlanceTimeInterval);
     builder.append("]");
     return builder.toString();
+  }
+
+  public boolean isBookkeepingEnabled() {
+    return bookkeepingEnabled;
+  }
+
+  public void setBookkeepingEnabled(boolean bookkeepingEnabled) {
+    this.bookkeepingEnabled = bookkeepingEnabled;
+  }
+
+  public boolean isPerformanceMeasuringEnabled() {
+    return performanceMeasuringEnabled;
+  }
+
+  public void setPerformanceMeasuringEnabled(boolean performanceMeasuringEnabled) {
+    this.performanceMeasuringEnabled = performanceMeasuringEnabled;
+  }
+
+  public int getPeriod() {
+    return period;
+  }
+
+  public void setPeriod(int period) {
+    this.period = period;
+  }
+
+  public int getPerformanceLogbookTimeInterval() {
+    return performanceLogbookTimeInterval;
+  }
+
+  public void setPerformanceLogbookTimeInterval(int performanceLogbookTimeInterval) {
+    this.performanceLogbookTimeInterval = performanceLogbookTimeInterval;
+  }
+
+  public int getPerformanceGlanceTimeInterval() {
+    return performanceGlanceTimeInterval;
+  }
+
+  public void setPerformanceGlanceTimeInterval(int performanceGlanceTimeInterval) {
+    this.performanceGlanceTimeInterval = performanceGlanceTimeInterval;
   }
 
 }

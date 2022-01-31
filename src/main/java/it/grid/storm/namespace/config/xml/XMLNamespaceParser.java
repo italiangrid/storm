@@ -45,6 +45,7 @@ import it.grid.storm.namespace.config.NamespaceCheck;
 import it.grid.storm.namespace.config.NamespaceLoader;
 import it.grid.storm.namespace.config.NamespaceParser;
 import it.grid.storm.namespace.model.ACLEntry;
+import it.grid.storm.namespace.model.AccessLatency;
 import it.grid.storm.namespace.model.ApproachableRule;
 import it.grid.storm.namespace.model.Authority;
 import it.grid.storm.namespace.model.Capability;
@@ -53,11 +54,12 @@ import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.PermissionException;
 import it.grid.storm.namespace.model.PoolMember;
 import it.grid.storm.namespace.model.Property;
-import it.grid.storm.namespace.model.Property.SizeUnitType;
 import it.grid.storm.namespace.model.Protocol;
+import it.grid.storm.namespace.model.Property.SizeUnitType;
 import it.grid.storm.namespace.model.ProtocolPool;
 import it.grid.storm.namespace.model.Quota;
 import it.grid.storm.namespace.model.QuotaType;
+import it.grid.storm.namespace.model.RetentionPolicy;
 import it.grid.storm.namespace.model.SAAuthzType;
 import it.grid.storm.namespace.model.StorageClassType;
 import it.grid.storm.namespace.model.SubjectRules;
@@ -399,7 +401,7 @@ public class XMLNamespaceParser implements NamespaceParser {
       vfs.setSpaceTokenDescription(spaceTokenDescription);
       log.debug("VFS({}).space-token-description = '{}'", name, spaceTokenDescription);
 
-      storageClass = StorageClassType.getStorageClassType(parserUtil.getStorageClass(name));
+      storageClass = StorageClassType.valueOf(parserUtil.getStorageClass(name));
       vfs.setStorageClassType(storageClass);
       log.debug("VFS({}).storage-class = '{}'", name, storageClass);
 
@@ -446,7 +448,7 @@ public class XMLNamespaceParser implements NamespaceParser {
     Property prop = new Property();
 
     String accessLatency = parserUtil.getAccessLatencyType(fsName);
-    prop.setAccessLatency(accessLatency);
+    prop.setAccessLatency(AccessLatency.valueOf(accessLatency));
     log.debug("VFS({}).Properties.AccessLatency = '{}'", fsName, accessLatency);
 
     String expirationMode = parserUtil.getExpirationModeType(fsName);
@@ -454,7 +456,7 @@ public class XMLNamespaceParser implements NamespaceParser {
     log.debug("VFS({}).Properties.ExpirationMode = '{}'", fsName, expirationMode);
 
     String retentionPolicy = parserUtil.getRetentionPolicyType(fsName);
-    prop.setRetentionPolicy(retentionPolicy);
+    prop.setRetentionPolicy(RetentionPolicy.valueOf(retentionPolicy));
     log.debug("VFS({}).Properties.RetentionPolicy = '{}'", fsName, retentionPolicy);
 
     String unitType = parserUtil.getNearlineSpaceUnitType(fsName);
