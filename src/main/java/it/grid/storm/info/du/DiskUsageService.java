@@ -11,20 +11,20 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.VirtualFS;
 
 public class DiskUsageService {
 
   private static final Logger log = LoggerFactory.getLogger(DiskUsageService.class);
 
-  private List<VirtualFSInterface> monitoredSAs;
+  private List<VirtualFS> monitoredSAs;
 
   private ScheduledExecutorService executor;
   private boolean running;
   private int delay;
   private long period;
 
-  private DiskUsageService(List<VirtualFSInterface> vfss, ScheduledExecutorService executor,
+  private DiskUsageService(List<VirtualFS> vfss, ScheduledExecutorService executor,
       int delay, long period) {
 
     Preconditions.checkNotNull(vfss, "Invalid null list of Virtual FS");
@@ -57,19 +57,19 @@ public class DiskUsageService {
     this.period = period;
   }
 
-  public static DiskUsageService getSingleThreadScheduledService(List<VirtualFSInterface> vfss,
+  public static DiskUsageService getSingleThreadScheduledService(List<VirtualFS> vfss,
       int delay, long period) {
 
     return new DiskUsageService(vfss, Executors.newSingleThreadScheduledExecutor(), delay, period);
   }
 
-  public static DiskUsageService getScheduledThreadPoolService(List<VirtualFSInterface> vfss,
+  public static DiskUsageService getScheduledThreadPoolService(List<VirtualFS> vfss,
       int delay, long period) {
 
     return new DiskUsageService(vfss, Executors.newScheduledThreadPool(vfss.size()), delay, period);
   }
 
-  public List<VirtualFSInterface> getMonitoredSAs() {
+  public List<VirtualFS> getMonitoredSAs() {
 
     return monitoredSAs;
   }

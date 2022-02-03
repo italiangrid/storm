@@ -30,7 +30,6 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.InvalidSURLException;
 import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.srm.types.SRMCommandException;
@@ -95,7 +94,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 
   public static final Logger log = LoggerFactory.getLogger(RmdirCommand.class);
   private static final String SRM_COMMAND = "srmRmdir";
-  private final NamespaceInterface namespace;
+  private final Namespace namespace;
 
   public RmdirCommand() {
 
@@ -239,7 +238,7 @@ public class RmdirCommand extends DirectoryCommand implements Command {
 
   private void decreaseUsedSpace(LocalFile localFile, long sizeToRemove) throws NamespaceException {
 
-    namespace.resolveVFSbyLocalFile(localFile).decreaseUsedSpace(sizeToRemove);
+    namespace.resolveVFSbyLocalFile(localFile).getSpaceUpdater().decreaseUsedSpace(sizeToRemove);
   }
 
   private TReturnStatus removeFolder(LocalFile dir, boolean recursive, TSize size)

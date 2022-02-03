@@ -29,7 +29,7 @@ import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.exceptions.InvalidSpaceDataAttributesException;
 import it.grid.storm.persistence.model.TransferObjectDecodingException;
@@ -57,17 +57,17 @@ public class SpaceHelper {
   private static final Logger log = LoggerFactory.getLogger(SpaceHelper.class);
   public static GridUserInterface storageAreaOwner = GridUserManager.makeSAGridUser();
 
-  private ReservedSpaceCatalog catalog = ReservedSpaceCatalog.getInstance();
+//  private ReservedSpaceCatalog catalog = ReservedSpaceCatalog.getInstance();
 
   public boolean isSAFull(Logger log, StoRI stori) {
 
     log.debug("Checking if the Storage Area is full");
 
-    VirtualFSInterface fs = stori.getVirtualFileSystem();
+    VirtualFS fs = stori.getVirtualFileSystem();
 
     // Get StorageSpaceData from the database
     String ssDesc = fs.getSpaceTokenDescription();
-    StorageSpaceData spaceData = catalog.getStorageSpaceByAlias(ssDesc);
+    StorageSpaceData spaceData = ReservedSpaceCatalog.getInstance().getStorageSpaceByAlias(ssDesc);
 
     if ((spaceData != null) && (spaceData.getAvailableSpaceSize().value() == 0)) {
       log.debug("AvailableSize={}", spaceData.getAvailableSpaceSize().value());
@@ -82,11 +82,11 @@ public class SpaceHelper {
 
     log.debug("Checking if the Storage Area is full");
 
-    VirtualFSInterface fs = stori.getVirtualFileSystem();
+    VirtualFS fs = stori.getVirtualFileSystem();
 
     // Get StorageSpaceData from the database
     String ssDesc = fs.getSpaceTokenDescription();
-    StorageSpaceData spaceData = catalog.getStorageSpaceByAlias(ssDesc);
+    StorageSpaceData spaceData = ReservedSpaceCatalog.getInstance().getStorageSpaceByAlias(ssDesc);
 
     if (spaceData != null) {
       return spaceData.getAvailableSpaceSize().value();
@@ -113,11 +113,11 @@ public class SpaceHelper {
               + " , stori : " + stori);
     }
     boolean response = false;
-    VirtualFSInterface fs = stori.getVirtualFileSystem();
+    VirtualFS fs = stori.getVirtualFileSystem();
     // Get StorageSpaceData from the database
     String ssDesc = fs.getSpaceTokenDescription();
 
-    StorageSpaceData spaceData = catalog.getStorageSpaceByAlias(ssDesc);
+    StorageSpaceData spaceData = ReservedSpaceCatalog.getInstance().getStorageSpaceByAlias(ssDesc);
 
     if (spaceData != null && spaceData.getUsedSpaceSize() != null
         && !spaceData.getUsedSpaceSize().isEmpty() && spaceData.getUsedSpaceSize().value() >= 0) {
@@ -138,7 +138,7 @@ public class SpaceHelper {
   public TSpaceToken getTokenFromStoRI(Logger log, StoRI stori) {
 
     log.debug("SpaceHelper: getting space token from StoRI");
-    VirtualFSInterface fs = stori.getVirtualFileSystem();
+    VirtualFS fs = stori.getVirtualFileSystem();
     return fs.getSpaceToken();
 
   }
@@ -171,7 +171,7 @@ public class SpaceHelper {
     // method
 
     // First, check if the same VOSpaceArea already exists
-    tokenArray = catalog.getSpaceTokensByAlias(spaceTokenAlias);
+    tokenArray = ReservedSpaceCatalog.getInstance().getSpaceTokensByAlias(spaceTokenAlias);
 
     if (tokenArray == null || tokenArray.size() == 0) {
       // the VOSpaceArea does not exist yet
@@ -205,7 +205,7 @@ public class SpaceHelper {
       }
 
       try {
-        catalog.addStorageSpace(ssd);
+        ReservedSpaceCatalog.getInstance().addStorageSpace(ssd);
       } catch (DataAccessException e) {
         log.error("Error storing StorageSpaceData on the DB: ", e);
       }
@@ -225,7 +225,7 @@ public class SpaceHelper {
       spaceToken = tokenArray.getTSpaceToken(0);
       StorageSpaceData catalog_ssd = null;
       try {
-        catalog_ssd = catalog.getStorageSpace(spaceToken);
+        catalog_ssd = ReservedSpaceCatalog.getInstance().getStorageSpace(spaceToken);
       } catch (TransferObjectDecodingException e) {
         log.error(
             "Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: {}",
@@ -271,7 +271,7 @@ public class SpaceHelper {
         }
         catalog_ssd.setSpaceFileName(sfn);
 
-        catalog.updateAllStorageSpace(catalog_ssd);
+        ReservedSpaceCatalog.getInstance().updateAllStorageSpace(catalog_ssd);
         ReservedSpaceCatalog.addSpaceToken(spaceToken);
 
       }
@@ -312,7 +312,7 @@ public class SpaceHelper {
     GridUserInterface stormServiceUser = GridUserManager.makeSAGridUser();
 
     // Remove obsolete space
-    ArrayOfTSpaceToken token_a = catalog.getSpaceTokens(stormServiceUser, null);
+    ArrayOfTSpaceToken token_a = ReservedSpaceCatalog.getInstance().getSpaceTokens(stormServiceUser, null);
     for (int i = 0; i < token_a.size(); i++) {
       log.debug("VO SA token IN CATALOG: {}", token_a.getTSpaceToken(i).getValue());
     }
@@ -325,7 +325,7 @@ public class SpaceHelper {
           TSpaceToken tokenToRemove = token_a.getTSpaceToken(i);
           log.debug("VO SA token {}  is no more used, removing it from persistence.",
               tokenToRemove);
-          catalog.release(stormServiceUser, tokenToRemove);
+          ReservedSpaceCatalog.getInstance().release(stormServiceUser, tokenToRemove);
         }
       }
     } else {

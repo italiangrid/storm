@@ -1,5 +1,6 @@
 package it.grid.storm.config.model.v2;
 
+import static it.grid.storm.config.ConfigurationDefaults.DEFAULT_SRM_PORT;
 import static it.grid.storm.config.ConfigurationDefaults.GPFS_QUOTA_REFRESH_PERIOD;
 import static it.grid.storm.config.ConfigurationDefaults.HTTP_TURL_PREFIX;
 import static it.grid.storm.config.ConfigurationDefaults.MAX_LOOP;
@@ -26,7 +27,7 @@ public class StormProperties {
   public static final String UNRECOGNIZED_VERSION = "unknown";
 
   private String version;
-  private List<Endpoint> srmEndpoints;
+  private List<SrmEndpoint> srmEndpoints;
   private DatabaseConnection db;
   private RestServer rest;
   private XmlRpcServer xmlrpc;
@@ -60,7 +61,8 @@ public class StormProperties {
   public StormProperties(@JsonProperty(value = "version", required = true) String version)
       throws UnknownHostException {
     this.version = version;
-    srmEndpoints = Lists.newArrayList(new Endpoint(InetAddress.getLocalHost().getHostName()));
+    srmEndpoints = Lists
+      .newArrayList(new SrmEndpoint(InetAddress.getLocalHost().getHostName(), DEFAULT_SRM_PORT));
     db = new DatabaseConnection();
     rest = new RestServer();
     xmlrpc = new XmlRpcServer();
@@ -161,11 +163,11 @@ public class StormProperties {
     this.version = version;
   }
 
-  public List<Endpoint> getSrmEndpoints() {
+  public List<SrmEndpoint> getSrmEndpoints() {
     return srmEndpoints;
   }
 
-  public void setSrmEndpoints(List<Endpoint> srmEndpoints) {
+  public void setSrmEndpoints(List<SrmEndpoint> srmEndpoints) {
     this.srmEndpoints = srmEndpoints;
   }
 

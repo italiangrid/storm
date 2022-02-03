@@ -36,17 +36,28 @@ import it.grid.storm.check.CheckManager;
 import it.grid.storm.check.CheckResponse;
 import it.grid.storm.check.CheckStatus;
 import it.grid.storm.check.SimpleCheckManager;
+import it.grid.storm.check.sanity.filesystem.SupportedFSType;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.health.HealthDirector;
 import it.grid.storm.info.du.DiskUsageService;
 import it.grid.storm.metrics.StormMetricsReporter;
-import it.grid.storm.namespace.NamespaceInterface;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.Namespace;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.model.Property;
+import it.grid.storm.namespace.model.Property.SizeUnitType;
+import it.grid.storm.namespace.model.Quota;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.rest.RestServer;
+import it.grid.storm.space.SpaceHelper;
+import it.grid.storm.space.gpfsquota.GPFSFilesetQuotaInfo;
 import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
+import it.grid.storm.space.gpfsquota.GetGPFSFilesetQuotaInfoCommand;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.startup.Bootstrap;
 import it.grid.storm.startup.BootstrapException;
 import it.grid.storm.synchcall.SimpleSynchcallDispatcher;
+import it.grid.storm.util.GPFSSizeHelper;
 import it.grid.storm.xmlrpc.StoRMXmlRpcException;
 import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 
@@ -92,9 +103,9 @@ public class StoRM {
 
   private final Configuration config;
   private final ReservedSpaceCatalog spaceCatalog;
-  private final NamespaceInterface namespace;
+  private final Namespace namespace;
 
-  public StoRM(Configuration config, NamespaceInterface namespace) {
+  public StoRM(Configuration config, Namespace namespace) {
 
     this.config = config;
     this.namespace = namespace;
@@ -119,6 +130,11 @@ public class StoRM {
 
   public void init() throws BootstrapException {
 
+    // ==== From Namepsace ====
+    handleTotalOnlineSizeFromGPFSQuota();
+    // Update SA within Reserved Space Catalog
+    updateSA();
+    
     configureSecurity();
 
     configureMetricsReporting();
@@ -136,6 +152,86 @@ public class StoRM {
     configureDiskUsageService();
 
     performSanityChecks();
+
+  }
+
+  private void handleTotalOnlineSizeFromGPFSQuota() {
+
+    namespace.getAllDefinedVFS().forEach(storageArea -> {
+      if (SupportedFSType.parseFS(storageArea.getFSType()) == SupportedFSType.GPFS) {
+        Quota quota = storageArea.getCapabilities().getQuota();
+        if (quota != null && quota.getEnabled()) {
+
+          GPFSFilesetQuotaInfo quotaInfo = getGPFSQuotaInfo(storageArea);
+          if (quotaInfo != null) {
+            updateTotalOnlineSizeFromGPFSQuota(storageArea, quotaInfo);
+          }
+        }
+      }
+    });
+  }
+
+  private GPFSFilesetQuotaInfo getGPFSQuotaInfo(VirtualFS storageArea) {
+
+    GetGPFSFilesetQuotaInfoCommand cmd = new GetGPFSFilesetQuotaInfoCommand(storageArea);
+
+    try {
+      return cmd.call();
+    } catch (Throwable t) {
+      log.warn(
+          "Cannot get quota information out of GPFS. Using the TotalOnlineSize in namespace.xml "
+              + "for Storage Area {}. Reason: {}",
+          storageArea.getAliasName(), t.getMessage());
+      return null;
+    }
+  }
+
+  private void updateTotalOnlineSizeFromGPFSQuota(VirtualFS storageArea,
+      GPFSFilesetQuotaInfo quotaInfo) {
+
+    long gpfsTotalOnlineSize = GPFSSizeHelper.getBytesFromKIB(quotaInfo.getBlockSoftLimit());
+    Property newProperties = Property.from(storageArea.getProperties());
+    try {
+      newProperties.setTotalOnlineSize(SizeUnitType.BYTE.getTypeName(), gpfsTotalOnlineSize);
+      storageArea.setProperties(newProperties);
+      log.warn("TotalOnlineSize as specified in namespace.xml will be ignored "
+          + "since quota is enabled on the GPFS {} Storage Area.", storageArea.getAliasName());
+    } catch (NamespaceException e) {
+      log.warn(
+          "Cannot get quota information out of GPFS. Using the TotalOnlineSize in namespace.xml "
+              + "for Storage Area {}.",
+          storageArea.getAliasName(), e);
+    }
+  }
+
+  private void updateSA() {
+
+    SpaceHelper spaceHelp = new SpaceHelper();
+    log.debug("Updating Space Catalog with Storage Area defined within NAMESPACE");
+    namespace.getAllDefinedVFS().forEach(vfs ->{
+
+      String vfsAliasName = vfs.getAliasName();
+      log.debug(" Considering VFS : {}", vfsAliasName);
+      String aliasName = vfs.getSpaceTokenDescription();
+      if (aliasName == null) {
+        // Found a VFS without the optional element Space Token Description
+        log.debug(
+            "XMLNamespaceParser.UpdateSA() : Found a VFS ('{}') without space-token-description. "
+                + "Skipping the Update of SA",
+            vfsAliasName);
+      } else {
+        TSizeInBytes onlineSize = vfs.getProperties().getTotalOnlineSize();
+        String spaceFileName = vfs.getRootPath();
+        TSpaceToken spaceToken = spaceHelp.createVOSA_Token(aliasName, onlineSize, spaceFileName);
+        vfs.setSpaceToken(spaceToken);
+
+        log.debug(" Updating SA ('{}'), token:'{}', onlineSize:'{}', spaceFileName:'{}'", aliasName,
+            spaceToken, onlineSize, spaceFileName);
+      }
+
+    });
+    spaceHelp.purgeOldVOSA_token();
+    log.debug("Updating Space Catalog... DONE!!");
 
   }
 
@@ -414,8 +510,8 @@ public class StoRM {
     int delay = config.getDiskUsageServiceInitialDelay();
     long period = config.getDiskUsageServiceTasksInterval();
 
-    List<VirtualFSInterface> quotaEnabledVfs = namespace.getVFSWithQuotaEnabled();
-    List<VirtualFSInterface> sas = namespace.getAllDefinedVFS()
+    List<VirtualFS> quotaEnabledVfs = namespace.getVFSWithQuotaEnabled();
+    List<VirtualFS> sas = namespace.getAllDefinedVFS()
       .stream()
       .filter(vfs -> !quotaEnabledVfs.contains(vfs))
       .collect(Collectors.toList());

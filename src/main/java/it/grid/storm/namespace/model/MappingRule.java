@@ -17,76 +17,50 @@
 
 package it.grid.storm.namespace.model;
 
-import it.grid.storm.namespace.VirtualFSInterface;
-
-/**
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * 
- * <p>
- * Company: INFN-CNAF and ICTP/eGrid project
- * </p>
- * 
- * @author Riccardo Zappi
- * @version 1.0
- */
 public class MappingRule {
 
-	private final String ruleName;
-	private final String stfnRoot;
-	private final VirtualFSInterface mappedFS;
+  private final String ruleName;
+  private final String stfnRoot;
+  private final VirtualFS mappedFS;
 
-	/**
-	 * Constructor
-	 * 
-	 * @param ruleName
-	 *          String
-	 * @param stfn_root
-	 *          String
-	 * @param vfs
-	 * @param mapped_fs
-	 *          String
-	 */
-	public MappingRule(String ruleName, String stfn_root/* , String mapped_fs */,
-		VirtualFSInterface vfs) {
+  /**
+   * Constructor
+   * 
+   * @param ruleName String
+   * @param stfn_root String
+   * @param vfs
+   * @param mapped_fs String
+   */
+  public MappingRule(String ruleName, String stfn_root, VirtualFS vfs) {
 
-		this.ruleName = ruleName;
-		this.stfnRoot = stfn_root;
-		this.mappedFS = vfs;
-	}
+    this.ruleName = ruleName;
+    this.stfnRoot = stfn_root;
+    this.mappedFS = vfs;
+  }
 
-	public String getRuleName() {
+  public String getRuleName() {
 
-		return this.ruleName;
-	}
+    return this.ruleName;
+  }
 
-	public String getStFNRoot() {
+  public String getStFNRoot() {
 
-		return this.stfnRoot;
-	}
+    return this.stfnRoot;
+  }
 
-	public VirtualFSInterface getMappedFS() {
+  public VirtualFS getMappedFS() {
 
-		return this.mappedFS;
-	}
+    return this.mappedFS;
+  }
 
-	public String toString() {
+  public String toString() {
 
-		StringBuilder sb = new StringBuilder();
-		String sep = System.getProperty("line.separator");
-		sb.append(sep + "   Mapping rule name       : " + this.ruleName + sep);
-		sb.append("      StFN-Root            : " + this.stfnRoot + sep);
-		sb.append("      mapped-FS             : " + this.mappedFS + sep);
-		return sb.toString();
-	}
+    StringBuilder sb = new StringBuilder();
+    String sep = System.getProperty("line.separator");
+    sb.append(sep + "   Mapping rule name       : " + this.ruleName + sep);
+    sb.append("      StFN-Root            : " + this.stfnRoot + sep);
+    sb.append("      mapped-FS             : " + this.mappedFS + sep);
+    return sb.toString();
+  }
 
 }

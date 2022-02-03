@@ -1,7 +1,5 @@
 package it.grid.storm.config.model.v2;
 
-import static it.grid.storm.config.ConfigurationDefaults.DEFAULT_SRM_PORT;
-
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -10,15 +8,16 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public class Endpoint {
+public class SrmEndpoint {
 
   private String host;
   private int port;
 
   @JsonCreator
-  public Endpoint(@JsonProperty(value = "host", required = true) String host) {
+  public SrmEndpoint(@JsonProperty(value = "host", required = true) String host,
+      @JsonProperty(value = "port", required = false, defaultValue = "8444") int port) {
     this.host = host;
-    port = DEFAULT_SRM_PORT;
+    this.port = port;
   }
 
   @Override
@@ -34,7 +33,7 @@ public class Endpoint {
       return false;
     if (getClass() != obj.getClass())
       return false;
-    Endpoint other = (Endpoint) obj;
+    SrmEndpoint other = (SrmEndpoint) obj;
     return Objects.equals(host, other.host) && port == other.port;
   }
 

@@ -6,12 +6,12 @@ import java.util.List;
 import com.google.common.collect.Lists;
 
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.AccessLatency;
 import it.grid.storm.namespace.model.ApproachableRule;
 import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.model.RetentionPolicy;
 import it.grid.storm.namespace.model.StorageClassType;
+import it.grid.storm.namespace.model.VirtualFS;
 
 public class SAInfo {
 
@@ -157,7 +157,7 @@ public class SAInfo {
     this.approachableRules.add(approachableRule);
   }
 
-  public static SAInfo buildFromVFS(VirtualFSInterface vfs) throws NamespaceException {
+  public static SAInfo buildFromVFS(VirtualFS vfs) throws NamespaceException {
 
     SAInfo sa = new SAInfo();
 

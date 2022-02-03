@@ -26,28 +26,7 @@ import org.slf4j.LoggerFactory;
 import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.DistinguishedName;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.namespace.VirtualFSInterface;
 
-/**
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * 
- * <p>
- * Company: INFN-CNAF and ICTP/eGrid project
- * </p>
- * 
- * @author Riccardo Zappi
- * @version 1.0
- */
 public class ApproachableRule implements Comparable<ApproachableRule> {
 
   private Logger log = LoggerFactory.getLogger(ApproachableRule.class);
@@ -56,7 +35,7 @@ public class ApproachableRule implements Comparable<ApproachableRule> {
   private final SubjectRules subjectRules;
 
   private String relativePath = null;
-  private LinkedList<VirtualFSInterface> appFS = new LinkedList<VirtualFSInterface>();
+  private LinkedList<VirtualFS> appFS = new LinkedList<VirtualFS>();
 
   private final boolean anonymousHttpReadAccess;
 
@@ -83,12 +62,12 @@ public class ApproachableRule implements Comparable<ApproachableRule> {
         && subjectRules.getVONameMatchingRule().isMatchAll();
   }
 
-  public void addApproachableVFS(VirtualFSInterface vfs) {
+  public void addApproachableVFS(VirtualFS vfs) {
 
     this.appFS.add(vfs);
   }
 
-  public List<VirtualFSInterface> getApproachableVFS() {
+  public List<VirtualFS> getApproachableVFS() {
 
     return this.appFS;
   }

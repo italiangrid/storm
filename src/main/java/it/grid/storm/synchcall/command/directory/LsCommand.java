@@ -45,7 +45,6 @@ import it.grid.storm.namespace.InvalidDescendantsPathRequestException;
 import it.grid.storm.namespace.InvalidSURLException;
 import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.srm.types.ArrayOfSURLs;
@@ -82,22 +81,13 @@ import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.LSInputData;
 import it.grid.storm.synchcall.data.directory.LSOutputData;
 
-/**
- * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
- * <p>
- * Authors:
- * 
- * @author lucamag luca.magnoniATcnaf.infn.it
- * @date = Dec 3, 2008
- */
-
 public class LsCommand extends DirectoryCommand implements Command {
 
   public static final Logger log = LoggerFactory.getLogger(LsCommand.class);
 
   private static final String SRM_COMMAND = "srmLs";
 
-  private final NamespaceInterface namespace;
+  private final Namespace namespace;
 
   private boolean atLeastOneInputSURLIsDir;
 

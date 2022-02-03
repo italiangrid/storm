@@ -36,9 +36,9 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.VONameMatchingRule;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ApproachableRule;
 import it.grid.storm.namespace.model.SubjectRules;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
@@ -96,7 +96,7 @@ public class TaskResourceTest {
     return catalog;
   }
 
-  private StoRI getStoRI(VirtualFSInterface virtualFS) {
+  private StoRI getStoRI(VirtualFS virtualFS) {
     StoRI sto = Mockito.mock(StoRI.class);
     Mockito.when(sto.getAbsolutePath()).thenReturn(FILE_PATH);
     Mockito.when(sto.getVirtualFileSystem()).thenReturn(virtualFS);
@@ -138,9 +138,9 @@ public class TaskResourceTest {
     return catalog;
   }
 
-  private VirtualFSInterface getVirtualFS(String name, String rootPath, String voName) {
+  private VirtualFS getVirtualFS(String name, String rootPath, String voName) {
 
-    VirtualFSInterface vfs = Mockito.mock(VirtualFSInterface.class);
+    VirtualFS vfs = Mockito.mock(VirtualFS.class);
     ApproachableRule appRule = Mockito.mock(ApproachableRule.class);
     SubjectRules subRules = Mockito.mock(SubjectRules.class);
     VONameMatchingRule matchingRule = Mockito.mock(VONameMatchingRule.class);
@@ -208,7 +208,7 @@ public class TaskResourceTest {
       throws DataAccessException, NamespaceException, JsonParseException, JsonMappingException,
       IOException, InvalidTRequestTokenAttributesException, ResourceNotFoundException {
 
-    VirtualFSInterface VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+    VirtualFS VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
     StoRI STORI = getStoRI(VFS);
     TaskResource recallEndpoint = getTaskResource(getResourceService(STORI), RECALL_CATALOG);
     TaskInsertRequest request = TaskInsertRequest.builder()
@@ -230,7 +230,7 @@ public class TaskResourceTest {
       throws DataAccessException, NamespaceException, JsonParseException, JsonMappingException,
       IOException, InvalidTRequestTokenAttributesException, ResourceNotFoundException {
 
-    VirtualFSInterface VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+    VirtualFS VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
     StoRI STORI = getStoRI(VFS);
     TaskResource recallEndpoint = getTaskResource(getResourceService(STORI), RECALL_CATALOG);
     TaskInsertRequest request = TaskInsertRequest.builder()
@@ -273,7 +273,7 @@ public class TaskResourceTest {
   public void testPOSTBadVoNameRequested()
       throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
-    VirtualFSInterface VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+    VirtualFS VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
     StoRI STORI = getStoRI(VFS);
     TaskResource recallEndpoint = new TaskResource(getResourceService(STORI), RECALL_CATALOG);
     TaskInsertRequest request = TaskInsertRequest.builder()
@@ -311,7 +311,7 @@ public class TaskResourceTest {
   public void testPOSTDbException()
       throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
-    VirtualFSInterface VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+    VirtualFS VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
     StoRI STORI = getStoRI(VFS);
     TaskResource recallEndpoint =
         new TaskResource(getResourceService(STORI), BROKEN_RECALL_CATALOG);
@@ -334,7 +334,7 @@ public class TaskResourceTest {
   public void testPOSTValidationRequestNullFilePath()
       throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
-    VirtualFSInterface VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+    VirtualFS VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
     StoRI STORI = getStoRI(VFS);
     TaskResource recallEndpoint =
         new TaskResource(getResourceService(STORI), BROKEN_RECALL_CATALOG);
@@ -352,7 +352,7 @@ public class TaskResourceTest {
   public void testPOSTValidationRequestNullUserId()
       throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
-    VirtualFSInterface VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+    VirtualFS VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
     StoRI STORI = getStoRI(VFS);
     TaskResource recallEndpoint =
         new TaskResource(getResourceService(STORI), BROKEN_RECALL_CATALOG);
@@ -370,7 +370,7 @@ public class TaskResourceTest {
   public void testPOSTValidationRequestInvalidNegativeRetryAttempts()
       throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
-    VirtualFSInterface VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+    VirtualFS VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
     StoRI STORI = getStoRI(VFS);
     TaskResource recallEndpoint =
         new TaskResource(getResourceService(STORI), BROKEN_RECALL_CATALOG);
@@ -390,7 +390,7 @@ public class TaskResourceTest {
   public void testPOSTValidationRequestInvalidTooManyRetryAttempts()
       throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
-    VirtualFSInterface VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+    VirtualFS VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
     StoRI STORI = getStoRI(VFS);
     TaskResource recallEndpoint =
         new TaskResource(getResourceService(STORI), BROKEN_RECALL_CATALOG);
@@ -422,7 +422,7 @@ public class TaskResourceTest {
       throws DataAccessException, NamespaceException, JsonParseException, JsonMappingException,
       IOException, InvalidTRequestTokenAttributesException, ResourceNotFoundException {
 
-    VirtualFSInterface VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+    VirtualFS VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
     StoRI STORI = getStoRI(VFS);
     TaskResource recallEndpoint =
         getTaskResource(getResourceService(STORI), getTapeRecallCatalogInProgressNotEmpty());

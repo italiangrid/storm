@@ -19,7 +19,7 @@ public class SAInfoTest {
   private static final Logger log = LoggerFactory.getLogger(SAInfoTest.class);
 
   private static final String JSON_STRING =
-      "{\"name\":\"test.vo\",\"token\":\"TESTVO_TOKEN\",\"vos\":[\"test.vo\"],\"rootPath\":\"/storage/test.vo\",\"storageClass\":\"T1D0\",\"accessPoints\":[\"/test.vo\"],\"retentionPolicy\":\"CUSTODIAL\",\"accessLatency\":\"ONLINE\",\"protocols\":[\"xroot\",\"webdav\"],\"anonymous\":\"NOREAD\",\"availableNearlineSpace\":20000000,\"approachableRules\":[\"Fake-DN-Matching-Rule\"]}";
+      "{\"name\":\"test.vo\",\"token\":\"TESTVO_TOKEN\",\"vos\":[\"test.vo\"],\"rootPath\":\"/storage/test.vo\",\"storageClass\":\"T1D0\",\"accessPoints\":[\"/test.vo\"],\"retentionPolicy\":\"custodial\",\"accessLatency\":\"online\",\"protocols\":[\"xroot\",\"webdav\"],\"anonymous\":\"NOREAD\",\"availableNearlineSpace\":20000000,\"approachableRules\":[\"Fake-DN-Matching-Rule\"]}";
 
   private static final SAInfo saInfo;
 
@@ -56,7 +56,5 @@ public class SAInfoTest {
     assertEquals(saInfoRead.getName(), saInfo.getName());
     assertEquals(saInfoRead.getToken(), saInfo.getToken());
   }
-
-
 
 }

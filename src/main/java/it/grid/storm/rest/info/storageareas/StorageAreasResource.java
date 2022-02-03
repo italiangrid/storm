@@ -15,7 +15,7 @@ import com.google.common.collect.Maps;
 
 import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.rest.info.storageareas.model.SAInfo;
 
 @Path("/info/storage-areas")
@@ -31,10 +31,10 @@ public class StorageAreasResource {
   public Map<String, SAInfo> listVFS() {
 
     log.debug("Serving VFS resource listing");
-    List<VirtualFSInterface> vfsCollection = Namespace.getInstance().getAllDefinedVFS();
+    List<VirtualFS> vfsCollection = Namespace.getInstance().getAllDefinedVFS();
     Map<String, SAInfo> output = Maps.newHashMap();
 
-    for (VirtualFSInterface vfs : vfsCollection) {
+    for (VirtualFS vfs : vfsCollection) {
       try {
         output.put(vfs.getAliasName(), SAInfo.buildFromVFS(vfs));
       } catch (NamespaceException e) {

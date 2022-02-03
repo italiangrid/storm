@@ -46,7 +46,7 @@ public class Main {
 
     log.info("Load namespace from {} ...", DEFAULT_NAMESPACE_FILE);
     try {
-      Namespace.init(DEFAULT_NAMESPACE_FILE);
+      Namespace.init(DEFAULT_NAMESPACE_FILE, true);
     } catch (DOMException | ConfigurationException | ParserConfigurationException | SAXException
         | IOException | NamespaceException e) {
       log.error(e.getMessage(), e);

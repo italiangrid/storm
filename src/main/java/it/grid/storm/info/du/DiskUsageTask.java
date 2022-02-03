@@ -10,7 +10,7 @@ import com.google.common.base.Preconditions;
 
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.types.SizeUnit;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.space.DUResult;
 import it.grid.storm.space.StorageSpaceData;
@@ -22,9 +22,9 @@ public class DiskUsageTask implements Runnable {
   private static final Logger log = LoggerFactory.getLogger(DiskUsageTask.class);
 
   private final ReservedSpaceCatalog spaceCatalog = ReservedSpaceCatalog.getInstance();
-  private VirtualFSInterface vfs;
+  private VirtualFS vfs;
 
-  public DiskUsageTask(VirtualFSInterface vfs) {
+  public DiskUsageTask(VirtualFS vfs) {
     this.vfs = vfs;
   }
 

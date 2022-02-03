@@ -41,10 +41,10 @@ import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.TURLBuildingException;
 import it.grid.storm.namespace.UnapprochableSurlException;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
 import it.grid.storm.namespace.model.Protocol;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.PtGData;
 import it.grid.storm.scheduler.Chooser;
@@ -668,7 +668,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
   private void setDefaultAcl(StoRI fileStoRI, LocalFile localFile) {
 
     /* Manage DefaultACL */
-    VirtualFSInterface vfs = fileStoRI.getVirtualFileSystem();
+    VirtualFS vfs = fileStoRI.getVirtualFileSystem();
     DefaultACL acl = vfs.getCapabilities().getDefaultACL();
 
     if ((acl == null) || (acl.isEmpty())) {

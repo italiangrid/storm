@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 
 import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.rest.metadata.model.StoriMetadata;
 import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
 import it.grid.storm.rest.metadata.service.ResourceService;
@@ -33,7 +32,7 @@ public class Metadata {
 
   public Metadata() throws NamespaceException {
 
-    NamespaceInterface namespace = Namespace.getInstance();
+    Namespace namespace = Namespace.getInstance();
     metadataService = new StoriMetadataService(
         new ResourceService(namespace.getAllDefinedVFS(), namespace.getAllDefinedMappingRules()));
   }

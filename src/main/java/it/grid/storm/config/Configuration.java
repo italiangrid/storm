@@ -28,10 +28,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
 
 import it.grid.storm.config.converter.StormPropertiesConversionException;
 import it.grid.storm.config.converter.StormPropertiesConverter;
+import it.grid.storm.config.model.v2.SrmEndpoint;
 import it.grid.storm.config.model.v2.OverwriteMode;
 import it.grid.storm.config.model.v2.QualityLevel;
 import it.grid.storm.config.model.v2.StorageType;
@@ -43,9 +45,9 @@ public class Configuration {
   private static Configuration instance = null;
 
   private static final Logger log = LoggerFactory.getLogger(Configuration.class);
-  private static final JavaPropsMapper mapper = new JavaPropsMapper();
 
   private File configFile;
+  private JavaPropsMapper mapper;
   private StormProperties properties;
 
 
@@ -56,6 +58,8 @@ public class Configuration {
   private Configuration(String filePath) throws IOException {
 
     configFile = new File(filePath);
+    mapper = new JavaPropsMapper();
+    mapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
     loadConfiguration();
   }
 
@@ -110,6 +114,11 @@ public class Configuration {
   public String getSrmServiceHostname() {
 
     return getManagedSrmEndpoints().get(0).getServiceHostname();
+  }
+
+  public List<SrmEndpoint> getSrmEndpoints() {
+
+    return properties.getSrmEndpoints();
   }
 
   public List<Authority> getManagedSrmEndpoints() {

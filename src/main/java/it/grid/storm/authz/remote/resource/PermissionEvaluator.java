@@ -43,9 +43,9 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.Protocol;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.persistence.converter.OverwriteModeConverter;
 import it.grid.storm.srm.types.TOverwriteMode;
 
@@ -66,7 +66,7 @@ class PermissionEvaluator {
     String[] FQANSArray = parseFQANS(FQANSDecoded);
     GridUserInterface gu = buildGridUser(DNDecoded, FQANSArray);
 
-    VirtualFSInterface fileVFS;
+    VirtualFS fileVFS;
     try {
       fileVFS = Namespace.getInstance().resolveVFSbyAbsolutePath(filePathDecoded);
     } catch (NamespaceException e) {
@@ -108,7 +108,7 @@ class PermissionEvaluator {
     String[] FQANSArray = parseFQANS(FQANSDecoded);
     GridUserInterface gu = buildGridUser(DNDecoded, FQANSArray);
 
-    VirtualFSInterface fileVFS;
+    VirtualFS fileVFS;
     try {
       fileVFS = Namespace.getInstance().resolveVFSbyAbsolutePath(filePathDecoded);
     } catch (NamespaceException e) {
@@ -132,7 +132,7 @@ class PermissionEvaluator {
 
   static Boolean evaluateAnonymousPermission(String filePathDecoded, PathOperation request) {
 
-    VirtualFSInterface fileVFS;
+    VirtualFS fileVFS;
     try {
       fileVFS = Namespace.getInstance().resolveVFSbyAbsolutePath(filePathDecoded);
     } catch (NamespaceException e) {
@@ -154,7 +154,7 @@ class PermissionEvaluator {
 
   static Boolean evaluateAnonymousPermission(String filePathDecoded, SRMFileRequest request) {
 
-    VirtualFSInterface fileVFS;
+    VirtualFS fileVFS;
     try {
       fileVFS = Namespace.getInstance().resolveVFSbyAbsolutePath(filePathDecoded);
     } catch (NamespaceException e) {
@@ -200,7 +200,7 @@ class PermissionEvaluator {
     }
   }
 
-  private static StFN buildStFN(String filePathDecoded, VirtualFSInterface fileVFS)
+  private static StFN buildStFN(String filePathDecoded, VirtualFS fileVFS)
       throws WebApplicationException {
 
     String VFSRootPath;

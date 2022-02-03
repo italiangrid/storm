@@ -102,11 +102,11 @@ public class ConfigurationTest {
     assertEquals(VERSION, config.getVersion());
     assertFalse(config.getManagedSrmEndpoints().isEmpty());
     assertEquals(2, config.getManagedSrmEndpoints().size());
-    assertEquals("storm.example", config.getManagedSrmEndpoints().get(0).getServiceHostname());
+    assertEquals("storm-fe01.example", config.getManagedSrmEndpoints().get(0).getServiceHostname());
     assertEquals(8444, config.getManagedSrmEndpoints().get(0).getServicePort());
-    assertEquals("alias.example", config.getManagedSrmEndpoints().get(1).getServiceHostname());
+    assertEquals("storm-fe02.example", config.getManagedSrmEndpoints().get(1).getServiceHostname());
     assertEquals(8445, config.getManagedSrmEndpoints().get(1).getServicePort());
-    assertEquals("storm.example", config.getDbHostname());
+    assertEquals("storm-db.example", config.getDbHostname());
     assertEquals("test", config.getDbUsername());
     assertEquals("secret", config.getDbPassword());
     assertEquals(3308, config.getDbPort());

@@ -32,7 +32,6 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.InvalidSURLException;
 import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
@@ -72,7 +71,7 @@ public class RmCommand implements Command {
 
   private static final String SRM_COMMAND = "srmRm";
   private static final Logger log = LoggerFactory.getLogger(RmCommand.class);
-  private final NamespaceInterface namespace;
+  private final Namespace namespace;
 
   public RmCommand() {
 
@@ -202,7 +201,7 @@ public class RmCommand implements Command {
     returnStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, "File removed");
 
     try {
-      namespace.resolveVFSbyLocalFile(localFile).decreaseUsedSpace(fileSize);
+      namespace.resolveVFSbyLocalFile(localFile).getSpaceUpdater().decreaseUsedSpace(fileSize);
     } catch (NamespaceException e) {
       log.error(e.getMessage());
       returnStatus.extendExplaination("Unable to decrease used space: " + e.getMessage());

@@ -28,7 +28,7 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.VirtualFS;
 
 /**
  * @author Michele Dibenedetto
@@ -66,7 +66,7 @@ public class NamespaceFSExtendedACLUsageCheck implements Check {
     }
     try {
       // load declared file systems from namespace.xml
-      for (VirtualFSInterface vfs : Namespace.getInstance().getAllDefinedVFS()) {
+      for (VirtualFS vfs : Namespace.getInstance().getAllDefinedVFS()) {
         String fsRootPath = vfs.getRootPath().trim();
         if (fsRootPath.charAt(fsRootPath.length() - 1) != File.separatorChar) {
           fsRootPath += File.separatorChar;

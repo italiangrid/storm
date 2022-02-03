@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -35,12 +34,10 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Maps;
 
 import it.grid.storm.balancer.BalancingStrategyType;
-import it.grid.storm.check.sanity.filesystem.SupportedFSType;
 import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.DefaultValuesInterface;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.PropertyInterface;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.config.NamespaceCheck;
 import it.grid.storm.namespace.config.NamespaceLoader;
 import it.grid.storm.namespace.config.NamespaceParser;
@@ -55,7 +52,6 @@ import it.grid.storm.namespace.model.PermissionException;
 import it.grid.storm.namespace.model.PoolMember;
 import it.grid.storm.namespace.model.Property;
 import it.grid.storm.namespace.model.Protocol;
-import it.grid.storm.namespace.model.Property.SizeUnitType;
 import it.grid.storm.namespace.model.ProtocolPool;
 import it.grid.storm.namespace.model.Quota;
 import it.grid.storm.namespace.model.QuotaType;
@@ -65,40 +61,13 @@ import it.grid.storm.namespace.model.StorageClassType;
 import it.grid.storm.namespace.model.SubjectRules;
 import it.grid.storm.namespace.model.TransportProtocol;
 import it.grid.storm.namespace.model.VirtualFS;
-import it.grid.storm.space.SpaceHelper;
-import it.grid.storm.space.gpfsquota.GPFSFilesetQuotaInfo;
-import it.grid.storm.space.gpfsquota.GetGPFSFilesetQuotaInfoCommand;
-import it.grid.storm.srm.types.TSizeInBytes;
-import it.grid.storm.srm.types.TSpaceToken;
-import it.grid.storm.util.GPFSSizeHelper;
-
-/**
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * 
- * <p>
- * Company: INFN-CNAF and ICTP/eGrid project
- * </p>
- * 
- * @author Riccardo Zappi
- * @version 1.0
- */
 
 public class XMLNamespaceParser implements NamespaceParser {
 
   private final Logger log = LoggerFactory.getLogger(XMLNamespaceParser.class);
 
   private String version;
-  private Map<String, VirtualFSInterface> vfss;
+  private Map<String, VirtualFS> vfss;
   private Map<String, MappingRule> maprules;
   private Map<String, ApproachableRule> apprules;
 
@@ -112,7 +81,7 @@ public class XMLNamespaceParser implements NamespaceParser {
    * 
    * @param loader NamespaceLoader
    */
-  public XMLNamespaceParser(NamespaceLoader loader) {
+  public XMLNamespaceParser(NamespaceLoader loader, boolean semanticCheckEnabled) {
 
     configuration = (XMLConfiguration) loader.getConfiguration();
 
@@ -126,7 +95,7 @@ public class XMLNamespaceParser implements NamespaceParser {
     maprules = Maps.newHashMap();
     apprules = Maps.newHashMap();
 
-    boolean validNamespaceConfiguration = refreshCachedData();
+    boolean validNamespaceConfiguration = refreshCachedData(semanticCheckEnabled);
     if (!validNamespaceConfiguration) {
       log.error(" ???????????????????????????????????? ");
       log.error(" ????  NAMESPACE does not VALID  ???? ");
@@ -137,7 +106,7 @@ public class XMLNamespaceParser implements NamespaceParser {
 
   }
 
-  public Map<String, VirtualFSInterface> getVFSs() {
+  public Map<String, VirtualFS> getVFSs() {
 
     return vfss;
   }
@@ -156,7 +125,7 @@ public class XMLNamespaceParser implements NamespaceParser {
    * PRIVATE METHODs
    *****************************************************************/
 
-  private boolean refreshCachedData() {
+  private boolean refreshCachedData(boolean semanticCheckEnabled) {
 
     boolean result = false;
     try {
@@ -174,7 +143,7 @@ public class XMLNamespaceParser implements NamespaceParser {
       log.debug("REFRESHING CACHE..");
       // Save the cache content
       log.debug("  ..save the cache content before semantic check");
-      Map<String, VirtualFSInterface> vfssSAVED = vfss;
+      Map<String, VirtualFS> vfssSAVED = vfss;
       Map<String, MappingRule> maprulesSAVED = maprules;
       Map<String, ApproachableRule> apprulesSAVED = apprules;
       // Refresh the cache content with new values
@@ -182,23 +151,27 @@ public class XMLNamespaceParser implements NamespaceParser {
       log.debug("  ..refresh the cache");
       refreshCache();
 
-      // Do the checking on Namespace
-      log.debug("  ..semantic check of namespace");
-      NamespaceCheck checker = new NamespaceCheck(vfss, maprules, apprules);
-      boolean semanticCheck = checker.check();
-
-      // If there is an error restore old cache content
-      log.debug("REFRESHING ENDED.");
-      if (semanticCheck) {
-        log.debug("Namespace is semantically valid");
-        result = true;
+      if (semanticCheckEnabled) {
+        // Do the checking on Namespace
+        log.debug("  ..semantic check of namespace");
+        NamespaceCheck checker = new NamespaceCheck(vfss, maprules, apprules);
+        boolean semanticCheck = checker.check();
+        if (semanticCheck) {
+          log.debug("Namespace is semantically valid");
+          result = true;
+        } else {
+          log.warn("Namespace does not semantically valid!, so no load performed!");
+          vfss = vfssSAVED;
+          maprules = maprulesSAVED;
+          apprules = apprulesSAVED;
+          result = false;
+        }
       } else {
-        log.warn("Namespace does not semantically valid!, so no load performed!");
-        vfss = vfssSAVED;
-        maprules = maprulesSAVED;
-        apprules = apprulesSAVED;
-        result = false;
+        result = true;
       }
+
+      log.debug("REFRESHING ENDED.");
+      
     } finally {
       refreshing.unlock();
     }
@@ -263,97 +236,6 @@ public class XMLNamespaceParser implements NamespaceParser {
        */
     }
     log.debug("  ##############  REFRESHING NAMESPACE CONFIGURATION CACHE : end ###############");
-
-    handleTotalOnlineSizeFromGPFSQuota();
-    // Update SA within Reserved Space Catalog
-    updateSA();
-  }
-
-  private void handleTotalOnlineSizeFromGPFSQuota() {
-
-    for (Entry<String, VirtualFSInterface> entry : vfss.entrySet()) {
-      String storageAreaName = entry.getKey();
-      VirtualFSInterface storageArea = entry.getValue();
-      if (SupportedFSType.parseFS(storageArea.getFSType()) == SupportedFSType.GPFS) {
-        Quota quota = storageArea.getCapabilities().getQuota();
-        if (quota != null && quota.getEnabled()) {
-
-          GPFSFilesetQuotaInfo quotaInfo = getGPFSQuotaInfo(storageArea);
-          if (quotaInfo != null) {
-            updateTotalOnlineSizeFromGPFSQuota(storageAreaName, storageArea, quotaInfo);
-          }
-        }
-      }
-    }
-  }
-
-  private GPFSFilesetQuotaInfo getGPFSQuotaInfo(VirtualFSInterface storageArea) {
-
-    GetGPFSFilesetQuotaInfoCommand cmd = new GetGPFSFilesetQuotaInfoCommand(storageArea);
-
-    try {
-      return cmd.call();
-    } catch (Throwable t) {
-      log.warn(
-          "Cannot get quota information out of GPFS. Using the TotalOnlineSize in namespace.xml "
-              + "for Storage Area {}. Reason: {}",
-          storageArea.getAliasName(), t.getMessage());
-      return null;
-    }
-  }
-
-  private void updateTotalOnlineSizeFromGPFSQuota(String storageAreaName,
-      VirtualFSInterface storageArea, GPFSFilesetQuotaInfo quotaInfo) {
-
-    long gpfsTotalOnlineSize = GPFSSizeHelper.getBytesFromKIB(quotaInfo.getBlockSoftLimit());
-    Property newProperties = Property.from(storageArea.getProperties());
-    try {
-      newProperties.setTotalOnlineSize(SizeUnitType.BYTE.getTypeName(), gpfsTotalOnlineSize);
-      storageArea.setProperties(newProperties);
-      log.warn("TotalOnlineSize as specified in namespace.xml will be ignored "
-          + "since quota is enabled on the GPFS {} Storage Area.", storageAreaName);
-    } catch (NamespaceException e) {
-      log.warn(
-          "Cannot get quota information out of GPFS. Using the TotalOnlineSize in namespace.xml "
-              + "for Storage Area {}.",
-          storageAreaName, e);
-    }
-  }
-
-  // ******************* Update SA Catalog ***************************
-  private void updateSA() {
-
-    TSpaceToken spaceToken = null;
-    // ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
-    SpaceHelper spaceHelp = new SpaceHelper();
-    log.debug("Updating Space Catalog with Storage Area defined within NAMESPACE");
-    VirtualFS vfs = null;
-    Iterator<VirtualFSInterface> scan = vfss.values().iterator();
-    while (scan.hasNext()) {
-
-      vfs = (VirtualFS) scan.next();
-      String vfsAliasName = vfs.getAliasName();
-      log.debug(" Considering VFS : {}", vfsAliasName);
-      String aliasName = vfs.getSpaceTokenDescription();
-      if (aliasName == null) {
-        // Found a VFS without the optional element Space Token Description
-        log.debug(
-            "XMLNamespaceParser.UpdateSA() : Found a VFS ('{}') without space-token-description. "
-                + "Skipping the Update of SA",
-            vfsAliasName);
-      } else {
-        TSizeInBytes onlineSize = vfs.getProperties().getTotalOnlineSize();
-        String spaceFileName = vfs.getRootPath();
-        spaceToken = spaceHelp.createVOSA_Token(aliasName, onlineSize, spaceFileName);
-        vfs.setSpaceToken(spaceToken);
-
-        log.debug(" Updating SA ('{}'), token:'{}', onlineSize:'{}', spaceFileName:'{}'", aliasName,
-            spaceToken, onlineSize, spaceFileName);
-      }
-
-    }
-    spaceHelp.purgeOldVOSA_token();
-    log.debug("Updating Space Catalog... DONE!!");
 
   }
 
@@ -710,7 +592,7 @@ public class XMLNamespaceParser implements NamespaceParser {
       if (vfss.containsKey(mappedFS)) {
         log.debug("VFS '{}' pointed by RULE : '{}' exists.", mappedFS, ruleName);
         stfnRoot = parserUtil.getMapRule_StFNRoot(ruleName);
-        VirtualFSInterface vfs = vfss.get(mappedFS);
+        VirtualFS vfs = vfss.get(mappedFS);
         mapRule = new MappingRule(ruleName, stfnRoot, vfs);
         ((VirtualFS) vfs).addMappingRule(mapRule);
         maprules.put(ruleName, mapRule);
@@ -759,7 +641,7 @@ public class XMLNamespaceParser implements NamespaceParser {
       for (String appFS : appFSList) {
         if (vfss.containsKey(appFS)) {
           log.debug("VFS '{}' pointed by RULE : '{}' exists.", appFS, ruleName);
-          VirtualFSInterface vfs = vfss.get(appFS);
+          VirtualFS vfs = vfss.get(appFS);
           ((VirtualFS) vfs).addApproachableRule(appRule);
           appRule.addApproachableVFS(vfs);
         } else {
@@ -781,9 +663,9 @@ public class XMLNamespaceParser implements NamespaceParser {
 
   public List<String> getAllVFS_Roots() {
 
-    Collection<VirtualFSInterface> elem = vfss.values();
+    Collection<VirtualFS> elem = vfss.values();
     List<String> roots = new ArrayList<>(vfss.size());
-    Iterator<VirtualFSInterface> scan = elem.iterator();
+    Iterator<VirtualFS> scan = elem.iterator();
     while (scan.hasNext()) {
       String root = null;
       root = scan.next().getRootPath();
@@ -792,14 +674,14 @@ public class XMLNamespaceParser implements NamespaceParser {
     return roots;
   }
 
-  public Map<String, VirtualFSInterface> getMapVFS_Root() {
+  public Map<String, VirtualFS> getMapVFS_Root() {
 
-    Map<String, VirtualFSInterface> result = new HashMap<>();
-    Collection<VirtualFSInterface> elem = vfss.values();
-    Iterator<VirtualFSInterface> scan = elem.iterator();
+    Map<String, VirtualFS> result = new HashMap<>();
+    Collection<VirtualFS> elem = vfss.values();
+    Iterator<VirtualFS> scan = elem.iterator();
     while (scan.hasNext()) {
       String root = null;
-      VirtualFSInterface vfs = scan.next();
+      VirtualFS vfs = scan.next();
       root = vfs.getRootPath();
       result.put(root, vfs);
     }
@@ -836,7 +718,7 @@ public class XMLNamespaceParser implements NamespaceParser {
     return map;
   }
 
-  public VirtualFSInterface getVFS(String vfsName) {
+  public VirtualFS getVFS(String vfsName) {
 
     return vfss.get(vfsName);
   }

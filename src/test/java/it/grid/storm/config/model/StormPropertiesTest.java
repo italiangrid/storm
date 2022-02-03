@@ -87,10 +87,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
 
 import it.grid.storm.config.model.v2.QualityLevel;
@@ -98,23 +100,32 @@ import it.grid.storm.config.model.v2.StormProperties;
 
 public class StormPropertiesTest {
 
+  private JavaPropsMapper mapper;
+  private ClassLoader classLoader;
+
+  @Before
+  public void init() {
+ 
+    mapper = new JavaPropsMapper();
+    mapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
+    classLoader = getClass().getClassLoader();
+  }
+
   @Test
   public void testLoadingConfigurationFromFullPropertiesV2()
       throws JsonParseException, JsonMappingException, IOException {
 
-    JavaPropsMapper mapper = new JavaPropsMapper();
-    ClassLoader classLoader = getClass().getClassLoader();
     File file = new File(classLoader.getResource("storm.properties").getFile());
     StormProperties properties = mapper.readValue(file, StormProperties.class);
     System.out.println(properties);
     assertEquals(StormProperties.VERSION, properties.getVersion());
     assertFalse(properties.getSrmEndpoints().isEmpty());
     assertEquals(2, properties.getSrmEndpoints().size());
-    assertEquals("storm.example", properties.getSrmEndpoints().get(0).getHost());
+    assertEquals("storm-fe01.example", properties.getSrmEndpoints().get(0).getHost());
     assertEquals(8444, properties.getSrmEndpoints().get(0).getPort());
-    assertEquals("alias.example", properties.getSrmEndpoints().get(1).getHost());
+    assertEquals("storm-fe02.example", properties.getSrmEndpoints().get(1).getHost());
     assertEquals(8445, properties.getSrmEndpoints().get(1).getPort());
-    assertEquals("storm.example", properties.getDb().getHostname());
+    assertEquals("storm-db.example", properties.getDb().getHostname());
     assertEquals("test", properties.getDb().getUsername());
     assertEquals("secret", properties.getDb().getPassword());
     assertEquals(3308, properties.getDb().getPort());
@@ -197,8 +208,6 @@ public class StormPropertiesTest {
       throws JsonParseException, JsonMappingException, IOException {
 
     String hostname = InetAddress.getLocalHost().getHostName();
-    JavaPropsMapper mapper = new JavaPropsMapper();
-    ClassLoader classLoader = getClass().getClassLoader();
     File file = new File(classLoader.getResource("empty.properties").getFile());
     StormProperties properties = mapper.readValue(file, StormProperties.class);
     assertEquals(VERSION, properties.getVersion());

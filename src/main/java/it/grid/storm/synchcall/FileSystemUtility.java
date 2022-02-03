@@ -30,28 +30,8 @@ import it.grid.storm.filesystem.MetricsFilesystemAdapter;
 import it.grid.storm.filesystem.swig.genericfs;
 import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.VirtualFS;
 
-/**
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * 
- * <p>
- * Company: INFN-CNAF and ICTP/eGrid project
- * </p>
- * 
- * @author Riccardo Zappi
- * @version 1.0
- */
 public class FileSystemUtility {
 
 	private static Logger log = LoggerFactory.getLogger(FileSystemUtility.class);
@@ -60,7 +40,7 @@ public class FileSystemUtility {
 		throws NamespaceException {
 
 		LocalFile file = null;
-		VirtualFSInterface vfs = null;
+		VirtualFS vfs = null;
 		genericfs fsDriver = null;
 		FilesystemIF fs = null;
 		try {

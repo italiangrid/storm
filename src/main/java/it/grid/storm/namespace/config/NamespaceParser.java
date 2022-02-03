@@ -17,12 +17,12 @@
 
 package it.grid.storm.namespace.config;
 
-import it.grid.storm.namespace.VirtualFSInterface;
-import it.grid.storm.namespace.model.ApproachableRule;
-import it.grid.storm.namespace.model.MappingRule;
-
 import java.util.List;
 import java.util.Map;
+
+import it.grid.storm.namespace.model.ApproachableRule;
+import it.grid.storm.namespace.model.MappingRule;
+import it.grid.storm.namespace.model.VirtualFS;
 
 /**
  * <p>
@@ -49,13 +49,13 @@ public interface NamespaceParser {
 
 	public String getNamespaceVersion();
 
-	public Map<String, VirtualFSInterface> getVFSs();
+	public Map<String, VirtualFS> getVFSs();
 
-	public VirtualFSInterface getVFS(String vfsName);
+	public VirtualFS getVFS(String vfsName);
 
 	public List<String> getAllVFS_Roots();
 
-	public Map<String, VirtualFSInterface> getMapVFS_Root();
+	public Map<String, VirtualFS> getMapVFS_Root();
 
 	public List<String> getAllMappingRule_StFNRoots();
 

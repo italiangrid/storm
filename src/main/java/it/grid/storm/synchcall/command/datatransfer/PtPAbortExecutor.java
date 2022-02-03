@@ -59,7 +59,6 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.InvalidSURLException;
 import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.persistence.model.PtPPersistentChunkData;
@@ -89,7 +88,7 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
   static Configuration config = Configuration.getInstance();
   private static int maxLoopTimes = PtPAbortExecutor.config.getMaxLoop();
 
-  private NamespaceInterface namespace;
+  private Namespace namespace;
 
   private final List<TStatusCode> acceptedStatuses =
       Lists.newArrayList(SRM_SPACE_AVAILABLE, SRM_REQUEST_QUEUED);
@@ -587,7 +586,9 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
       surlReturnStatus
         .setStatus(new TReturnStatus(SRM_SUCCESS, "File request successfully aborted."));
       try {
-        Namespace.getInstance().resolveVFSbyLocalFile(fileToRemove)
+        Namespace.getInstance()
+          .resolveVFSbyLocalFile(fileToRemove)
+          .getSpaceUpdater()
           .decreaseUsedSpace(sizeToRemove);
       } catch (NamespaceException e) {
         log.error(e.getMessage());

@@ -42,9 +42,9 @@ import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.TURLBuildingException;
 import it.grid.storm.namespace.UnapprochableSurlException;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.PtPData;
 import it.grid.storm.persistence.model.TransferObjectDecodingException;
@@ -485,7 +485,7 @@ public class PtP implements Delegable, Chooser, Request {
 
   private void updateUsedSpace(LocalFile dir) {
 
-    VirtualFSInterface vfs;
+    VirtualFS vfs;
     try {
       vfs = Namespace.getInstance().resolveVFSbyLocalFile(dir);
     } catch (NamespaceException e) {
@@ -494,7 +494,7 @@ public class PtP implements Delegable, Chooser, Request {
     }
     long size = dir.getSize();
     log.debug("srmPtP: Update {} used space [+ {}]", vfs.getAliasName(), size);
-    vfs.increaseUsedSpace(size);
+    vfs.getSpaceUpdater().increaseUsedSpace(size);
   }
 
   private boolean setParentAcl(StoRI fileStoRI, LocalUser localUser) {
@@ -666,7 +666,7 @@ public class PtP implements Delegable, Chooser, Request {
     // the Storage Area free size is retrieved from the database
     // and the PtP fails if there is not enougth space.
 
-    VirtualFSInterface fs = fileStoRI.getVirtualFileSystem();
+    VirtualFS fs = fileStoRI.getVirtualFileSystem();
 
     if (fs != null && fs.getProperties().isOnlineSpaceLimited()) {
       SpaceHelper sp = new SpaceHelper();

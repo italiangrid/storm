@@ -17,6 +17,8 @@
 
 package it.grid.storm.namespace.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Authority {
 
   private String hostname;
@@ -46,21 +48,25 @@ public class Authority {
     this.hostname = serviceHostname;
   }
 
+  @JsonProperty("hostname")
   public String getServiceHostname() {
 
     return this.hostname;
   }
 
+  @JsonProperty("hostname")
   public void setServiceHostname(String hostname) {
 
     this.hostname = hostname;
   }
 
+  @JsonProperty("port")
   public int getServicePort() {
 
     return this.port;
   }
 
+  @JsonProperty("port")
   public void setServicePort(int port) {
 
     this.port = port;

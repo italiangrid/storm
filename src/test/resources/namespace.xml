@@ -25,30 +25,48 @@
           <prot name="gsiftp">
             <id>0</id>
             <schema>gsiftp</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>gridftp01.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="gsiftp">
+            <id>1</id>
+            <schema>gsiftp</schema>
+            <host>gridftp02.cnaf.infn.it</host>
             <port>2811</port>
           </prot>
           <prot name="root">
             <schema>root</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>xroot.cnaf.infn.it</host>
             <port>1094</port>
           </prot>
           <prot name="xroot">
-            <id>1</id>
+            <id>2</id>
             <schema>xroot</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>xroot.cnaf.infn.it</host>
             <port>1094</port>
           </prot>
           <prot name="https">
-            <id>2</id>
+            <id>3</id>
             <schema>https</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>dav01.cnaf.infn.it</host>
             <port>8443</port>
           </prot>
           <prot name="http">
-            <id>3</id>
+            <id>4</id>
             <schema>http</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>dav01.cnaf.infn.it</host>
+            <port>8085</port>
+          </prot>
+          <prot name="https">
+            <id>5</id>
+            <schema>https</schema>
+            <host>dav02.cnaf.infn.it</host>
+            <port>8443</port>
+          </prot>
+          <prot name="http">
+            <id>6</id>
+            <schema>http</schema>
+            <host>dav02.cnaf.infn.it</host>
             <port>8085</port>
           </prot>
         </trans-prot>
@@ -56,6 +74,8 @@
           <balance-strategy>round-robin</balance-strategy>
           <members>
             <member member-id="0">
+            </member>
+            <member member-id="1">
             </member>
           </members>
         </pool>
@@ -86,30 +106,48 @@
           <prot name="gsiftp">
             <id>0</id>
             <schema>gsiftp</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>gridftp01.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="gsiftp">
+            <id>1</id>
+            <schema>gsiftp</schema>
+            <host>gridftp02.cnaf.infn.it</host>
             <port>2811</port>
           </prot>
           <prot name="root">
             <schema>root</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>xroot.cnaf.infn.it</host>
             <port>1094</port>
           </prot>
           <prot name="xroot">
-            <id>1</id>
+            <id>2</id>
             <schema>xroot</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>xroot.cnaf.infn.it</host>
             <port>1094</port>
           </prot>
           <prot name="https">
-            <id>2</id>
+            <id>3</id>
             <schema>https</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>dav01.cnaf.infn.it</host>
             <port>8443</port>
           </prot>
           <prot name="http">
-            <id>3</id>
+            <id>4</id>
             <schema>http</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>dav01.cnaf.infn.it</host>
+            <port>8085</port>
+          </prot>
+          <prot name="https">
+            <id>5</id>
+            <schema>https</schema>
+            <host>dav02.cnaf.infn.it</host>
+            <port>8443</port>
+          </prot>
+          <prot name="http">
+            <id>6</id>
+            <schema>http</schema>
+            <host>dav02.cnaf.infn.it</host>
             <port>8085</port>
           </prot>
         </trans-prot>
@@ -117,6 +155,8 @@
           <balance-strategy>round-robin</balance-strategy>
           <members>
             <member member-id="0">
+            </member>
+            <member member-id="1">
             </member>
           </members>
         </pool>
@@ -147,30 +187,48 @@
           <prot name="gsiftp">
             <id>0</id>
             <schema>gsiftp</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>gridftp01.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="gsiftp">
+            <id>1</id>
+            <schema>gsiftp</schema>
+            <host>gridftp02.cnaf.infn.it</host>
             <port>2811</port>
           </prot>
           <prot name="root">
             <schema>root</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>xroot.cnaf.infn.it</host>
             <port>1094</port>
           </prot>
           <prot name="xroot">
-            <id>1</id>
+            <id>2</id>
             <schema>xroot</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>xroot.cnaf.infn.it</host>
             <port>1094</port>
           </prot>
           <prot name="https">
-            <id>2</id>
+            <id>3</id>
             <schema>https</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>dav01.cnaf.infn.it</host>
             <port>8443</port>
           </prot>
           <prot name="http">
-            <id>3</id>
+            <id>4</id>
             <schema>http</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>dav01.cnaf.infn.it</host>
+            <port>8085</port>
+          </prot>
+          <prot name="https">
+            <id>5</id>
+            <schema>https</schema>
+            <host>dav02.cnaf.infn.it</host>
+            <port>8443</port>
+          </prot>
+          <prot name="http">
+            <id>6</id>
+            <schema>http</schema>
+            <host>dav02.cnaf.infn.it</host>
             <port>8085</port>
           </prot>
         </trans-prot>
@@ -178,6 +236,8 @@
           <balance-strategy>round-robin</balance-strategy>
           <members>
             <member member-id="0">
+            </member>
+            <member member-id="1">
             </member>
           </members>
         </pool>
@@ -208,30 +268,48 @@
           <prot name="gsiftp">
             <id>0</id>
             <schema>gsiftp</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>gridftp01.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="gsiftp">
+            <id>1</id>
+            <schema>gsiftp</schema>
+            <host>gridftp02.cnaf.infn.it</host>
             <port>2811</port>
           </prot>
           <prot name="root">
             <schema>root</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>xroot.cnaf.infn.it</host>
             <port>1094</port>
           </prot>
           <prot name="xroot">
-            <id>1</id>
+            <id>2</id>
             <schema>xroot</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>xroot.cnaf.infn.it</host>
             <port>1094</port>
           </prot>
           <prot name="https">
-            <id>2</id>
+            <id>3</id>
             <schema>https</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>dav01.cnaf.infn.it</host>
             <port>8443</port>
           </prot>
           <prot name="http">
-            <id>3</id>
+            <id>4</id>
             <schema>http</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>dav01.cnaf.infn.it</host>
+            <port>8085</port>
+          </prot>
+          <prot name="https">
+            <id>5</id>
+            <schema>https</schema>
+            <host>dav02.cnaf.infn.it</host>
+            <port>8443</port>
+          </prot>
+          <prot name="http">
+            <id>6</id>
+            <schema>http</schema>
+            <host>dav02.cnaf.infn.it</host>
             <port>8085</port>
           </prot>
         </trans-prot>
@@ -240,8 +318,10 @@
           <members>
             <member member-id="0">
             </member>
+            <member member-id="1">
+            </member>
           </members>
-        </pool>
+        </pool>  
       </capabilities>
     </filesystem>
     <filesystem name="TESTVOBIS-FS" fs_type="ext3">
@@ -269,30 +349,48 @@
           <prot name="gsiftp">
             <id>0</id>
             <schema>gsiftp</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>gridftp01.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="gsiftp">
+            <id>1</id>
+            <schema>gsiftp</schema>
+            <host>gridftp02.cnaf.infn.it</host>
             <port>2811</port>
           </prot>
           <prot name="root">
             <schema>root</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>xroot.cnaf.infn.it</host>
             <port>1094</port>
           </prot>
           <prot name="xroot">
-            <id>1</id>
+            <id>2</id>
             <schema>xroot</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>xroot.cnaf.infn.it</host>
             <port>1094</port>
           </prot>
           <prot name="https">
-            <id>2</id>
+            <id>3</id>
             <schema>https</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>dav01.cnaf.infn.it</host>
             <port>8443</port>
           </prot>
           <prot name="http">
-            <id>3</id>
+            <id>4</id>
             <schema>http</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>dav01.cnaf.infn.it</host>
+            <port>8085</port>
+          </prot>
+          <prot name="https">
+            <id>5</id>
+            <schema>https</schema>
+            <host>dav02.cnaf.infn.it</host>
+            <port>8443</port>
+          </prot>
+          <prot name="http">
+            <id>6</id>
+            <schema>http</schema>
+            <host>dav02.cnaf.infn.it</host>
             <port>8085</port>
           </prot>
         </trans-prot>
@@ -300,6 +398,8 @@
           <balance-strategy>round-robin</balance-strategy>
           <members>
             <member member-id="0">
+            </member>
+            <member member-id="1">
             </member>
           </members>
         </pool>
@@ -330,30 +430,48 @@
           <prot name="gsiftp">
             <id>0</id>
             <schema>gsiftp</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>gridftp01.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="gsiftp">
+            <id>1</id>
+            <schema>gsiftp</schema>
+            <host>gridftp02.cnaf.infn.it</host>
             <port>2811</port>
           </prot>
           <prot name="root">
             <schema>root</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>xroot.cnaf.infn.it</host>
             <port>1094</port>
           </prot>
           <prot name="xroot">
-            <id>1</id>
+            <id>2</id>
             <schema>xroot</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>xroot.cnaf.infn.it</host>
             <port>1094</port>
           </prot>
           <prot name="https">
-            <id>2</id>
+            <id>3</id>
             <schema>https</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>dav01.cnaf.infn.it</host>
             <port>8443</port>
           </prot>
           <prot name="http">
-            <id>3</id>
+            <id>4</id>
             <schema>http</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>dav01.cnaf.infn.it</host>
+            <port>8085</port>
+          </prot>
+          <prot name="https">
+            <id>5</id>
+            <schema>https</schema>
+            <host>dav02.cnaf.infn.it</host>
+            <port>8443</port>
+          </prot>
+          <prot name="http">
+            <id>6</id>
+            <schema>http</schema>
+            <host>dav02.cnaf.infn.it</host>
             <port>8085</port>
           </prot>
         </trans-prot>
@@ -361,6 +479,8 @@
           <balance-strategy>round-robin</balance-strategy>
           <members>
             <member member-id="0">
+            </member>
+            <member member-id="1">
             </member>
           </members>
         </pool>
@@ -391,30 +511,48 @@
           <prot name="gsiftp">
             <id>0</id>
             <schema>gsiftp</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>gridftp01.cnaf.infn.it</host>
+            <port>2811</port>
+          </prot>
+          <prot name="gsiftp">
+            <id>1</id>
+            <schema>gsiftp</schema>
+            <host>gridftp02.cnaf.infn.it</host>
             <port>2811</port>
           </prot>
           <prot name="root">
             <schema>root</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>xroot.cnaf.infn.it</host>
             <port>1094</port>
           </prot>
           <prot name="xroot">
-            <id>1</id>
+            <id>2</id>
             <schema>xroot</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>xroot.cnaf.infn.it</host>
             <port>1094</port>
           </prot>
           <prot name="https">
-            <id>2</id>
+            <id>3</id>
             <schema>https</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>dav01.cnaf.infn.it</host>
             <port>8443</port>
           </prot>
           <prot name="http">
-            <id>3</id>
+            <id>4</id>
             <schema>http</schema>
-            <host>omii005-vm03.cnaf.infn.it</host>
+            <host>dav01.cnaf.infn.it</host>
+            <port>8085</port>
+          </prot>
+          <prot name="https">
+            <id>5</id>
+            <schema>https</schema>
+            <host>dav02.cnaf.infn.it</host>
+            <port>8443</port>
+          </prot>
+          <prot name="http">
+            <id>6</id>
+            <schema>http</schema>
+            <host>dav02.cnaf.infn.it</host>
             <port>8085</port>
           </prot>
         </trans-prot>
@@ -422,6 +560,8 @@
           <balance-strategy>round-robin</balance-strategy>
           <members>
             <member member-id="0">
+            </member>
+            <member member-id="1">
             </member>
           </members>
         </pool>

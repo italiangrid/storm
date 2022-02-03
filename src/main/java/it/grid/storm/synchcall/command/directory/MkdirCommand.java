@@ -49,12 +49,11 @@ import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.InvalidSURLException;
 import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.srm.types.SRMCommandException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
@@ -109,7 +108,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 
   private static final String SRM_COMMAND = "SrmMkdir";
 
-  private final NamespaceInterface namespace;
+  private final Namespace namespace;
   private final Configuration configuration;
   private final AclManager aclManager;
 
@@ -259,7 +258,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
   private boolean increaseUsedSpaceInfo(LocalFile dir) {
 
     try {
-      return namespace.resolveVFSbyLocalFile(dir).increaseUsedSpace(dir.getSize());
+      return namespace.resolveVFSbyLocalFile(dir).getSpaceUpdater().increaseUsedSpace(dir.getSize());
     } catch (NamespaceException e) {
       log.error("srmMkdir: Unable to increase used space info [{}]", e.getMessage());
       return false;
@@ -308,7 +307,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
   private void manageDefaultACL(LocalFile dir, FilesystemPermission permission)
       throws NamespaceException {
 
-    VirtualFSInterface vfs = namespace.resolveVFSbyLocalFile(dir);
+    VirtualFS vfs = namespace.resolveVFSbyLocalFile(dir);
     DefaultACL dacl = vfs.getCapabilities().getDefaultACL();
     if ((dacl == null) || (dacl.isEmpty())) {
       log.debug("srmMkdir: default acl NULL or empty");

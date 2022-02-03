@@ -30,8 +30,7 @@ import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.namespace.Namespace;
-import it.grid.storm.namespace.NamespaceInterface;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
@@ -52,7 +51,7 @@ public class SpaceInfoManager {
   // Reference to the Catalog
   private final ReservedSpaceCatalog spaceCatalog = ReservedSpaceCatalog.getInstance();
   // Reference to the Namespace
-  private final NamespaceInterface namespace = Namespace.getInstance();
+  private final Namespace namespace = Namespace.getInstance();
 
   private SpaceInfoManager() {}
 
@@ -104,8 +103,8 @@ public class SpaceInfoManager {
 
     // Dispatch SA to compute in two categories: Quota and DU tasks
     List<StorageSpaceData> ssdSet = Lists.newArrayList();
-    List<VirtualFSInterface> vfsSet = namespace.getVFSWithQuotaEnabled();
-    for (VirtualFSInterface vfsEntry : vfsSet) {
+    List<VirtualFS> vfsSet = namespace.getVFSWithQuotaEnabled();
+    for (VirtualFS vfsEntry : vfsSet) {
       String spaceTokenDesc = vfsEntry.getSpaceTokenDescription();
       StorageSpaceData ssd = spaceCatalog.getStorageSpaceByAlias(spaceTokenDesc);
       ssdSet.add(ssd);

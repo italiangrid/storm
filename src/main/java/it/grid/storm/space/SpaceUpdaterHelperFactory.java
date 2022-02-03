@@ -1,13 +1,12 @@
 package it.grid.storm.space;
 
 import it.grid.storm.namespace.CapabilityInterface;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.Quota;
-
+import it.grid.storm.namespace.model.VirtualFS;
 
 public class SpaceUpdaterHelperFactory {
 
-	public static SpaceUpdaterHelperInterface getSpaceUpdaterHelper(VirtualFSInterface vfs) {
+	public static SpaceUpdaterHelperInterface getSpaceUpdaterHelper(VirtualFS vfs) {
 		
 		if (vfs == null) {
 			throw new IllegalArgumentException("VirtualFSInterface null!");
@@ -31,7 +30,7 @@ public class SpaceUpdaterHelperFactory {
 			}
 		}
 		
-		return new SimpleSpaceUpdaterHelper();
+		return new SimpleSpaceUpdaterHelper(vfs);
 	}
 	
 }

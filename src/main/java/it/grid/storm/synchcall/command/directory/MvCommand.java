@@ -31,7 +31,6 @@ import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.namespace.InvalidSURLException;
 import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.srm.types.InvalidTSURLAttributesException;
@@ -61,7 +60,7 @@ public class MvCommand extends DirectoryCommand implements Command {
   public static final Logger log = LoggerFactory.getLogger(MvCommand.class);
 
   private static final String SRM_COMMAND = "SrmMv";
-  private final NamespaceInterface namespace;
+  private final Namespace namespace;
 
   public MvCommand() {
 

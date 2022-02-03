@@ -4,25 +4,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.VirtualFS;
 
 public class SimpleSpaceUpdaterHelper implements SpaceUpdaterHelperInterface {
 
   private static final Logger log = LoggerFactory.getLogger(SimpleSpaceUpdaterHelper.class);
 
-  private ReservedSpaceCatalog rsc;
+  private VirtualFS vfs;
 
-  public SimpleSpaceUpdaterHelper() {
-    rsc = ReservedSpaceCatalog.getInstance();
-  }
-
-  private StorageSpaceData getStorageSpaceDataForVFS(VirtualFSInterface vfs) {
-
-    return rsc.getStorageSpaceByAlias(vfs.getSpaceTokenDescription());
+  public SimpleSpaceUpdaterHelper(VirtualFS vfs) {
+    this.vfs = vfs;
   }
 
   @Override
-  public boolean increaseUsedSpace(VirtualFSInterface vfs, long size) {
+  public boolean increaseUsedSpace(long size) {
 
     log.debug("Increase {} used space: {} bytes ", vfs.getAliasName(), size);
 
@@ -35,8 +30,10 @@ public class SimpleSpaceUpdaterHelper implements SpaceUpdaterHelperInterface {
       return true;
     }
 
+    ReservedSpaceCatalog rsc = ReservedSpaceCatalog.getInstance();
+    
     log.debug("Get StorageSpaceData from vfs ...");
-    StorageSpaceData ssd = getStorageSpaceDataForVFS(vfs);
+    StorageSpaceData ssd = rsc.getStorageSpaceByAlias(vfs.getSpaceTokenDescription());
 
     if (ssd == null) {
       log.error("Unable to get StorageSpaceData from alias name {}", vfs.getAliasName());
@@ -47,7 +44,7 @@ public class SimpleSpaceUpdaterHelper implements SpaceUpdaterHelperInterface {
   }
 
   @Override
-  public boolean decreaseUsedSpace(VirtualFSInterface vfs, long size) {
+  public boolean decreaseUsedSpace(long size) {
 
     log.debug("Decrease {} used space: {} bytes ", vfs.getAliasName(), size);
 
@@ -60,8 +57,10 @@ public class SimpleSpaceUpdaterHelper implements SpaceUpdaterHelperInterface {
       return true;
     }
 
+    ReservedSpaceCatalog rsc = ReservedSpaceCatalog.getInstance();
+    
     log.debug("Get StorageSpaceData from vfs ...");
-    StorageSpaceData ssd = getStorageSpaceDataForVFS(vfs);
+    StorageSpaceData ssd = rsc.getStorageSpaceByAlias(vfs.getSpaceTokenDescription());
 
     if (ssd == null) {
       log.error("Unable to get StorageSpaceData from alias name {}", vfs.getAliasName());
