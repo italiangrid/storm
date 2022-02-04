@@ -1,6 +1,7 @@
 package it.grid.storm.tape.recalltable.resources;
 
-import static it.grid.storm.config.Configuration.CONFIG_FILE_PATH;
+import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.BOL;
+import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.PTG;
 import static it.grid.storm.tape.recalltable.resources.TaskInsertRequest.MAX_RETRY_ATTEMPTS;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -14,14 +15,15 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -30,12 +32,13 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 
+import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.VONameMatchingRule;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ApproachableRule;
 import it.grid.storm.namespace.model.SubjectRules;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
@@ -55,33 +58,45 @@ public class TaskResourceTest {
   private static final String FILE_PATH = "/storage/test.vo/path/to/filename.dat";
   private static final String STFN_PATH = "/test.vo/path/to/filename.dat";
 
-  private VirtualFSInterface VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
-
-  private StoRI STORI = getStoRI(VFS);
-
   private UUID groupTaskID = UUID.randomUUID();
 
-  private TapeRecallCatalog RECALL_CATALOG = getTapeRecallCatalogInsertSuccess(groupTaskID);
-  private TapeRecallCatalog BROKEN_RECALL_CATALOG = getTapeRecallCatalogInsertError();
+  private TapeRecallCatalog RECALL_CATALOG;
+  private TapeRecallCatalog BROKEN_RECALL_CATALOG;
 
-  static {
-    System.setProperty(CONFIG_FILE_PATH, "storm.properties");
+  private TapeRecallTO createRandom(Date date, String voName) {
+
+    TapeRecallTO result = new TapeRecallTO();
+    Random r = new Random();
+    result.setFileName("/root/" + voName + "/test/" + r.nextInt(1001));
+    result.setRequestToken(TRequestToken.getRandom());
+    if (r.nextInt(2) == 0) {
+      result.setRequestType(BOL);
+    } else {
+      result.setRequestType(PTG);
+    }
+    result.setUserID("FakeId");
+    result.setRetryAttempt(0);
+    result.setPinLifetime(r.nextInt(1001));
+    result.setVoName(voName);
+    result.setInsertionInstant(date);
+    int deferred = r.nextInt(2);
+    Date deferredRecallTime = new Date(date.getTime() + (deferred * (long) Math.random()));
+    result.setDeferredRecallInstant(deferredRecallTime);
+    result.setGroupTaskId(UUID.randomUUID());
+    return result;
   }
 
-  private TapeRecallCatalog getTapeRecallCatalogInsertSuccess(UUID groupTaskId) {
+  private TapeRecallCatalog getTapeRecallCatalogInsertSuccess(UUID groupTaskId)
+      throws DataAccessException {
 
     TapeRecallCatalog catalog = Mockito.mock(TapeRecallCatalog.class);
-    try {
-      Mockito.when(catalog.insertNewTask(Mockito.any(TapeRecallTO.class))).thenReturn(groupTaskId);
-      Mockito.when(catalog.getGroupTasks(groupTaskId))
-        .thenReturn(Lists.newArrayList(TapeRecallTO.createRandom(new Date(), VFS_VONAME)));
-    } catch (DataAccessException e) {
-      e.printStackTrace();
-    }
+    Mockito.when(catalog.insertNewTask(Mockito.any(TapeRecallTO.class))).thenReturn(groupTaskId);
+    TapeRecallTO fakeTask = createRandom(new Date(), VFS_VONAME);
+    Mockito.when(catalog.getGroupTasks(groupTaskId)).thenReturn(Lists.newArrayList(fakeTask));
     return catalog;
   }
 
-  private StoRI getStoRI(VirtualFSInterface virtualFS) {
+  private StoRI getStoRI(VirtualFS virtualFS) {
     StoRI sto = Mockito.mock(StoRI.class);
     Mockito.when(sto.getAbsolutePath()).thenReturn(FILE_PATH);
     Mockito.when(sto.getVirtualFileSystem()).thenReturn(virtualFS);
@@ -123,9 +138,9 @@ public class TaskResourceTest {
     return catalog;
   }
 
-  private VirtualFSInterface getVirtualFS(String name, String rootPath, String voName) {
+  private VirtualFS getVirtualFS(String name, String rootPath, String voName) {
 
-    VirtualFSInterface vfs = Mockito.mock(VirtualFSInterface.class);
+    VirtualFS vfs = Mockito.mock(VirtualFS.class);
     ApproachableRule appRule = Mockito.mock(ApproachableRule.class);
     SubjectRules subRules = Mockito.mock(SubjectRules.class);
     VONameMatchingRule matchingRule = Mockito.mock(VONameMatchingRule.class);
@@ -150,11 +165,11 @@ public class TaskResourceTest {
     return new TaskResource(service, catalog);
   }
 
-  private void testGETTaskInfo(Response res)
+  private void testGETTaskInfo(Response res, StoRI stori)
       throws InvalidTRequestTokenAttributesException, DataAccessException, JsonParseException,
       JsonMappingException, IOException, NamespaceException, ResourceNotFoundException {
 
-    TaskResource recallEndpoint = getTaskResource(getResourceService(STORI), RECALL_CATALOG);
+    TaskResource recallEndpoint = getTaskResource(getResourceService(stori), RECALL_CATALOG);
 
     // extract response data
     URI location = URI.create(res.getHeaderString("Location"));
@@ -163,7 +178,7 @@ public class TaskResourceTest {
     String requestTokenValue = location.getQuery().split("=")[1];
 
     // prepare mocks for task info request
-    TapeRecallTO task = TapeRecallTO.createRandom(new Date(), VFS_VONAME);
+    TapeRecallTO task = createRandom(new Date(), VFS_VONAME);
     TRequestToken requestToken = Mockito.mock(TRequestToken.class);
     Mockito.when(requestToken.getValue()).thenReturn(requestTokenValue);
     task.setRequestToken(new TRequestToken(requestTokenValue, new Date()));
@@ -178,11 +193,23 @@ public class TaskResourceTest {
     assertNotNull(t);
   }
 
+  @Before
+  public void init() throws DataAccessException, IOException {
+
+    Configuration.init("src/test/resources/storm.properties");
+
+    RECALL_CATALOG = getTapeRecallCatalogInsertSuccess(groupTaskID);
+    BROKEN_RECALL_CATALOG = getTapeRecallCatalogInsertError();
+
+  }
+
   @Test
   public void testPOSTSuccess()
       throws DataAccessException, NamespaceException, JsonParseException, JsonMappingException,
       IOException, InvalidTRequestTokenAttributesException, ResourceNotFoundException {
 
+    VirtualFS VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+    StoRI STORI = getStoRI(VFS);
     TaskResource recallEndpoint = getTaskResource(getResourceService(STORI), RECALL_CATALOG);
     TaskInsertRequest request = TaskInsertRequest.builder()
       .stfn(STFN_PATH)
@@ -195,7 +222,7 @@ public class TaskResourceTest {
     assertNotNull(res.getHeaderString("Location"));
     assertEquals(res.getStatus(), CREATED.getStatusCode());
 
-    testGETTaskInfo(res);
+    testGETTaskInfo(res, STORI);
   }
 
   @Test
@@ -203,6 +230,8 @@ public class TaskResourceTest {
       throws DataAccessException, NamespaceException, JsonParseException, JsonMappingException,
       IOException, InvalidTRequestTokenAttributesException, ResourceNotFoundException {
 
+    VirtualFS VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+    StoRI STORI = getStoRI(VFS);
     TaskResource recallEndpoint = getTaskResource(getResourceService(STORI), RECALL_CATALOG);
     TaskInsertRequest request = TaskInsertRequest.builder()
       .stfn(STFN_PATH)
@@ -215,7 +244,7 @@ public class TaskResourceTest {
     assertNotNull(res.getHeaderString("Location"));
     assertEquals(res.getStatus(), CREATED.getStatusCode());
 
-    testGETTaskInfo(res);
+    testGETTaskInfo(res, STORI);
   }
 
   @Test
@@ -244,6 +273,8 @@ public class TaskResourceTest {
   public void testPOSTBadVoNameRequested()
       throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
+    VirtualFS VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+    StoRI STORI = getStoRI(VFS);
     TaskResource recallEndpoint = new TaskResource(getResourceService(STORI), RECALL_CATALOG);
     TaskInsertRequest request = TaskInsertRequest.builder()
       .stfn(STFN_PATH)
@@ -280,6 +311,8 @@ public class TaskResourceTest {
   public void testPOSTDbException()
       throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
+    VirtualFS VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+    StoRI STORI = getStoRI(VFS);
     TaskResource recallEndpoint =
         new TaskResource(getResourceService(STORI), BROKEN_RECALL_CATALOG);
     TaskInsertRequest request = TaskInsertRequest.builder()
@@ -301,6 +334,8 @@ public class TaskResourceTest {
   public void testPOSTValidationRequestNullFilePath()
       throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
+    VirtualFS VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+    StoRI STORI = getStoRI(VFS);
     TaskResource recallEndpoint =
         new TaskResource(getResourceService(STORI), BROKEN_RECALL_CATALOG);
     TaskInsertRequest request = TaskInsertRequest.builder().userId("test").build();
@@ -317,6 +352,8 @@ public class TaskResourceTest {
   public void testPOSTValidationRequestNullUserId()
       throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
+    VirtualFS VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+    StoRI STORI = getStoRI(VFS);
     TaskResource recallEndpoint =
         new TaskResource(getResourceService(STORI), BROKEN_RECALL_CATALOG);
     TaskInsertRequest request = TaskInsertRequest.builder().stfn(STFN_PATH).build();
@@ -333,6 +370,8 @@ public class TaskResourceTest {
   public void testPOSTValidationRequestInvalidNegativeRetryAttempts()
       throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
+    VirtualFS VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+    StoRI STORI = getStoRI(VFS);
     TaskResource recallEndpoint =
         new TaskResource(getResourceService(STORI), BROKEN_RECALL_CATALOG);
     TaskInsertRequest request =
@@ -351,6 +390,8 @@ public class TaskResourceTest {
   public void testPOSTValidationRequestInvalidTooManyRetryAttempts()
       throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
+    VirtualFS VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+    StoRI STORI = getStoRI(VFS);
     TaskResource recallEndpoint =
         new TaskResource(getResourceService(STORI), BROKEN_RECALL_CATALOG);
     TaskInsertRequest request = TaskInsertRequest.builder()
@@ -370,7 +411,7 @@ public class TaskResourceTest {
 
   private TapeRecallCatalog getTapeRecallCatalogInProgressNotEmpty() {
 
-    List<TapeRecallTO> emptyList = new ArrayList<TapeRecallTO>();
+    List<TapeRecallTO> emptyList = Lists.newArrayList();
     TapeRecallCatalog catalog = Mockito.mock(TapeRecallCatalog.class);
     Mockito.when(catalog.getAllInProgressTasks(Mockito.anyInt())).thenReturn(emptyList);
     return catalog;
@@ -381,6 +422,8 @@ public class TaskResourceTest {
       throws DataAccessException, NamespaceException, JsonParseException, JsonMappingException,
       IOException, InvalidTRequestTokenAttributesException, ResourceNotFoundException {
 
+    VirtualFS VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+    StoRI STORI = getStoRI(VFS);
     TaskResource recallEndpoint =
         getTaskResource(getResourceService(STORI), getTapeRecallCatalogInProgressNotEmpty());
     Response res = recallEndpoint.getTasks(10);

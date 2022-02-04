@@ -17,13 +17,7 @@
 
 package it.grid.storm.namespace.model;
 
-import it.grid.storm.namespace.NamespaceDirector;
-
-import org.slf4j.Logger;
-
 public class Quota {
-
-	private final Logger log = NamespaceDirector.getLogger();
 
 	private boolean defined = false;
 	private boolean enabled = false;

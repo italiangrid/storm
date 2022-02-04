@@ -30,24 +30,34 @@ import org.slf4j.LoggerFactory;
 
 import it.grid.storm.asynch.AdvancedPicker;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.catalogs.StoRMDataSource;
-import it.grid.storm.catalogs.timertasks.ExpiredPutRequestsAgent;
+import it.grid.storm.catalogs.executors.RequestFinalizerService;
+import it.grid.storm.catalogs.timertasks.RequestsGarbageCollector;
 import it.grid.storm.check.CheckManager;
 import it.grid.storm.check.CheckResponse;
 import it.grid.storm.check.CheckStatus;
 import it.grid.storm.check.SimpleCheckManager;
+import it.grid.storm.check.sanity.filesystem.SupportedFSType;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.health.HealthDirector;
 import it.grid.storm.info.du.DiskUsageService;
 import it.grid.storm.metrics.StormMetricsReporter;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceInterface;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.Namespace;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.model.Property;
+import it.grid.storm.namespace.model.Property.SizeUnitType;
+import it.grid.storm.namespace.model.Quota;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.rest.RestServer;
+import it.grid.storm.space.SpaceHelper;
+import it.grid.storm.space.gpfsquota.GPFSFilesetQuotaInfo;
 import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
+import it.grid.storm.space.gpfsquota.GetGPFSFilesetQuotaInfoCommand;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.startup.Bootstrap;
 import it.grid.storm.startup.BootstrapException;
 import it.grid.storm.synchcall.SimpleSynchcallDispatcher;
+import it.grid.storm.util.GPFSSizeHelper;
 import it.grid.storm.xmlrpc.StoRMXmlRpcException;
 import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 
@@ -67,52 +77,69 @@ public class StoRM {
   private XMLRPCHttpServer xmlrpcServer;
 
   // Timer object in charge to call periodically the Space Garbage Collector
-  private final Timer gc = new Timer();
+  private final Timer gc;
   private TimerTask cleaningTask;
-  private boolean isSpaceGCRunning = false;
+  private boolean isSpaceGCRunning;
 
   /*
-   * Timer object in charge of transit expired put requests from SRM_SPACE_AVAILABLE to
-   * SRM_FILE_LIFETIME_EXPIRED and from SRM_REQUEST_INPROGRESS to SRM_FAILURE
+   * Agent in charge of transit expired ptg/ptp/bol requests to final statuses
    */
-  private final Timer transiter = new Timer();
-  private TimerTask expiredAgent;
-  private boolean isExpiredAgentRunning = false;
+  private RequestFinalizerService expiredAgent;
+  private boolean isExpiredAgentRunning;
 
-  private boolean isDiskUsageServiceEnabled = false;
+  /* Requests Garbage Collector */
+  private final Timer rgc;
+  private TimerTask rgcTask;
+  private boolean isRequestGCRunning;
+
+  private boolean isDiskUsageServiceEnabled;
   private DiskUsageService duService;
 
-  private final ReservedSpaceCatalog spaceCatalog;
+  private boolean isPickerRunning;
+  private boolean isXmlrpcServerRunning;
 
-  private boolean isPickerRunning = false;
-  private boolean isXmlrpcServerRunning = false;
-
-  private boolean isRestServerRunning = false;
+  private boolean isRestServerRunning;
   private RestServer restServer;
 
   private final Configuration config;
+  private final ReservedSpaceCatalog spaceCatalog;
+  private final Namespace namespace;
 
-  public StoRM() {
+  public StoRM(Configuration config, Namespace namespace) {
 
-    config = Configuration.getInstance();
-    picker = new AdvancedPicker();
-    spaceCatalog = new ReservedSpaceCatalog();
+    this.config = config;
+    this.namespace = namespace;
+    this.spaceCatalog = ReservedSpaceCatalog.getInstance();
 
+    this.picker = new AdvancedPicker();
+    this.isPickerRunning = false;
+
+    this.isXmlrpcServerRunning = false;
+
+    this.isRestServerRunning = false;
+
+    this.gc = new Timer();
+    this.isSpaceGCRunning = false;
+    this.isExpiredAgentRunning = false;
+
+    this.rgc = new Timer();
+    this.isRequestGCRunning = false;
+
+    this.isDiskUsageServiceEnabled = false;
   }
 
   public void init() throws BootstrapException {
 
-    configureLogging();
-
+    // ==== From Namepsace ====
+    handleTotalOnlineSizeFromGPFSQuota();
+    // Update SA within Reserved Space Catalog
+    updateSA();
+    
     configureSecurity();
 
     configureMetricsReporting();
 
-    configureStoRMDataSource();
-
-    loadNamespaceConfiguration();
-
-    HealthDirector.initializeDirector(false);
+    HealthDirector.initializeDirector();
 
     loadPathAuthzDBConfiguration();
 
@@ -128,11 +155,84 @@ public class StoRM {
 
   }
 
-  private void configureLogging() {
+  private void handleTotalOnlineSizeFromGPFSQuota() {
 
-    String configurationDir = config.configurationDir();
-    String logFile = configurationDir + "logging.xml";
-    Bootstrap.configureLogging(logFile);
+    namespace.getAllDefinedVFS().forEach(storageArea -> {
+      if (SupportedFSType.parseFS(storageArea.getFSType()) == SupportedFSType.GPFS) {
+        Quota quota = storageArea.getCapabilities().getQuota();
+        if (quota != null && quota.getEnabled()) {
+
+          GPFSFilesetQuotaInfo quotaInfo = getGPFSQuotaInfo(storageArea);
+          if (quotaInfo != null) {
+            updateTotalOnlineSizeFromGPFSQuota(storageArea, quotaInfo);
+          }
+        }
+      }
+    });
+  }
+
+  private GPFSFilesetQuotaInfo getGPFSQuotaInfo(VirtualFS storageArea) {
+
+    GetGPFSFilesetQuotaInfoCommand cmd = new GetGPFSFilesetQuotaInfoCommand(storageArea);
+
+    try {
+      return cmd.call();
+    } catch (Throwable t) {
+      log.warn(
+          "Cannot get quota information out of GPFS. Using the TotalOnlineSize in namespace.xml "
+              + "for Storage Area {}. Reason: {}",
+          storageArea.getAliasName(), t.getMessage());
+      return null;
+    }
+  }
+
+  private void updateTotalOnlineSizeFromGPFSQuota(VirtualFS storageArea,
+      GPFSFilesetQuotaInfo quotaInfo) {
+
+    long gpfsTotalOnlineSize = GPFSSizeHelper.getBytesFromKIB(quotaInfo.getBlockSoftLimit());
+    Property newProperties = Property.from(storageArea.getProperties());
+    try {
+      newProperties.setTotalOnlineSize(SizeUnitType.BYTE.getTypeName(), gpfsTotalOnlineSize);
+      storageArea.setProperties(newProperties);
+      log.warn("TotalOnlineSize as specified in namespace.xml will be ignored "
+          + "since quota is enabled on the GPFS {} Storage Area.", storageArea.getAliasName());
+    } catch (NamespaceException e) {
+      log.warn(
+          "Cannot get quota information out of GPFS. Using the TotalOnlineSize in namespace.xml "
+              + "for Storage Area {}.",
+          storageArea.getAliasName(), e);
+    }
+  }
+
+  private void updateSA() {
+
+    SpaceHelper spaceHelp = new SpaceHelper();
+    log.debug("Updating Space Catalog with Storage Area defined within NAMESPACE");
+    namespace.getAllDefinedVFS().forEach(vfs ->{
+
+      String vfsAliasName = vfs.getAliasName();
+      log.debug(" Considering VFS : {}", vfsAliasName);
+      String aliasName = vfs.getSpaceTokenDescription();
+      if (aliasName == null) {
+        // Found a VFS without the optional element Space Token Description
+        log.debug(
+            "XMLNamespaceParser.UpdateSA() : Found a VFS ('{}') without space-token-description. "
+                + "Skipping the Update of SA",
+            vfsAliasName);
+      } else {
+        TSizeInBytes onlineSize = vfs.getProperties().getTotalOnlineSize();
+        String spaceFileName = vfs.getRootPath();
+        TSpaceToken spaceToken = spaceHelp.createVOSA_Token(aliasName, onlineSize, spaceFileName);
+        vfs.setSpaceToken(spaceToken);
+
+        log.debug(" Updating SA ('{}'), token:'{}', onlineSize:'{}', spaceFileName:'{}'", aliasName,
+            spaceToken, onlineSize, spaceFileName);
+      }
+
+    });
+    spaceHelp.purgeOldVOSA_token();
+    log.debug("Updating Space Catalog... DONE!!");
+
   }
 
   private void configureSecurity() {
@@ -157,15 +257,9 @@ public class StoRM {
 
   }
 
-  private void loadNamespaceConfiguration() {
-
-    NamespaceDirector.initializeDirector();
-
-  }
-
   private void loadPathAuthzDBConfiguration() throws BootstrapException {
 
-    String pathAuthzDBFileName = config.configurationDir() + "path-authz.db";
+    String pathAuthzDBFileName = config.getConfigurationDir() + "/path-authz.db";
 
     Bootstrap.initializePathAuthz(pathAuthzDBFileName);
   }
@@ -174,8 +268,8 @@ public class StoRM {
 
     try {
 
-      xmlrpcServer = new XMLRPCHttpServer(config.getXmlRpcServerPort(), config.getXMLRPCMaxThread(),
-          config.getXMLRPCMaxQueueSize());
+      xmlrpcServer = new XMLRPCHttpServer(config.getXmlRpcServerPort(), config.getXmlrpcMaxThreads(),
+          config.getXmlrpcMaxQueueSize());
 
     } catch (StoRMXmlRpcException e) {
 
@@ -186,7 +280,7 @@ public class StoRM {
 
   private void performSanityChecks() throws BootstrapException {
 
-    if (config.getSanityCheckEnabled()) {
+    if (config.isSanityCheckEnabled()) {
 
       CheckManager checkManager = new SimpleCheckManager();
       checkManager.init();
@@ -216,11 +310,6 @@ public class StoRM {
 
   }
 
-  private void configureStoRMDataSource() {
-
-    StoRMDataSource.init();
-  }
-
   /**
    * Method used to start the picker.
    */
@@ -245,14 +334,6 @@ public class StoRM {
     }
     picker.stopIt();
     isPickerRunning = false;
-  }
-
-  /**
-   * @return
-   */
-  public synchronized boolean pickerIsRunning() {
-
-    return isPickerRunning;
   }
 
   /**
@@ -286,11 +367,11 @@ public class StoRM {
 
   private void configureRestService() {
 
-    int restServicePort = Configuration.getInstance().getRestServicesPort();
-    boolean isTokenEnabled = Configuration.getInstance().getXmlRpcTokenEnabled();
-    String token = Configuration.getInstance().getXmlRpcToken();
-    int maxThreads = Configuration.getInstance().getRestServicesMaxThreads();
-    int maxQueueSize = Configuration.getInstance().getRestServicesMaxQueueSize();
+    int restServicePort = config.getRestServicesPort();
+    boolean isTokenEnabled = config.isSecurityEnabled();
+    String token = config.getSecurityToken();
+    int maxThreads = config.getRestServicesMaxThreads();
+    int maxQueueSize = config.getRestServicesMaxQueueSize();
 
     restServer = new RestServer(restServicePort, maxThreads, maxQueueSize, isTokenEnabled, token);
   }
@@ -343,11 +424,11 @@ public class StoRM {
 
     log.debug("Starting Space Garbage Collector ...");
     // Delay time before starting
-    long delay = config.getCleaningInitialDelay() * 1000;
+    long delay = config.getExpiredSpacesAgentInitialDelay() * 1000;
 
     // cleaning thread! Set to 1 minute
     // Period of execution of cleaning
-    long period = config.getCleaningTimeInterval() * 1000;
+    long period = config.getExpiredSpacesAgentInterval() * 1000;
 
     // Set to 1 hour
     cleaningTask = new TimerTask() {
@@ -383,14 +464,6 @@ public class StoRM {
   }
 
   /**
-   * @return
-   */
-  public synchronized boolean spaceGCIsRunning() {
-
-    return isSpaceGCRunning;
-  }
-
-  /**
    * Starts the internal timer needed to periodically check and transit requests whose pinLifetime
    * has expired and are in SRM_SPACE_AVAILABLE, to SRM_FILE_LIFETIME_EXPIRED. Moreover, the
    * physical file corresponding to the SURL gets removed; then any JiT entry gets removed, except
@@ -405,16 +478,8 @@ public class StoRM {
       return;
     }
 
-    /* Delay time before starting cleaning thread! Set to 1 minute */
-    final long delay = config.getTransitInitialDelay() * 1000L;
-    /* Period of execution of cleaning! Set to 1 hour */
-    final long period = config.getTransitTimeInterval() * 1000L;
-    /* Expiration time before starting move in-progress requests to failure */
-    final long inProgressExpirationTime = config.getInProgressPutRequestExpirationTime();
-
     log.debug("Starting Expired Agent.");
-    expiredAgent = new ExpiredPutRequestsAgent(inProgressExpirationTime);
-    transiter.scheduleAtFixedRate(expiredAgent, delay, period);
+    expiredAgent = new RequestFinalizerService(config);
     isExpiredAgentRunning = true;
     log.debug("Expired Agent started.");
   }
@@ -428,7 +493,7 @@ public class StoRM {
 
     log.debug("Stopping Expired Agent.");
     if (expiredAgent != null) {
-      expiredAgent.cancel();
+      expiredAgent.stop();
     }
     log.debug("Expired Agent stopped.");
     isExpiredAgentRunning = false;
@@ -441,19 +506,20 @@ public class StoRM {
 
   private void configureDiskUsageService() {
 
-    isDiskUsageServiceEnabled = config.getDiskUsageServiceEnabled();
+    isDiskUsageServiceEnabled = config.isDiskUsageServiceEnabled();
+    int delay = config.getDiskUsageServiceInitialDelay();
+    long period = config.getDiskUsageServiceTasksInterval();
 
-    NamespaceInterface namespace = NamespaceDirector.getNamespace();
-    List<VirtualFSInterface> quotaEnabledVfs = namespace.getVFSWithQuotaEnabled();
-    List<VirtualFSInterface> sas = namespace.getAllDefinedVFS()
+    List<VirtualFS> quotaEnabledVfs = namespace.getVFSWithQuotaEnabled();
+    List<VirtualFS> sas = namespace.getAllDefinedVFS()
       .stream()
       .filter(vfs -> !quotaEnabledVfs.contains(vfs))
       .collect(Collectors.toList());
 
-    if (config.getDiskUsageServiceTasksParallel()) {
-      duService = DiskUsageService.getScheduledThreadPoolService(sas);
+    if (config.isDiskUsageServiceTasksParallel()) {
+      duService = DiskUsageService.getScheduledThreadPoolService(sas, delay, period);
     } else {
-      duService = DiskUsageService.getSingleThreadScheduledService(sas);
+      duService = DiskUsageService.getSingleThreadScheduledService(sas, delay, period);
     }
     duService.setDelay(config.getDiskUsageServiceInitialDelay());
     duService.setPeriod(config.getDiskUsageServiceTasksInterval());
@@ -498,6 +564,40 @@ public class StoRM {
     }
   }
 
+  public synchronized void startRequestGarbageCollector() {
+
+    if (isRequestGCRunning) {
+      log.debug("Requests Garbage Collector is already running.");
+      return;
+    }
+
+    /* Delay time before starting cleaning thread */
+    final long delay = config.getCompletedRequestsAgentDelay() * 1000L;
+    /* Period of execution of cleaning */
+    final long period = config.getCompletedRequestsAgentPeriod() * 1000L;
+
+    log.debug("Starting Requests Garbage Collector .");
+    rgcTask = new RequestsGarbageCollector(rgc, period);
+    rgc.schedule(rgcTask, delay);
+    isRequestGCRunning = true;
+    log.debug("Requests Garbage Collector started.");
+  }
+
+  public synchronized void stopRequestGarbageCollector() {
+
+    if (!isRequestGCRunning) {
+      log.debug("Requests Garbage Collector is not running.");
+      return;
+    }
+
+    log.debug("Stopping Requests Garbage Collector.");
+    if (rgcTask != null) {
+      rgcTask.cancel();
+    }
+    log.debug("Requests Garbage Collector stopped.");
+    isRequestGCRunning = false;
+  }
+
   public void startServices() throws Exception {
 
     startPicker();
@@ -505,6 +605,7 @@ public class StoRM {
     startRestServer();
     startSpaceGC();
     startExpiredAgent();
+    startRequestGarbageCollector();
     startDiskUsageService();
   }
 
@@ -515,6 +616,7 @@ public class StoRM {
     stopRestServer();
     stopSpaceGC();
     stopExpiredAgent();
+    stopRequestGarbageCollector();
     stopDiskUsageService();
 
     GPFSQuotaManager.INSTANCE.shutdown();

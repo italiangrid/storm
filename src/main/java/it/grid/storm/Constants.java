@@ -35,7 +35,6 @@ public class Constants {
   private static final Logger log = LoggerFactory.getLogger(Constants.class);
 
   public static final Entry BE_VERSION;
-  public static final Entry NAMESPACE_VERSION;
   public static final Entry BE_OS_DISTRIBUTION;
   public static final Entry BE_OS_PLATFORM;
   public static final Entry BE_OS_KERNEL_RELEASE;
@@ -49,7 +48,6 @@ public class Constants {
 
   static {
     BE_VERSION = new Entry("BE-Version", Constants.class.getPackage().getImplementationVersion());
-    NAMESPACE_VERSION = new Entry("Namespace-version", "1.5.0");
     BE_OS_DISTRIBUTION = new Entry("BE-OS-Distribution", getDistribution());
     Map<String, String> map = getPlatformKernel();
     BE_OS_PLATFORM = new Entry(BE_OS_PLATFORM_KEY, map.get(BE_OS_PLATFORM_KEY));

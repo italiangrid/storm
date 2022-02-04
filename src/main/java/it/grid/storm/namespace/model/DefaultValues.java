@@ -17,18 +17,18 @@
 
 package it.grid.storm.namespace.model;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.namespace.DefaultValuesInterface;
-import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceType;
-
-import org.slf4j.Logger;
 
 /**
  * <p>
@@ -52,7 +52,7 @@ import org.slf4j.Logger;
  */
 public class DefaultValues implements DefaultValuesInterface {
 
-	private Logger log = NamespaceDirector.getLogger();
+	private Logger log = LoggerFactory.getLogger(DefaultValues.class);
 	private SpaceDefault spaceDefault;
 	private FileDefault fileDefault;
 

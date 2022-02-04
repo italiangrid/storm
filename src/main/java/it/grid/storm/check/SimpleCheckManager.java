@@ -24,8 +24,8 @@ import it.grid.storm.check.sanity.filesystem.NamespaceFSAssociationCheck;
 import it.grid.storm.check.sanity.filesystem.NamespaceFSExtendedACLUsageCheck;
 import it.grid.storm.check.sanity.filesystem.NamespaceFSExtendedAttributeUsageCheck;
 import it.grid.storm.filesystem.MtabUtil;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.Namespace;
+import it.grid.storm.namespace.model.VirtualFS;
 
 /**
  * @author Michele Dibenedetto
@@ -77,7 +77,7 @@ public class SimpleCheckManager extends CheckManager {
 		if (log.isDebugEnabled()) {
 		  log.debug("Retrieved MountPoints: {}", printMapCouples(mountPoints));
 		}
-		List<VirtualFSInterface> vfsSet = NamespaceDirector.getNamespace().getAllDefinedVFS();
+		List<VirtualFS> vfsSet = Namespace.getInstance().getAllDefinedVFS();
 		return new NamespaceFSAssociationCheck(mountPoints, vfsSet);
 	}
 

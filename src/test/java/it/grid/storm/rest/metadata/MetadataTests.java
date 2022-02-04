@@ -14,13 +14,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import it.grid.storm.config.Configuration;
 import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.FilesystemError;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.StoRIType;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.rest.metadata.model.StoriMetadata;
 import it.grid.storm.rest.metadata.model.VirtualFsMetadata;
 import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
@@ -35,12 +36,12 @@ public class MetadataTests {
   private static final String STFN_NOSLASH_PATH = "test.vo/path/to/filename.dat";
   private static final String FILE_PATH = "/storage/test.vo/path/to/filename.dat";
 
-  private VirtualFSInterface vfs;
+  private VirtualFS vfs;
   private StoriMetadata expected;
+  
+  private VirtualFS getVirtualFS(String name, String rootPath) throws NamespaceException {
 
-  private VirtualFSInterface getVirtualFS(String name, String rootPath) throws NamespaceException {
-
-    VirtualFSInterface vfs = Mockito.mock(VirtualFSInterface.class);
+    VirtualFS vfs = Mockito.mock(VirtualFS.class);
     Mockito.when(vfs.getAliasName()).thenReturn(name);
     Mockito.when(vfs.getRootPath()).thenReturn(rootPath);
     StoRI stori = Mockito.mock(StoRI.class);
@@ -79,7 +80,10 @@ public class MetadataTests {
   }
 
   @Before
-  public void init() throws NamespaceException {
+  public void init() throws NamespaceException, IOException {
+
+    Configuration.init("src/test/resources/storm.properties");
+
     vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
     expected = StoriMetadata.builder()
       .absolutePath(FILE_PATH)

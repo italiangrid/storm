@@ -19,24 +19,29 @@ package it.grid.storm.filesystem;
 
 public class FSException extends Exception {
 
-	public FSException() {
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-		super();
-	}
+  public FSException() {
 
-	public FSException(String message) {
+    super();
+  }
 
-		super(message);
-	}
+  public FSException(String message) {
 
-	public FSException(String message, Throwable cause) {
+    super(message);
+  }
 
-		super(message, cause);
-	}
+  public FSException(String message, Throwable cause) {
 
-	public FSException(Throwable cause) {
+    super(message, cause);
+  }
 
-		super(cause);
-	}
+  public FSException(Throwable cause) {
+
+    super(cause);
+  }
 
 }

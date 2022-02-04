@@ -1,7 +1,7 @@
 package it.grid.storm.space.gpfsquota;
 
 import it.grid.storm.common.types.SizeUnit;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.srm.types.TSizeInBytes;
 
 public interface GPFSFilesetQuotaInfo {
@@ -22,7 +22,7 @@ public interface GPFSFilesetQuotaInfo {
 
 	public boolean isQuotaEnabled();
 
-	public VirtualFSInterface getVFS();
+	public VirtualFS getVFS();
 
 	public SizeUnit getSizeUnit();
 }

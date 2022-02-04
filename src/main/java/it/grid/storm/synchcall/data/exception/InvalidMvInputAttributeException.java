@@ -31,17 +31,22 @@ import it.grid.storm.srm.types.TSURL;
 
 public class InvalidMvInputAttributeException extends Exception {
 
-	private boolean nullFromSurl = true;
-	private boolean nullToSurl = true;
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	public InvalidMvInputAttributeException(TSURL fromSURL, TSURL toSURL) {
+  private boolean nullFromSurl = true;
+  private boolean nullToSurl = true;
 
-		nullFromSurl = (fromSURL == null);
-		nullToSurl = (toSURL == null);
-	}
+  public InvalidMvInputAttributeException(TSURL fromSURL, TSURL toSURL) {
 
-	public String toString() {
+    nullFromSurl = (fromSURL == null);
+    nullToSurl = (toSURL == null);
+  }
 
-		return "nullFromSurl = " + nullFromSurl + " , nullToSURL = " + nullToSurl;
-	}
+  public String toString() {
+
+    return "nullFromSurl = " + nullFromSurl + " , nullToSURL = " + nullToSurl;
+  }
 }

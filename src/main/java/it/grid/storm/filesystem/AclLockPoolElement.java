@@ -38,57 +38,60 @@ import java.util.concurrent.Semaphore;
  * Usage-counted semaphore object.
  * 
  * <p>
- * Each {@link #incrementUsageCountAndReturnSelf()} request increments the usage
- * counter, and each {@link #decrementUsageCountAndGetIt()} request decrements
- * it.
+ * Each {@link #incrementUsageCountAndReturnSelf()} request increments the usage counter, and each
+ * {@link #decrementUsageCountAndGetIt()} request decrements it.
  * 
  * @author Riccardo Murri <riccardo.murri@ictp.it>
  * @version $Revision: 1.5 $
  */
 class AclLockPoolElement extends Semaphore {
 
-	// ---- constructors ----
+  // ---- constructors ----
 
-	/**
-	 * Default constructor. The semaphore is initialized for allowing only 1
-	 * permit at a time (thus serializing accesses through the acquire() and
-	 * release() calls), and with the default fairness setting. The usage count is
-	 * initialized to <code>0</code>.
-	 * 
-	 * @see java.util.concurrent.AtomicInteger;
-	 * @see java.util.concurrent.Semaphore;
-	 */
-	public AclLockPoolElement() {
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-		super(1);
-		usageCount = new AtomicInteger();
-	}
+  /**
+   * Default constructor. The semaphore is initialized for allowing only 1 permit at a time (thus
+   * serializing accesses through the acquire() and release() calls), and with the default fairness
+   * setting. The usage count is initialized to <code>0</code>.
+   * 
+   * @see java.util.concurrent.AtomicInteger;
+   * @see java.util.concurrent.Semaphore;
+   */
+  public AclLockPoolElement() {
 
-	// --- public methods ---
+    super(1);
+    usageCount = new AtomicInteger();
+  }
 
-	/**
-	 * Return the lock object associated with the given file name, or create a new
-	 * one if no mapping for the given path name is already in this map.
-	 */
-	public void incrementUsageCount() {
+  // --- public methods ---
 
-		usageCount.incrementAndGet();
-	}
+  /**
+   * Return the lock object associated with the given file name, or create a new one if no mapping
+   * for the given path name is already in this map.
+   */
+  public void incrementUsageCount() {
 
-	/** Return the stored usage count. */
-	public int getUsageCount() {
+    usageCount.incrementAndGet();
+  }
 
-		return usageCount.intValue();
-	}
+  /** Return the stored usage count. */
+  public int getUsageCount() {
 
-	/** Decrement the stored usage count. */
-	public int decrementUsageCountAndGetIt() {
+    return usageCount.intValue();
+  }
 
-		return usageCount.decrementAndGet();
-	}
+  /** Decrement the stored usage count. */
+  public int decrementUsageCountAndGetIt() {
 
-	// --- private instance variables --- //
+    return usageCount.decrementAndGet();
+  }
 
-	/** Usage counter. */
-	private final AtomicInteger usageCount;
+  // --- private instance variables --- //
+
+  /** Usage counter. */
+  private final AtomicInteger usageCount;
 }

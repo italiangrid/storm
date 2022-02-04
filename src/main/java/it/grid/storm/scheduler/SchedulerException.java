@@ -41,32 +41,37 @@ package it.grid.storm.scheduler;
  */
 public class SchedulerException extends Exception {
 
-	private String whichScheduler;
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	public SchedulerException(String whichSched) {
+  private String whichScheduler;
 
-		super();
-		whichScheduler = whichSched;
-	}
+  public SchedulerException(String whichSched) {
 
-	public SchedulerException(String whichSched, String message) {
+    super();
+    whichScheduler = whichSched;
+  }
 
-		super(message);
-	}
+  public SchedulerException(String whichSched, String message) {
 
-	public SchedulerException(Throwable cause) {
+    super(message);
+  }
 
-		super(cause);
-	}
+  public SchedulerException(Throwable cause) {
 
-	public SchedulerException(String message, Throwable cause) {
+    super(cause);
+  }
 
-		super(message, cause);
-	}
+  public SchedulerException(String message, Throwable cause) {
 
-	public String toString() {
+    super(message, cause);
+  }
 
-		return "Exception occurred within scheduler type = " + whichScheduler;
-	}
+  public String toString() {
+
+    return "Exception occurred within scheduler type = " + whichScheduler;
+  }
 
 }

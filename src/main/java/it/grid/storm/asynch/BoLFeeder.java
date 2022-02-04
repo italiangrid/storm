@@ -17,31 +17,31 @@
 
 package it.grid.storm.asynch;
 
+import java.util.Collection;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.catalogs.BoLChunkCatalog;
-import it.grid.storm.catalogs.BoLPersistentChunkData;
-import it.grid.storm.catalogs.InvalidSurlRequestDataAttributesException;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
-import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
 import it.grid.storm.namespace.InvalidDescendantsFileRequestException;
 import it.grid.storm.namespace.InvalidDescendantsPathRequestException;
 import it.grid.storm.namespace.InvalidSURLException;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
+import it.grid.storm.persistence.exceptions.InvalidSurlRequestDataAttributesException;
+import it.grid.storm.persistence.model.BoLPersistentChunkData;
+import it.grid.storm.persistence.model.RequestSummaryData;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.SchedulerException;
 import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
 import it.grid.storm.srm.types.TDirOption;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.synchcall.data.DataHelper;
-
-import java.util.Collection;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class represents a BringOnLine Feeder: the Feeder that will handle the srmBringOnLine
@@ -247,7 +247,7 @@ public final class BoLFeeder implements Delegable {
 
     StoRI stori = null;
     try {
-      stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl, gu);
+      stori = Namespace.getInstance().resolveStoRIbySURL(surl, gu);
     } catch (IllegalArgumentException e) {
       log.error(
           "Unable to build a stori for surl {} for user {}. " + "IllegalArgumentException: {}",

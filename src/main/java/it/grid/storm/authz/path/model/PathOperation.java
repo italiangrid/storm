@@ -25,12 +25,15 @@ package it.grid.storm.authz.path.model;
  */
 
 public enum PathOperation {
-  WRITE_FILE('W', "WRITE_FILE", "Write data"), READ_FILE('R', "READ_FILE", "Read data",
-      true), RENAME('F', "RENAME", "Rename a file or a directory"), DELETE('D', "DELETE",
-          "Delete a file or a directory"), LIST_DIRECTORY('L', "LIST_DIRECTORY",
-              "Listing a directory",
-              true), MAKE_DIRECTORY('M', "CREATE_DIRECTORY", "Create a directory"), CREATE_FILE('N',
-                  "CREATE_FILE", "Create a new file"), UNDEFINED('?', "UNDEFINED", "Undefined");
+
+  WRITE_FILE('W', "WRITE_FILE", "Write data"),
+  READ_FILE('R', "READ_FILE", "Read data", true),
+  RENAME('F', "RENAME", "Rename a file or a directory"),
+  DELETE('D', "DELETE", "Delete a file or a directory"),
+  LIST_DIRECTORY('L', "LIST_DIRECTORY", "Listing a directory", true),
+  MAKE_DIRECTORY('M', "CREATE_DIRECTORY", "Create a directory"),
+  CREATE_FILE('N', "CREATE_FILE", "Create a new file"),
+  UNDEFINED('?', "UNDEFINED", "Undefined");
 
   private final char operation;
   private final String operationName;
@@ -69,8 +72,6 @@ public enum PathOperation {
         return RENAME;
       case 'D':
         return DELETE;
-      // case 'T':
-      // return TRAVERSE_DIRECTORY;
       case 'L':
         return LIST_DIRECTORY;
       case 'M':
@@ -91,16 +92,6 @@ public enum PathOperation {
   public char getSpaceOperationValue() {
 
     return operation;
-  }
-
-  public PathOperation getSpaceOp(int ordinal) {
-
-    PathOperation[] sp = PathOperation.values();
-    if ((ordinal >= 0) && (ordinal < sp.length)) {
-      return sp[ordinal];
-    } else {
-      return UNDEFINED;
-    }
   }
 
   public int getNumberOfPathOp() {

@@ -123,22 +123,6 @@ public abstract class SRMURL {
 		return surlType.toString();
 	}
 
-	/**
-	 * Returns true if the hostname of this srmurl is the one specified in
-	 * configuration file field "storm.service.FE-public.hostname"
-	 * 
-	 * @return
-	 */
-	public boolean isLocal() {
-
-		if (local == -1) {
-			localSURL = getServiceHostname().equals(
-				NamingConst.getServiceDefaultHost());
-			local = 1;
-		}
-		return localSURL;
-	}
-
 	public boolean isQueriedFormSURL() {
 
 		if (surlType == null) {

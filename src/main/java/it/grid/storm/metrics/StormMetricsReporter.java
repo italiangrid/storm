@@ -1,5 +1,23 @@
+/*
+ * 
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package it.grid.storm.metrics;
 
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 
@@ -110,6 +128,30 @@ public class StormMetricsReporter extends ScheduledReporter {
 
     reportJettyHandlerMetrics("xmlrpc-handler", meters);
     reportJettyHandlerMetrics("rest-handler", meters);
+
+    reportDbPoolMetrics("storm_db", gauges, timers);
+    reportDbPoolMetrics("storm_be_ISAM", gauges, timers);
+  }
+
+  @SuppressWarnings("rawtypes")
+  private void reportDbPoolMetrics(String tpName, SortedMap<String, Gauge> gauges,
+      SortedMap<String, Timer> timers) {
+
+    String timerName = tpName + ".get-connection";
+    Optional.ofNullable(timers.get(timerName))
+      .ifPresent(t -> {
+        reportMetric(timerName, t);
+      });
+
+    int numActive = getIntValue(gauges.get(tpName + ".num-active"));
+    int maxActive = getIntValue(gauges.get(tpName + ".max-total"));
+    int numIdle = getIntValue(gauges.get(tpName + ".num-idle"));
+    int maxIdle = getIntValue(gauges.get(tpName + ".max-idle"));
+    double percentActive = getDoubleValue(gauges.get(tpName + ".percent-active"));
+    double percentIdle = getDoubleValue(gauges.get(tpName + ".percent-idle"));
+
+    LOG.info("{} [active-connections={}, max-active-connections={}, percent-active={}, idle-connections={}, max-idle-connections={}. percent-idle={}]",
+        tpName, numActive, maxActive, percentActive, numIdle, maxIdle, percentIdle);
   }
 
   private void reportMetric(String name, Timer timer) {
@@ -134,7 +176,8 @@ public class StormMetricsReporter extends ScheduledReporter {
     int jobs = getIntValue(gauges.get(tpName + ".jobs"));
     double utilizationMax = round2dec(getDoubleValue(gauges.get(tpName + ".utilization-max")));
 
-    LOG.info("{} [active-threads={}, idle-threads={}, jobs={}, utilization-max={}, percent-idle={}]",
+    LOG.info(
+        "{} [active-threads={}, idle-threads={}, jobs={}, utilization-max={}, percent-idle={}]",
         tpName, activeThreads, idleThreads, jobs, utilizationMax, percentIdle);
   }
 
@@ -151,8 +194,7 @@ public class StormMetricsReporter extends ScheduledReporter {
 
   private void reportMetric(String name, Meter meter) {
 
-    LOG.info(
-        "{} [(count={}, m1_rate={}, m5_rate={}, m15_rate={}, mean_rate={})] rate_units={}",
+    LOG.info("{} [(count={}, m1_rate={}, m5_rate={}, m15_rate={}, mean_rate={})] rate_units={}",
         name, meter.getCount(), convertRate(meter.getOneMinuteRate()),
         convertRate(meter.getFiveMinuteRate()), convertRate(meter.getFifteenMinuteRate()),
         convertRate(meter.getMeanRate()), getRateUnit());

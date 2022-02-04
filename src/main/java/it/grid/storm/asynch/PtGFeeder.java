@@ -17,30 +17,30 @@
 
 package it.grid.storm.asynch;
 
-import it.grid.storm.catalogs.InvalidSurlRequestDataAttributesException;
+import java.util.Collection;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.catalogs.PtGChunkCatalog;
-import it.grid.storm.catalogs.PtGPersistentChunkData;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
-import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
 import it.grid.storm.namespace.InvalidDescendantsFileRequestException;
 import it.grid.storm.namespace.InvalidDescendantsPathRequestException;
 import it.grid.storm.namespace.InvalidSURLException;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
+import it.grid.storm.persistence.exceptions.InvalidSurlRequestDataAttributesException;
+import it.grid.storm.persistence.model.PtGPersistentChunkData;
+import it.grid.storm.persistence.model.RequestSummaryData;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.SchedulerException;
 import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
 import it.grid.storm.srm.types.TDirOption;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.synchcall.data.DataHelper;
-
-import java.util.Collection;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class represents a PrepareToGet Feeder: the Feeder that will handle the srmPrepareToGet
@@ -263,7 +263,7 @@ public final class PtGFeeder implements Delegable {
     /* Build StoRI for current chunk */
     StoRI stori = null;
     try {
-      stori = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl, chunkData.getUser());
+      stori = Namespace.getInstance().resolveStoRIbySURL(surl, chunkData.getUser());
     } catch (IllegalArgumentException e) {
       log.error(
           "Unable to build a stori for surl {} for user {}. " + "IllegalArgumentException: {}",

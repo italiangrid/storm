@@ -19,23 +19,28 @@ package it.grid.storm.namespace;
 
 public class NamespaceException extends Exception {
 
-	public NamespaceException() {
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-		super();
-	}
+  public NamespaceException() {
 
-	public NamespaceException(String message) {
+    super();
+  }
 
-		super(message);
-	}
+  public NamespaceException(String message) {
 
-	public NamespaceException(String message, Throwable cause) {
+    super(message);
+  }
 
-		super(message, cause);
-	}
+  public NamespaceException(String message, Throwable cause) {
 
-	public NamespaceException(Throwable cause) {
+    super(message, cause);
+  }
 
-		super(cause);
-	}
+  public NamespaceException(Throwable cause) {
+
+    super(cause);
+  }
 }

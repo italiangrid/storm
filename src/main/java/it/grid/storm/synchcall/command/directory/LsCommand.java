@@ -43,9 +43,8 @@ import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
 import it.grid.storm.namespace.InvalidDescendantsFileRequestException;
 import it.grid.storm.namespace.InvalidDescendantsPathRequestException;
 import it.grid.storm.namespace.InvalidSURLException;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.srm.types.ArrayOfSURLs;
@@ -82,28 +81,19 @@ import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.LSInputData;
 import it.grid.storm.synchcall.data.directory.LSOutputData;
 
-/**
- * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
- * <p>
- * Authors:
- * 
- * @author lucamag luca.magnoniATcnaf.infn.it
- * @date = Dec 3, 2008
- */
-
 public class LsCommand extends DirectoryCommand implements Command {
 
   public static final Logger log = LoggerFactory.getLogger(LsCommand.class);
 
   private static final String SRM_COMMAND = "srmLs";
 
-  private final NamespaceInterface namespace;
+  private final Namespace namespace;
 
   private boolean atLeastOneInputSURLIsDir;
 
   public LsCommand() {
 
-    namespace = NamespaceDirector.getNamespace();
+    namespace = Namespace.getInstance();
   }
 
   /**
@@ -154,14 +144,14 @@ public class LsCommand extends DirectoryCommand implements Command {
 
     boolean allLevelRecursive;
     if (inputData.getAllLevelRecursive() == null) {
-      allLevelRecursive = DirectoryCommand.config.getLSallLevelRecursive();
+      allLevelRecursive = DirectoryCommand.config.isLsDefaultAllLevelRecursive();
     } else {
       allLevelRecursive = inputData.getAllLevelRecursive().booleanValue();
     }
 
     int numOfLevels;
     if (inputData.getNumOfLevels() == null) {
-      numOfLevels = DirectoryCommand.config.getLSnumOfLevels();
+      numOfLevels = DirectoryCommand.config.getLsDefaultNumOfLevels();
     } else {
       numOfLevels = inputData.getNumOfLevels().intValue();
       if (numOfLevels < 0) {
@@ -178,7 +168,7 @@ public class LsCommand extends DirectoryCommand implements Command {
     if (inputData.getCount() == null) {
       // Set to max entries value. Plus one in order to be able to return
       // TOO_MANY_RESULTS.
-      count = DirectoryCommand.config.getLSMaxNumberOfEntry() + 1;
+      count = DirectoryCommand.config.getLsMaxNumberOfEntry() + 1;
     } else {
       count = inputData.getCount().intValue();
       if (count < 0) {
@@ -189,7 +179,7 @@ public class LsCommand extends DirectoryCommand implements Command {
         return outputData;
       }
       if (count == 0) {
-        count = DirectoryCommand.config.getLSMaxNumberOfEntry() + 1;
+        count = DirectoryCommand.config.getLsMaxNumberOfEntry() + 1;
       }
       coutOrOffsetAreSpecified = true;
     }
@@ -197,7 +187,7 @@ public class LsCommand extends DirectoryCommand implements Command {
     int offset;
     if (inputData.getOffset() == null) {
       // Set to the default value.
-      offset = DirectoryCommand.config.getLSoffset();
+      offset = DirectoryCommand.config.getLsDefaultOffset();
     } else {
       offset = inputData.getOffset().intValue();
       if (offset < 0) {
@@ -215,7 +205,7 @@ public class LsCommand extends DirectoryCommand implements Command {
     String fileLevelExplanation = "";
     int errorCount = 0;
 
-    int maxEntries = DirectoryCommand.config.getLSMaxNumberOfEntry();
+    int maxEntries = DirectoryCommand.config.getLsMaxNumberOfEntry();
 
     if (count < maxEntries) {
       maxEntries = count;
@@ -383,7 +373,7 @@ public class LsCommand extends DirectoryCommand implements Command {
     if (numberOfReturnedEntries.intValue() >= maxEntries) {
       if (maxEntries < count) {
         globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_TOO_MANY_RESULTS,
-            "Max returned entries is: " + DirectoryCommand.config.getLSMaxNumberOfEntry());
+            "Max returned entries is: " + DirectoryCommand.config.getLsMaxNumberOfEntry());
         printRequestOutcome(globalStatus, inputData);
         outputData.setStatus(globalStatus);
         return outputData;

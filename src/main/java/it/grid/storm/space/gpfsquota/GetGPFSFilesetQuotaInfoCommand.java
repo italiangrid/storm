@@ -1,16 +1,15 @@
 package it.grid.storm.space.gpfsquota;
 
-import it.grid.storm.filesystem.swig.gpfs;
-import it.grid.storm.namespace.VirtualFSInterface;
-
 import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.grid.storm.filesystem.swig.gpfs;
+import it.grid.storm.namespace.model.VirtualFS;
+
 /**
  * Computes GPFS fileset quota by leveraging {@link gpfs#get_fileset_quota_info(String)}.
- * 
- *
  */
 public class GetGPFSFilesetQuotaInfoCommand implements
 	Callable<GPFSFilesetQuotaInfo> {
@@ -18,9 +17,9 @@ public class GetGPFSFilesetQuotaInfoCommand implements
 	private static final Logger log = LoggerFactory
 		.getLogger(GetGPFSFilesetQuotaInfoCommand.class);
 
-	private VirtualFSInterface vfs;
+	private VirtualFS vfs;
 
-	public GetGPFSFilesetQuotaInfoCommand(VirtualFSInterface vfs) {
+	public GetGPFSFilesetQuotaInfoCommand(VirtualFS vfs) {
 
 		this.vfs = vfs;
 	}

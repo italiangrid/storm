@@ -17,8 +17,6 @@
 
 package it.grid.storm.info;
 
-import static it.grid.storm.config.Configuration.DISKUSAGE_SERVICE_ENABLED;
-
 import java.io.FileNotFoundException;
 import java.util.List;
 
@@ -31,9 +29,8 @@ import com.google.common.collect.Lists;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.config.Configuration;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceInterface;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.Namespace;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
@@ -47,14 +44,14 @@ public class SpaceInfoManager {
   private static final SpaceInfoManager instance = new SpaceInfoManager();
 
   private static final String USED_SPACE_INI_FILEPATH =
-      Configuration.getInstance().configurationDir() + "/used-space.ini".replaceAll("/+", "/");
+      Configuration.getInstance().getConfigurationDir() + "/used-space.ini".replaceAll("/+", "/");
 
   private static final Logger log = LoggerFactory.getLogger(SpaceInfoManager.class);
 
   // Reference to the Catalog
-  private final ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
-  // Reference to the NamespaceDirector
-  private final NamespaceInterface namespace = NamespaceDirector.getNamespace();
+  private final ReservedSpaceCatalog spaceCatalog = ReservedSpaceCatalog.getInstance();
+  // Reference to the Namespace
+  private final Namespace namespace = Namespace.getInstance();
 
   private SpaceInfoManager() {}
 
@@ -84,14 +81,12 @@ public class SpaceInfoManager {
       return;
     }
 
-    if (Configuration.getInstance().getDiskUsageServiceEnabled()) {
+    if (Configuration.getInstance().isDiskUsageServiceEnabled()) {
       log.info("The remaining {} storage spaces will be initialized by DiskUsage service",
           ssni.size());
     } else {
-      log.warn(
-          "The remaining {} storage spaces WON'T be initialized with DUs. "
-              + "Please enable DiskUsage service by setting '{}' as true.",
-          ssni.size(), DISKUSAGE_SERVICE_ENABLED);
+      log.warn("The remaining {} storage spaces WON'T be initialized with DUs. "
+          + "Please enable DiskUsage service.", ssni.size());
     }
   }
 
@@ -108,8 +103,8 @@ public class SpaceInfoManager {
 
     // Dispatch SA to compute in two categories: Quota and DU tasks
     List<StorageSpaceData> ssdSet = Lists.newArrayList();
-    List<VirtualFSInterface> vfsSet = namespace.getVFSWithQuotaEnabled();
-    for (VirtualFSInterface vfsEntry : vfsSet) {
+    List<VirtualFS> vfsSet = namespace.getVFSWithQuotaEnabled();
+    for (VirtualFS vfsEntry : vfsSet) {
       String spaceTokenDesc = vfsEntry.getSpaceTokenDescription();
       StorageSpaceData ssd = spaceCatalog.getStorageSpaceByAlias(spaceTokenDesc);
       ssdSet.add(ssd);

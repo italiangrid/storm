@@ -17,6 +17,8 @@
 
 package it.grid.storm.namespace.naming;
 
+import java.net.UnknownHostException;
+
 import it.grid.storm.config.Configuration;
 
 public class NamingConst {
@@ -45,14 +47,14 @@ public class NamingConst {
 		config = Configuration.getInstance();
 	}
 
-	public static String getServiceDefaultHost() {
+	public static String getServiceDefaultHost() throws UnknownHostException {
 
-		return instance.config.getServiceHostname();
+		return instance.config.getSrmServiceHostname();
 	}
 
 	public static int getServicePort() {
 
-		return instance.config.getServicePort();
+		return instance.config.getSrmServicePort();
 	}
 
 	public static String getServiceSFNQueryPrefix() {

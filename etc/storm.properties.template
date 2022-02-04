@@ -1,252 +1,62 @@
-###########################
-#    storm.properties
-###########################
+# ====================================================================================
+#  StoRM Backend Configuration
+# ====================================================================================
 #
-#   This file contains properties that govern the operation of StoRM. 
-#   The file is read at startup of the service.
-#   Your changes will be applied when the service will be restarted.
-#
-############################
-
-############################
-###  SERVICE PARAMETERS  ###
-############################
+# This file contains StoRM Backend configuration. The file is read at startup
+# of the service. Your changes will be applied when the service will be restarted.
 
 # ============================
-# StoRM Service DNS
+# SRM service parameters
 # ============================
-# hostname with which the service is published
-storm.service.FE-public.hostname =
 
-
-# ============================
-# Front End service port
-# ============================
-# The Front End binding port
-storm.service.port = 8444
+# List of accepted StoRM SRM end-points.
+# srm_endpoints.1.host = storm.example
+# srm_endpoints.1.port = 8444
+# srm_endpoints.2.host = alias.example
+# srm_endpoints.2.port = 8444
 
 # ============================
-# Managed SURL endpoints 
+# FE/BE DBMS parameters
 # ============================
-#
-# comma-separated list of managed SURL. 
-# These entries are used to check the SURL validity. 
-# storm.service.SURL.endpoint = srm://<surl-host>:<surl-port>/<surl-service-path>
-# Example: Example: srm://storm.cnaf.infn.it:8444/srm/managerv2
-storm.service.SURL.endpoint =   
 
-# ============================
-# Managed SURL default ports
-# ============================
-#
-# comma-separated list of managed SURL's defauilt ports. 
-# These entries are used to check the SURL validity. 
-# storm.service.SURL.default-ports = <surl-port>
-# Example: 8444
-storm.service.SURL.default-ports =   
+# Database connection configuration
+db.hostname =
+db.username = storm
+db.password = storm
+db.port = 3306
+db.properties = serverTimezone=UTC&autoReconnect=true
 
-# ============================
-# FE/BE communication RDBMS
-# ============================
-#
-# Parameters to connect to the DB used as channel for the requests. 
-storm.service.request-db.host =  
-storm.service.request-db.username =   
-storm.service.request-db.passwd =  
-
-#############################################
-############  PROFILE PARAMETERS ############
-#############################################
-
-# ============================
-# StoRM Service Generic Behavior
-# ============================
-directory.automatic-creation = false
-# To enable file creation within directories. Useful when authorization is not defined.              
-directory.writeperm = false
-
-
-# ============================
-# StoRM Service PINNED Behavior
-# ============================
-# Default PinLifetime in seconds used for pinning files in case of srmPrepareToPut or srmPrapareToGet operation
-# without any pinLifetime specified. 
-pinLifetime.default=259200
-# Maximum allowed value for Pin LifeTime. 
-# Values beyond the max will be dropped to max value.
-pinLifetime.maximum=1814400
-
-
-# ============================
-# StoRM Service TURL Behavior
-# ============================
-extraslashes.file=
-extraslashes.rfio=
-extraslashes.gsiftp=/
-extraslashes.root=
-
-
-# =======================
-# Default 
-# =======================
-# Default FileLifetime in seconds used for VOLATILE file in case of SRM request without FileLifetime parameter specified.
-fileLifetime.default=259200
-# Possible values are :   N (Never) and  A (Always)
-default.overwrite   = A
-# Possible values are  V (Volatile), P (Permanent) and  D (Durable)      
-default.storagetype = P       
-
-
-#############################################
-############  TUNING PARAMETERS #############
-#############################################
-
-# ============================
-# BE-private RDBMS
-# ============================
-persistence.internal-db.connection-pool.maxActive = 50
-persistence.internal-db.connection-pool.maxWait = 50
-
-
-# ============================
-# ASYNCH SCHEDULER Component parameters
-# ============================
-scheduler.serial=false
-scheduler.crusher.workerCorePoolSize=10
-scheduler.crusher.workerMaxPoolSize=50
-scheduler.crusher.queueSize=2000
-scheduler.chunksched.ptp.workerCorePoolSize=50
-scheduler.chunksched.ptp.workerMaxPoolSize=200
-scheduler.chunksched.ptp.queueSize=1000
-scheduler.chunksched.ptg.workerCorePoolSize=50
-scheduler.chunksched.ptg.workerMaxPoolSize=200
-scheduler.chunksched.ptg.queueSize=2000
-scheduler.chunksched.bol.workerCorePoolSize=50
-scheduler.chunksched.bol.workerMaxPoolSize=200
-scheduler.chunksched.bol.queueSize=2000
-scheduler.chunksched.copy.workerCorePoolSize=10
-scheduler.chunksched.copy.workerMaxPoolSize=50
-scheduler.chunksched.copy.queueSize=500
-
-
-# ============================
-# ASYNCH PICKER Component parameters
-# ============================
-asynch.db.ReconnectPeriod=18000
-asynch.db.DelayPeriod=30
-asynch.PickingInitialDelay=1
-# Polling time in seconds for pick up new requests from DB
-asynch.PickingTimeInterval=2
-asynch.PickingMaxBatchSize=100
-
-
-# ======================================
-# SYNCH CALL Component tuning parameters
-# ======================================
-synchcall.directoryManager.maxLsEntry=2000
+# Database connection pool configuration
+db.pool.size = -1
+db.pool.min_idle = 10
+db.pool.max_wait_millis = 5000
+db.pool.test_on_borrow = true
+db.pool.test_while_idle = true 
 
 # ============================
 # REST Services parameter
 # ============================
-storm.rest.services.port=9998
-storm.rest.services.maxthreads=100
-storm.rest.services.max_queue_size=1000
+rest.port = 9998
+rest.max_threads = 100
+rest.max_queue_size = 1000
+
+# ============================
+# Sanity Check enabled
+# ============================
+sanity_checks_enabled = true
 
 # ============================
 # XMLRPC Server parameter
 # ============================
-synchcall.xmlrpc.unsecureServerPort=8080
-synchcall.xmlrpc.maxthread=256
-synchcall.xmlrpc.max_queue_size=1000
-synchcall.xmlrpc.security.enabled=true
-synchcall.xmlrpc.security.token=
-
-# =======================
-# Pinned Files cleaning parameters
-# =======================
-# Initial delay in seconds before starting the garbage collector thread
-gc.pinnedfiles.cleaning.delay = 10
-# Garbage Collector time interval in seconds.
-gc.pinnedfiles.cleaning.interval = 300
-
-
-# ===============================
-# TAPE RECALL Component parameter
-# ===============================
-tape.recalltable.service.param.retry-value=retry-value
-tape.recalltable.service.param.status=status
-tape.recalltable.service.param.takeover=first
-
+xmlrpc.port = 8080
+xmlrpc.max_threads = 256
+xmlrpc.max_queue_size = 1000
 
 # ============================
-# srmCopy parameters
+# XMLRPC & REST security token
 # ============================
-asynch.srmclient.retrytime=60
-asynch.srmclient.timeout=180
-asynch.srmclient.sleeptime=5
-asynch.srmclient.putdone.sleeptime=1
-asynch.srmclient.putdone.timeout=60
-asynch.gridftpclient=it.grid.storm.asynch.NaiveGridFTPTransferClient
-asynch.srmclient=it.grid.storm.asynch.SRM22Client
-# Default PinLifeTime in seconds used by StoRM in case of SrmCOpy operation.
-# This value is the one specified in the remote SrmPrepareToGet request.
-SRM22Client.PinLifeTime=259200
-# Time expressed in millisec.
-asynch.srmcopy.gridftp.timeout = 15000
-
-
-# ===========================
-# Garbage Collector parameter
-# ===========================
-#
-#Enable/Disable Garbage Collector
-#purging=true
-#
-#Time interval for between two requests in garbage collection. In seconds
-purge.interval=600
-#
-#Number of requests removed at each run. Every run purge max 800 requests in final status 
-purge.size=800
-#
-#Time after that the GC consider a _terminated_ request as garbage
-#Default: 21600s (6h)
-expired.request.time=21600
-
-
-# ==========================================================
-# Expired-Put-Requests-Agent parameters
-# ==========================================================
-#
-# Transit expired put requests to a final state. A put request is expired if pinLifetime is reached.
-# See pinLifetime.default.
-#
-#Time interval between two agent executions. In seconds
-transit.interval = 300
-#
-#Delay on starting agent. In seconds
-transit.delay = 10
-
-
-# Skip ACL setup for PtG requests
-ptg.skip-acl-setup = false
-
-# The caching policy for successful name lookups from the name service.
-# The value is specified as integer to indicate the number of seconds to cache the successful lookup.
-# A value of -1 indicates "cache forever". The default behavior is to cache forever when a security
-# manager is installed, and to cache for an implementation specific period of time, when a security
-# manager is not installed.
-#
-# Default value: 0
-#
-#networkaddress.cache.ttl=0
-
-# The caching policy for un-successful name lookups from the name service.
-# The value is specified as integer to indicate the number of seconds to cache the failure for un-successful lookups.
-# A value of 0 indicates "never cache". A value of -1 indicates "cache forever".
-#
-# Default value: 0
-#
-#networkaddress.cache.negative.ttl=0
+security_enabled = true
+security_token = secret-token
 
 # ================================
 # Disk Usage Service Configuration
@@ -258,10 +68,129 @@ ptg.skip-acl-setup = false
 # The initial starting delay of the service and the period can also be configured.
 #
 # Enable/Disable the periodic run of the service
-storm.service.du.enabled=false
+du.enabled = false
 # Enable/Disable parallel du execution
-storm.service.du.parallelTasks=false
+du.parallel_tasks_enabled = false
 # Initial delay of service start in seconds. Default: 60s
-storm.service.du.delaySecs=60
+du.initial_delay = 60
 # Interval of execution of the du in seconds. Default: 86400s (24h)
-storm.service.du.periodSecs=86400
+du.tasks_interval = 86400
+
+
+# ================================
+# Advanced Properties
+# ================================
+
+# Enable/disable the automatic directory creation during srmPrepareToPut requests.
+directories.enable_automatic_creation = false
+# Enable/disable write permission on directory created through srmMkDir requests.
+directories.enable_writeperm_on_creation = false
+
+# Default pinLifetime in seconds used for pinning files in case of srmPrepareToPut or srmPrapareToGet requests
+pinlifetime.default = 259200
+# Maximum allowed value for pinLifeTime. Values beyond the max will be dropped to max value.
+pinlifetime.maximum = 1814400
+
+# Add extra slashes after the “authority” part of a TURL for FILE protocol.
+extraslashes.file =
+# Add extra slashes after the “authority” part of a TURL for RFIO protocol.
+extraslashes.rfio =
+# Add extra slashes after the “authority” part of a TURL for GSIFTP protocol.
+extraslashes.gsiftp = /
+# Add extra slashes after the “authority” part of a TURL for ROOT protocol.
+extraslashes.root = /
+
+# Initial delay in seconds before starting the garbage collector thread
+expired_spaces_agent.delay = 10
+# Garbage Collector time interval in seconds.
+expired_spaces_agent.interval = 300
+
+# Default FileSize
+files.default_size = 1000000
+# Default FileLifetime in seconds used for VOLATILE file in case of SRM request.
+files.default_lifetime = 259200
+# Default file overwrite mode to use upon srmPrepareToPut requests.
+# Possible values are N (Never), A (Always), D (when files Differs).
+files.default_overwrite = A
+# Default File Storage Type to be used for srmPrepareToPut requests.
+# Possible values are  V (Volatile), P (Permanent) and  D (Durable)      
+files.default_storagetype = P   
+
+# Crusher Scheduler worker pool base size.
+requests_scheduler.core_pool_size = 10
+# Crusher Schedule worker pool max size.
+requests_scheduler.max_pool_size = 50
+# Request queue maximum size.
+requests_scheduler.queue_size = 2000
+# PrepareToPut worker pool base size.
+ptp_scheduler.core_pool_size = 50
+# PrepareToPut worker pool max size.
+ptp_scheduler.max_pool_size = 200
+# PrepareToPut request queue maximum size.
+ptp_scheduler.queue_size = 1000
+# PrepareToGet worker pool base size.
+ptg_scheduler.core_pool_size = 50
+# PrepareToGet worker pool max size. 
+ptg_scheduler.max_pool_size = 200
+# PrepareToGet request queue maximum size.
+ptg_scheduler.queue_size = 2000
+# BringOnline worker pool base size.
+bol_scheduler.core_pool_size = 50
+# BringOnline Worker pool max size. 
+bol_scheduler.max_pool_size = 200
+# BringOnline request queue maximum size. 
+bol_scheduler.queue_size = 2000
+
+# Initial delay before starting to pick requests from the DB, in seconds.
+requests_picker_agent.delay = 1
+# Polling interval in seconds to pick up new SRM requests. 
+requests_picker_agent.interval = 2
+# Maximum number of requests picked up at each polling time.
+requests_picker_agent.max_fetched_size = 100
+
+# Maximum number of entries returned by an srmLs call.
+# Since in case of recursive srmLs results can be in order of million,
+# this prevent a server overload.
+synch_ls.max_entries = 2000
+# Default value for the parameter "allLevelRecursive" of the srmLS request.
+synch_ls.default_all_level_recursive = false
+# Default value for the parameter "numOfLevels" of the srmLS request.
+synch_ls.default_num_levels = 1
+# Default value for the parameter "offset" of the LS request.
+synch_ls.default_offset = 0
+
+# Enable/Disable Garbage Collector
+completed_requests_agent.enabled = true
+# Time interval for between two requests in garbage collection. In seconds
+completed_requests_agent.interval = 600
+# Initial delay before starting the requests garbage collection process, in seconds.
+completed_requests_agent.delay = 10
+# Number of requests removed at each run. Every run purge max 800 requests in final status 
+completed_requests_agent.purge_size = 800
+# Time after that the GC consider a _terminated_ request as garbage in seconds
+completed_requests_agent.purge_age = 21600
+
+
+# Expired-Put-Requests-Agent transits expired put requests to a final state.
+# A put request is expired if pinLifetime is reached.
+# Time interval between two agent executions. In seconds
+inprogress_requests_agent.interval = 300
+# Delay on starting agent. In seconds
+inprogress_requests_agent.delay = 10
+# Time in seconds to consider an in-progress ptp request as expired.
+inprogress_requests_agent.ptp_expiration_time = 2592000
+
+# Skip ACL setup for PtG requests
+skip_ptg_acl_setup = false
+
+info_quota_refresh_period = 900
+http_turl_prefix =
+server_pool_status_check_timeout = 20000
+abort_maxloop = 10
+ping_properties_filename = ping-values.properties
+
+hearthbeat.bookkeeping_enabled = false
+hearthbeat.performance_measuring_enabled = false
+hearthbeat.period = 60
+hearthbeat.performance_logbook_time_interval = 15
+hearthbeat.performance_glance_time_interval = 15

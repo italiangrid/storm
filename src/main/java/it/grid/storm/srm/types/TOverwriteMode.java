@@ -44,28 +44,4 @@ public class TOverwriteMode {
 
 		return mode;
 	}
-
-	/**
-	 * @param mode
-	 * @return
-	 * @throws IllegalArgumentException
-	 */
-	public static TOverwriteMode getTOverwriteMode(String mode)
-		throws IllegalArgumentException {
-
-		if (mode == null) {
-			throw new IllegalArgumentException("Received null mode parameter");
-		}
-		if (mode.equals(EMPTY.getValue()))
-			return EMPTY;
-		if (mode.equals(NEVER.getValue()))
-			return NEVER;
-		if (mode.equals(ALWAYS.getValue()))
-			return ALWAYS;
-		if (mode.equals(WHENFILESAREDIFFERENT.getValue()))
-			return WHENFILESAREDIFFERENT;
-		throw new IllegalArgumentException(
-			"No matching TOverwriteMode for String \'" + mode + "\'");
-	}
-
 }

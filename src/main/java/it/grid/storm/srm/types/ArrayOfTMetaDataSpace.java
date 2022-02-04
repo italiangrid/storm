@@ -25,62 +25,68 @@
 
 package it.grid.storm.srm.types;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import it.grid.storm.srm.types.TMetaDataSpace;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 public class ArrayOfTMetaDataSpace implements Serializable {
 
-	public static String PNAME_ARRAYOFSPACEDETAILS = "arrayOfSpaceDetails";
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
 
-	ArrayList<TMetaDataSpace> metaDataList;
+  public static String PNAME_ARRAYOFSPACEDETAILS = "arrayOfSpaceDetails";
 
-	public ArrayOfTMetaDataSpace() {
+  ArrayList<TMetaDataSpace> metaDataList;
 
-		metaDataList = new ArrayList<TMetaDataSpace>();
-	}
+  public ArrayOfTMetaDataSpace() {
 
-	public TMetaDataSpace[] getArray() {
+    metaDataList = new ArrayList<TMetaDataSpace>();
+  }
 
-		return (TMetaDataSpace[]) metaDataList
-			.toArray(new TMetaDataSpace[metaDataList.size()]);
-	}
+  public TMetaDataSpace[] getArray() {
 
-	public TMetaDataSpace getTMetaDataSpace(int i) {
+    return (TMetaDataSpace[]) metaDataList.toArray(new TMetaDataSpace[metaDataList.size()]);
+  }
 
-		return (TMetaDataSpace) metaDataList.get(i);
-	}
+  public TMetaDataSpace getTMetaDataSpace(int i) {
 
-	public void setTMetaDataSpace(int index, TMetaDataSpace data) {
+    return (TMetaDataSpace) metaDataList.get(i);
+  }
 
-		metaDataList.set(index, data);
-	}
+  public void setTMetaDataSpace(int index, TMetaDataSpace data) {
 
-	public void addTMetaDataSpace(TMetaDataSpace data) {
+    metaDataList.set(index, data);
+  }
 
-		metaDataList.add(data);
-	}
+  public void addTMetaDataSpace(TMetaDataSpace data) {
 
-	public int size() {
+    metaDataList.add(data);
+  }
 
-		return metaDataList.size();
-	}
+  public int size() {
 
-	public void encode(Map outputParam, String fieldName) {
+    return metaDataList.size();
+  }
 
-		ArrayList metaDataSpaceList = new ArrayList();
-		int arraySize = this.size();
+  public void encode(Map<String, Object> outputParam, String fieldName) {
 
-		for (int i = 0; i < arraySize; i++) {
-			Map metaDataSpace = new HashMap();
-			TMetaDataSpace metaDataElement = this.getTMetaDataSpace(i);
-			metaDataElement.encode(metaDataSpace);
+    List<Map<String, Object>> metaDataSpaceList = Lists.newArrayList();
+    int arraySize = this.size();
 
-			metaDataSpaceList.add(metaDataSpace);
-		}
+    for (int i = 0; i < arraySize; i++) {
+      Map<String, Object> metaDataSpace = Maps.newHashMap();
+      TMetaDataSpace metaDataElement = this.getTMetaDataSpace(i);
+      metaDataElement.encode(metaDataSpace);
 
-		outputParam.put(fieldName, metaDataSpaceList);
-	}
+      metaDataSpaceList.add(metaDataSpace);
+    }
+
+    outputParam.put(fieldName, metaDataSpaceList);
+  }
 }

@@ -20,8 +20,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import it.grid.storm.config.Configuration;
 
 public class RestTokenFilterTest {
 
@@ -53,6 +56,12 @@ public class RestTokenFilterTest {
     filterHolder.setInitParameter(TOKEN_INIT_PARAM_NAME, token);
     filterHolder.start();
     return (RestTokenFilter) filterHolder.getFilter();
+  }
+
+  @Before
+  public void init() throws IOException {
+
+    Configuration.init("src/test/resources/storm.properties");
   }
 
   @Test

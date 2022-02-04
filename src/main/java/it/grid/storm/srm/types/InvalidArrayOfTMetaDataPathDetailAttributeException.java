@@ -17,27 +17,22 @@
 
 package it.grid.storm.srm.types;
 
-/**
- * This class represents an Exception thrown when the constructor for SpaceToken
- * is invoked with a null String.
- * 
- */
+public class InvalidArrayOfTMetaDataPathDetailAttributeException extends Exception {
 
-import it.grid.storm.srm.types.TMetaDataPathDetail;
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-public class InvalidArrayOfTMetaDataPathDetailAttributeException extends
-	Exception {
+  private boolean nullArray;
 
-	private boolean nullArray;
+  public InvalidArrayOfTMetaDataPathDetailAttributeException(TMetaDataPathDetail[] metaDataArray) {
 
-	public InvalidArrayOfTMetaDataPathDetailAttributeException(
-		TMetaDataPathDetail[] metaDataArray) {
+    nullArray = metaDataArray == null;
+  }
 
-		nullArray = metaDataArray == null;
-	}
+  public String toString() {
 
-	public String toString() {
-
-		return "Invalid TMetaDataPathDetail[]: nullArray = " + nullArray;
-	}
+    return "Invalid TMetaDataPathDetail[]: nullArray = " + nullArray;
+  }
 }

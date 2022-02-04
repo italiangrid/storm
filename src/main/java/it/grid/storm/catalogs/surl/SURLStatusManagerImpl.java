@@ -2,12 +2,13 @@ package it.grid.storm.catalogs.surl;
 
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.catalogs.BoLChunkCatalog;
-import it.grid.storm.catalogs.CopyChunkCatalog;
 import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
-import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.persistence.dao.SURLStatusDAO;
+import it.grid.storm.persistence.impl.mysql.SURLStatusDAOMySql;
+import it.grid.storm.persistence.model.RequestSummaryData;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
@@ -24,7 +25,7 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
   public boolean abortAllGetRequestsForSURL(GridUserInterface user, TSURL surl,
     String explanation) {
 
-    final SURLStatusDAO dao = new SURLStatusDAO();
+    final SURLStatusDAO dao = SURLStatusDAOMySql.getInstance();
     return dao.abortActivePtGsForSURL(user, surl, explanation);
 
   }
@@ -33,7 +34,7 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
   public boolean abortAllPutRequestsForSURL(GridUserInterface user, TSURL surl,
     String explanation) {
 
-    final SURLStatusDAO dao = new SURLStatusDAO();
+    final SURLStatusDAO dao = SURLStatusDAOMySql.getInstance();
     return dao.abortActivePtPsForSURL(user, surl, explanation);
 
   }
@@ -58,11 +59,6 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
 
     case BRING_ON_LINE:
       BoLChunkCatalog.getInstance().updateFromPreviousStatus(token,
-        TStatusCode.SRM_REQUEST_QUEUED, TStatusCode.SRM_ABORTED, explanation);
-      break;
-
-    case COPY:
-      CopyChunkCatalog.getInstance().updateFromPreviousStatus(token,
         TStatusCode.SRM_REQUEST_QUEUED, TStatusCode.SRM_ABORTED, explanation);
       break;
 
@@ -137,7 +133,7 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
   public Map<TSURL, TReturnStatus> getPinnedSURLsForUser(
     GridUserInterface user, List<TSURL> surls) {
 
-    final SURLStatusDAO dao = new SURLStatusDAO();
+    final SURLStatusDAO dao = SURLStatusDAOMySql.getInstance();
     return dao.getPinnedSURLsForUser(user, surls);
   }
 
@@ -145,7 +141,7 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
   public Map<TSURL, TReturnStatus> getPinnedSURLsForUser(
     GridUserInterface user, TRequestToken token, List<TSURL> surls) {
 
-    final SURLStatusDAO dao = new SURLStatusDAO();
+    final SURLStatusDAO dao = SURLStatusDAOMySql.getInstance();
     return dao.getPinnedSURLsForUser(user, token, surls);
 
   }
@@ -154,7 +150,7 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
   public Map<TSURL, TReturnStatus> getSURLStatuses(GridUserInterface user, 
     TRequestToken token) {
 
-    final SURLStatusDAO dao = new SURLStatusDAO();
+    final SURLStatusDAO dao = SURLStatusDAOMySql.getInstance();
     return dao.getSURLStatuses(token);
   }
 
@@ -163,28 +159,28 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
     TRequestToken token,
     List<TSURL> surls) {
 
-    final SURLStatusDAO dao = new SURLStatusDAO();
+    final SURLStatusDAO dao = SURLStatusDAOMySql.getInstance();
     return dao.getSURLStatuses(token, surls);
   }
 
   @Override
   public boolean isSURLBusy(TRequestToken requestTokenToExclude, TSURL surl) {
 
-    final SURLStatusDAO dao = new SURLStatusDAO();
+    final SURLStatusDAO dao = SURLStatusDAOMySql.getInstance();
     return dao.surlHasOngoingPtPs(surl, requestTokenToExclude);
   }
 
   @Override
   public boolean isSURLBusy(TSURL surl) {
 
-    final SURLStatusDAO dao = new SURLStatusDAO();
+    final SURLStatusDAO dao = SURLStatusDAOMySql.getInstance();
     return dao.surlHasOngoingPtPs(surl, null);
   }
 
   @Override
   public boolean isSURLPinned(TSURL surl) {
 
-    final SURLStatusDAO dao = new SURLStatusDAO();
+    final SURLStatusDAO dao = SURLStatusDAOMySql.getInstance();
     return dao.surlHasOngoingPtGs(surl);
   }
 
@@ -212,7 +208,7 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
   @Override
   public int markSURLsReadyForRead(TRequestToken token, List<TSURL> surls) {
 
-    final SURLStatusDAO dao = new SURLStatusDAO();
+    final SURLStatusDAO dao = SURLStatusDAOMySql.getInstance();
     return dao.markSURLsReadyForRead(token, surls);
 
   }
@@ -220,7 +216,7 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
   @Override
   public void releaseSURLs(GridUserInterface user, List<TSURL> surls) {
 
-    final SURLStatusDAO dao = new SURLStatusDAO();
+    final SURLStatusDAO dao = SURLStatusDAOMySql.getInstance();
     dao.releaseSURLs(user, surls);
 
   }
@@ -228,7 +224,7 @@ public class SURLStatusManagerImpl implements SURLStatusManager {
   @Override
   public void releaseSURLs(TRequestToken token, List<TSURL> surls) {
 
-    final SURLStatusDAO dao = new SURLStatusDAO();
+    final SURLStatusDAO dao = SURLStatusDAOMySql.getInstance();
     dao.releaseSURLs(token, surls);
   }
 

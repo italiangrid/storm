@@ -17,15 +17,16 @@
 
 package it.grid.storm.asynch;
 
-import it.grid.storm.asynch.BuilderException;
-import it.grid.storm.asynch.PtG;
-import it.grid.storm.catalogs.AnonymousPtGData;
-import it.grid.storm.catalogs.IdentityPtGData;
-import it.grid.storm.catalogs.InvalidFileTransferDataAttributesException;
-import it.grid.storm.catalogs.InvalidPtGDataAttributesException;
-import it.grid.storm.catalogs.InvalidSurlRequestDataAttributesException;
-import it.grid.storm.catalogs.PtGData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.common.types.TURLPrefix;
+import it.grid.storm.persistence.exceptions.InvalidFileTransferDataAttributesException;
+import it.grid.storm.persistence.exceptions.InvalidPtGDataAttributesException;
+import it.grid.storm.persistence.exceptions.InvalidSurlRequestDataAttributesException;
+import it.grid.storm.persistence.model.AnonymousPtGData;
+import it.grid.storm.persistence.model.IdentityPtGData;
+import it.grid.storm.persistence.model.PtGData;
 import it.grid.storm.srm.types.TDirOption;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -35,8 +36,6 @@ import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TTURL;
 import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.datatransfer.FileTransferInputData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Michele Dibenedetto

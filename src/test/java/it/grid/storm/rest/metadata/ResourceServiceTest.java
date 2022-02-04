@@ -19,8 +19,8 @@ import com.google.common.collect.Lists;
 
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
 import it.grid.storm.rest.metadata.service.ResourceService;
 
@@ -43,9 +43,9 @@ public class ResourceServiceTest {
 
   private static final String NOT_FOUND_STFNPATH = "/test.vo2/dir/filename.dat";
 
-  private VirtualFSInterface getVirtualFS(String name, String rootPath) throws NamespaceException {
+  private VirtualFS getVirtualFS(String name, String rootPath) throws NamespaceException {
 
-    VirtualFSInterface vfs = Mockito.mock(VirtualFSInterface.class);
+    VirtualFS vfs = Mockito.mock(VirtualFS.class);
     Mockito.when(vfs.getAliasName()).thenReturn(name);
     Mockito.when(vfs.getRootPath()).thenReturn(rootPath);
     StoRI fileStori = Mockito.mock(StoRI.class);
@@ -61,34 +61,34 @@ public class ResourceServiceTest {
     return vfs;
   }
 
-  private MappingRule getMappingRule(String name, String stfnRoot, VirtualFSInterface vfs) {
+  private MappingRule getMappingRule(String name, String stfnRoot, VirtualFS vfs) {
 
     return new MappingRule(name, stfnRoot, vfs);
   }
 
   private ResourceService getStoRIResourceService() throws NamespaceException {
 
-    VirtualFSInterface vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
+    VirtualFS vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
     MappingRule rule = getMappingRule(RULE_NAME, RULE_STFNROOT, vfs);
     return new ResourceService(Lists.newArrayList(vfs), Lists.newArrayList(rule));
   }
 
   private ResourceService getStoRIResourceServiceStfnRootEndingSlash() throws NamespaceException {
 
-    VirtualFSInterface vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH_ENDING_SLASH);
+    VirtualFS vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH_ENDING_SLASH);
     MappingRule rule = getMappingRule(RULE_NAME, RULE_STFNROOT_ENDING_SLASH, vfs);
     return new ResourceService(Lists.newArrayList(vfs), Lists.newArrayList(rule));
   }
 
   private ResourceService getStoRIResourceServiceNoRules() throws NamespaceException {
 
-    VirtualFSInterface vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
+    VirtualFS vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
     return new ResourceService(Lists.newArrayList(vfs), Collections.<MappingRule>emptyList());
   }
 
   private ResourceService getStoRIResourceServiceRulesNULL() throws NamespaceException {
 
-    VirtualFSInterface vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
+    VirtualFS vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
     return new ResourceService(Lists.newArrayList(vfs), null);
   }
 
@@ -99,12 +99,12 @@ public class ResourceServiceTest {
 
   private ResourceService getStoRIResourceServiceNoVFSs() throws NamespaceException {
 
-    VirtualFSInterface vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
+    VirtualFS vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
     MappingRule rule = getMappingRule(RULE_NAME, RULE_STFNROOT, vfs);
-    return new ResourceService(Collections.<VirtualFSInterface>emptyList(),
+    return new ResourceService(Collections.<VirtualFS>emptyList(),
         Lists.newArrayList(rule));
   }
-
+  
   @Before
   public void initLocalTmpDirectory() throws IOException {
     new File(DIR_PATH).mkdirs();

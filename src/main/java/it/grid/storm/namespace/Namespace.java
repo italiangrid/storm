@@ -25,11 +25,18 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.commons.configuration.ConfigurationException;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.DOMException;
+import org.xml.sax.SAXException;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -43,11 +50,17 @@ import it.grid.storm.filesystem.Space;
 import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.config.NamespaceLoader;
 import it.grid.storm.namespace.config.NamespaceParser;
+import it.grid.storm.namespace.config.xml.XMLNamespaceLoader;
+import it.grid.storm.namespace.config.xml.XMLNamespaceParser;
 import it.grid.storm.namespace.model.ApproachableRule;
+import it.grid.storm.namespace.model.Authority;
 import it.grid.storm.namespace.model.MappingRule;
+import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.model.Quota;
 import it.grid.storm.namespace.model.StoRIType;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.namespace.naming.NamespaceUtil;
 import it.grid.storm.namespace.naming.NamingConst;
 import it.grid.storm.namespace.naming.SURL;
@@ -55,14 +68,36 @@ import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 
-public class Namespace implements NamespaceInterface {
+public class Namespace {
+
+  private static Namespace instance = null;
+
+  private static final Logger log = LoggerFactory.getLogger(Namespace.class);
 
   private static final String SPACE_FILE_NAME_SUFFIX = ".space";
   private static final char SPACE_FILE_NAME_SEPARATOR = '_';
-  private final Logger log = NamespaceDirector.getLogger();
+
   private final NamespaceParser parser;
 
-  public Namespace(NamespaceParser parser) {
+  public static void init(String namespaceFilePath, boolean semanticCheckEnabled)
+      throws DOMException, ConfigurationException, ParserConfigurationException, SAXException,
+      IOException, NamespaceException {
+
+    NamespaceLoader loader = null;
+
+    log.info("Initializing Namespace from {} ...", namespaceFilePath);
+    loader = new XMLNamespaceLoader(namespaceFilePath);
+
+    instance = new Namespace(new XMLNamespaceParser(loader, semanticCheckEnabled));
+
+    log.debug("NAMESPACE INITIALIZATION : ... done!");
+  }
+
+  public static Namespace getInstance() {
+    return instance;
+  }
+
+  private Namespace(NamespaceParser parser) {
 
     this.parser = parser;
   }
@@ -72,28 +107,25 @@ public class Namespace implements NamespaceInterface {
     return parser.getNamespaceVersion();
   }
 
-  @Override
-  public List<VirtualFSInterface> getAllDefinedVFS() {
+  public List<VirtualFS> getAllDefinedVFS() {
 
     return parser.getVFSs().values().stream().collect(Collectors.toList());
   }
 
-  @Override
-  public Map<String, VirtualFSInterface> getAllDefinedVFSAsDictionary() {
+  public Map<String, VirtualFS> getAllDefinedVFSAsDictionary() {
 
     return parser.getMapVFS_Root();
   }
 
-  @Override
   public List<MappingRule> getAllDefinedMappingRules() {
 
     return parser.getMappingRules().values().stream().collect(Collectors.toList());
   }
 
-  public List<VirtualFSInterface> getApproachableVFS(GridUserInterface user) {
+  public List<VirtualFS> getApproachableVFS(GridUserInterface user) {
 
     Map<String, ApproachableRule> apprules = Maps.newHashMap(parser.getApproachableRules());
-    List<VirtualFSInterface> approachVFS = Lists.newLinkedList();
+    List<VirtualFS> approachVFS = Lists.newLinkedList();
     for (ApproachableRule appRule : apprules.values()) {
       if (appRule.match(user)) {
         approachVFS.addAll(appRule.getApproachableVFS());
@@ -102,13 +134,12 @@ public class Namespace implements NamespaceInterface {
     return approachVFS;
   }
 
-  @Override
-  public List<VirtualFSInterface> getApproachableByAnonymousVFS() throws NamespaceException {
+  public List<VirtualFS> getApproachableByAnonymousVFS() throws NamespaceException {
 
-    List<VirtualFSInterface> anonymousVFS = Lists.newLinkedList();
-    List<VirtualFSInterface> allVFS = Lists.newLinkedList(getAllDefinedVFS());
+    List<VirtualFS> anonymousVFS = Lists.newLinkedList();
+    List<VirtualFS> allVFS = Lists.newLinkedList(getAllDefinedVFS());
 
-    for (VirtualFSInterface vfs : allVFS) {
+    for (VirtualFS vfs : allVFS) {
       if (vfs.isApproachableByAnonymous()) {
         anonymousVFS.add(vfs);
       }
@@ -117,13 +148,12 @@ public class Namespace implements NamespaceInterface {
     return anonymousVFS;
   }
 
-  @Override
-  public List<VirtualFSInterface> getReadableByAnonymousVFS() throws NamespaceException {
+  public List<VirtualFS> getReadableByAnonymousVFS() throws NamespaceException {
 
-    List<VirtualFSInterface> readableVFS = Lists.newLinkedList();
-    List<VirtualFSInterface> allVFS = Lists.newLinkedList(getAllDefinedVFS());
+    List<VirtualFS> readableVFS = Lists.newLinkedList();
+    List<VirtualFS> allVFS = Lists.newLinkedList(getAllDefinedVFS());
 
-    for (VirtualFSInterface vfs : allVFS) {
+    for (VirtualFS vfs : allVFS) {
       if (vfs.isHttpWorldReadable()) {
         readableVFS.add(vfs);
       }
@@ -132,14 +162,12 @@ public class Namespace implements NamespaceInterface {
     return readableVFS;
   }
 
-  @Override
-  public List<VirtualFSInterface> getReadableOrApproachableByAnonymousVFS()
-      throws NamespaceException {
+  public List<VirtualFS> getReadableOrApproachableByAnonymousVFS() throws NamespaceException {
 
-    List<VirtualFSInterface> rowVFS = Lists.newLinkedList();
-    List<VirtualFSInterface> allVFS = Lists.newLinkedList(getAllDefinedVFS());
+    List<VirtualFS> rowVFS = Lists.newLinkedList();
+    List<VirtualFS> allVFS = Lists.newLinkedList(getAllDefinedVFS());
 
-    for (VirtualFSInterface vfs : allVFS) {
+    for (VirtualFS vfs : allVFS) {
       if (vfs.isHttpWorldReadable() || vfs.isApproachableByAnonymous()) {
         rowVFS.add(vfs);
       }
@@ -148,7 +176,7 @@ public class Namespace implements NamespaceInterface {
     return rowVFS;
   }
 
-  public VirtualFSInterface getDefaultVFS(GridUserInterface user) throws NamespaceException {
+  public VirtualFS getDefaultVFS(GridUserInterface user) throws NamespaceException {
 
     SortedSet<ApproachableRule> appRules = Sets.newTreeSet(getApproachableRules(user));
 
@@ -170,7 +198,7 @@ public class Namespace implements NamespaceInterface {
     ApproachableRule firstAppRule = appRules.first();
     log.debug("Default APP_RULE is the first: {}", firstAppRule);
 
-    VirtualFSInterface vfs = getApproachableDefaultVFS(firstAppRule);
+    VirtualFS vfs = getApproachableDefaultVFS(firstAppRule);
     log.debug("Default VFS for Space Files : {}", vfs);
     return vfs;
   }
@@ -210,7 +238,7 @@ public class Namespace implements NamespaceInterface {
     checkNotNull(surl, "resolveStoRI: invalid null surl");
 
     StoRI stori = null;
-    List<VirtualFSInterface> vfsApproachable = null;
+    List<VirtualFS> vfsApproachable = null;
 
     /* 1. compute user's approachable VFS: */
     if (isAnonymous(user)) {
@@ -263,7 +291,7 @@ public class Namespace implements NamespaceInterface {
 
     /* get the VFS where the resource is phisically located, if exists */
     String realPath = getStoRICanonicalPath(stori);
-    VirtualFSInterface targetVFS = getWinnerVFS(realPath, parser.getMapVFS_Root());
+    VirtualFS targetVFS = getWinnerVFS(realPath, parser.getMapVFS_Root());
     if (targetVFS == null) {
       log.debug("Unable to find a valid VFS from path '{}'", realPath);
       throw new InvalidSURLException(surl,
@@ -300,12 +328,12 @@ public class Namespace implements NamespaceInterface {
     return realPath;
   }
 
-  private boolean isStoRIEnclosed(StoRI stori, VirtualFSInterface vfs) throws NamespaceException {
+  private boolean isStoRIEnclosed(StoRI stori, VirtualFS vfs) throws NamespaceException {
 
     return resolveVFSbyLocalFile(stori.getLocalFile()).getRootPath().equals(vfs.getRootPath());
   }
 
-  private StoRI buildStoRI(VirtualFSInterface vfs, MappingRule mappingRule, TSURL surl)
+  private StoRI buildStoRI(VirtualFS vfs, MappingRule mappingRule, TSURL surl)
       throws NamespaceException {
 
     String stfnPath = surl.sfn().stfn().toString();
@@ -321,7 +349,7 @@ public class Namespace implements NamespaceInterface {
     return user == null;
   }
 
-  public VirtualFSInterface resolveVFSbySURL(TSURL surl, GridUserInterface user)
+  public VirtualFS resolveVFSbySURL(TSURL surl, GridUserInterface user)
       throws UnapprochableSurlException, InvalidSURLException, NamespaceException {
 
     if (surl == null || user == null) {
@@ -330,7 +358,7 @@ public class Namespace implements NamespaceInterface {
       throw new IllegalArgumentException(errorMsg);
     }
 
-    List<VirtualFSInterface> vfsApproachable = getApproachableVFS(user);
+    List<VirtualFS> vfsApproachable = getApproachableVFS(user);
     if (vfsApproachable.isEmpty()) {
       String errorMsg = String.format("Surl %s is not approachable by user %s", surl, user);
       log.debug(errorMsg);
@@ -351,20 +379,20 @@ public class Namespace implements NamespaceInterface {
 
   public StoRI resolveStoRIbyAbsolutePath(String absolutePath) throws NamespaceException {
 
-    VirtualFSInterface vfs = resolveVFSbyAbsolutePath(absolutePath);
+    VirtualFS vfs = resolveVFSbyAbsolutePath(absolutePath);
     log.debug("VFS retrivied is {}", vfs.getAliasName());
     log.debug("VFS instance is {}", vfs.hashCode());
     return resolveStoRIbyAbsolutePath(absolutePath, vfs);
   }
 
-  public StoRI resolveStoRIbyAbsolutePath(String absolutePath, VirtualFSInterface vfs)
+  public StoRI resolveStoRIbyAbsolutePath(String absolutePath, VirtualFS vfs)
       throws NamespaceException {
 
     String relativePath = NamespaceUtil.extractRelativePath(vfs.getRootPath(), absolutePath);
     return vfs.createFile(relativePath);
   }
 
-  public VirtualFSInterface resolveVFSbyAbsolutePath(String absolutePath, GridUserInterface user)
+  public VirtualFS resolveVFSbyAbsolutePath(String absolutePath, GridUserInterface user)
       throws NamespaceException {
 
     /**
@@ -377,21 +405,20 @@ public class Namespace implements NamespaceInterface {
    * Method used by srmGetSpaceMetadata
    * 
    * @param absolutePath String
-   * @return VirtualFSInterface
+   * @return VirtualFS
    * @throws NamespaceException
    */
-  public VirtualFSInterface resolveVFSbyRoot(String absolutePath) throws NamespaceException {
+  public VirtualFS resolveVFSbyRoot(String absolutePath) throws NamespaceException {
 
     return getWinnerVFS(absolutePath, parser.getMapVFS_Root());
   }
 
-  public VirtualFSInterface resolveVFSbyAbsolutePath(String absolutePath)
-      throws NamespaceException {
+  public VirtualFS resolveVFSbyAbsolutePath(String absolutePath) throws NamespaceException {
 
     return getWinnerVFS(absolutePath, parser.getMapVFS_Root());
   }
 
-  public VirtualFSInterface resolveVFSbyLocalFile(LocalFile file) throws NamespaceException {
+  public VirtualFS resolveVFSbyLocalFile(LocalFile file) throws NamespaceException {
 
     try {
       return this.resolveVFSbyAbsolutePath(file.getCanonicalPath());
@@ -405,7 +432,7 @@ public class Namespace implements NamespaceInterface {
     /**
      * @todo Check the approachable rules
      */
-    VirtualFSInterface vfs = resolveVFSbyPFN(pfn);
+    VirtualFS vfs = resolveVFSbyPFN(pfn);
     String vfsRoot = vfs.getRootPath();
     String relativePath = NamespaceUtil.extractRelativePath(vfsRoot, pfn.getValue());
     return vfs.createFile(relativePath);
@@ -415,10 +442,10 @@ public class Namespace implements NamespaceInterface {
    * method used by GetSpaceMetaData Executor to retrieve the VFS and Quota Parameters.
    * 
    * @param pfn PFN
-   * @return VirtualFSInterface
+   * @return VirtualFS
    * @throws NamespaceException
    */
-  public VirtualFSInterface resolveVFSbyPFN(PFN pfn) throws NamespaceException {
+  public VirtualFS resolveVFSbyPFN(PFN pfn) throws NamespaceException {
 
     return getWinnerVFS(pfn.getValue(), parser.getMapVFS_Root());
   }
@@ -465,7 +492,7 @@ public class Namespace implements NamespaceInterface {
     log.debug("First approachable rule: {}", firstAppRule);
 
     String spacePath = getRelativePathForSpaceFile(firstAppRule);
-    VirtualFSInterface vfs = getApproachableDefaultVFS(firstAppRule);
+    VirtualFS vfs = getApproachableDefaultVFS(firstAppRule);
     log.debug("Default VFS for Space Files: {}", vfs);
 
     // Build the Space file path
@@ -546,24 +573,34 @@ public class Namespace implements NamespaceInterface {
     return appRules;
   }
 
+  public Set<String> getSupportedVOs() {
+    Set<String> vos = Sets.newHashSet();
+    parser.getApproachableRules().forEach((key, value) -> {
+      String voName = value.getSubjectRules().getVONameMatchingRule().getVOName();
+      if (!voName.contains("*")) {
+        vos.add(voName);
+      }
+    });
+    return vos;
+  }
+
   /**
    * 
    * @param appRule ApproachableRule
-   * @return VirtualFSInterface
+   * @return VirtualFS
    */
-  public VirtualFSInterface getApproachableDefaultVFS(ApproachableRule appRule)
-      throws NamespaceException {
+  public VirtualFS getApproachableDefaultVFS(ApproachableRule appRule) throws NamespaceException {
 
-    VirtualFSInterface defaultVFS = null;
+    VirtualFS defaultVFS = null;
     String defaultVFSName = null;
 
-    List<VirtualFSInterface> listVFS = appRule.getApproachableVFS();
+    List<VirtualFS> listVFS = appRule.getApproachableVFS();
     if (listVFS != null && !listVFS.isEmpty()) {
       log.debug(" VFS List = {}", listVFS);
       // Looking for the default element, signed with a '*' char at the end
       // Various VFS names exists. The default is '*' tagged or the first.
       String vfsName = null;
-      for (VirtualFSInterface element : listVFS) {
+      for (VirtualFS element : listVFS) {
         if (element.getAliasName().endsWith("*")) {
           vfsName = element.getAliasName().substring(0, element.getAliasName().length() - 1);
           break;
@@ -590,10 +627,9 @@ public class Namespace implements NamespaceInterface {
     return result;
   }
 
-  public VirtualFSInterface resolveVFSbySpaceToken(TSpaceToken spaceToken)
-      throws NamespaceException {
+  public VirtualFS resolveVFSbySpaceToken(TSpaceToken spaceToken) throws NamespaceException {
 
-    Optional<VirtualFSInterface> vfs =
+    Optional<VirtualFS> vfs =
         getAllDefinedVFS().stream().filter(v -> spaceToken.equals(v.getSpaceToken())).findFirst();
     if (vfs.isPresent()) {
       return vfs.get();
@@ -606,12 +642,12 @@ public class Namespace implements NamespaceInterface {
       throws NamespaceException {
 
     List<String> stfnRoots = Lists.newArrayList();
-    List<VirtualFSInterface> listVFS = getApproachableVFS(user);
+    List<VirtualFS> listVFS = getApproachableVFS(user);
     Map<String, MappingRule> rules = Maps.newHashMap(parser.getMappingRules());
 
     // Retrieve the list of stfnRoot approachable
     for (Map.Entry<String, MappingRule> rule : rules.entrySet()) {
-      VirtualFSInterface mappedFS = rule.getValue().getMappedFS();
+      VirtualFS mappedFS = rule.getValue().getMappedFS();
       if (listVFS.contains(mappedFS)) { // retrieve stfnRoot
         stfnRoots.add(rule.getValue().getStFNRoot());
       }
@@ -635,17 +671,17 @@ public class Namespace implements NamespaceInterface {
     return false;
   }
 
-  public List<VirtualFSInterface> getVFSWithQuotaEnabled() {
+  public List<VirtualFS> getVFSWithQuotaEnabled() {
 
-    List<VirtualFSInterface> vfsSet = getAllDefinedVFS();
+    List<VirtualFS> vfsSet = getAllDefinedVFS();
     log.debug("Found '{}' VFS defined in Namespace.xml", vfsSet.size());
-    List<VirtualFSInterface> vfsSetQuota =
+    List<VirtualFS> vfsSetQuota =
         vfsSet.stream().filter(vfs -> isGPFSQuotaEnabled(vfs)).collect(Collectors.toList());
     log.debug("Number of VFS with Quota enabled: {}", vfsSetQuota.size());
     return vfsSetQuota;
   }
 
-  private boolean isGPFSQuotaEnabled(VirtualFSInterface vfs) {
+  private boolean isGPFSQuotaEnabled(VirtualFS vfs) {
 
     Preconditions.checkNotNull(vfs, "vfsItem must not be null!");
 
@@ -672,4 +708,14 @@ public class Namespace implements NamespaceInterface {
 
   }
 
+  public Set<Authority> getManagedEndpoints(Protocol protocol) {
+
+    Set<Authority> endpoints = Sets.newHashSet();
+    this.getAllDefinedVFS().forEach(vfs -> {
+      vfs.getCapabilities().getManagedProtocolByScheme(protocol).forEach(tp -> {
+        endpoints.add(tp.getAuthority());
+      });
+    });
+    return endpoints;
+  }
 }

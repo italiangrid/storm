@@ -22,24 +22,29 @@ package it.grid.storm.griduser;
  */
 public class CannotMapUserException extends GridUserException {
 
-	public CannotMapUserException() {
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-		super();
-	}
+  public CannotMapUserException() {
 
-	public CannotMapUserException(String message) {
+    super();
+  }
 
-		super(message);
-	}
+  public CannotMapUserException(String message) {
 
-	public CannotMapUserException(String message, Throwable cause) {
+    super(message);
+  }
 
-		super(message, cause);
-	}
+  public CannotMapUserException(String message, Throwable cause) {
 
-	public CannotMapUserException(Throwable cause) {
+    super(message, cause);
+  }
 
-		super(cause);
-	}
+  public CannotMapUserException(Throwable cause) {
+
+    super(cause);
+  }
 
 }

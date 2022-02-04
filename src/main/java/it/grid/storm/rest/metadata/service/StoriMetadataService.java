@@ -22,7 +22,7 @@ import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.rest.metadata.model.FileAttributes;
 import it.grid.storm.rest.metadata.model.StoriMetadata;
 import it.grid.storm.rest.metadata.model.VirtualFsMetadata;
@@ -54,7 +54,7 @@ public class StoriMetadataService {
 
   private StoriMetadata buildFileMetadata(StoRI stori) throws IOException, FSException {
 
-    VirtualFSInterface vfs = stori.getVirtualFileSystem();
+    VirtualFS vfs = stori.getVirtualFileSystem();
     String canonicalPath = stori.getLocalFile().getCanonicalPath();
     log.debug("VirtualFS is {}", vfs.getAliasName());
     VirtualFsMetadata vfsMeta =

@@ -59,18 +59,6 @@ public class PathACE {
 
   // =========== CONSTRUCTORs ============
 
-  /**
-   * Quite similar to clone
-   * 
-   * @throws AuthzException
-   */
-  public static PathACE build(PathACE other) throws AuthzException {
-
-    PathACE result = new PathACE(other.localGroupName, other.getStorageFileName(),
-        other.getPathAccessMask(), other.isPermitAce());
-    return result;
-  }
-
   private static PathACE buildPermitAllPathACE() throws IllegalStateException {
 
     try {

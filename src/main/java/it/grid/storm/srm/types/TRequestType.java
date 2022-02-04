@@ -18,8 +18,8 @@
 package it.grid.storm.srm.types;
 
 /**
- * This class represents the ReqType of an SRM request. It is a simple
- * application of the TypeSafe Enum Pattern.
+ * This class represents the ReqType of an SRM request. It is a simple application of the TypeSafe
+ * Enum Pattern.
  * 
  * @author EGRID ICTP Trieste / CNAF Bologna
  * @date March 18th, 2005
@@ -27,44 +27,28 @@ package it.grid.storm.srm.types;
  */
 public enum TRequestType {
 
-	PREPARE_TO_GET("PrepareToGet"), PREPARE_TO_PUT("PrepareToPut"), COPY("Copy"), BRING_ON_LINE(
-		"BringOnLine"), EMPTY("Empty"), UNKNOWN("Unknown");
+  PREPARE_TO_GET("PrepareToGet"), PREPARE_TO_PUT("PrepareToPut"), COPY("Copy"), BRING_ON_LINE(
+      "BringOnLine"), EMPTY("Empty");
 
-	private final String value;
+  private final String value;
 
-	private TRequestType(String value) {
+  private TRequestType(String value) {
 
-		this.value = value;
-	}
+    this.value = value;
+  }
 
-	public String getValue() {
+  public String getValue() {
 
-		return value;
-	}
+    return value;
+  }
 
-	/**
-	 * Facility method that returns a TRequestType object given its String
-	 * representation. If no TRequestType is found for the given String, an
-	 * IllegalArgumentException is thrown.
-	 */
-	public static TRequestType getTRequestType(String type)
-		throws IllegalArgumentException {
+  public boolean isEmpty() {
 
-		for (TRequestType requestType : TRequestType.values()) {
-			if (requestType.getValue().equals(type)) {
-				return requestType;
-			}
-		}
-		return UNKNOWN;
-	}
+    return this.equals(EMPTY);
+  }
 
-	public boolean isEmpty() {
+  public String toString() {
 
-		return this.equals(EMPTY);
-	}
-
-	public String toString() {
-
-		return value;
-	}
+    return value;
+  }
 }

@@ -25,40 +25,6 @@
  */
 package it.grid.storm.synchcall.command.datatransfer;
 
-import it.grid.storm.authz.AuthzException;
-import it.grid.storm.catalogs.PtPChunkCatalog;
-import it.grid.storm.catalogs.PtPPersistentChunkData;
-import it.grid.storm.catalogs.RequestSummaryCatalog;
-import it.grid.storm.catalogs.surl.SURLStatusManager;
-import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
-import it.grid.storm.config.Configuration;
-import it.grid.storm.filesystem.LocalFile;
-import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.namespace.InvalidSURLException;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
-import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.UnapprochableSurlException;
-import it.grid.storm.srm.types.ArrayOfSURLs;
-import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
-import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.srm.types.TRequestType;
-import it.grid.storm.srm.types.TReturnStatus;
-import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.srm.types.TSURLReturnStatus;
-import it.grid.storm.srm.types.TSpaceToken;
-import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.synchcall.command.AbstractCommand;
-import it.grid.storm.synchcall.command.space.ReserveSpaceCommand;
-import it.grid.storm.synchcall.data.DataHelper;
-import it.grid.storm.synchcall.data.IdentityInputData;
-import it.grid.storm.synchcall.data.datatransfer.AbortFilesInputData;
-import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
-import it.grid.storm.synchcall.data.datatransfer.AbortInputData;
-import it.grid.storm.synchcall.surl.ExpiredTokenException;
-import it.grid.storm.synchcall.surl.UnknownTokenException;
-
 import static it.grid.storm.srm.types.TStatusCode.SRM_ABORTED;
 import static it.grid.storm.srm.types.TStatusCode.SRM_AUTHORIZATION_FAILURE;
 import static it.grid.storm.srm.types.TStatusCode.SRM_FAILURE;
@@ -82,6 +48,39 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
+import it.grid.storm.authz.AuthzException;
+import it.grid.storm.catalogs.PtPChunkCatalog;
+import it.grid.storm.catalogs.RequestSummaryCatalog;
+import it.grid.storm.catalogs.surl.SURLStatusManager;
+import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.filesystem.LocalFile;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.InvalidSURLException;
+import it.grid.storm.namespace.Namespace;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.UnapprochableSurlException;
+import it.grid.storm.persistence.model.PtPPersistentChunkData;
+import it.grid.storm.srm.types.ArrayOfSURLs;
+import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
+import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.srm.types.TRequestType;
+import it.grid.storm.srm.types.TReturnStatus;
+import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TSURLReturnStatus;
+import it.grid.storm.srm.types.TSpaceToken;
+import it.grid.storm.srm.types.TStatusCode;
+import it.grid.storm.synchcall.command.AbstractCommand;
+import it.grid.storm.synchcall.command.space.ReserveSpaceCommand;
+import it.grid.storm.synchcall.data.DataHelper;
+import it.grid.storm.synchcall.data.IdentityInputData;
+import it.grid.storm.synchcall.data.datatransfer.AbortFilesInputData;
+import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
+import it.grid.storm.synchcall.data.datatransfer.AbortInputData;
+import it.grid.storm.synchcall.surl.ExpiredTokenException;
+import it.grid.storm.synchcall.surl.UnknownTokenException;
+
 public class PtPAbortExecutor implements AbortExecutorInterface {
 
   private static final Logger log = LoggerFactory.getLogger(PtPAbortExecutor.class);
@@ -89,7 +88,7 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
   static Configuration config = Configuration.getInstance();
   private static int maxLoopTimes = PtPAbortExecutor.config.getMaxLoop();
 
-  private NamespaceInterface namespace;
+  private Namespace namespace;
 
   private final List<TStatusCode> acceptedStatuses =
       Lists.newArrayList(SRM_SPACE_AVAILABLE, SRM_REQUEST_QUEUED);
@@ -97,7 +96,7 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
   public AbortGeneralOutputData doIt(AbortInputData inputData) {
 
     // Used to delete the physical file
-    namespace = NamespaceDirector.getNamespace();
+    namespace = Namespace.getInstance();
 
     AbortGeneralOutputData outputData = new AbortGeneralOutputData();
     ArrayOfTSURLReturnStatus arrayOfTSurlRetStatus = new ArrayOfTSURLReturnStatus();
@@ -418,7 +417,7 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
       TSURL surl, TReturnStatus status, AbortInputData inputData) {
 
     boolean failure = false;
-    namespace = NamespaceDirector.getNamespace();
+    namespace = Namespace.getInstance();
 
     TSURLReturnStatus surlReturnStatus = new TSURLReturnStatus();
     surlReturnStatus.setSurl(surl);
@@ -587,8 +586,9 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
       surlReturnStatus
         .setStatus(new TReturnStatus(SRM_SUCCESS, "File request successfully aborted."));
       try {
-        NamespaceDirector.getNamespace()
+        Namespace.getInstance()
           .resolveVFSbyLocalFile(fileToRemove)
+          .getSpaceUpdater()
           .decreaseUsedSpace(sizeToRemove);
       } catch (NamespaceException e) {
         log.error(e.getMessage());

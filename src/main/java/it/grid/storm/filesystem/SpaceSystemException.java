@@ -18,8 +18,7 @@
 package it.grid.storm.filesystem;
 
 /**
- * Class that represents an Exception thrown whenever a SpaceSystem cannot be
- * instantiated.
+ * Class that represents an Exception thrown whenever a SpaceSystem cannot be instantiated.
  * 
  * @author EGRID - ICTP Trieste
  * @version 1.0
@@ -27,20 +26,25 @@ package it.grid.storm.filesystem;
  */
 public class SpaceSystemException extends Exception {
 
-	private String explanation = "";
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	/**
-	 * Constructor that requires a non-null String describing the problem
-	 * encountered. If a null is supplied, then an empty String is used instead.
-	 */
-	public SpaceSystemException(String explanation) {
+  private String explanation = "";
 
-		if (explanation != null)
-			this.explanation = explanation;
-	}
+  /**
+   * Constructor that requires a non-null String describing the problem encountered. If a null is
+   * supplied, then an empty String is used instead.
+   */
+  public SpaceSystemException(String explanation) {
 
-	public String toString() {
+    if (explanation != null)
+      this.explanation = explanation;
+  }
 
-		return explanation;
-	}
+  public String toString() {
+
+    return explanation;
+  }
 }

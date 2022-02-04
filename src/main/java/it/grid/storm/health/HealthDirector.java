@@ -17,239 +17,143 @@
 
 package it.grid.storm.health;
 
+import org.slf4j.Logger;
+
 import it.grid.storm.config.Configuration;
 import it.grid.storm.logging.StoRMLoggers;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import org.slf4j.Logger;
-
 public class HealthDirector {
 
-	public static final Logger LOGGER = StoRMLoggers.getHBLogger();
-	public static final Logger HEARTLOG = StoRMLoggers.getHBLogger();
-	private static final Logger BOOKKEEPING = StoRMLoggers.getBKLogger();
-	private static final Logger PERFLOG = StoRMLoggers.getPerfLogger();
+  public static final Logger LOGGER = StoRMLoggers.getHBLogger();
+  public static final Logger HEARTLOG = StoRMLoggers.getHBLogger();
+  private static final Logger BOOKKEEPING = StoRMLoggers.getBKLogger();
+  private static final Logger PERFLOG = StoRMLoggers.getPerfLogger();
 
-	private static boolean initialized = false;
-	private static HealthMonitor healthMonitorIstance = null;
-	private static boolean bookKeepingConfigured = false;
-	private static boolean bookKeepingEnabled = false;
+  private static boolean initialized = false;
+  private static HealthMonitor healthMonitorIstance = null;
+  private static boolean bookKeepingConfigured = false;
+  private static boolean bookKeepingEnabled = false;
 
-	private static boolean performanceMonitorConfigured = false;
-	private static boolean performanceMonitorEnabled = false;
+  private static boolean performanceMonitorConfigured = false;
+  private static boolean performanceMonitorEnabled = false;
 
-	private static long bornInstant = -1L;
-	private static String bornInstantStr = null;
+  private static long bornInstant = -1L;
 
-	public static int timeToLiveLogEventInSec = Configuration.getInstance()
-		.getPerformanceLogbookTimeInterval();
+  public static int timeToLiveLogEventInSec =
+      Configuration.getInstance().getHearthbeatPerformanceLogbookTimeInterval();
 
-	/**
-	 * 
-	 * @param testingMode
-	 *          boolean
-	 */
-	public static void initializeDirector(boolean testingMode) {
+  public static void initializeDirector() {
 
-		// configureHealthLog(testingMode);
+    bookKeepingEnabled = Configuration.getInstance().isHearthbeatBookkeepingEnabled();
+    if (bookKeepingEnabled) {
+      bookKeepingConfigured = true;
+    }
 
-		bookKeepingEnabled = Configuration.getInstance().getBookKeepingEnabled();
-		if (bookKeepingEnabled) {
-			// configureBookKeeping(testingMode);
-			bookKeepingConfigured = true;
-		}
+    int statusPeriod = Configuration.getInstance().getHearthbeatPeriod();
 
-		int statusPeriod = Configuration.getInstance().getHearthbeatPeriod();
-		if (testingMode) {
-			statusPeriod = 5;
-		}
+    bornInstant = System.currentTimeMillis();
+    healthMonitorIstance = new HealthMonitor(1, statusPeriod);
 
-		// Record the born of StoRM instance
-		bornInstant = System.currentTimeMillis();
-		Date date = new Date(bornInstant);
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd HH.mm.ss");
-		bornInstantStr = formatter.format(date);
+    // Setting performance rate
+    performanceMonitorEnabled = Configuration.getInstance().isHearthbeatPerformanceMeasuringEnabled();
+    if (performanceMonitorEnabled) {
+      int glanceTimeInterval = Configuration.getInstance().getHearthbeatPerformanceGlanceTimeInterval();
 
-		healthMonitorIstance = new HealthMonitor(1, statusPeriod); // Start after 1
-																																// sec
+      LOGGER.debug("----- Performance GLANCE Time Interval = {}", glanceTimeInterval);
+      LOGGER.debug("----- Performance LOGBOOK Time Interval = {}", timeToLiveLogEventInSec);
 
-		// Setting performance rate
-		performanceMonitorEnabled = Configuration.getInstance()
-			.getPerformanceMeasuring();
-		if (performanceMonitorEnabled) {
-			// configurePerformanceMonitor(testingMode);
-			int glanceTimeInterval = Configuration.getInstance()
-				.getPerformanceGlanceTimeInterval();
+      healthMonitorIstance.initializePerformanceMonitor(timeToLiveLogEventInSec,
+          glanceTimeInterval);
 
-			LOGGER.debug("----- Performance GLANCE Time Interval = "
-				+ glanceTimeInterval);
-			LOGGER.debug("----- Performance LOGBOOK Time Interval = "
-				+ timeToLiveLogEventInSec);
+    }
 
-			healthMonitorIstance.initializePerformanceMonitor(
-				timeToLiveLogEventInSec, glanceTimeInterval);
-	
-		}
-	
-		initialized = true;
+    initialized = true;
 
-	}
+  }
 
+  /**
+   * 
+   * @return Logger
+   */
+  public static Logger getLogger() {
 
-	private static String getHealthPatternLayout() {
+    return LOGGER;
+  }
 
-		/**
-		 * @todo : Retrieve Patter Layout from Configuration ..
-		 */
-		String pattern = "[%d{ISO8601}]: %m%n";
-		return pattern;
-	}
+  /**
+   * 
+   * @return Logger
+   */
+  public static Logger getHealthLogger() {
 
-	/**
-	 * @return String
-	 */
-	private static String getBookKeppingPatternLayout() {
+    return HEARTLOG;
+  }
 
-		/**
-		 * @todo : Retrieve Patter Layout from Configuration ..
-		 */
-		String pattern = "[%d{ISO8601}]: %-5p [%t] %x -%m%n";
-		return pattern;
-	}
+  /**
+   * 
+   * @return Logger
+   */
+  public static Logger getBookkeepingLogger() {
 
-	/**
-	 * @return String
-	 */
-	private static String getPerformanceMonitoringPatternLayout() {
+    return BOOKKEEPING;
+  }
 
-		/**
-		 * @todo : Retrieve Patter Layout from Configuration ..
-		 */
-		String pattern = "[%d{ISO8601}]: %m%n";
-		return pattern;
-	}
+  /**
+   * 
+   * @return Logger
+   */
+  public static Logger getPerformanceLogger() {
 
-	/**
-	 * 
-	 * @return Logger
-	 */
-	public static Logger getLogger() {
+    return PERFLOG;
+  }
 
-		return LOGGER;
-	}
+  public static boolean isBookKeepingConfigured() {
 
-	/**
-	 * 
-	 * @return Logger
-	 */
-	public static Logger getHealthLogger() {
+    return bookKeepingConfigured;
+  }
 
-		return HEARTLOG;
-	}
+  public static boolean isBookKeepingEnabled() {
 
-	/**
-	 * 
-	 * @return Logger
-	 */
-	public static Logger getBookkeepingLogger() {
+    return bookKeepingEnabled;
+  }
 
-		return BOOKKEEPING;
-	}
+  public static boolean isPerformanceMonitorConfigured() {
 
-	/**
-	 * 
-	 * @return Logger
-	 */
-	public static Logger getPerformanceLogger() {
+    return performanceMonitorConfigured;
+  }
 
-		return PERFLOG;
-	}
+  public static boolean isPerformanceMonitorEnabled() {
 
-	public static boolean isBookKeepingConfigured() {
+    return performanceMonitorEnabled;
+  }
 
-		return bookKeepingConfigured;
-	}
+  /**
+   * 
+   * @return Logger
+   */
+  public static Logger getBookKeepingLogger() {
 
-	public static boolean isBookKeepingEnabled() {
+    return BOOKKEEPING;
+  }
 
-		return bookKeepingEnabled;
-	}
+  /**
+   * 
+   * @return Namespace
+   */
+  public static HealthMonitor getHealthMonitor() {
 
-	public static boolean isPerformanceMonitorConfigured() {
+    if (!(initialized)) {
+      initializeDirector();
+    }
+    return healthMonitorIstance;
+  }
 
-		return performanceMonitorConfigured;
-	}
+  public static long getBornInstant() {
 
-	public static boolean isPerformanceMonitorEnabled() {
-
-		return performanceMonitorEnabled;
-	}
-
-	/**
-	 * 
-	 * @return Logger
-	 */
-	public static Logger getBookKeepingLogger() {
-
-		return BOOKKEEPING;
-	}
-
-	/**
-	 * 
-	 * @return Namespace
-	 */
-	public static HealthMonitor getHealthMonitor() {
-
-		if (!(initialized)) {
-			initializeDirector(false);
-		}
-		return healthMonitorIstance;
-	}
-
-	/**
-	 * 
-	 * @return Namespace
-	 */
-	public static HealthMonitor getHealthMonitor(boolean testingMode) {
-
-		if (!(initialized)) {
-			initializeDirector(testingMode);
-		}
-		return healthMonitorIstance;
-	}
-
-	public static long getBornInstant(boolean testingMode) {
-
-		if (!(initialized)) {
-			initializeDirector(testingMode);
-		}
-		return bornInstant;
-	}
-
-	public static String getBornInstantStr(boolean testingMode) {
-
-		if (!(initialized)) {
-			initializeDirector(testingMode);
-		}
-		return bornInstantStr;
-	}
-
-	public static long getBornInstant() {
-
-		if (!(initialized)) {
-			initializeDirector(false);
-		}
-		return bornInstant;
-	}
-
-	public static String getBornInstantStr() {
-
-		if (!(initialized)) {
-			initializeDirector(false);
-		}
-		return bornInstantStr;
-	}
+    if (!(initialized)) {
+      initializeDirector();
+    }
+    return bornInstant;
+  }
 
 }

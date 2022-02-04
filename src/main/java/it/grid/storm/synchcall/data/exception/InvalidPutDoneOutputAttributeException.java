@@ -31,17 +31,21 @@ import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 
 public class InvalidPutDoneOutputAttributeException extends Exception {
 
-	private boolean nullSurlStatus = true;
+  /**
+  * 
+  */
+  private static final long serialVersionUID = 1L;
 
-	public InvalidPutDoneOutputAttributeException(
-		ArrayOfTSURLReturnStatus surlStatus) {
+  private boolean nullSurlStatus = true;
 
-		nullSurlStatus = (surlStatus == null);
-	}
+  public InvalidPutDoneOutputAttributeException(ArrayOfTSURLReturnStatus surlStatus) {
 
-	public String toString() {
+    nullSurlStatus = (surlStatus == null);
+  }
 
-		return "nullSurlStatusArray = " + nullSurlStatus;
-	}
+  public String toString() {
+
+    return "nullSurlStatusArray = " + nullSurlStatus;
+  }
 
 }

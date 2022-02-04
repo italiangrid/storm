@@ -21,14 +21,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Random;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.BOL;
-import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.PTG;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -38,423 +34,398 @@ import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
 public class TapeRecallTO implements Serializable, Comparable<TapeRecallTO> {
 
-	public enum RecallTaskType {
-
-		PTG, BOL, BACK, RCLL;
-	}
-
-	private static final Logger log = LoggerFactory.getLogger(TapeRecallTO.class);
-
-	private static final long serialVersionUID = -2907739786996767167L;
-
-	public static final String START_CHAR = "";
-	public static final char SEPARATOR_CHAR = '\u0009';
-	public static final String DATE_FORMAT = "dd-MM-yyyy HH.mm.ss";
+  public enum RecallTaskType {
 
-	private UUID taskId = null;
-	private TRequestToken requestToken = null;
-	private RecallTaskType requestType = null;
-	private String fileName = null;
-	private String userID = null;
-	private String voName = null;
-	private int pinLifetime = 0;
-	private TapeRecallStatus status = TapeRecallStatus.QUEUED;
-	private int retryAttempt = 0;
-	private Date insertionInstant = null;
-	private Date inProgressInstant = null;
-	private Date finalStateInstant = null;
-	private Date deferredRecallInstant = null;
-	private UUID groupTaskId = null;
+    PTG, BOL, BACK, RCLL;
+  }
 
-	private final Calendar endOfTheWorld = new GregorianCalendar(2012, Calendar.DECEMBER, 21);
+  private static final Logger log = LoggerFactory.getLogger(TapeRecallTO.class);
 
-	public static TapeRecallTO createRandom(Date date, String voName) {
+  private static final long serialVersionUID = -2907739786996767167L;
 
-		TapeRecallTO result = new TapeRecallTO();
-		Random r = new Random();
-		result.setFileName("/root/" + voName + "/test/" + r.nextInt(1001));
-		result.setRequestToken(TRequestToken.getRandom());
-		if (r.nextInt(2) == 0) {
-			result.setRequestType(BOL);
-		} else {
-			result.setRequestType(PTG);
-		}
-		result.setUserID("FakeId");
-		result.setRetryAttempt(0);
-		result.setPinLifetime(r.nextInt(1001));
-		result.setVoName(voName);
-		result.setInsertionInstant(date);
-		int deferred = r.nextInt(2);
-		Date deferredRecallTime = new Date(date.getTime() + (deferred * (long) Math.random()));
-		result.setDeferredRecallInstant(deferredRecallTime);
-		result.setGroupTaskId(UUID.randomUUID());
-		return result;
-	}
+  public static final String START_CHAR = "";
+  public static final char SEPARATOR_CHAR = '\u0009';
+  public static final String DATE_FORMAT = "dd-MM-yyyy HH.mm.ss";
 
-	/*
-	 * Implementing the natural order (by age)
-	 */
-	public int compareTo(TapeRecallTO arg0) {
+  private UUID taskId = null;
+  private TRequestToken requestToken = null;
+  private RecallTaskType requestType = null;
+  private String fileName = null;
+  private String userID = null;
+  private String voName = null;
+  private int pinLifetime = 0;
+  private TapeRecallStatus status = TapeRecallStatus.QUEUED;
+  private int retryAttempt = 0;
+  private Date insertionInstant = null;
+  private Date inProgressInstant = null;
+  private Date finalStateInstant = null;
+  private Date deferredRecallInstant = null;
+  private UUID groupTaskId = null;
 
-		if (arg0 == null) {
-			return 0;
-		}
-		return insertionInstant.compareTo(arg0.getInsertionInstant());
-	}
+  private final Calendar endOfTheWorld = new GregorianCalendar(2012, Calendar.DECEMBER, 21);
 
-	public Date getDeferredRecallInstant() {
+  /*
+   * Implementing the natural order (by age)
+   */
+  public int compareTo(TapeRecallTO arg0) {
 
-		return deferredRecallInstant;
-	}
+    if (arg0 == null) {
+      return 0;
+    }
+    return insertionInstant.compareTo(arg0.getInsertionInstant());
+  }
 
-	public String getFileName() {
+  public Date getDeferredRecallInstant() {
 
-		return fileName;
-	}
+    return deferredRecallInstant;
+  }
 
-	public Date getInsertionInstant() {
+  public String getFileName() {
 
-		return insertionInstant;
-	}
+    return fileName;
+  }
 
-	public Date getInProgressInstant() {
+  public Date getInsertionInstant() {
 
-		return inProgressInstant;
-	}
+    return insertionInstant;
+  }
 
-	public Date getFinalStateInstant() {
+  public Date getInProgressInstant() {
 
-		return finalStateInstant;
-	}
+    return inProgressInstant;
+  }
 
-	public int getPinLifetime() {
+  public Date getFinalStateInstant() {
 
-		return pinLifetime;
-	}
+    return finalStateInstant;
+  }
 
-	public TapeRecallStatus getStatus() {
+  public int getPinLifetime() {
 
-		return status;
-	}
+    return pinLifetime;
+  }
 
-	/**
-	 * RequestToken is the primary key of the table
-	 * 
-	 * @return
-	 */
-	public TRequestToken getRequestToken() {
+  public TapeRecallStatus getStatus() {
 
-		return requestToken;
-	}
+    return status;
+  }
 
-	public RecallTaskType getRequestType() {
+  /**
+   * RequestToken is the primary key of the table
+   * 
+   * @return
+   */
+  public TRequestToken getRequestToken() {
 
-		return requestType;
-	}
+    return requestToken;
+  }
 
-	public int getRetryAttempt() {
+  public RecallTaskType getRequestType() {
 
-		return retryAttempt;
-	}
+    return requestType;
+  }
 
-	@JsonIgnore
-	public int getStatusId() {
+  public int getRetryAttempt() {
 
-		return status.getStatusId();
-	}
+    return retryAttempt;
+  }
 
-	public UUID getTaskId() {
+  @JsonIgnore
+  public int getStatusId() {
 
-		buildTaskId();
-		return taskId;
-	}
+    return status.getStatusId();
+  }
 
-	public UUID getGroupTaskId() {
+  public UUID getTaskId() {
 
-		return groupTaskId;
-	}
+    buildTaskId();
+    return taskId;
+  }
 
-	public String getUserID() {
+  public UUID getGroupTaskId() {
 
-		return userID;
-	}
+    return groupTaskId;
+  }
 
-	public String getVoName() {
+  public String getUserID() {
 
-		return voName;
-	}
+    return userID;
+  }
 
-	public void setDeferredRecallInstant(Date date) {
+  public String getVoName() {
 
-		deferredRecallInstant = date;
-	}
+    return voName;
+  }
 
-	public void setFileName(String fileName) {
+  public void setDeferredRecallInstant(Date date) {
 
-		this.fileName = fileName;
-		buildTaskId();
-	}
+    deferredRecallInstant = date;
+  }
 
-	public void setInsertionInstant(Date date) {
+  public void setFileName(String fileName) {
 
-		insertionInstant = date;
-	}
+    this.fileName = fileName;
+    buildTaskId();
+  }
 
-	private void setInProgressInstant(Date date) {
+  public void setInsertionInstant(Date date) {
 
-		inProgressInstant = date;
-	}
+    insertionInstant = date;
+  }
 
-	private void setFinalStateInstant(Date date) {
+  private void setInProgressInstant(Date date) {
 
-		finalStateInstant = date;
-	}
+    inProgressInstant = date;
+  }
 
-	public void setPinLifetime(int pinLifetime) {
+  private void setFinalStateInstant(Date date) {
 
-		this.pinLifetime = pinLifetime;
-	}
+    finalStateInstant = date;
+  }
 
-	/**
-	 * 
-	 * @param requestToken
-	 */
-	public void setRequestToken(TRequestToken requestToken) {
+  public void setPinLifetime(int pinLifetime) {
 
-		this.requestToken = requestToken;
-	}
+    this.pinLifetime = pinLifetime;
+  }
 
-	public void setRequestType(RecallTaskType requestType) {
+  /**
+   * 
+   * @param requestToken
+   */
+  public void setRequestToken(TRequestToken requestToken) {
 
-		this.requestType = requestType;
-	}
+    this.requestToken = requestToken;
+  }
 
-	public void setRetryAttempt(int retryAttempt) {
+  public void setRequestType(RecallTaskType requestType) {
 
-		this.retryAttempt = retryAttempt;
-	}
+    this.requestType = requestType;
+  }
 
-	/**
-	 * Sets the status of the recall task and if a transition is performed records the appropriate
-	 * time-stamp
-	 * 
-	 * @param status
-	 */
-	public void setStatus(TapeRecallStatus status) {
+  public void setRetryAttempt(int retryAttempt) {
 
-		this.status = status;
-		if (this.status.equals(TapeRecallStatus.IN_PROGRESS) && this.inProgressInstant == null) {
-			this.setInProgressInstant(new Date());
-		} else {
-			if (TapeRecallStatus.isFinalStatus(this.status.getStatusId())
-					&& this.inProgressInstant == null) {
-				this.setFinalStateInstant(new Date());
-			}
-		}
-	}
+    this.retryAttempt = retryAttempt;
+  }
 
-	/**
-	 * @param statusId
-	 */
-	public void setStatusId(int statusId) {
+  /**
+   * Sets the status of the recall task and if a transition is performed records the appropriate
+   * time-stamp
+   * 
+   * @param status
+   */
+  public void setStatus(TapeRecallStatus status) {
 
-		this.setStatus(TapeRecallStatus.getRecallTaskStatus(statusId));
-	}
+    this.status = status;
+    if (this.status.equals(TapeRecallStatus.IN_PROGRESS) && this.inProgressInstant == null) {
+      this.setInProgressInstant(new Date());
+    } else {
+      if (TapeRecallStatus.isFinalStatus(this.status.getStatusId())
+          && this.inProgressInstant == null) {
+        this.setFinalStateInstant(new Date());
+      }
+    }
+  }
 
-	public void setTaskId(UUID taskId) {
+  /**
+   * @param statusId
+   */
+  public void setStatusId(int statusId) {
 
-		this.taskId = taskId;
-	}
+    this.setStatus(TapeRecallStatus.getRecallTaskStatus(statusId));
+  }
 
-	public void setGroupTaskId(UUID groupTaskId) {
+  public void setTaskId(UUID taskId) {
 
-		this.groupTaskId = groupTaskId;
-	}
+    this.taskId = taskId;
+  }
 
-	public void setUserID(String userID) {
+  public void setGroupTaskId(UUID groupTaskId) {
 
-		this.userID = userID;
-	}
+    this.groupTaskId = groupTaskId;
+  }
 
-	public void setVoName(String voName) {
+  public void setUserID(String userID) {
 
-		this.voName = voName;
-	}
+    this.userID = userID;
+  }
 
-	/**
-	 * Does not print the taskId but the group task Id Does not print the state transition time
-	 * stamps
-	 * 
-	 * @return
-	 */
-	public String toGEMSS() {
+  public void setVoName(String voName) {
 
-		StringBuilder sb = new StringBuilder();
-
-		sb.append(START_CHAR);
-		sb.append(groupTaskId);
-		sb.append(SEPARATOR_CHAR);
-
-		Format formatter = new SimpleDateFormat(DATE_FORMAT);
-		if (insertionInstant != null) {
-			sb.append(formatter.format(insertionInstant));
-		} else {
-			insertionInstant = endOfTheWorld.getTime();
-			sb.append(formatter.format(insertionInstant));
-		}
-
-		sb.append(SEPARATOR_CHAR);
-		sb.append(requestType);
-		sb.append(SEPARATOR_CHAR);
-		sb.append(fileName);
-		sb.append(SEPARATOR_CHAR);
-		sb.append(voName);
-		sb.append(SEPARATOR_CHAR);
-		sb.append(userID);
-		sb.append(SEPARATOR_CHAR);
-		sb.append(retryAttempt);
-		sb.append(SEPARATOR_CHAR);
-		sb.append(status);
-		sb.append(SEPARATOR_CHAR);
-
-		if (deferredRecallInstant != null) {
-			sb.append(formatter.format(deferredRecallInstant));
-		} else {
-			sb.append(formatter.format(insertionInstant));
-		}
-
-		sb.append(SEPARATOR_CHAR);
-		sb.append(pinLifetime);
-		sb.append(SEPARATOR_CHAR);
-		sb.append(requestToken);
-		sb.append(SEPARATOR_CHAR);
-
-		if (inProgressInstant != null)
-			sb.append(formatter.format(inProgressInstant));
-		else
-			sb.append("null");
-
-		return sb.toString();
-	}
-
-	@Override
-	public String toString() {
-
-		StringBuilder sb = new StringBuilder();
-
-		sb.append(START_CHAR);
-		sb.append(taskId);
-		sb.append(SEPARATOR_CHAR);
-
-		Format formatter = new SimpleDateFormat(DATE_FORMAT);
-		if (insertionInstant != null) {
-			sb.append(formatter.format(insertionInstant));
-		} else {
-			insertionInstant = endOfTheWorld.getTime();
-			sb.append(formatter.format(insertionInstant));
-		}
-
-		sb.append(SEPARATOR_CHAR);
-		sb.append(requestType);
-		sb.append(SEPARATOR_CHAR);
-		sb.append(fileName);
-		sb.append(SEPARATOR_CHAR);
-		sb.append(voName);
-		sb.append(SEPARATOR_CHAR);
-		sb.append(userID);
-		sb.append(SEPARATOR_CHAR);
-		sb.append(retryAttempt);
-		sb.append(SEPARATOR_CHAR);
-		sb.append(status);
-		sb.append(SEPARATOR_CHAR);
-
-		if (inProgressInstant != null) {
-			sb.append(formatter.format(inProgressInstant));
-		} else {
-			sb.append("null");
-		}
-		sb.append(SEPARATOR_CHAR);
-
-		if (finalStateInstant != null) {
-			sb.append(formatter.format(finalStateInstant));
-		} else {
-			sb.append("null");
-		}
-		sb.append(SEPARATOR_CHAR);
-
-		if (deferredRecallInstant != null) {
-			sb.append(formatter.format(deferredRecallInstant));
-		} else {
-			sb.append(formatter.format(insertionInstant));
-		}
-
-		sb.append(SEPARATOR_CHAR);
-		sb.append(pinLifetime);
-		sb.append(SEPARATOR_CHAR);
-		sb.append(requestToken);
-		sb.append(SEPARATOR_CHAR);
-		sb.append(groupTaskId);
-		return sb.toString();
-	}
-
-	/**
-	 * This method generate a TaskId from fileName
-	 * 
-	 * @return
-	 */
-	private void buildTaskId() {
-
-		if (this.fileName != null) {
-			this.taskId = buildTaskIdFromFileName(this.fileName);
-		} else {
-			log.error("Unable to create taskId because filename is NULL");
-		}
-	}
-
-	public static UUID buildTaskIdFromFileName(String fileName) {
-
-		return UUID.nameUUIDFromBytes(fileName.getBytes());
-	}
-
-	/**
-	 * Intended to be used when building this object from a database row NOTE: before to call this
-	 * method, call the set status method
-	 * 
-	 * @param inProgressInstant
-	 * @param finalStateInstant
-	 */
-	public void forceStatusUpdateInstants(Date inProgressInstant, Date finalStateInstant) {
-
-		if (inProgressInstant != null) {
-			if (this.status.equals(TapeRecallStatus.IN_PROGRESS)
-					|| TapeRecallStatus.isFinalStatus(this.status.getStatusId())) {
-				this.inProgressInstant = inProgressInstant;
-			} else {
-				log.error("Unable to force the in progress transition time-stamp. "
-						+ "Invalid status: {}", status);
-			}
-		}
-		if (finalStateInstant != null) {
-			if (TapeRecallStatus.isFinalStatus(this.status.getStatusId())) {
-				this.finalStateInstant = finalStateInstant;
-			} else {
-				log.error("Unable to force the in final status transition time-stamp. "
-						+ "current status {} is not finale", status);
-			}
-		}
-	}
-
-	public void setFakeRequestToken() {
-
-		final String FAKE_PREFIX = "FAKE-";
-		try {
-			this.setRequestToken(new TRequestToken(
-					FAKE_PREFIX
-							.concat(UUID.randomUUID().toString().substring(FAKE_PREFIX.length())),
-					Calendar.getInstance().getTime()));
-		} catch (InvalidTRequestTokenAttributesException e) {
-			log.error(e.getMessage(), e);
-		}
-	}
+    this.voName = voName;
+  }
+
+  /**
+   * Does not print the taskId but the group task Id Does not print the state transition time stamps
+   * 
+   * @return
+   */
+  public String toGEMSS() {
+
+    StringBuilder sb = new StringBuilder();
+
+    sb.append(START_CHAR);
+    sb.append(groupTaskId);
+    sb.append(SEPARATOR_CHAR);
+
+    Format formatter = new SimpleDateFormat(DATE_FORMAT);
+    if (insertionInstant != null) {
+      sb.append(formatter.format(insertionInstant));
+    } else {
+      insertionInstant = endOfTheWorld.getTime();
+      sb.append(formatter.format(insertionInstant));
+    }
+
+    sb.append(SEPARATOR_CHAR);
+    sb.append(requestType);
+    sb.append(SEPARATOR_CHAR);
+    sb.append(fileName);
+    sb.append(SEPARATOR_CHAR);
+    sb.append(voName);
+    sb.append(SEPARATOR_CHAR);
+    sb.append(userID);
+    sb.append(SEPARATOR_CHAR);
+    sb.append(retryAttempt);
+    sb.append(SEPARATOR_CHAR);
+    sb.append(status);
+    sb.append(SEPARATOR_CHAR);
+
+    if (deferredRecallInstant != null) {
+      sb.append(formatter.format(deferredRecallInstant));
+    } else {
+      sb.append(formatter.format(insertionInstant));
+    }
+
+    sb.append(SEPARATOR_CHAR);
+    sb.append(pinLifetime);
+    sb.append(SEPARATOR_CHAR);
+    sb.append(requestToken);
+    sb.append(SEPARATOR_CHAR);
+
+    if (inProgressInstant != null)
+      sb.append(formatter.format(inProgressInstant));
+    else
+      sb.append("null");
+
+    return sb.toString();
+  }
+
+  @Override
+  public String toString() {
+
+    StringBuilder sb = new StringBuilder();
+
+    sb.append(START_CHAR);
+    sb.append(taskId);
+    sb.append(SEPARATOR_CHAR);
+
+    Format formatter = new SimpleDateFormat(DATE_FORMAT);
+    if (insertionInstant != null) {
+      sb.append(formatter.format(insertionInstant));
+    } else {
+      insertionInstant = endOfTheWorld.getTime();
+      sb.append(formatter.format(insertionInstant));
+    }
+
+    sb.append(SEPARATOR_CHAR);
+    sb.append(requestType);
+    sb.append(SEPARATOR_CHAR);
+    sb.append(fileName);
+    sb.append(SEPARATOR_CHAR);
+    sb.append(voName);
+    sb.append(SEPARATOR_CHAR);
+    sb.append(userID);
+    sb.append(SEPARATOR_CHAR);
+    sb.append(retryAttempt);
+    sb.append(SEPARATOR_CHAR);
+    sb.append(status);
+    sb.append(SEPARATOR_CHAR);
+
+    if (inProgressInstant != null) {
+      sb.append(formatter.format(inProgressInstant));
+    } else {
+      sb.append("null");
+    }
+    sb.append(SEPARATOR_CHAR);
+
+    if (finalStateInstant != null) {
+      sb.append(formatter.format(finalStateInstant));
+    } else {
+      sb.append("null");
+    }
+    sb.append(SEPARATOR_CHAR);
+
+    if (deferredRecallInstant != null) {
+      sb.append(formatter.format(deferredRecallInstant));
+    } else {
+      sb.append(formatter.format(insertionInstant));
+    }
+
+    sb.append(SEPARATOR_CHAR);
+    sb.append(pinLifetime);
+    sb.append(SEPARATOR_CHAR);
+    sb.append(requestToken);
+    sb.append(SEPARATOR_CHAR);
+    sb.append(groupTaskId);
+    return sb.toString();
+  }
+
+  /**
+   * This method generate a TaskId from fileName
+   * 
+   * @return
+   */
+  private void buildTaskId() {
+
+    if (this.fileName != null) {
+      this.taskId = buildTaskIdFromFileName(this.fileName);
+    } else {
+      log.error("Unable to create taskId because filename is NULL");
+    }
+  }
+
+  public static UUID buildTaskIdFromFileName(String fileName) {
+
+    return UUID.nameUUIDFromBytes(fileName.getBytes());
+  }
+
+  /**
+   * Intended to be used when building this object from a database row NOTE: before to call this
+   * method, call the set status method
+   * 
+   * @param inProgressInstant
+   * @param finalStateInstant
+   */
+  public void forceStatusUpdateInstants(Date inProgressInstant, Date finalStateInstant) {
+
+    if (inProgressInstant != null) {
+      if (this.status.equals(TapeRecallStatus.IN_PROGRESS)
+          || TapeRecallStatus.isFinalStatus(this.status.getStatusId())) {
+        this.inProgressInstant = inProgressInstant;
+      } else {
+        log.error("Unable to force the in progress transition time-stamp. " + "Invalid status: {}",
+            status);
+      }
+    }
+    if (finalStateInstant != null) {
+      if (TapeRecallStatus.isFinalStatus(this.status.getStatusId())) {
+        this.finalStateInstant = finalStateInstant;
+      } else {
+        log.error("Unable to force the in final status transition time-stamp. "
+            + "current status {} is not finale", status);
+      }
+    }
+  }
+
+  public void setFakeRequestToken() {
+
+    final String FAKE_PREFIX = "FAKE-";
+    try {
+      this.setRequestToken(new TRequestToken(
+          FAKE_PREFIX.concat(UUID.randomUUID().toString().substring(FAKE_PREFIX.length())),
+          Calendar.getInstance().getTime()));
+    } catch (InvalidTRequestTokenAttributesException e) {
+      log.error(e.getMessage(), e);
+    }
+  }
 
 }

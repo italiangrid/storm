@@ -1,17 +1,5 @@
 package it.grid.storm.space.gpfsquota;
 
-import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.common.types.SizeUnit;
-import it.grid.storm.concurrency.NamedThreadFactory;
-import it.grid.storm.config.Configuration;
-import it.grid.storm.filesystem.FilesystemError;
-import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.VirtualFSInterface;
-import it.grid.storm.persistence.exceptions.DataAccessException;
-import it.grid.storm.space.StorageSpaceData;
-import it.grid.storm.srm.types.TSizeInBytes;
-import it.grid.storm.util.VirtualFSHelper;
-
 import java.util.List;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
@@ -23,6 +11,18 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.grid.storm.catalogs.ReservedSpaceCatalog;
+import it.grid.storm.common.types.SizeUnit;
+import it.grid.storm.concurrency.NamedThreadFactory;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.filesystem.FilesystemError;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.model.VirtualFS;
+import it.grid.storm.persistence.exceptions.DataAccessException;
+import it.grid.storm.space.StorageSpaceData;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.util.VirtualFSHelper;
 
 /**
  * GPFSQuotaManager. Currently supports only GPFS fileset quotas. This manager starts periodic tasks
@@ -72,7 +72,7 @@ public enum GPFSQuotaManager {
   /**
    * The list of GPFS filesystems which have quota enabled.
    */
-  private List<VirtualFSInterface> quotaEnabledFilesystems;
+  private List<VirtualFS> quotaEnabledFilesystems;
 
   /**
    * The last exception thrown by a GPFS quota calculation job.
@@ -131,7 +131,7 @@ public enum GPFSQuotaManager {
 
       int completedTasks = 0;
 
-      for (VirtualFSInterface vfs : quotaEnabledFilesystems) {
+      for (VirtualFS vfs : quotaEnabledFilesystems) {
         log.info("Submitting GPFS quota info computation for vfs rooted at {}", vfs.getRootPath());
 
         quotaService.submit(new GetGPFSFilesetQuotaInfoCommand(vfs));
@@ -215,16 +215,16 @@ public enum GPFSQuotaManager {
       }
     }
 
-    private StorageSpaceData getStorageSpaceDataForVFS(VirtualFSInterface vfs) {
+    private StorageSpaceData getStorageSpaceDataForVFS(VirtualFS vfs) {
 
-      ReservedSpaceCatalog rsc = new ReservedSpaceCatalog();
+      ReservedSpaceCatalog rsc = ReservedSpaceCatalog.getInstance();
       String spaceToken = vfs.getSpaceTokenDescription();
       return rsc.getStorageSpaceByAlias(spaceToken);
     }
 
     private void persistStorageSpaceData(StorageSpaceData ssd) throws DataAccessException {
 
-      ReservedSpaceCatalog rsc = new ReservedSpaceCatalog();
+      ReservedSpaceCatalog rsc = ReservedSpaceCatalog.getInstance();
       rsc.updateStorageSpace(ssd);
     }
 

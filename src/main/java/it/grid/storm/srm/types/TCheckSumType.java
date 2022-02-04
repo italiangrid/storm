@@ -33,28 +33,28 @@ import java.util.Map;
  */
 public class TCheckSumType {
 
-	public static String PNAME_CHECKSUMTYPE = "checkSumType";
+  public static String PNAME_CHECKSUMTYPE = "checkSumType";
 
-	private String chkType = null;
+  private String chkType = null;
 
-	public TCheckSumType(String chkType) {
+  public TCheckSumType(String chkType) {
 
-		this.chkType = chkType;
-	}
+    this.chkType = chkType;
+  }
 
-	@Override
-	public String toString() {
+  @Override
+  public String toString() {
 
-		return chkType.toString();
-	}
+    return chkType.toString();
+  }
 
-	public String getValue() {
+  public String getValue() {
 
-		return chkType.toString();
-	}
+    return chkType.toString();
+  }
 
-	public void encode(Map param, String name) {
+  public void encode(Map<String, Object> param, String name) {
 
-		param.put(name, this.toString());
-	}
+    param.put(name, this.toString());
+  }
 };

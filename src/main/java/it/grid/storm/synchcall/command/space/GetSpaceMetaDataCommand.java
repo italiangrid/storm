@@ -45,12 +45,11 @@ import it.grid.storm.synchcall.data.space.GetSpaceMetaDataOutputData;
 import it.grid.storm.synchcall.data.space.IdentityGetSpaceMetaDataInputData;
 
 /**
- * This class is part of the StoRM project. Copyright: Copyright (c) 2008
- * Company: INFN-CNAF and ICTP/EGRID project
+ * This class is part of the StoRM project. Copyright: Copyright (c) 2008 Company: INFN-CNAF and
+ * ICTP/EGRID project
  * 
- * This class represents the GetSpaceMetaDataManager Class. This class hava a
- * reseveSpace method that perform all operation nedded to satisfy a SRM space
- * release request.
+ * This class represents the GetSpaceMetaDataManager Class. This class hava a reseveSpace method
+ * that perform all operation nedded to satisfy a SRM space release request.
  * 
  * @author lucamag
  * @date May 29, 2008
@@ -59,174 +58,153 @@ import it.grid.storm.synchcall.data.space.IdentityGetSpaceMetaDataInputData;
 
 public class GetSpaceMetaDataCommand extends SpaceCommand implements Command {
 
-	public static final Logger log = LoggerFactory
-	  .getLogger(GetSpaceMetaDataCommand.class);
-	
-	private ReservedSpaceCatalog catalog = null;
+  public static final Logger log = LoggerFactory.getLogger(GetSpaceMetaDataCommand.class);
 
-	private static final String SRM_COMMAND = "srmGetSpaceMetaData";
+  private ReservedSpaceCatalog catalog = ReservedSpaceCatalog.getInstance();
 
-	/**
-	 * Constructor. Bind the Executor with ReservedSpaceCatalog
-	 */
+  private static final String SRM_COMMAND = "srmGetSpaceMetaData";
 
-	public GetSpaceMetaDataCommand() {
+  /**
+   * 
+   * @param data GetSpaceMetaDataInputData
+   * @return GetSpaceMetaDataOutputData
+   */
+  public OutputData execute(InputData indata) {
 
-		catalog = new ReservedSpaceCatalog();
-	}
+    log.debug("<GetSpaceMetaData Start!>");
+    log.debug(" Updating SA with GPFS quotas results");
+    GPFSQuotaManager.INSTANCE.triggerComputeQuotas();
 
-	/**
-	 * 
-	 * @param data
-	 *          GetSpaceMetaDataInputData
-	 * @return GetSpaceMetaDataOutputData
-	 */
-	public OutputData execute(InputData indata) {
+    IdentityGetSpaceMetaDataInputData data;
+    if (indata instanceof IdentityInputData) {
+      data = (IdentityGetSpaceMetaDataInputData) indata;
+    } else {
+      GetSpaceMetaDataOutputData outputData = new GetSpaceMetaDataOutputData();
+      outputData.setStatus(CommandHelper.buildStatus(TStatusCode.SRM_NOT_SUPPORTED,
+          "Anonymous user can not perform" + SRM_COMMAND));
+      printRequestOutcome(outputData.getStatus(), (GetSpaceMetaDataInputData) indata);
+      return outputData;
+    }
+    int errorCount = 0;
+    ArrayOfTMetaDataSpace arrayData = new ArrayOfTMetaDataSpace();
+    TReturnStatus globalStatus = null;
 
-		log.debug("<GetSpaceMetaData Start!>");
-		log.debug(" Updating SA with GPFS quotas results");
-		GPFSQuotaManager.INSTANCE.triggerComputeQuotas();
+    TMetaDataSpace metadata = null;
 
-		IdentityGetSpaceMetaDataInputData data;
-		if (indata instanceof IdentityInputData) {
-			data = (IdentityGetSpaceMetaDataInputData) indata;
-		} else {
-			GetSpaceMetaDataOutputData outputData = new GetSpaceMetaDataOutputData();
-			outputData.setStatus(CommandHelper.buildStatus(
-				TStatusCode.SRM_NOT_SUPPORTED, "Anonymous user can not perform"
-					+ SRM_COMMAND));
-			printRequestOutcome(outputData.getStatus(),
-				(GetSpaceMetaDataInputData) indata);
-			return outputData;
-		}
-		int errorCount = 0;
-		ArrayOfTMetaDataSpace arrayData = new ArrayOfTMetaDataSpace();
-		TReturnStatus globalStatus = null;
+    for (TSpaceToken token : data.getSpaceTokenArray().getTSpaceTokenArray()) {
+      StorageSpaceData spaceData = null;
+      try {
+        spaceData = catalog.getStorageSpace(token);
+      } catch (TransferObjectDecodingException e) {
+        log.error("Error getting storage space data for token {}. {}", token, e.getMessage(), e);
+        metadata = createFailureMetadata(token, TStatusCode.SRM_INTERNAL_ERROR,
+            "Error building space data from row DB data", data.getUser());
+        errorCount++;
+        arrayData.addTMetaDataSpace(metadata);
+        continue;
 
-		TMetaDataSpace metadata = null;
+      } catch (DataAccessException e) {
+        log.error("Error getting storage space data for token {}. {}", token, e.getMessage(), e);
+        metadata = createFailureMetadata(token, TStatusCode.SRM_INTERNAL_ERROR,
+            "Error retrieving row space token data from DB", data.getUser());
+        errorCount++;
+        arrayData.addTMetaDataSpace(metadata);
+        continue;
+      }
+      if (spaceData != null) {
+        if (!spaceData.isInitialized()) {
+          log.warn("Uninitialized storage data found for token {}", token);
+          metadata = createFailureMetadata(token, TStatusCode.SRM_FAILURE,
+              "Storage Space not initialized yet", data.getUser());
+          errorCount++;
+        } else {
+          try {
+            metadata = new TMetaDataSpace(spaceData);
+          } catch (InvalidTMetaDataSpaceAttributeException e) {
+            log.error("Metadata error. {}", e.getMessage(), e);
+            metadata = createFailureMetadata(token, TStatusCode.SRM_INTERNAL_ERROR,
+                "Error building Storage Space Metadata from row data", data.getUser());
+            errorCount++;
+          } catch (InvalidTSizeAttributesException e) {
+            log.error("Metadata error. {}", e.getMessage(), e);
+            metadata = createFailureMetadata(token, TStatusCode.SRM_INTERNAL_ERROR,
+                "Error building Storage Space Metadata from row data", data.getUser());
+            errorCount++;
+          }
+        }
+      } else {
+        log.warn("Unable to retrieve space data for token {}.", token);
+        metadata = createFailureMetadata(token, TStatusCode.SRM_INVALID_REQUEST,
+            "Space Token not found", data.getUser());
+        errorCount++;
+      }
+      arrayData.addTMetaDataSpace(metadata);
+    }
 
-		for (TSpaceToken token : data.getSpaceTokenArray().getTSpaceTokenArray()) {
-			StorageSpaceData spaceData = null;
-			try {
-				spaceData = catalog.getStorageSpace(token);
-			} catch (TransferObjectDecodingException e) {
-				log.error("Error getting storage space data for token {}. {}",
-				  token, e.getMessage(),e);
-				metadata = createFailureMetadata(token, TStatusCode.SRM_INTERNAL_ERROR,
-					"Error building space data from row DB data", data.getUser());
-				errorCount++;
-				arrayData.addTMetaDataSpace(metadata);
-				continue;
+    boolean requestSuccess = (errorCount == 0);
+    boolean requestFailure = (errorCount == data.getSpaceTokenArray().size());
 
-			} catch (DataAccessException e) {
-				log.error("Error getting storage space data for token {}. {}",
-				  token, e.getMessage(),e);
-				metadata = createFailureMetadata(token, TStatusCode.SRM_INTERNAL_ERROR,
-					"Error retrieving row space token data from DB", data.getUser());
-				errorCount++;
-				arrayData.addTMetaDataSpace(metadata);
-				continue;
-			}
-			if (spaceData != null) {
-				if (!spaceData.isInitialized()) {
-					log.warn("Uninitialized storage data found for token {}", token);
-					metadata = createFailureMetadata(token, TStatusCode.SRM_FAILURE,
-						"Storage Space not initialized yet", data.getUser());
-					errorCount++;
-				} else {
-					try {
-						metadata = new TMetaDataSpace(spaceData);
-					} catch (InvalidTMetaDataSpaceAttributeException e) {
-						log.error("Metadata error. {}", e.getMessage(), e);
-						metadata = createFailureMetadata(token,
-							TStatusCode.SRM_INTERNAL_ERROR,
-							"Error building Storage Space Metadata from row data",
-							data.getUser());
-						errorCount++;
-					} catch (InvalidTSizeAttributesException e) {
-						log.error("Metadata error. {}", e.getMessage(), e);
-						metadata = createFailureMetadata(token,
-							TStatusCode.SRM_INTERNAL_ERROR,
-							"Error building Storage Space Metadata from row data",
-							data.getUser());
-						errorCount++;
-					}
-				}
-			} else {
-				log.warn("Unable to retrieve space data for token {}.",token);
-				metadata = createFailureMetadata(token,
-					TStatusCode.SRM_INVALID_REQUEST, "Space Token not found",
-					data.getUser());
-				errorCount++;
-			}
-			arrayData.addTMetaDataSpace(metadata);
-		}
+    if (requestSuccess) {
+      globalStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, "");
 
-		boolean requestSuccess = (errorCount == 0);
-		boolean requestFailure = (errorCount == data.getSpaceTokenArray().size());
+      log.info(
+          "srmGetSpaceMetadata: user <{}> Request for [spaceTokens: {}] "
+              + "done succesfully with: [status: {}]",
+          data.getUser(), data.getSpaceTokenArray(), globalStatus);
 
-		if (requestSuccess) {
-			globalStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, "");
+    } else {
+      if (requestFailure) {
+        globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE, "No valid space tokens");
 
-			log.info("srmGetSpaceMetadata: user <{}> Request for [spaceTokens: {}] "
-				+ "done succesfully with: [status: {}]", data.getUser(),
-				data.getSpaceTokenArray(), globalStatus);
+        log.info(
+            "srmGetSpaceMetadata: user <{}> Request for [spaceTokens: {}] "
+                + "failed with: [status: {}]",
+            data.getUser(), data.getSpaceTokenArray(), globalStatus);
 
-		} else {
-			if (requestFailure) {
-				globalStatus = new TReturnStatus(TStatusCode.SRM_FAILURE,
-					"No valid space tokens");
+      } else {
 
-				log.info(
-					"srmGetSpaceMetadata: user <{}> Request for [spaceTokens: {}] "
-						+ "failed with: [status: {}]", data.getUser(),
-					data.getSpaceTokenArray(), globalStatus);
+        globalStatus = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
+            "Check space tokens statuses for details");
 
-			} else {
+        log.info(
+            "srmGetSpaceMetadata: user <{}> Request for [spaceTokens: {}] "
+                + "partially done with: [status: {}]",
+            data.getUser(), data.getSpaceTokenArray(), globalStatus);
 
-				globalStatus = new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
-					"Check space tokens statuses for details");
+      }
+    }
 
-				log.info(
-					"srmGetSpaceMetadata: user <{}> Request for [spaceTokens: {}] "
-						+ "partially done with: [status: {}]", data.getUser(),
-					data.getSpaceTokenArray(), globalStatus);
+    GetSpaceMetaDataOutputData response = null;
+    try {
+      response = new GetSpaceMetaDataOutputData(globalStatus, arrayData);
+    } catch (InvalidGetSpaceMetaDataOutputAttributeException e) {
+      log.error(e.getMessage(), e);
+    }
+    return response;
+  }
 
-			}
-		}
+  private TMetaDataSpace createFailureMetadata(TSpaceToken token, TStatusCode statusCode,
+      String message, GridUserInterface user) {
 
-		GetSpaceMetaDataOutputData response = null;
-		try {
-			response = new GetSpaceMetaDataOutputData(globalStatus, arrayData);
-		} catch (InvalidGetSpaceMetaDataOutputAttributeException e) {
-		  log.error(e.getMessage(),e);
-		}
-		return response;
-	}
+    TMetaDataSpace metadata = TMetaDataSpace.makeEmpty();
+    metadata.setSpaceToken(token);
 
-	private TMetaDataSpace createFailureMetadata(TSpaceToken token,
-		TStatusCode statusCode, String message, GridUserInterface user) {
+    try {
+      metadata.setStatus(new TReturnStatus(statusCode, message));
+    } catch (IllegalArgumentException e) {
+      log.error(e.getMessage(), e);
+    }
 
-		TMetaDataSpace metadata = TMetaDataSpace.makeEmpty();
-		metadata.setSpaceToken(token);
+    return metadata;
+  }
 
-		try {
-			metadata.setStatus(new TReturnStatus(statusCode, message));
-		} catch (IllegalArgumentException e) {
-		  log.error(e.getMessage(),e);
-		}
-		
-		return metadata;
-	}
+  private void printRequestOutcome(TReturnStatus status, GetSpaceMetaDataInputData inputData) {
 
-	private void printRequestOutcome(TReturnStatus status,
-		GetSpaceMetaDataInputData inputData) {
-
-		if (inputData != null) {
-			CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData);
-		} else {
-			CommandHelper.printRequestOutcome(SRM_COMMAND, log, status);
-		}
-	}
+    if (inputData != null) {
+      CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData);
+    } else {
+      CommandHelper.printRequestOutcome(SRM_COMMAND, log, status);
+    }
+  }
 
 }
