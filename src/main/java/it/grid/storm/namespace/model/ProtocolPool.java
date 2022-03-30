@@ -17,9 +17,10 @@
 
 package it.grid.storm.namespace.model;
 
+import java.util.List;
+
 import it.grid.storm.balancer.BalancingStrategyType;
 
-import java.util.List;
 import java.util.ArrayList;
 
 public class ProtocolPool {

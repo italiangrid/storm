@@ -15,18 +15,17 @@
  * the License.
  */
 
-package it.grid.storm.balancer;
+package it.grid.storm.balancer.node;
 
-public interface Node {
+import it.grid.storm.namespace.model.Protocol;
 
-  public int getId();
+public class FTPNode extends AbstractNode {
 
-  public int getWeight();
+  public FTPNode(int id, String hostname, int port) {
+    super(Protocol.GSIFTP, id, hostname, port);
+  }
 
-  public String getHostname();
-
-  public int getPort();
-
-  public boolean checkServer();
-
+  public FTPNode(int id, String hostname, int port, int weight) {
+    super(Protocol.GSIFTP, id, hostname, port, weight);
+  }
 }

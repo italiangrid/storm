@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  xsi:schemaLocation="http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
   <name>StoRM Backend server</name>
@@ -20,6 +20,7 @@
     <jettisonVersion>1.1</jettisonVersion>
     <commonsDbcpVersion>2.8.0</commonsDbcpVersion>
     <commonsIoVersion>2.8.0</commonsIoVersion>
+    <commonsNetVersion>3.8.0</commonsNetVersion>
     <ini4jVersion>0.5.2</ini4jVersion>
     <xmlrpcVersion>3.1.3</xmlrpcVersion>
     <jaxrpcVersion>1.1</jaxrpcVersion>
@@ -389,6 +390,12 @@
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>${commonsIoVersion}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-net</groupId>
+      <artifactId>commons-net</artifactId>
+      <version>${commonsNetVersion}</version>
     </dependency>
 
     <dependency>

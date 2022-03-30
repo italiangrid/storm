@@ -18,8 +18,8 @@
 package it.grid.storm.namespace;
 
 import it.grid.storm.balancer.BalancingStrategy;
-import it.grid.storm.balancer.BalancingStrategyException;
 import it.grid.storm.balancer.Node;
+import it.grid.storm.balancer.exception.BalancingStrategyException;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.common.types.InvalidPFNAttributeException;
 import it.grid.storm.common.types.InvalidStFNAttributeException;
@@ -649,7 +649,7 @@ public class StoRIImpl implements StoRI {
 				.getProtocolBalancingStrategy(pooledProtocol);
 			if (bal != null) {
 				Node node = bal.getNextElement();
-				authority = new Authority(node.getHostName(), node.getPort());
+				authority = new Authority(node.getHostname(), node.getPort());
 			}
 		} else {
 			log.error("Unable to manage pool with protocol different from GSIFTP.");

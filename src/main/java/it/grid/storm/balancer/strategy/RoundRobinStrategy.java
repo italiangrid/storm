@@ -15,18 +15,28 @@
  * the License.
  */
 
-package it.grid.storm.balancer;
+package it.grid.storm.balancer.strategy;
 
-public interface Node {
+import java.util.List;
 
-  public int getId();
+import it.grid.storm.balancer.BalancingStrategyType;
+import it.grid.storm.balancer.Node;
 
-  public int getWeight();
+public class RoundRobinStrategy<E extends Node> extends AbstractBalancingStrategy<E> {
 
-  public String getHostname();
+  private volatile int index = 0;
 
-  public int getPort();
+  public RoundRobinStrategy(List<E> pool) {
+    super(BalancingStrategyType.ROUNDROBIN, pool);
+  }
 
-  public boolean checkServer();
+  @Override
+  public E getNextElement() {
+
+    synchronized (this) {
+      index = (index >= getNodePool().size()) ? 0 : index;
+      return (getNodePool().get(index++));
+    }
+  }
 
 }

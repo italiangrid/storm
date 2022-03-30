@@ -15,27 +15,31 @@
  * the License.
  */
 
-package it.grid.storm.balancer;
+package it.grid.storm.balancer.strategy;
 
 import java.util.List;
+import java.util.Random;
 
-public class BalancingStrategyFactory {
+import it.grid.storm.balancer.BalancingStrategyType;
+import it.grid.storm.balancer.Node;
 
-	public static <E extends Node> BalancingStrategy<E> getBalancingStrategy(
-		BalancingStrategyType type, List<E> pool) throws IllegalArgumentException {
+import java.util.Date;
 
-		switch (type) {
-		case RANDOM:
-			return new RandomStrategy<E>(pool);
-		case ROUNDROBIN:
-			return new RoundRobinStrategy<E>(pool);
-		case WEIGHT:
-			return new WeightStrategy<E>(pool);
-		case SMART_RR:
-			return new SmartRoundRobinStrategy<E>(pool);
-		}
-		throw new IllegalArgumentException(
-			"StrategyFactory: Unknown BalancingStrategyType: " + type);
-	}
+public class RandomStrategy<E extends Node> extends AbstractBalancingStrategy<E> {
 
+  private Random random;
+
+  public RandomStrategy(List<E> pool) {
+    super(BalancingStrategyType.RANDOM, pool);
+    random = new Random((new Date()).getTime());
+  }
+
+  public E getNextElement() {
+    // Return index from 0 to size-1
+    int index = random.nextInt(getNodePool().size());
+    // Get random Node.
+    return (getNodePool().get(index));
+  }
+
+  public void notifyChangeInPool() {}
 }
