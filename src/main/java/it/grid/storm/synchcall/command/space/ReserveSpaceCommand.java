@@ -17,6 +17,11 @@
 
 package it.grid.storm.synchcall.command.space;
 
+import java.util.Date;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.acl.AclManager;
 import it.grid.storm.acl.AclManagerFS;
 import it.grid.storm.catalogs.InvalidSpaceDataAttributesException;
@@ -34,7 +39,7 @@ import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.namespace.naming.NamespaceUtil;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TransferObjectDecodingException;
@@ -63,20 +68,6 @@ import it.grid.storm.synchcall.data.space.IdentityReserveSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReserveSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReserveSpaceOutputData;
 
-import java.util.Date;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-/**
- * This class is part of the StoRM project. Copyright: Copyright (c) 2008
- * Company: INFN-CNAF and ICTP/EGRID project
- * 
- * @author lucamag
- * @author Riccardo Zappi
- * @date May 29, 2008
- * 
- */
 public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
   private ReservedSpaceCatalog catalog;
@@ -168,7 +159,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
       return manageError(statusCode, explanation);
     }
 
-    VirtualFSInterface vfs = null;
+    VirtualFS vfs = null;
     try {
       vfs = getSpaceVFS(spaceFN);
     } catch (Exception e) {
@@ -301,7 +292,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     }
   }
 
-  private StoRI getSpaceStoRI(VirtualFSInterface vfs, String relativeSpaceFN,
+  private StoRI getSpaceStoRI(VirtualFS vfs, String relativeSpaceFN,
     TSizeInBytes desiderataSpaceSize) throws Exception {
 
     StoRI spaceFile = null;
@@ -384,9 +375,9 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     return spaceFN;
   }
 
-  private VirtualFSInterface getSpaceVFS(String spaceFN) throws Exception {
+  private VirtualFS getSpaceVFS(String spaceFN) throws Exception {
 
-    VirtualFSInterface vfs = null;
+    VirtualFS vfs = null;
     try {
       vfs = namespace.resolveVFSbyAbsolutePath(spaceFN);
       log.debug("Space File belongs to VFS : {}", vfs.getAliasName());
@@ -401,7 +392,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
   }
 
   private void setDefaults(IdentityReserveSpaceInputData data,
-    VirtualFSInterface vfs) {
+    VirtualFS vfs) {
 
     if (data.getRetentionPolicyInfo().getAccessLatency() == null
       || data.getRetentionPolicyInfo().getAccessLatency()
@@ -421,7 +412,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
   }
 
   private SpaceSize computeSpaceSize(TSizeInBytes totalSize,
-    TSizeInBytes guarSize, VirtualFSInterface vfs) throws Exception {
+    TSizeInBytes guarSize, VirtualFS vfs) throws Exception {
 
     TSizeInBytes desiderataSpaceSize = TSizeInBytes.makeEmpty();
 
@@ -512,7 +503,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     return this.new SpaceSize(desiderataSpaceSize, totalSize, lower_space);
   }
 
-  private String getRelativeSpaceFilePath(VirtualFSInterface vfs, String spaceFN)
+  private String getRelativeSpaceFilePath(VirtualFS vfs, String spaceFN)
     throws Exception {
 
     String relativeSpaceFN = null;
@@ -715,7 +706,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
     String spaceFN = spacePFN.toString();
 
-    VirtualFSInterface vfs = null;
+    VirtualFS vfs = null;
     try {
       vfs = namespace.resolveVFSbyAbsolutePath(spaceFN);
       log.debug("Space File belongs to VFS : {}", vfs.getAliasName());
@@ -865,7 +856,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     String spaceFN = null;
     spaceFN = spacePFN.toString();
 
-    VirtualFSInterface vfs = null;
+    VirtualFS vfs = null;
     try {
       vfs = namespace.resolveVFSbyAbsolutePath(spaceFN);
       log.debug("Space File belongs to VFS : {}", vfs.getAliasName());

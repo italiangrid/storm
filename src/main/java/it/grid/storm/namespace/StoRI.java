@@ -17,6 +17,10 @@
 
 package it.grid.storm.namespace;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.common.types.TURLPrefix;
@@ -25,16 +29,13 @@ import it.grid.storm.filesystem.ReservationException;
 import it.grid.storm.filesystem.Space;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.StoRIType;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.srm.types.TDirOption;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TTURL;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 public interface StoRI {
 
@@ -68,7 +69,7 @@ public interface StoRI {
 
 	public LocalFile getLocalFile();
 
-	public VirtualFSInterface getVirtualFileSystem();
+	public VirtualFS getVirtualFileSystem();
 
 	public String getStFNRoot();
 

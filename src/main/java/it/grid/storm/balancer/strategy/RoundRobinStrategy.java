@@ -17,26 +17,30 @@
 
 package it.grid.storm.balancer.strategy;
 
+import static it.grid.storm.balancer.BalancingStrategyType.ROUNDROBIN;
+
 import java.util.List;
 
-import it.grid.storm.balancer.BalancingStrategyType;
 import it.grid.storm.balancer.Node;
+import it.grid.storm.balancer.exception.BalancingStrategyException;
 
 public class RoundRobinStrategy<E extends Node> extends AbstractBalancingStrategy<E> {
 
-  private volatile int index = 0;
+  private final CyclicCounter counter;
 
-  public RoundRobinStrategy(List<E> pool) {
-    super(BalancingStrategyType.ROUNDROBIN, pool);
+  public RoundRobinStrategy(List<E> nodes) {
+    super(nodes);
+    setType(ROUNDROBIN);
+    counter = new CyclicCounter(nodes.size());
   }
 
   @Override
-  public E getNextElement() {
+  public E getNextElement() throws BalancingStrategyException {
 
-    synchronized (this) {
-      index = (index >= getNodePool().size()) ? 0 : index;
-      return (getNodePool().get(index++));
-    }
+    return getNodePool().get(counter.next());
   }
 
+  protected CyclicCounter getCounter() {
+    return counter;
+  }
 }

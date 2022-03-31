@@ -42,7 +42,7 @@ import it.grid.storm.info.du.DiskUsageService;
 import it.grid.storm.metrics.StormMetricsReporter;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceInterface;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.rest.RestServer;
 import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
 import it.grid.storm.startup.Bootstrap;
@@ -444,8 +444,8 @@ public class StoRM {
     isDiskUsageServiceEnabled = config.getDiskUsageServiceEnabled();
 
     NamespaceInterface namespace = NamespaceDirector.getNamespace();
-    List<VirtualFSInterface> quotaEnabledVfs = namespace.getVFSWithQuotaEnabled();
-    List<VirtualFSInterface> sas = namespace.getAllDefinedVFS()
+    List<VirtualFS> quotaEnabledVfs = namespace.getVFSWithQuotaEnabled();
+    List<VirtualFS> sas = namespace.getAllDefinedVFS()
       .stream()
       .filter(vfs -> !quotaEnabledVfs.contains(vfs))
       .collect(Collectors.toList());

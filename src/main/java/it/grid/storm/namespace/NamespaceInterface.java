@@ -24,6 +24,7 @@ import it.grid.storm.common.types.PFN;
 import it.grid.storm.filesystem.Space;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.model.MappingRule;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
@@ -33,29 +34,29 @@ public interface NamespaceInterface {
   /**
    * getAllDefinedVFS
    * 
-   * @return List<VirtualFSInterface> : Return a List of VirtualFS containing all the instances
+   * @return List<VirtualFS> : Return a List of VirtualFS containing all the instances
    *         defined within Namespace
    * @throws NamespaceException
    */
-  public List<VirtualFSInterface> getAllDefinedVFS();
+  public List<VirtualFS> getAllDefinedVFS();
 
   /**
    * getAllDefinedVFSAsDictionary
    *
-   * @return Map<String, VirtualFSInterface> : Return a Map of all VirtualFS defined within
+   * @return Map<String, VirtualFS> : Return a Map of all VirtualFS defined within
    *         Namespace, indexed by their root-paths
    * @throws NamespaceException
    */
-  public Map<String, VirtualFSInterface> getAllDefinedVFSAsDictionary();
+  public Map<String, VirtualFS> getAllDefinedVFSAsDictionary();
 
   /**
    * getVFSWithQuotaEnabled
    * 
-   * @return Collection<VirtualFSInterface>: Return a collection of VirtualFS with fs type GPFS and
+   * @return Collection<VirtualFS>: Return a collection of VirtualFS with fs type GPFS and
    *         quota enabled
    * @throws NamespaceException
    */
-  public List<VirtualFSInterface> getVFSWithQuotaEnabled();
+  public List<VirtualFS> getVFSWithQuotaEnabled();
 
   /**
    * getAllDefinedMappingRules
@@ -74,7 +75,7 @@ public interface NamespaceInterface {
    * @return List : Return a List of VirtualFS instances
    * @throws NamespaceException : Occur when
    */
-  public List<VirtualFSInterface> getApproachableVFS(GridUserInterface user)
+  public List<VirtualFS> getApproachableVFS(GridUserInterface user)
       throws NamespaceException;
 
   /**
@@ -82,30 +83,30 @@ public interface NamespaceInterface {
    * @return List : Return a List of readable and writable by anonymous users VirtualFS instances
    * @throws NamespaceException
    */
-  public List<VirtualFSInterface> getApproachableByAnonymousVFS() throws NamespaceException;
+  public List<VirtualFS> getApproachableByAnonymousVFS() throws NamespaceException;
 
   /**
    * 
    * @return List : Return a List of readable by anonymous users VirtualFS instances
    * @throws NamespaceException
    */
-  public List<VirtualFSInterface> getReadableByAnonymousVFS() throws NamespaceException;
+  public List<VirtualFS> getReadableByAnonymousVFS() throws NamespaceException;
 
   /**
    * 
    * @return List : Return a List of readable or writable by anonymous users VirtualFS instances
    * @throws NamespaceException
    */
-  public List<VirtualFSInterface> getReadableOrApproachableByAnonymousVFS()
+  public List<VirtualFS> getReadableOrApproachableByAnonymousVFS()
       throws NamespaceException;
 
   /**
    * 
    * @param user GridUserInterface
-   * @return VirtualFSInterface
+   * @return VirtualFS
    * @throws NamespaceException
    */
-  public VirtualFSInterface getDefaultVFS(GridUserInterface user) throws NamespaceException;
+  public VirtualFS getDefaultVFS(GridUserInterface user) throws NamespaceException;
 
   /**
    * 
@@ -153,11 +154,11 @@ public interface NamespaceInterface {
   /**
    * 
    * @param absolutePath String
-   * @param vfs VirtualFSInterface
+   * @param vfs VirtualFS
    * @return StoRI
    * @throws NamespaceException
    */
-  public StoRI resolveStoRIbyAbsolutePath(String absolutePath, VirtualFSInterface vfs)
+  public StoRI resolveStoRIbyAbsolutePath(String absolutePath, VirtualFS vfs)
       throws NamespaceException;
 
   /**
@@ -172,19 +173,19 @@ public interface NamespaceInterface {
    * 
    * @param absolutePath String
    * @param user GridUserInterface
-   * @return VirtualFSInterface
+   * @return VirtualFS
    * @throws NamespaceException
    */
-  public VirtualFSInterface resolveVFSbyAbsolutePath(String absolutePath, GridUserInterface user)
+  public VirtualFS resolveVFSbyAbsolutePath(String absolutePath, GridUserInterface user)
       throws NamespaceException;
 
   /**
    * 
    * @param absolutePath String
-   * @return VirtualFSInterface
+   * @return VirtualFS
    * @throws NamespaceException
    */
-  public VirtualFSInterface resolveVFSbyAbsolutePath(String absolutePath) throws NamespaceException;
+  public VirtualFS resolveVFSbyAbsolutePath(String absolutePath) throws NamespaceException;
 
   /**
    * 
@@ -197,19 +198,19 @@ public interface NamespaceInterface {
   /**
    * 
    * @param file LocalFile
-   * @return VirtualFSInterface
+   * @return VirtualFS
    * @throws NamespaceException
    */
-  public VirtualFSInterface resolveVFSbyLocalFile(it.grid.storm.filesystem.LocalFile file)
+  public VirtualFS resolveVFSbyLocalFile(it.grid.storm.filesystem.LocalFile file)
       throws NamespaceException;
 
   /**
    * 
    * @param pfn PFN
-   * @return VirtualFSInterface
+   * @return VirtualFS
    * @throws NamespaceException
    */
-  public VirtualFSInterface resolveVFSbyPFN(PFN pfn) throws NamespaceException;
+  public VirtualFS resolveVFSbyPFN(PFN pfn) throws NamespaceException;
 
   /**
    * 
@@ -254,14 +255,14 @@ public interface NamespaceInterface {
    * @return
    * @throws NamespaceException
    */
-  public VirtualFSInterface resolveVFSbyRoot(String absolutePath) throws NamespaceException;
+  public VirtualFS resolveVFSbyRoot(String absolutePath) throws NamespaceException;
 
   /**
    * @param spaceToken
    * @return
    * @throws NamespaceException
    */
-  public VirtualFSInterface resolveVFSbySpaceToken(TSpaceToken spaceToken)
+  public VirtualFS resolveVFSbySpaceToken(TSpaceToken spaceToken)
       throws NamespaceException;
 
 }

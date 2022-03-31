@@ -17,15 +17,14 @@
 
 package it.grid.storm.namespace.model;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.balancer.Node;
@@ -33,73 +32,57 @@ import it.grid.storm.balancer.node.FTPNode;
 import it.grid.storm.balancer.node.HttpNode;
 import it.grid.storm.balancer.node.HttpsNode;
 import it.grid.storm.balancer.strategy.BalancingStrategyFactory;
-import it.grid.storm.namespace.CapabilityInterface;
-import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 
-/**
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * 
- * <p>
- * Company: INFN-CNAF and ICTP/eGrid project
- * </p>
- * 
- * @author Riccardo Zappi
- * @version 1.0
- */
+public class Capability {
 
-public class Capability implements CapabilityInterface {
-
-  private Logger log = NamespaceDirector.getLogger();
-  private ACLMode aclMode = ACLMode.UNDEF;
-  private Quota quota = null;
+  private Logger log = LoggerFactory.getLogger(Capability.class);
+  private ACLMode aclMode;
+  private Quota quota;
   // List of TransportProtocol by Protocol.
-  private Map<Protocol, TransportProtocol> transpProtocolsByScheme =
-      new Hashtable<Protocol, TransportProtocol>();
+  private Map<Protocol, TransportProtocol> transpProtocolsByScheme;
   // List of TransportProtocol by Protocol.
-  private Map<Integer, TransportProtocol> transpProtocolsByID =
-      new Hashtable<Integer, TransportProtocol>();
+  private Map<Integer, TransportProtocol> transpProtocolsByID;
   // List of TransportProtocol by Entering order.
-  private List<TransportProtocol> transpProtocolsList = new ArrayList<TransportProtocol>();
+  private List<TransportProtocol> transpProtocolsList;
+  // List of Pools
+  private List<ProtocolPool> protocolPools;
   // List of ProtocolPool.
-  private Map<Protocol, ProtocolPool> protocolPoolsByScheme =
-      new Hashtable<Protocol, ProtocolPool>();
+  private Map<Protocol, ProtocolPool> protocolPoolsByScheme;
   // List of Balancer.
-  private Map<Protocol, BalancingStrategy<? extends Node>> balancerByScheme =
-      new Hashtable<Protocol, BalancingStrategy<? extends Node>>();
+  private Map<Protocol, BalancingStrategy<? extends Node>> balancerByScheme;
 
-  private DefaultACL defaultACL = new DefaultACL();
+  private DefaultACL defaultACL;
 
   /**
    * Constructor
    * 
    */
-  public Capability(String aclMode) throws NamespaceException {
+  public Capability(ACLMode aclMode) throws NamespaceException {
 
     setACLMode(aclMode);
+    quota = null;
+    transpProtocolsByScheme = Maps.newHashMap();
+    transpProtocolsByID = Maps.newHashMap();
+    transpProtocolsList = Lists.newArrayList();
+    protocolPools = Lists.newArrayList();
+    protocolPoolsByScheme = Maps.newHashMap();
+    balancerByScheme = Maps.newHashMap();
+    defaultACL = new DefaultACL();
   }
 
   public Capability() throws NamespaceException {
 
+    this(ACLMode.UNDEF);
   }
 
   /*****************************************************************************
    * BUILDING METHODs
    ****************************************************************************/
 
-  public void setACLMode(String aclMode) throws NamespaceException {
+  public void setACLMode(ACLMode aclMode) throws NamespaceException {
 
-    this.aclMode = ACLMode.makeFromString(aclMode);
+    this.aclMode = aclMode;
   }
 
   /**
@@ -110,6 +93,16 @@ public class Capability implements CapabilityInterface {
   public void addTransportProtocolByScheme(Protocol protocol, TransportProtocol trasfProt) {
 
     transpProtocolsByScheme.put(protocol, trasfProt);
+  }
+
+  public void addProtocolPool(ProtocolPool protocolPool) {
+
+    protocolPools.add(protocolPool);
+  }
+
+  public List<ProtocolPool> getProtocolPools() {
+
+    return protocolPools;
   }
 
   public void addTransportProtocolByID(int protocolIndex, TransportProtocol trasfProt) {
@@ -141,9 +134,10 @@ public class Capability implements CapabilityInterface {
     protocolPoolsByScheme.put(protocol, protPool);
 
     // Building Balancer and put it into Map of Balancers
-    if (protocol.equals(Protocol.GSIFTP)) {
-      BalancingStrategy<? extends Node> balancingStrategy = null;
-      LinkedList<Node> nodeList = new LinkedList<Node>();
+    if (Protocol.GSIFTP.equals(protocol) || Protocol.HTTP.equals(protocol)
+        || Protocol.HTTPS.equals(protocol)) {
+      
+      List<Node> nodeList = Lists.newLinkedList();
       Node node = null;
       boolean weighedPool = protPool.getBalanceStrategy().requireWeight();
       for (PoolMember member : protPool.getPoolMembers()) {
@@ -167,15 +161,17 @@ public class Capability implements CapabilityInterface {
         }
         nodeList.add(node);
       }
+
       try {
-        balancingStrategy =
+        BalancingStrategy<? extends Node> balancingStrategy =
             BalancingStrategyFactory.getBalancingStrategy(protPool.getBalanceStrategy(), nodeList);
+        balancerByScheme.put(protocol, balancingStrategy);
       } catch (IllegalArgumentException e) {
-        log.error("Unable to get " + protPool.getBalanceStrategy().toString()
-            + " balacing strategy for nodes " + nodeList.toString());
+        log.error("Unable to get {} balacing strategy for nodes {}",
+            protPool.getBalanceStrategy().toString(), nodeList.toString());
         throw new NamespaceException("Unable to create a balancing schema from the protocol pool");
       }
-      balancerByScheme.put(protocol, balancingStrategy);
+      
     } else {
       log.error("The current version manage only GSIFTP.");
     }
@@ -219,7 +215,7 @@ public class Capability implements CapabilityInterface {
    * 
    * @return String
    */
-  public Capability.ACLMode getACLMode() {
+  public ACLMode getACLMode() {
 
     return aclMode;
   }
@@ -319,86 +315,6 @@ public class Capability implements CapabilityInterface {
       return transpProtocolsByID.get(id);
     }
     return null;
-  }
-
-  /**
-   * 
-   * <p>
-   * Title:
-   * </p>
-   * 
-   * <p>
-   * Description:
-   * </p>
-   * 
-   * <p>
-   * Copyright: Copyright (c) 2006
-   * </p>
-   * 
-   * <p>
-   * Company: INFN-CNAF and ICTP/eGrid project
-   * </p>
-   * 
-   * @author Riccardo Zappi
-   * @version 1.0
-   */
-  public static class ACLMode {
-
-    public static final ACLMode JUST_IN_TIME = new ACLMode("JiT");
-    public static final ACLMode AHEAD_OF_TIME = new ACLMode("AoT");
-    public static final ACLMode UNDEF = new ACLMode("UNDEF");
-
-    private String aclMode;
-
-    private ACLMode(String mode) {
-
-      this.aclMode = mode;
-    }
-
-    private static ACLMode makeFromString(String aclMode) throws NamespaceException {
-
-      ACLMode result = ACLMode.UNDEF;
-      if (aclMode.toLowerCase().equals(ACLMode.AHEAD_OF_TIME.toString().toLowerCase())) {
-        result = ACLMode.AHEAD_OF_TIME;
-      } else if (aclMode.toLowerCase().equals(ACLMode.JUST_IN_TIME.toString().toLowerCase())) {
-        result = ACLMode.JUST_IN_TIME;
-      } else {
-        throw new NamespaceException("ACL Mode is not recognized!");
-      }
-      return result;
-    }
-
-    @Override
-    public String toString() {
-
-      return aclMode;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-
-      if (obj == null) {
-        return false;
-      }
-      if (obj instanceof ACLMode) {
-        ACLMode aclMode = (ACLMode) obj;
-        if (aclMode.toString().toLowerCase().equals(this.toString().toLowerCase())) {
-          return true;
-        }
-      } else {
-        return false;
-      }
-      return false;
-    }
-
-    @Override
-    public int hashCode() {
-
-      int result = 17;
-      result = 31 * result + (aclMode != null ? aclMode.hashCode() : 0);
-      return result;
-    }
-
   }
 
 }

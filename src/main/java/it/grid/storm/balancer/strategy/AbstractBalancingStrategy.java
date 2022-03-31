@@ -32,19 +32,21 @@ public abstract class AbstractBalancingStrategy<E extends Node> implements Balan
   private BalancingStrategyType type;
   private CopyOnWriteArrayList<E> nodePool;
 
-  public AbstractBalancingStrategy(BalancingStrategyType type, List<E> pool) {
+  public AbstractBalancingStrategy(List<E> pool) {
 
-    Preconditions.checkNotNull(pool,
-        "Unable to build BalancingStrategy of type " + type + ": received null node pool");
+    Preconditions.checkNotNull(pool, "Unable to build BalancingStrategy: received null node pool");
     Preconditions.checkArgument(pool.size() > 0,
-        "Unable to build BalancingStrategy of type " + type + ": received empty node pool");
+        "Unable to build BalancingStrategy: received empty node pool");
 
-    this.type = type;
     this.nodePool = Lists.newCopyOnWriteArrayList(pool);
   }
 
   public BalancingStrategyType getType() {
     return type;
+  }
+
+  protected void setType(BalancingStrategyType type) {
+    this.type = type;
   }
 
   public List<E> getNodePool() {

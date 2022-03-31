@@ -83,6 +83,8 @@ public abstract class AbstractNode implements Node {
   @Override
   public boolean checkServer() {
 
+    boolean response = false;
+
     try {
       telnet.connect(getHostname(), getPort());
     } catch (IOException e) {
@@ -90,13 +92,15 @@ public abstract class AbstractNode implements Node {
       return false;
     }
 
-    boolean response = telnet.isConnected();
+    response = telnet.isConnected();
+
     try {
       telnet.disconnect();
     } catch (IOException e) {
       log.warn("Unable to disconnect from {}:{}", getHostname(), getPort());
       return false;
     }
+
     return response;
   }
 

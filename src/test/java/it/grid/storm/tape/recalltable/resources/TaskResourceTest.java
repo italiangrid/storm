@@ -33,9 +33,9 @@ import com.google.common.collect.Lists;
 import it.grid.storm.griduser.VONameMatchingRule;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ApproachableRule;
 import it.grid.storm.namespace.model.SubjectRules;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
@@ -55,7 +55,7 @@ public class TaskResourceTest {
   private static final String FILE_PATH = "/storage/test.vo/path/to/filename.dat";
   private static final String STFN_PATH = "/test.vo/path/to/filename.dat";
 
-  private VirtualFSInterface VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
+  private VirtualFS VFS = getVirtualFS(VFS_NAME, VFS_ROOTPATH, VFS_VONAME);
 
   private StoRI STORI = getStoRI(VFS);
 
@@ -81,7 +81,7 @@ public class TaskResourceTest {
     return catalog;
   }
 
-  private StoRI getStoRI(VirtualFSInterface virtualFS) {
+  private StoRI getStoRI(VirtualFS virtualFS) {
     StoRI sto = Mockito.mock(StoRI.class);
     Mockito.when(sto.getAbsolutePath()).thenReturn(FILE_PATH);
     Mockito.when(sto.getVirtualFileSystem()).thenReturn(virtualFS);
@@ -123,9 +123,9 @@ public class TaskResourceTest {
     return catalog;
   }
 
-  private VirtualFSInterface getVirtualFS(String name, String rootPath, String voName) {
+  private VirtualFS getVirtualFS(String name, String rootPath, String voName) {
 
-    VirtualFSInterface vfs = Mockito.mock(VirtualFSInterface.class);
+    VirtualFS vfs = Mockito.mock(VirtualFS.class);
     ApproachableRule appRule = Mockito.mock(ApproachableRule.class);
     SubjectRules subRules = Mockito.mock(SubjectRules.class);
     VONameMatchingRule matchingRule = Mockito.mock(VONameMatchingRule.class);

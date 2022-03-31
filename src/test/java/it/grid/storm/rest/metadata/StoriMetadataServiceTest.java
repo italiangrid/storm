@@ -27,7 +27,7 @@ import it.grid.storm.filesystem.FilesystemError;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.rest.metadata.model.StoriMetadata;
 import it.grid.storm.rest.metadata.model.StoriMetadata.ResourceStatus;
 import it.grid.storm.rest.metadata.model.StoriMetadata.ResourceType;
@@ -57,7 +57,7 @@ public class StoriMetadataServiceTest {
 
     initStormEA(isMigrated, isRecalled);
 
-    VirtualFSInterface vfs = Mockito.mock(VirtualFSInterface.class);
+    VirtualFS vfs = Mockito.mock(VirtualFS.class);
     Mockito.when(vfs.getAliasName()).thenReturn(VFS_NAME);
     Mockito.when(vfs.getRootPath()).thenReturn(VFS_ROOT_PATH);
 

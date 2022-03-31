@@ -26,7 +26,7 @@ import it.grid.storm.ea.ExtendedAttributes;
 import it.grid.storm.ea.ExtendedAttributesException;
 import it.grid.storm.ea.ExtendedAttributesFactory;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.VirtualFS;
 
 /**
  * @author Michele Dibenedetto
@@ -69,7 +69,7 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check {
     CheckStatus status = CheckStatus.SUCCESS;
     String errorMessage = "";
     // load declared file systems from namespace.xml
-    for (VirtualFSInterface vfs : NamespaceDirector.getNamespace().getAllDefinedVFS()) {
+    for (VirtualFS vfs : NamespaceDirector.getNamespace().getAllDefinedVFS()) {
       String fsRootPath = vfs.getRootPath().trim();
       if (fsRootPath.charAt(fsRootPath.length() - 1) != File.separatorChar) {
         fsRootPath += File.separatorChar;

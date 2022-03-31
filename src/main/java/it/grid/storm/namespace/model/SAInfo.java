@@ -1,7 +1,6 @@
 package it.grid.storm.namespace.model;
 
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.remote.Constants.HttpPerms;
 
 import java.util.ArrayList;
@@ -148,8 +147,7 @@ public class SAInfo {
 		this.approachableRules = approachableRules;
 	}
 
-	public static SAInfo buildFromVFS(VirtualFSInterface vfs)
-		throws NamespaceException {
+    public static SAInfo buildFromVFS(VirtualFS vfs) throws NamespaceException {
 
 		SAInfo sa = new SAInfo();
 

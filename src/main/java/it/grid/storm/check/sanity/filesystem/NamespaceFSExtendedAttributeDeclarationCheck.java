@@ -24,7 +24,7 @@ import it.grid.storm.check.GenericCheckException;
 import it.grid.storm.filesystem.MtabRow;
 import it.grid.storm.filesystem.MtabUtil;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.VirtualFS;
 
 /**
  * @author Michele Dibenedetto
@@ -59,7 +59,7 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check {
     }
     log.debug("Retrieved Mtab : {}", rows.toString());
     // load declared file systems from namespace.xml
-    for (VirtualFSInterface vfs : NamespaceDirector.getNamespace().getAllDefinedVFS()) {
+    for (VirtualFS vfs : NamespaceDirector.getNamespace().getAllDefinedVFS()) {
       String fsTypeName = vfs.getFSType();
       String fsRootPath = vfs.getRootPath();
       if (fsTypeName == null || fsRootPath == null) {

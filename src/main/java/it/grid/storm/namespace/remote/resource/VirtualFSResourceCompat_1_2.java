@@ -3,7 +3,6 @@ package it.grid.storm.namespace.remote.resource;
 import static it.grid.storm.namespace.remote.Constants.VFS_LIST_SEPARATOR;
 import static java.lang.String.join;
 import static java.lang.String.valueOf;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 import java.util.Iterator;
 import java.util.List;
@@ -21,9 +20,9 @@ import com.google.common.collect.Lists;
 
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.Protocol;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.namespace.remote.Constants;
 import it.grid.storm.namespace.remote.Constants.HttpPerms;
 
@@ -44,7 +43,7 @@ public class VirtualFSResourceCompat_1_2 {
   public String listVFS() {
 
     log.info("Serving VFS resource listing");
-    List<VirtualFSInterface> vfsCollection = NamespaceDirector.getNamespace().getAllDefinedVFS();
+    List<VirtualFS> vfsCollection = NamespaceDirector.getNamespace().getAllDefinedVFS();
     List<String> encodedVFSs = Lists.newArrayList();
     vfsCollection.forEach(vfs -> {
       try {
@@ -52,9 +51,8 @@ public class VirtualFSResourceCompat_1_2 {
       } catch (NamespaceException e) {
         log.error(
             "Unable to encode the virtual file system. NamespaceException : {}", e.getMessage());
-        throw new WebApplicationException(Response.status(INTERNAL_SERVER_ERROR)
-          .entity("Unable to encode the virtual file system")
-          .build());
+        throw new WebApplicationException(
+            Response.serverError().entity("Unable to encode the virtual file system").build());
       }
     });
     return join(valueOf(VFS_LIST_SEPARATOR), encodedVFSs);
@@ -65,7 +63,7 @@ public class VirtualFSResourceCompat_1_2 {
    * @return
    * @throws NamespaceException
    */
-  private String encodeVFS(VirtualFSInterface vfs) throws NamespaceException {
+  private String encodeVFS(VirtualFS vfs) throws NamespaceException {
 
     String vfsEncoded = Constants.VFS_NAME_KEY + Constants.VFS_FIELD_MATCHER + vfs.getAliasName();
     vfsEncoded += Constants.VFS_FIELD_SEPARATOR;

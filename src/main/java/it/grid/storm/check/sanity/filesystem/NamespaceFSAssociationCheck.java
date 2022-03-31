@@ -15,13 +15,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import it.grid.storm.check.GenericCheckException;
+
 import it.grid.storm.check.Check;
 import it.grid.storm.check.CheckResponse;
 import it.grid.storm.check.CheckStatus;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.check.GenericCheckException;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.namespace.naming.NamespaceUtil;
 
 /**
@@ -42,7 +44,7 @@ public class NamespaceFSAssociationCheck implements Check {
 
 	private Map<String, String> mountPoints;
 
-	private Collection<VirtualFSInterface> vfsSet;
+	private Collection<VirtualFS> vfsSet;
 
 	private NamespaceFSAssociationCheck() {
 
@@ -54,7 +56,7 @@ public class NamespaceFSAssociationCheck implements Check {
 	 * @throws IllegalArgumentException
 	 */
 	public NamespaceFSAssociationCheck(Map<String, String> mountPoints,
-		Collection<VirtualFSInterface> vfsSet) throws IllegalArgumentException {
+		Collection<VirtualFS> vfsSet) throws IllegalArgumentException {
 
 		this();
 		if (mountPoints == null || vfsSet == null) {
@@ -83,9 +85,9 @@ public class NamespaceFSAssociationCheck implements Check {
 	 * @param vfsSet
 	 * @return
 	 */
-	private boolean verifyVfsSet(Collection<VirtualFSInterface> vfsSet) {
+	private boolean verifyVfsSet(Collection<VirtualFS> vfsSet) {
 
-		for (VirtualFSInterface vfs : vfsSet) {
+		for (VirtualFS vfs : vfsSet) {
 			if (vfs == null) {
 				log.info("The vfsSet contains null entries");
 				return false;
@@ -136,7 +138,7 @@ public class NamespaceFSAssociationCheck implements Check {
 		CheckStatus status = CheckStatus.SUCCESS;
 		String errorMessage = "";
 
-		for (VirtualFSInterface vfs : vfsSet) {
+		for (VirtualFS vfs : vfsSet) {
 			// check if is simple posix FS
 			boolean currentResponse = verifyPosixDeclaredFS(vfs.getFSType());
 			if (!currentResponse) {

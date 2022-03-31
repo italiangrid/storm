@@ -19,15 +19,15 @@ package it.grid.storm.namespace.model;
 
 import java.util.List;
 
-import it.grid.storm.balancer.BalancingStrategyType;
+import com.google.common.collect.Lists;
 
-import java.util.ArrayList;
+import it.grid.storm.balancer.BalancingStrategyType;
 
 public class ProtocolPool {
 
 	private final Protocol poolType;
 	private final BalancingStrategyType balanceStrategy;
-	private final List<PoolMember> poolMembers = new ArrayList<PoolMember>();
+	private final List<PoolMember> poolMembers = Lists.newArrayList();
 
 	public ProtocolPool(Protocol protocol, BalancingStrategyType strategy,
 		List<PoolMember> members) {

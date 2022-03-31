@@ -4,10 +4,10 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.Capability;
 import it.grid.storm.namespace.model.Quota;
+import it.grid.storm.namespace.model.VirtualFS;
 
 public class VirtualFSHelper {
 
@@ -15,12 +15,12 @@ public class VirtualFSHelper {
     // empty constructor
   }
 
-  public static final boolean isGPFSQuotaEnabledForVFS(VirtualFSInterface vfs) {
+  public static final boolean isGPFSQuotaEnabledForVFS(VirtualFS vfs) {
 
     boolean result = false;
 
     if (vfs != null) {
-      CapabilityInterface cap = null;
+      Capability cap = null;
       Quota quota = null;
       String fsType = vfs.getFSType();
       if (fsType != null && fsType.trim().equalsIgnoreCase("gpfs")) {
@@ -36,12 +36,12 @@ public class VirtualFSHelper {
     return result;
   }
 
-  public static List<VirtualFSInterface> getGPFSQuotaEnabledFilesystems() {
+  public static List<VirtualFS> getGPFSQuotaEnabledFilesystems() {
 
-    List<VirtualFSInterface> fss = Lists.newArrayList();
-    List<VirtualFSInterface> allVFS = NamespaceDirector.getNamespace().getAllDefinedVFS();
+    List<VirtualFS> fss = Lists.newArrayList();
+    List<VirtualFS> allVFS = NamespaceDirector.getNamespace().getAllDefinedVFS();
 
-    for (VirtualFSInterface vfs : allVFS) {
+    for (VirtualFS vfs : allVFS) {
       if (isGPFSQuotaEnabledForVFS(vfs))
         fss.add(vfs);
     }

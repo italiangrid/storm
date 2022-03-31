@@ -17,20 +17,21 @@
 
 package it.grid.storm.balancer.strategy;
 
+import static it.grid.storm.balancer.BalancingStrategyType.RANDOM;
+
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
-import it.grid.storm.balancer.BalancingStrategyType;
 import it.grid.storm.balancer.Node;
-
-import java.util.Date;
 
 public class RandomStrategy<E extends Node> extends AbstractBalancingStrategy<E> {
 
-  private Random random;
+  private final Random random;
 
-  public RandomStrategy(List<E> pool) {
-    super(BalancingStrategyType.RANDOM, pool);
+  public RandomStrategy(List<E> nodes) {
+    super(nodes);
+    setType(RANDOM);
     random = new Random((new Date()).getTime());
   }
 
@@ -40,6 +41,4 @@ public class RandomStrategy<E extends Node> extends AbstractBalancingStrategy<E>
     // Get random Node.
     return (getNodePool().get(index));
   }
-
-  public void notifyChangeInPool() {}
 }
