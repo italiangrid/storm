@@ -1267,8 +1267,7 @@ public class VirtualFS {
     return this.spaceToken;
   }
 
-  public BalancingStrategy<? extends Node> getProtocolBalancingStrategy(
-    Protocol protocol) {
+  public BalancingStrategy getProtocolBalancingStrategy(Protocol protocol) {
 
     return this.capabilities.getBalancingStrategyByScheme(protocol);
   }

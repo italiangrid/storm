@@ -17,11 +17,16 @@ public enum ResponsivenessCache {
 
   private static final Logger log = LoggerFactory.getLogger(ResponsivenessCache.class);
 
-  private Map<Node, ResponsivenessCacheEntry> cache = Maps.newHashMap();
+  private Map<Node, ResponsivenessCacheEntry> cache;
   private long entryLifetime;
 
   private ResponsivenessCache(long entryLifetimeMillisec) {
     this.entryLifetime = entryLifetimeMillisec;
+    cache = Maps.newHashMap();
+  }
+
+  public void invalidate() {
+    cache.clear();
   }
 
   public Responsiveness getResponsiveness(Node node) {
@@ -41,6 +46,10 @@ public enum ResponsivenessCache {
       cache.put(node, e);
       return e.getStatus();
     }
+  }
+
+  public boolean isCached(Node n) {
+    return getEntry(n).isPresent();
   }
 
   private Optional<ResponsivenessCacheEntry> getEntry(Node node) {

@@ -25,18 +25,18 @@ import it.grid.storm.balancer.Node;
 
 public class BalancingStrategyFactory {
 
-  public static <E extends Node> BalancingStrategy<E> getBalancingStrategy(
-      BalancingStrategyType type, List<E> pool) throws IllegalArgumentException {
+  public static BalancingStrategy getBalancingStrategy(
+      BalancingStrategyType type, List<Node> pool) throws IllegalArgumentException {
 
     switch (type) {
       case RANDOM:
-        return new RandomStrategy<E>(pool);
+        return new RandomStrategy(pool);
       case ROUNDROBIN:
-        return new RoundRobinStrategy<E>(pool);
+        return new RoundRobinStrategy(pool);
       case WEIGHT:
-        return new WeightStrategy<E>(pool);
+        return new WeightStrategy(pool);
       case SMART_RR:
-        return new SmartRoundRobinStrategy<E>(pool);
+        return new SmartRoundRobinStrategy(pool);
     }
     throw new IllegalArgumentException("StrategyFactory: Unknown BalancingStrategyType: " + type);
   }

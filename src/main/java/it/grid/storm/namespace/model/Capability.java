@@ -50,7 +50,7 @@ public class Capability {
   // List of ProtocolPool.
   private Map<Protocol, ProtocolPool> protocolPoolsByScheme;
   // List of Balancer.
-  private Map<Protocol, BalancingStrategy<? extends Node>> balancerByScheme;
+  private Map<Protocol, BalancingStrategy> balancerByScheme;
 
   private DefaultACL defaultACL;
 
@@ -163,7 +163,7 @@ public class Capability {
       }
 
       try {
-        BalancingStrategy<? extends Node> balancingStrategy =
+        BalancingStrategy balancingStrategy =
             BalancingStrategyFactory.getBalancingStrategy(protPool.getBalanceStrategy(), nodeList);
         balancerByScheme.put(protocol, balancingStrategy);
       } catch (IllegalArgumentException e) {
@@ -280,7 +280,7 @@ public class Capability {
     return poll;
   }
 
-  public BalancingStrategy<? extends Node> getBalancingStrategyByScheme(Protocol protocol) {
+  public BalancingStrategy getBalancingStrategyByScheme(Protocol protocol) {
 
     if (balancerByScheme.containsKey(protocol)) {
       return balancerByScheme.get(protocol);

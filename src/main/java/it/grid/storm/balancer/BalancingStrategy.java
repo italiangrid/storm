@@ -19,9 +19,9 @@ package it.grid.storm.balancer;
 
 import it.grid.storm.balancer.exception.BalancingStrategyException;
 
-public interface BalancingStrategy<E extends Node> {
+public interface BalancingStrategy {
 
-  public E getNextElement() throws BalancingStrategyException;
+  public Node getNextElement() throws BalancingStrategyException;
 
   public BalancingStrategyType getType();
 }

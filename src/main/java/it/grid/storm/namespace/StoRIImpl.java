@@ -645,7 +645,7 @@ public class StoRIImpl implements StoRI {
 		if (pooledProtocol.equals(Protocol.GSIFTP)
 			|| pooledProtocol.equals(Protocol.HTTP)
 			|| pooledProtocol.equals(Protocol.HTTPS)) {
-			BalancingStrategy<? extends Node> bal = vfs
+			BalancingStrategy bal = vfs
 				.getProtocolBalancingStrategy(pooledProtocol);
 			if (bal != null) {
 				Node node = bal.getNextElement();

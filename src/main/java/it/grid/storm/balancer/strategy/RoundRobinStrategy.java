@@ -21,23 +21,30 @@ import static it.grid.storm.balancer.BalancingStrategyType.ROUNDROBIN;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.balancer.Node;
 import it.grid.storm.balancer.exception.BalancingStrategyException;
 
-public class RoundRobinStrategy<E extends Node> extends AbstractBalancingStrategy<E> {
+public class RoundRobinStrategy extends AbstractBalancingStrategy {
+
+  private static final Logger log = LoggerFactory.getLogger(RoundRobinStrategy.class);
 
   private final CyclicCounter counter;
 
-  public RoundRobinStrategy(List<E> nodes) {
+  public RoundRobinStrategy(List<Node> nodes) {
     super(nodes);
     setType(ROUNDROBIN);
     counter = new CyclicCounter(nodes.size());
   }
 
   @Override
-  public E getNextElement() throws BalancingStrategyException {
+  public Node getNextElement() throws BalancingStrategyException {
 
-    return getNodePool().get(counter.next());
+    Node node = getNodePool().get(counter.next());
+    log.debug("Found node: {}", node.getHostname());
+    return node;
   }
 
   protected CyclicCounter getCounter() {

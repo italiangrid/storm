@@ -23,22 +23,28 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.balancer.Node;
 
-public class RandomStrategy<E extends Node> extends AbstractBalancingStrategy<E> {
+public class RandomStrategy extends AbstractBalancingStrategy {
+
+  private static final Logger log = LoggerFactory.getLogger(RandomStrategy.class);
 
   private final Random random;
 
-  public RandomStrategy(List<E> nodes) {
+  public RandomStrategy(List<Node> nodes) {
     super(nodes);
     setType(RANDOM);
     random = new Random((new Date()).getTime());
   }
 
-  public E getNextElement() {
+  public Node getNextElement() {
     // Return index from 0 to size-1
     int index = random.nextInt(getNodePool().size());
-    // Get random Node.
-    return (getNodePool().get(index));
+    Node node = getNodePool().get(index);
+    log.debug("Found node: {}", node.getHostname());
+    return node;
   }
 }

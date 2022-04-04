@@ -27,12 +27,12 @@ import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.balancer.BalancingStrategyType;
 import it.grid.storm.balancer.Node;
 
-public abstract class AbstractBalancingStrategy<E extends Node> implements BalancingStrategy<E> {
+public abstract class AbstractBalancingStrategy implements BalancingStrategy {
 
   private BalancingStrategyType type;
-  private CopyOnWriteArrayList<E> nodePool;
+  private CopyOnWriteArrayList<Node> nodePool;
 
-  public AbstractBalancingStrategy(List<E> pool) {
+  public AbstractBalancingStrategy(List<Node> pool) {
 
     Preconditions.checkNotNull(pool, "Unable to build BalancingStrategy: received null node pool");
     Preconditions.checkArgument(pool.size() > 0,
@@ -49,7 +49,7 @@ public abstract class AbstractBalancingStrategy<E extends Node> implements Balan
     this.type = type;
   }
 
-  public List<E> getNodePool() {
+  public List<Node> getNodePool() {
     return nodePool;
   }
 

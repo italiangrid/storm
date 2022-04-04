@@ -1,5 +1,6 @@
 package it.grid.storm.balancer.cache;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import it.grid.storm.balancer.Node;
@@ -11,11 +12,13 @@ public class ResponsivenessCacheEntry {
 
   private long checkTime = -1;
   private Responsiveness status;
+  private SimpleDateFormat dt;
 
   public ResponsivenessCacheEntry(Node node, long lifetime) {
 
     this.cachedNode = node;
     this.lifetime = lifetime;
+    dt = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
     refresh();
   }
 
@@ -49,7 +52,7 @@ public class ResponsivenessCacheEntry {
     builder.append("ResponsivenessCacheEntry [cachedNode=");
     builder.append(cachedNode);
     builder.append(", checkTime=");
-    builder.append(checkTime);
+    builder.append(dt.format(new Date(checkTime)));
     builder.append(", status=");
     builder.append(status);
     builder.append("]");

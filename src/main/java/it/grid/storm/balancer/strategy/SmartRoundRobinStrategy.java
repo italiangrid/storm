@@ -13,25 +13,25 @@ import it.grid.storm.balancer.cache.Responsiveness;
 import it.grid.storm.balancer.cache.ResponsivenessCache;
 import it.grid.storm.balancer.exception.BalancingStrategyException;
 
-public class SmartRoundRobinStrategy<E extends Node> extends RoundRobinStrategy<E> {
+public class SmartRoundRobinStrategy extends RoundRobinStrategy {
 
   private static final Logger log = LoggerFactory.getLogger(SmartRoundRobinStrategy.class);
 
-  public SmartRoundRobinStrategy(List<E> nodes) {
+  public SmartRoundRobinStrategy(List<Node> nodes) {
 
     super(nodes);
     setType(SMART_RR);
   }
 
   @Override
-  public E getNextElement() throws BalancingStrategyException {
+  public Node getNextElement() throws BalancingStrategyException {
 
     int attempts = 0;
     int maxAttempts = getNodePool().size();
 
     while (attempts < maxAttempts) {
       attempts++;
-      E node = getNodePool().get(getCounter().next());
+      Node node = getNodePool().get(getCounter().next());
       if (RESPONSIVE.equals(getResponsiveness(node))) {
         log.debug("Found responsive node: {}", node.getHostname());
         return node;
