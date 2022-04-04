@@ -38,7 +38,7 @@
 
     <mysqlConnectorVersion>8.0.16</mysqlConnectorVersion>
 
-    <guavaVersion>18.0</guavaVersion>
+    <guavaVersion>24.1.1-jre</guavaVersion>
     <metrics.version>3.1.0</metrics.version>
     <xercesImplVersion>2.12.2</xercesImplVersion>
 
