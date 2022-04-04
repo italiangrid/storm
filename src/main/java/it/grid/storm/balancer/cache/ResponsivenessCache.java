@@ -27,15 +27,17 @@ public enum ResponsivenessCache {
   public Responsiveness getResponsiveness(Node node) {
     Optional<ResponsivenessCacheEntry> entry = getEntry(node);
     if (entry.isPresent()) {
-      if (entry.get().isExpired()) {
-        log.debug("Cache entry {} expired. Refreshing..", entry.toString());
-        return entry.get().refresh();
+      ResponsivenessCacheEntry e = entry.get();
+      if (e.isExpired()) {
+        log.debug("Cache entry {} expired. Refreshing..", e);
+        return e.refresh();
       }
-      log.debug("Found valid cache entry for {}", entry.toString());
-      return entry.get().getStatus();
+      log.debug("Found valid cache entry for {}", e);
+      return e.getStatus();
     } else {
       log.debug("Missing cache entry for {}. Adding and refreshing..", node);
       ResponsivenessCacheEntry e = new ResponsivenessCacheEntry(node, entryLifetime);
+      log.debug("Adding cache entry {} for node {} ..", e, node);
       cache.put(node, e);
       return e.getStatus();
     }
