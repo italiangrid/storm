@@ -102,6 +102,8 @@ public class StoRM {
 
   public void init() throws BootstrapException {
 
+    configureIPv6();
+
     configureLogging();
 
     configureSecurity();
@@ -126,6 +128,13 @@ public class StoRM {
 
     performSanityChecks();
 
+  }
+
+  private void configureIPv6() {
+
+    log.debug("java.net.preferIPv6Addresses is {}", System.getProperty("java.net.preferIPv6Addresses"));
+    System.setProperty("java.net.preferIPv6Addresses", String.valueOf(config.getPreferIPv6Addresses()));
+    log.info("java.net.preferIPv6Addresses is {}", System.getProperty("java.net.preferIPv6Addresses"));
   }
 
   private void configureLogging() {

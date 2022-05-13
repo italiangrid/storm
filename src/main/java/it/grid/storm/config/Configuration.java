@@ -175,6 +175,8 @@ public class Configuration {
   private static final String DISKUSAGE_SERVICE_TASKS_INTERVAL = "storm.service.du.periodSecs";
   private static final String DISKUSAGE_SERVICE_TASKS_PARALLEL = "storm.service.du.parallelTasks";
 
+  private static final String JAVA_NET_PREFERIPV6ADDRESSES = "java.net.preferIPv6Addresses";
+
   static {
     try {
       instance = new Configuration();
@@ -1342,5 +1344,10 @@ public class Configuration {
   public boolean getDiskUsageServiceTasksParallel() {
 
     return cr.getConfiguration().getBoolean(DISKUSAGE_SERVICE_TASKS_PARALLEL, DEFAULT_TASKS_PARALLEL);
+  }
+
+  public boolean getPreferIPv6Addresses() {
+
+    return cr.getConfiguration().getBoolean(JAVA_NET_PREFERIPV6ADDRESSES, true);
   }
 }

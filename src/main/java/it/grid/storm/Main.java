@@ -15,8 +15,6 @@ public class Main {
 
   public static void main(String[] args) {
 
-    init();
-
     StoRM storm = new StoRM();
 
     try {
@@ -43,11 +41,4 @@ public class Main {
     }
   }
 
-  private static void init() {
-
-    log.info("java.net.preferIPv6Addresses is {}", System.getProperty("java.net.preferIPv6Addresses"));
-    System.setProperty("java.net.preferIPv6Addresses", "true");
-    log.info("java.net.preferIPv6Addresses is {}", System.getProperty("java.net.preferIPv6Addresses"));
-
-  }
 }
