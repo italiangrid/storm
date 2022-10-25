@@ -204,4 +204,36 @@ public class SAInfo {
 
     return sa;
   }
+
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("SAInfo [name=");
+    builder.append(name);
+    builder.append(", token=");
+    builder.append(token);
+    builder.append(", vos=");
+    builder.append(vos);
+    builder.append(", root=");
+    builder.append(root);
+    builder.append(", storageclass=");
+    builder.append(storageclass);
+    builder.append(", stfnRoot=");
+    builder.append(stfnRoot);
+    builder.append(", retentionPolicy=");
+    builder.append(retentionPolicy);
+    builder.append(", accessLatency=");
+    builder.append(accessLatency);
+    builder.append(", protocols=");
+    builder.append(protocols);
+    builder.append(", anonymous=");
+    builder.append(anonymous);
+    builder.append(", availableNearlineSpace=");
+    builder.append(availableNearlineSpace);
+    builder.append(", approachableRules=");
+    builder.append(approachableRules);
+    builder.append("]");
+    return builder.toString();
+  }
+
 }
