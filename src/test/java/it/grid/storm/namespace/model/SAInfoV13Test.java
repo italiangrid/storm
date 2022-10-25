@@ -14,17 +14,17 @@ import com.google.common.collect.Lists;
 
 import it.grid.storm.namespace.remote.Constants.HttpPerms;
 
-public class SAInfoTest {
+public class SAInfoV13Test {
 
-  private static final Logger log = LoggerFactory.getLogger(SAInfoTest.class);
+  private static final Logger log = LoggerFactory.getLogger(SAInfoV13Test.class);
 
   private static final String JSON_STRING =
       "{\"name\":\"test.vo\",\"token\":\"TESTVO_TOKEN\",\"voname\":\"test.vo\",\"root\":\"/storage/test.vo\",\"storageclass\":\"T1D0\",\"stfnRoot\":[\"/test.vo\"],\"retentionPolicy\":\"CUSTODIAL\",\"accessLatency\":\"ONLINE\",\"protocols\":[\"xroot\",\"webdav\"],\"anonymous\":\"NOREAD\",\"availableNearlineSpace\":20000000,\"approachableRules\":[\"Fake-DN-Matching-Rule\"]}";
 
-  private static final SAInfo saInfo;
+  private static final SAInfoV13 saInfo;
 
   static {
-    saInfo = new SAInfo();
+    saInfo = new SAInfoV13();
     saInfo.setName("test.vo");
     saInfo.setToken("TESTVO_TOKEN");
     saInfo.setVoname("test.vo");
@@ -50,7 +50,7 @@ public class SAInfoTest {
   @Test
   public void testRead() throws IOException {
     ObjectMapper mapper = new ObjectMapper();
-    SAInfo saInfoRead = mapper.readValue(JSON_STRING.getBytes(), SAInfo.class);
+    SAInfoV13 saInfoRead = mapper.readValue(JSON_STRING.getBytes(), SAInfoV13.class);
     log.info("sa info read {}", saInfoRead);
     assertEquals(saInfoRead.getName(), saInfo.getName());
     assertEquals(saInfoRead.getToken(), saInfo.getToken());

@@ -47,6 +47,7 @@ import it.grid.storm.info.remote.resources.Ping;
 import it.grid.storm.info.remote.resources.SpaceStatusResource;
 import it.grid.storm.metrics.NamedInstrumentedSelectChannelConnector;
 import it.grid.storm.metrics.NamedInstrumentedThreadPool;
+import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_3;
 import it.grid.storm.namespace.remote.resource.VirtualFSResource;
 import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_0;
 import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_1;
@@ -121,6 +122,7 @@ public class RestServer {
     resourceConfig.register(VirtualFSResourceCompat_1_0.class);
     resourceConfig.register(VirtualFSResourceCompat_1_1.class);
     resourceConfig.register(VirtualFSResourceCompat_1_2.class);
+    resourceConfig.register(VirtualFSResourceCompat_1_3.class);
     resourceConfig.register(StormEAResource.class);
     resourceConfig.register(Metadata.class);
     resourceConfig.register(Ping.class);
