@@ -7,18 +7,23 @@ title: About us
 
 Here are the main StoRM developers:
 
-{% assign author=site.data.authors.andrea %}
-{% include author.html %}
-
 {% assign author=site.data.authors.enrico %}
 {% include author.html %}
 
 {% assign author=site.data.authors.francesco %}
 {% include author.html %}
 
-{% assign author=site.data.authors.elisabetta %}
+{% assign author=site.data.authors.federica %}
 {% include author.html %}
 
+{% assign author=site.data.authors.roberta %}
+{% include author.html %}
+
+{% assign author=site.data.authors.tommaso %}
+{% include author.html %}
+
+{% assign author=site.data.authors.laura %}
+{% include author.html %}
 
 #### About EU projects
 

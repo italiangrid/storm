@@ -30,3 +30,23 @@ elisabetta:
   display_name: Elisabetta Ronchieri
   email: elisabetta.ronchieri@cnaf.infn.it
   github: joda70
+
+federica:
+  display_name: Federica Agostini
+  email: federica.agostini@cnaf.infn.it
+  github: federicaagostini
+
+roberta:
+  display_name: Roberta Miccoli
+  email: roberta.miccoli@cnaf.infn.it
+  github: rmiccoli
+
+laura:
+  display_name: Laura Cappelli
+  email: laura.cappelli@cnaf.infn.it
+  github: lauracappelli
+
+tommaso:
+  display_name: Tommaso Diotalevi
+  email: tommaso.diotalevi@cnaf.infn.it
+  github: Tommaso93
