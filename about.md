@@ -13,16 +13,7 @@ Here are the main StoRM developers:
 {% assign author=site.data.authors.francesco %}
 {% include author.html %}
 
-{% assign author=site.data.authors.federica %}
-{% include author.html %}
-
-{% assign author=site.data.authors.roberta %}
-{% include author.html %}
-
 {% assign author=site.data.authors.tommaso %}
-{% include author.html %}
-
-{% assign author=site.data.authors.laura %}
 {% include author.html %}
 
 #### About EU projects
