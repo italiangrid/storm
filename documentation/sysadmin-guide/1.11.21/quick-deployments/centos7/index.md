@@ -68,6 +68,8 @@ puppet module install puppet-fetchcrl
 puppet module install lcgdm-voms
 # bdii
 puppet module install cnafsd-bdii
+# mysql
+puppet module install puppetlabs-mysql 
 # storm services and utils
 puppet module install cnafsd-storm
 # lcmaps module (only for test purpose)
