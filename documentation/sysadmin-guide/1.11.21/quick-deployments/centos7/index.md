@@ -57,21 +57,23 @@ Install the needed puppet modules:
 
 ```bash
 # EPEL repo
-puppet module install puppet-epel
+puppet module install puppet-epel --version 4.1.0
 # UMD4 repo
-puppet module install cnafsd-umd4
+puppet module install cnafsd-umd4 --version 0.1.0
 # NTP service
-puppet module install puppetlabs-ntp
+puppet module install puppetlabs-ntp --version 10.0.0
 # fetch-crl and all CA certificates
-puppet module install puppet-fetchcrl
+puppet module install puppet-fetchcrl --version 5.1.0
 # voms
-puppet module install lcgdm-voms
+puppet module install lcgdm-voms --version 0.4.2
 # bdii
-puppet module install cnafsd-bdii
+puppet module install cnafsd-bdii --version 1.3.2
+# mysql
+puppet module install puppetlabs-mysql --version 10.3.0 
 # storm services and utils
-puppet module install cnafsd-storm
+puppet module install cnafsd-storm --version 3.4.0
 # lcmaps module (only for test purpose)
-puppet module install cnafsd-lcmaps
+puppet module install cnafsd-lcmaps --version 0.3.2
 ```
 
 ### Setup node
@@ -146,6 +148,7 @@ A pair of dteam VO storage areas are defined for Backend and WebDAV services.
 Example of **manifest.pp**:
 
 ```puppet
+# Edit value for your host
 $host='storm-test.example.org'
 
 include storm::db
