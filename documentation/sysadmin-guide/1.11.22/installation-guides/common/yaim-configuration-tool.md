@@ -2,11 +2,11 @@
 layout: service-guide
 title: StoRM YAIM configuration - YAIM
 navigation:
-  - link: documentation/sysadmin-guide/1.11.21/index.html
+  - link: documentation/sysadmin-guide/1.11.20/index.html
     label: Index
-  - link: documentation/sysadmin-guide/1.11.21/installation-guides/index.html
+  - link: documentation/sysadmin-guide/1.11.20/installation-guides/index.html
     label: Installation Guides
-  - link: documentation/sysadmin-guide/1.11.21/installation-guides/common/yaim-configuration-tool.html
+  - link: documentation/sysadmin-guide/1.11.20/installation-guides/common/yaim-configuration-tool.html
     label: YAIM configuration tool
 ---
 

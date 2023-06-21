@@ -1,10 +1,12 @@
 ---
 layout: service-guide
 title: StoRM System Administration Guide
-version: 1.11.21
+version: 1.11.22
 navigation:
-  - link: documentation/sysadmin-guide/1.11.21/index.html
+  - link: documentation/sysadmin-guide/1.11.22/index.html
     label: Index
+redirect_from:
+  - /documentation/sysadmin-guide/
 ---
 
 # StoRM System Administration Guide
