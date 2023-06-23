@@ -1,15 +1,6 @@
 ---
 layout: service-guide
 title: StoRM System Administration Guide - Quick deploy - Centos 7
-redirect_from:
-  /documentation/how-to/basic-storm-standalone-configuration-centos7/1.11.18/
-navigation:
-  - link: documentation/sysadmin-guide/1.11.21/index.html
-    label: Index
-  - link: documentation/sysadmin-guide/1.11.21/quick-deployments/index.html
-    label: Quick Deployments Instructions
-  - link: documentation/sysadmin-guide/1.11.21/quick-deployments/centos7/index.html
-    label: CentOS 7
 ---
 
 # Quick all-in-one deployment on CentOS 7 with Puppet
@@ -18,15 +9,15 @@ The simplest example of a StoRM deployment can be done by installing all the com
 
 Assuming that:
 
-- the host satisfies the [StoRM Installation Prerequisites][INSTALL-PREREQ]
-- the StoRM repositories have been installed (see [repositories section][REPOSETTINGS]).
+- the host satisfies the [StoRM System Requirements][SYSTEM-REQUIREMENTS]
+- the [Getting Started][GETTING-STARTED] sections related to repositories have been followed
 
-we will deploy all the services after preparing the node:
+we will deploy all the services in 2 steps:
 
-* [Prepare node](#node)
+* [Prepare node](#prepare-node)
 * [Install services](#services)
 
-## Prepare node <a name="node">&nbsp;</a>
+## Prepare node
 
 This part of the guide explains how to brief prepare a node to install all the StoRM services.
 We are aware that there are a lot of ways to do these things and each site administratos knows what is better for his site.
@@ -42,38 +33,44 @@ $ ls /etc/grid-security/hostkey.pem
 $ openssl x509 -in /etc/grid-security/hostcert.pem -noout -text
 ```
 
-### Install Puppet
+### Install Puppet 7
 
-Install Puppet as follow:
+Install Puppet 7 as follow:
 
 ```bash
-rpm -Uvh https://yum.puppetlabs.com/puppet5/el/7/x86_64/puppet5-release-5.0.0-6.el7.noarch.rpm
+rpm -Uvh https://yum.puppet.com/puppet7-release-el-7.noarch.rpm
+rpm -Uvh https://yum.puppet.com/puppet-tools-release-el-7.noarch.rpm
+wget http://yum.puppet.com/RPM-GPG-KEY-puppet-20250406
+rpm --import RPM-GPG-KEY-puppet-20250406
 yum install -y puppet
 ```
 
 ### Install Puppet modules
 
-Install the needed puppet modules:
+Install the following puppet modules:
 
-```bash
-# EPEL repo
-puppet module install puppet-epel --version 4.1.0
-# UMD4 repo
-puppet module install cnafsd-umd4 --version 0.1.0
-# NTP service
-puppet module install puppetlabs-ntp --version 10.0.0
+```shell
+# Puppet Standard Library
+puppet module install puppetlabs-stdlib --version 8.6.0
+puppet module install puppetlabs-apt --version 8.5.0
 # fetch-crl and all CA certificates
 puppet module install puppet-fetchcrl --version 5.1.0
-# voms
-puppet module install lcgdm-voms --version 0.4.2
-# bdii
-puppet module install cnafsd-bdii --version 1.3.2
-# mysql
-puppet module install puppetlabs-mysql --version 10.3.0 
-# storm services and utils
-puppet module install cnafsd-storm --version 3.4.0
-# lcmaps module (only for test purpose)
-puppet module install cnafsd-lcmaps --version 0.3.2
+# EPEL repo
+puppet module install puppet-epel --version 4.1.0
+puppet module install puppetlabs-firewall --version 5.0.0
+puppet module install saz-sudo --version 14.0.0
+# MySQL
+puppet module install puppetlabs-mysql --version 14.0.0
+puppet module install puppetlabs-accounts --version 8.0.0
+puppet module install CERNOps-bdii --version 1.2.2
+# UMD4 repo
+puppet module install cnafsd-umd4
+# VOMS VO configuration
+puppet module install cnafsd-voms
+# LCMAPS module (only for test purpose)
+puppet module install cnafsd-lcmaps
+# StoRM services and utils
+puppet module install cnafsd-storm
 ```
 
 ### Setup node
@@ -83,7 +80,6 @@ Apply this **setup.pp**:
 ```puppet
 include epel
 include umd4
-include ntp
 include fetchcrl
 
 # install and configure dteam vo
@@ -138,7 +134,7 @@ Class['storm::users']
 puppet apply setup.pp
 ```
 
-## Install services <a name="services">&nbsp;</a>
+## Services
 
 ### Example of manifest.pp
 
@@ -167,8 +163,6 @@ class { 'storm::backend':
       'hostname' => $host,
     },
   ],
-  hostname              => $host,
-  service_du_enabled    => true,
   srm_pool_members      => [
     {
       'hostname' => $host,
@@ -212,7 +206,6 @@ class { 'storm::gridftp':
 }
 
 class { 'storm::webdav':
-  hostnames     => [$host],
   storage_areas => [
     {
       'name'          => 'dteam-disk',
@@ -237,18 +230,6 @@ puppet apply manifest.pp
 ```
 
 Go to [StoRM Puppet module site][puppet-module-docs] to read all the configuration values for each StoRM Puppet class.
-
-### Enable GPFS native libs on StoRM Backend
-
-If you're running StoRM Backend on GPFS file system and you need to install the GPFS native libs, enable the installation through the Puppet module as follows:
-
-```puppet
-class { 'storm::backend':
-  # ...
-  install_native_libs_gpfs => true,
-  # ...
-}
-```
 
 ### Enable HTTP as transfer protocol for SRM
 
@@ -290,7 +271,6 @@ class { 'storm::backend':
 The *manifest.pp* showed above includes the HTTP transfer protocol for all the storage area defined.
 By default, *storm::backend::transfer_protocols* includes only `file` and `gsiftp`.
 
-
 ### MariaDB server configuration
 
 The installation of MariaDB server is not done by StoRM Backend class. The assumption is that a site administrator prefers to install and tune database as its needed. Anyway, an utility class is provided by StoRM module to install a MariaDB server and add all the necessary grants and users.
@@ -307,9 +287,9 @@ class { 'storm::db':
 The whole list of StoRM Database class parameters can be found [here](https://italiangrid.github.io/storm-puppet-module/puppet_classes/storm_3A_3Adb.html).
 
 
-[INSTALL-PREREQ]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.19/installation-prerequisites/
-[REPOSETTINGS]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.19/repositories/
+[SYSTEM-REQUIREMENTS]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.22/#system-requirements
+[GETTING-STARTED]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.22/#getting-started
 
 [puppet-module-docs]: https://italiangrid.github.io/storm-puppet-module/
 
-[sysadmin-index]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.19/
+[sysadmin-index]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.22/

@@ -1,6 +1,11 @@
-### Service information
+---
+layout: service-guide
+title: StoRM Backend properties file REFERENCE
+---
 
-#### Service Parameters
+# StoRM Backend properties full reference
+
+## Service Parameters
 
 |   Property Name                         |   Description     |
 |:----------------------------------------|:------------------|
@@ -23,7 +28,7 @@
 | `default.overwrite`                     | Default file overwrite mode to use upon *srmPrepareToPut* requests. Default: **A**. Possible values are: N, A, D. Please note that N stands for *Never*, A stands for *Always* and D stands for *When files differs*.
 | `default.storagetype`                   | Default File Storage Type to be used for *srmPrepareToPut* requests in case is not provided in the request. Default: **V**. Possible values are: V, P, D. Please note that V stands for *Volatile*, P stands for *Permanent* and D stands for *Durable*.
 
-#### Garbage collector <a name="requestsgarbagecollector">&nbsp;</a>
+## Garbage collector
 
 The requests garbage collector process cleans database from the expired asynchronous SRM requests. The value of `expired.request.time` defines how many seconds are necessary to a request, after its submission, to be considered expired. An appropriate tuning is needed in case of high throughput of SRM requests required for long time.
 
@@ -57,7 +62,7 @@ The agent runs each `transit.interval` seconds and updates all the expired reque
 |   `gc.pinnedfiles.cleaning.delay`     |   Initial delay before starting the reserved space, JIT ACLs and pinned files garbage collection process, in seconds. Default: **10**
 |   `gc.pinnedfiles.cleaning.interval`  |   Time interval in seconds between successive purging run. Default: **300**
 
-#### Synchronous call
+## Synchronous call
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -67,7 +72,7 @@ The agent runs each `transit.interval` seconds and updates all the expired reque
 |   `synchcall.xmlrpc.security.enabled`     |   Whether the backend will require a token to be present for accepting XML-RPC requests. Default: true
 |   `synchcall.xmlrpc.security.token`       |   The token that the backend will require to be present for accepting XML-RPC requests. Mandatory if synchcall.xmlrpc.token.enabled is true
 
-#### REST interface parameters
+## REST interface parameters
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -75,7 +80,7 @@ The agent runs each `transit.interval` seconds and updates all the expired reque
 |   `storm.rest.services.maxthreads`  |   REST services max active requests. Default: **100**
 |   `storm.rest.services.max_queue_size`  |   REST services max queue size of accepted requests. Default: **1000**
 
-#### Database connection parameters
+## Database connection parameters
 
 |   Property Name   |   Description         |
 |:------------------|:----------------------|
@@ -88,7 +93,7 @@ The agent runs each `transit.interval` seconds and updates all the expired reque
 |   `persistence.internal-db.connection-pool.maxActive`  |   Database connection pool max active connections. Default: **10**
 |   `persistence.internal-db.connection-pool.maxWait`    |   Database connection pool max wait time to provide a connection. Default: **50**
 
-#### SRM Requests Picker
+## SRM Requests Picker
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -96,7 +101,7 @@ The agent runs each `transit.interval` seconds and updates all the expired reque
 |   `asynch.PickingTimeInterval`    |   Polling interval in seconds to pick up new SRM requests. Default: **2**
 |   `asynch.PickingMaxBatchSize`    |   Maximum number of requests picked up at each polling time. Default: **100**
 
-#### Worker threads
+## Worker threads
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -116,13 +121,13 @@ The agent runs each `transit.interval` seconds and updates all the expired reque
 |   `scheduler.chunksched.copy.workerMaxPoolSize`   |   *Copy* worker pool max size. Default: **50**
 |   `scheduler.chunksched.copy.queueSize`           |   *Copy* request queue maximum size. Default: **500**
 
-#### Protocol balancing
+## Protocol balancing
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
 |   `gridftp-pool.status-check.timeout` |   Time in milliseconds after which the status of a GridFTP has to be verified. Default: **20000** (20 secs)
 
-#### Tape recall
+## Tape recall
 
 |   Property Name   |   Description     |
 |:------------------|:------------------|
@@ -130,7 +135,7 @@ The agent runs each `transit.interval` seconds and updates all the expired reque
 |   `tape.recalltable.service.param.status`        |   Default: **status**
 |   `tape.recalltable.service.param.takeover`      |   Default: **first**
 
-#### Disk Usage Service
+## Disk Usage Service
 
 The Disk Usage Service has been introduced within StoRM v1.11.18 and allows administrators to enable periodic du calls on the storage area root directory in order to compute the used space size.
 By default the service is disabled. Set `storm.service.du.enabled` in yoir storm.properties file to enable it.

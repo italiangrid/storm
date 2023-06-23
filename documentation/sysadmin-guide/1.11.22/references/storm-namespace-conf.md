@@ -1,7 +1,17 @@
-### Storage information
+---
+layout: service-guide
+title: StoRM Backend namespace XML full reference
+---
 
-Information about storage managed by StoRM is stored in a configuration file named namespace.xml located at */etc/storm/backend-server/* on StoRM Backend host. One of the information stored into namespace.xml file is what is needed to perform the ***mapping functionality***.
-The *mapping functionality* is the process of retrieving or building the transport URL (TURL) of a file addressed by a Site URL (SURL) together with grid user credential. The Fig 3 shows the different schema of SURL and TURL.
+# StoRM Backend namespace XML full reference
+
+Information about storage managed by StoRM is stored in a configuration file named `namespace.xml` located at `/etc/storm/backend-server/` on StoRM Backend host.
+One of the information stored into this file is what is needed to perform the **mapping functionality**.
+
+## The _mapping functionality_
+
+The *mapping functionality* is the process of retrieving or building the transport URL (TURL) of a file addressed by a Site URL (SURL) together with grid user credential.
+The following picture shows the different schema of SURL and TURL.
 
 {% assign image_src="surl-turl-schema.png" %}
 {% assign image_width="100%" %}
@@ -128,7 +138,7 @@ Attributes meaning:
 - ```<filesystem-driver>it.grid.storm.filesystem.swig.posixfs</filesystem-driver>``` : Driver loaded by the Backend for filesystem interaction. This driver is used mainly to set up ACLs on space and files.
 - ```<spacesystem-driver>it.grid.storm.filesystem.MockSpaceSystem</spacesystem-driver>``` Driver loaded by the Backend for filesystem interaction. This is driver is used to manage space allocation. (E.g. on GPFS it uses the _gpfs_prealloc()_ call).
 
-#### Storage Area properties
+## Storage Area properties
 
 ```xml
     <properties>
@@ -148,7 +158,7 @@ in details:
 - ```<TotalOnlineSize unit="GB" limited-size="true">291</TotalOnlineSize>``` Total on-line size of the Storage Area in GigaBytes. In case the attribute *limited-size*="true", StoRM enforce this limit at SRM level. When the space used for the Storage Area is at least equal to the size specified, every further SRM request to write files will fail with SRM_NO_FREE_SPACE error code.
 - ```<TotalNearlineSize unit="GB">0</TotalNearlineSize>``` : Total near-line size of the Storage Area. This only means in case the Storage Area is in some way attached to a MSS storage system (such as TSM with GPFS).
 
-#### Storage area capabilities
+## Storage area capabilities
 
 ```xml
     <aclMode>AoT</aclMode>
@@ -167,7 +177,7 @@ This is the ACL enforcing approach. Possible values are: *AoT*, *JiT*. In case o
 
 This is the Default ACL list. A list of ACL entry (that specify a local user (*uid*) or group id (*gid*) and a permission (R,W,RW). This ACL are automatically by StoRM at each read or write request. Useful for use cases where experiment want to allow local access to file on group different than the one that made the SRM request operation.
 
-#### Access and Transfer protocol supported
+## Access and Transfer protocol supported
 
 The ```file``` protocol:
 
@@ -226,7 +236,7 @@ This capability element contains all the information about the **root** server t
 
     root://root-dteam.cnaf.infn.it:1094/atlas/atlasmcdisk/filename.
 
-#### Pool of protocol servers
+## Pool of protocol servers
 
 ```xml
     <pool>
@@ -277,7 +287,7 @@ Load balancing strategies details:
     </defaults-values>
 ```
 
-#### Mapping rules
+## Mapping rules
 
 A **mapping rule** define how a certain NS-Filesystem, that correspond to a Storage Area in SRM meaning of terms, is exposed in Grid:
 
@@ -300,7 +310,7 @@ following the root expressed in the *dteam-FS* NF-Filesystem element, is mapped 
 
 This approach works similar to an alias, from the SURL *stfn-root* path to the NS-Filesystem root.
 
-#### Approachable rules
+## Approachable rules
 
 **Approachable rules** defines which users (or which class of users) can approach a certain Storage Area, always expressed as NS-Filesystem element. If a user can approach a Storage Area, he can use it for all SRM operations. If a user is not allowed to approach a Storage Area, and he try to specify it in any SRM request, he will receive an SRM\_INVALID\_PATH. In practics, if a user cannot approach a Storage Area, for him that specific path does not exists at all.
 Here is an example of approachable rule for the *dteam-FS* element:
@@ -322,9 +332,3 @@ Here is an example of approachable rule for the *dteam-FS* element:
 
 - `<vo-name>dteam</vo-name>` means that only users belonging to the VO dteam will be allowed to access the Storage Area. This entry can be a list of comma separeted VO-name.
 
-### Used space initialization
-
-An administrator can initialize the status of a Storage Area by editing a configuration file, the `used-space.ini` configuration file, that it's parsed once at Backend's bootstrap time.
-See [this configuration example][used-space-example] for more info.
-
-[used-space-example]: {{site.baseurl}}/documentation/how-to/how-to-initialize-storage-area-used-space/
