@@ -54,6 +54,8 @@ rfcs:
     title: Update bouncycastle version to 1.67
   - id: STOR-1561
     title: CREATE date in the future in table storage_space
+  - id: STOR-1510
+    title: Storage space info creation timestamp must not be overwritten during UPDATE queries
 ---
 
 ## StoRM v. 1.11.22

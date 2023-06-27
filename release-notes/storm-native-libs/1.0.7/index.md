@@ -13,6 +13,8 @@ rfcs:
 Released on **{{ page.release_date }}** with [StoRM v. 1.11.22][release-notes].
 <span style="float: right; margin-left: 8px;" class="label label-info">centos7</span>
 
+This release avoid loading and enforcing ACL mask from a file and leave it as automatically enforced by the underline Filesystem.
+
 ### Bug fixes
 
 {% include list-rfcs.liquid %}
