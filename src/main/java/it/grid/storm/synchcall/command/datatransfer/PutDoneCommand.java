@@ -15,6 +15,30 @@
 
 package it.grid.storm.synchcall.command.datatransfer;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static it.grid.storm.srm.types.TStatusCode.SRM_ABORTED;
+import static it.grid.storm.srm.types.TStatusCode.SRM_AUTHORIZATION_FAILURE;
+import static it.grid.storm.srm.types.TStatusCode.SRM_DUPLICATION_ERROR;
+import static it.grid.storm.srm.types.TStatusCode.SRM_FAILURE;
+import static it.grid.storm.srm.types.TStatusCode.SRM_INTERNAL_ERROR;
+import static it.grid.storm.srm.types.TStatusCode.SRM_INVALID_PATH;
+import static it.grid.storm.srm.types.TStatusCode.SRM_INVALID_REQUEST;
+import static it.grid.storm.srm.types.TStatusCode.SRM_PARTIAL_SUCCESS;
+import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_TIMED_OUT;
+import static it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS;
+import static it.grid.storm.synchcall.command.CommandHelper.buildStatus;
+
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
@@ -28,7 +52,7 @@ import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -44,30 +68,6 @@ import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferOutputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestFilesInputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
-
-import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static it.grid.storm.srm.types.TStatusCode.SRM_ABORTED;
-import static it.grid.storm.srm.types.TStatusCode.SRM_AUTHORIZATION_FAILURE;
-import static it.grid.storm.srm.types.TStatusCode.SRM_DUPLICATION_ERROR;
-import static it.grid.storm.srm.types.TStatusCode.SRM_FAILURE;
-import static it.grid.storm.srm.types.TStatusCode.SRM_INTERNAL_ERROR;
-import static it.grid.storm.srm.types.TStatusCode.SRM_INVALID_PATH;
-import static it.grid.storm.srm.types.TStatusCode.SRM_INVALID_REQUEST;
-import static it.grid.storm.srm.types.TStatusCode.SRM_PARTIAL_SUCCESS;
-import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_TIMED_OUT;
-import static it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS;
-import static it.grid.storm.synchcall.command.CommandHelper.buildStatus;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 /**
  * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
@@ -431,7 +431,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 		// 3- compute the checksum and store it in an extended attribute
 		LocalFile localFile = stori.getLocalFile();
 
-		VirtualFSInterface vfs = null;
+		VirtualFS vfs = null;
 		try {
 			vfs = NamespaceDirector.getNamespace().resolveVFSbyLocalFile(localFile);
 		} catch (NamespaceException e) {

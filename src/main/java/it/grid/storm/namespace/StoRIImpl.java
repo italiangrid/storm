@@ -17,9 +17,20 @@
 
 package it.grid.storm.namespace;
 
+import static org.apache.commons.lang.StringUtils.join;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+
+import org.slf4j.Logger;
+
 import it.grid.storm.balancer.BalancingStrategy;
-import it.grid.storm.balancer.BalancingStrategyException;
 import it.grid.storm.balancer.Node;
+import it.grid.storm.balancer.exception.BalancingStrategyException;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.common.types.InvalidPFNAttributeException;
 import it.grid.storm.common.types.InvalidStFNAttributeException;
@@ -32,6 +43,7 @@ import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.ReservationException;
 import it.grid.storm.filesystem.Space;
 import it.grid.storm.filesystem.SpaceSystem;
+import it.grid.storm.namespace.model.ACLMode;
 import it.grid.storm.namespace.model.Authority;
 import it.grid.storm.namespace.model.Capability;
 import it.grid.storm.namespace.model.MappingRule;
@@ -39,6 +51,7 @@ import it.grid.storm.namespace.model.PathCreator;
 import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.model.StoRIType;
 import it.grid.storm.namespace.model.TransportProtocol;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.namespace.naming.NamespaceUtil;
 import it.grid.storm.namespace.naming.NamingConst;
 import it.grid.storm.namespace.naming.SURL;
@@ -49,30 +62,19 @@ import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TTURL;
 
-import static org.apache.commons.lang.StringUtils.join;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-
-import org.slf4j.Logger;
-
 public class StoRIImpl implements StoRI {
 
 	private Logger log = NamespaceDirector.getLogger();
 
 	private TSURL surl;
 	private PFN pfn;
-	private Capability.ACLMode aclMode = Capability.ACLMode.UNDEF;
+	private ACLMode aclMode = ACLMode.UNDEF;
 	private TLifeTimeInSeconds lifetime = null;
 	private Date startTime = null;
 	private LocalFile localFile = null;
 	private Space space;
 
-	private VirtualFSInterface vfs;
+	private VirtualFS vfs;
 	private FilesystemIF fs;
 	private SpaceSystem spaceDriver;
 	private StoRIType type;
@@ -92,8 +94,7 @@ public class StoRIImpl implements StoRI {
 	// Boolean status for full detailed metadata
 	private boolean volatileInformationAreSet = false;
 
-	public StoRIImpl(VirtualFSInterface vfs, MappingRule winnerRule,
-		String relativeStFN, StoRIType type) {
+    public StoRIImpl(VirtualFS vfs, MappingRule winnerRule, String relativeStFN, StoRIType type) {
 
 		if (vfs != null) {
 			this.vfs = vfs;
@@ -141,8 +142,7 @@ public class StoRIImpl implements StoRI {
 		}
 	}
 
-	public StoRIImpl(VirtualFSInterface vfs, String stfnStr,
-		TLifeTimeInSeconds lifetime, StoRIType type) {
+    public StoRIImpl(VirtualFS vfs, String stfnStr, TLifeTimeInSeconds lifetime, StoRIType type) {
 
 		this.vfs = vfs;
 		this.capability = (Capability) vfs.getCapabilities();
@@ -515,7 +515,7 @@ public class StoRIImpl implements StoRI {
 		return resultTURL;
 	}
 
-	public VirtualFSInterface getVirtualFileSystem() {
+	public VirtualFS getVirtualFileSystem() {
 		return this.vfs;
 	}
 
@@ -523,10 +523,10 @@ public class StoRIImpl implements StoRI {
 
 		boolean result = true;
 
-		if (aclMode.equals(Capability.ACLMode.UNDEF)) {
+		if (aclMode.equals(ACLMode.UNDEF)) {
 			this.aclMode = vfs.getCapabilities().getACLMode();
 		}
-		if (aclMode.equals(Capability.ACLMode.JUST_IN_TIME)) {
+		if (aclMode.equals(ACLMode.JUST_IN_TIME)) {
 			result = true;
 		} else {
 			result = false;
@@ -645,11 +645,11 @@ public class StoRIImpl implements StoRI {
 		if (pooledProtocol.equals(Protocol.GSIFTP)
 			|| pooledProtocol.equals(Protocol.HTTP)
 			|| pooledProtocol.equals(Protocol.HTTPS)) {
-			BalancingStrategy<? extends Node> bal = vfs
+			BalancingStrategy bal = vfs
 				.getProtocolBalancingStrategy(pooledProtocol);
 			if (bal != null) {
 				Node node = bal.getNextElement();
-				authority = new Authority(node.getHostName(), node.getPort());
+				authority = new Authority(node.getHostname(), node.getPort());
 			}
 		} else {
 			log.error("Unable to manage pool with protocol different from GSIFTP.");

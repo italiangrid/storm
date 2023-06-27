@@ -1,20 +1,20 @@
 package it.grid.storm.space;
 
-import it.grid.storm.namespace.CapabilityInterface;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.Capability;
 import it.grid.storm.namespace.model.Quota;
+import it.grid.storm.namespace.model.VirtualFS;
 
 
 public class SpaceUpdaterHelperFactory {
 
-	public static SpaceUpdaterHelperInterface getSpaceUpdaterHelper(VirtualFSInterface vfs) {
+	public static SpaceUpdaterHelperInterface getSpaceUpdaterHelper(VirtualFS vfs) {
 		
 		if (vfs == null) {
-			throw new IllegalArgumentException("VirtualFSInterface null!");
+			throw new IllegalArgumentException("VirtualFS null!");
 		}
 		
 		String fsType = vfs.getFSType();
-		CapabilityInterface cap = null;
+		Capability cap = null;
 		Quota quota = null;
 		
 		if (fsType != null) {

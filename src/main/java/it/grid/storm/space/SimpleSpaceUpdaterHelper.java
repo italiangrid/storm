@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.VirtualFS;
 
 public class SimpleSpaceUpdaterHelper implements SpaceUpdaterHelperInterface {
 
@@ -17,13 +17,13 @@ public class SimpleSpaceUpdaterHelper implements SpaceUpdaterHelperInterface {
 		rsc = new ReservedSpaceCatalog();
 	}
 	
-	private StorageSpaceData getStorageSpaceDataForVFS(VirtualFSInterface vfs) {
+	private StorageSpaceData getStorageSpaceDataForVFS(VirtualFS vfs) {
 
 		return rsc.getStorageSpaceByAlias(vfs.getSpaceTokenDescription());
 	}
 	
 	@Override
-	public boolean increaseUsedSpace(VirtualFSInterface vfs, long size) {
+	public boolean increaseUsedSpace(VirtualFS vfs, long size) {
 
 		log.debug("Increase {} used space: {} bytes ", vfs.getAliasName(), size);
 
@@ -50,7 +50,7 @@ public class SimpleSpaceUpdaterHelper implements SpaceUpdaterHelperInterface {
 	}
 
 	@Override
-	public boolean decreaseUsedSpace(VirtualFSInterface vfs, long size) {
+	public boolean decreaseUsedSpace(VirtualFS vfs, long size) {
 
 		log.debug("Decrease {} used space: {} bytes ", vfs.getAliasName(), size);
 

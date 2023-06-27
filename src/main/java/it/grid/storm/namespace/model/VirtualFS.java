@@ -23,11 +23,13 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.balancer.Node;
@@ -49,7 +51,6 @@ import it.grid.storm.filesystem.Space;
 import it.grid.storm.filesystem.SpaceSystem;
 import it.grid.storm.filesystem.swig.genericfs;
 import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.namespace.CapabilityInterface;
 import it.grid.storm.namespace.DefaultValuesInterface;
 import it.grid.storm.namespace.ExpiredSpaceTokenException;
 import it.grid.storm.namespace.NamespaceDirector;
@@ -58,7 +59,6 @@ import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.PropertyInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.StoRIImpl;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.naming.NamespaceUtil;
 import it.grid.storm.namespace.naming.NamingConst;
 import it.grid.storm.persistence.exceptions.DataAccessException;
@@ -71,20 +71,9 @@ import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TSpaceType;
 
-/**
- * <p> Title: </p>
- * 
- * <p> Description: </p>
- * 
- * <p> Copyright: Copyright (c) 2006 </p>
- * 
- * <p> Company: INFN-CNAF and ICTP/eGrid project </p>
- * 
- * @author Riccardo Zappi @version 1.0
- */
-public class VirtualFS implements VirtualFSInterface {
+public class VirtualFS {
 
-  private final Logger log = NamespaceDirector.getLogger();
+  private final Logger log = LoggerFactory.getLogger(VirtualFS.class);
 
   String aliasName = null;
   String type = null;
@@ -95,14 +84,14 @@ public class VirtualFS implements VirtualFSInterface {
   Class fsDriver = null;
   Class spaceSystemDriver = null;
   DefaultValuesInterface defValue = null;
-  CapabilityInterface capabilities = null;
+  Capability capabilities = null;
   PropertyInterface properties = null;
   Hashtable protocols = null;
   genericfs genericFS = null;
   SpaceSystem spaceSystem = null;
   FilesystemIF fsWrapper = null;
-  List<MappingRule> mappingRules = new ArrayList<MappingRule>();
-  List<ApproachableRule> approachableRules = new ArrayList<ApproachableRule>();
+  List<MappingRule> mappingRules = Lists.newArrayList();
+  List<ApproachableRule> approachableRules = Lists.newArrayList();
   Configuration config;
   StorageClassType storageClass = null;
   TSpaceToken spaceToken;
@@ -154,7 +143,6 @@ public class VirtualFS implements VirtualFSInterface {
     spaceUpdater = SpaceUpdaterHelperFactory.getSpaceUpdaterHelper(this);
   }
 
-  @Override
   public void setProperties(PropertyInterface prop) {
 
     this.properties = prop;
@@ -175,7 +163,7 @@ public class VirtualFS implements VirtualFSInterface {
     this.defValue = defValue;
   }
 
-  public void setCapabilities(CapabilityInterface cap) {
+  public void setCapabilities(Capability cap) {
 
     this.capabilities = cap;
   }
@@ -300,7 +288,6 @@ public class VirtualFS implements VirtualFSInterface {
     return this.aliasName;
   }
 
-  @Override
   public boolean isHttpWorldReadable() {
 
     for (ApproachableRule rule : approachableRules) {
@@ -333,7 +320,6 @@ public class VirtualFS implements VirtualFSInterface {
     return this.mappingRules;
   }
 
-  @Override
   public List<ApproachableRule> getApproachableRules()
     throws NamespaceException {
 
@@ -520,7 +506,7 @@ public class VirtualFS implements VirtualFSInterface {
     return this.defValue;
   }
 
-  public CapabilityInterface getCapabilities() {
+  public Capability getCapabilities() {
 
     return this.capabilities;
   }
@@ -549,7 +535,6 @@ public class VirtualFS implements VirtualFSInterface {
     return false;
   }
 
-  @Override
   public boolean isApproachableByAnonymous() {
 
     for (ApproachableRule approachableRule : this.approachableRules) {
@@ -581,7 +566,6 @@ public class VirtualFS implements VirtualFSInterface {
     return stori;
   }
 
-	@Override
 	public StoRI createFile(String relativePath, StoRIType type, MappingRule rule)
 			throws NamespaceException {
 
@@ -652,12 +636,7 @@ public class VirtualFS implements VirtualFSInterface {
     // Retrieve the Local File
     LocalFile localFile = stori.getLocalFile();
 
-    TSizeInBytes guarSize = defValue.getDefaultGuaranteedSpaceSize();
-
-    // Space space = createSpace(guarSize, presumedSize, localFile,
-    // spaceSystem);
-    Space space = createSpace(presumedSize, presumedSize, localFile,
-      spaceSystem);
+    Space space = createSpace(presumedSize, presumedSize, localFile, spaceSystem);
     stori.setSpace(space);
 
   }
@@ -682,34 +661,10 @@ public class VirtualFS implements VirtualFSInterface {
           + file.getStoRIType());
     }
 
-    // Get the default space size
-    TSizeInBytes defaultFileSize = null;
-    try {
-      defaultFileSize = TSizeInBytes
-        .make(Configuration.getInstance().getFileDefaultSize(), SizeUnit.BYTES);
-    } catch (it.grid.storm.srm.types.InvalidTSizeAttributesException e) {
-      log.debug("Invalid size created.");
-    }
-
-    /**
-     * Verify if the token specified is a DEFAULT SPACE TOKENS used to identify
-     * the Storage Area
-     */
-    Boolean found = isVOSAToken(token);
-
-    /**
-     * In case of DEFAULT SPACE TOKENspecified do nothing and create a simple
-     * silhouette for the file...
-     */
-
-    if (found) {
-      // The minimum size between the one specifed and the default.
-      // makeSilhouetteForFile(file,
-      // ((sizePresumed.value()<defaultFileSize.value())?sizePresumed:defaultFileSize));
+    if (isVOSAToken(token)) {
       try {
         file.allotSpaceForFile(sizePresumed);
       } catch (ReservationException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
       return;
@@ -785,12 +740,8 @@ public class VirtualFS implements VirtualFSInterface {
       }
 
       // remainingSize measures the amount of Space free after reservation.
-      long remainingSize = availableSpaceSize.value() - consumeSize; // Greater
-                                                                     // or
-                                                                     // equal
-                                                                     // to zero
-                                                                     // for
-                                                                     // construction
+      // Greater or equal to zero for construction
+      long remainingSize = availableSpaceSize.value() - consumeSize;
 
       // Retrieve the Space File
       PFN pfn = spaceData.getSpaceFileName();
@@ -821,15 +772,8 @@ public class VirtualFS implements VirtualFSInterface {
        * 
        */
 
-      TSizeInBytes returnedSize = splitSpace(spaceFile, file,
-        sizePresumed.value());
-
       spaceFile.setStoRIType(StoRIType.SPACE_BOUND);
       file.setSpace(spaceFile.getSpace());
-
-      /**
-       * Log ANY data HERE
-       */
 
       // Update Storage Space to new values of size
       TSizeInBytes newUsedSpaceSize = TSizeInBytes.makeEmpty();
@@ -989,11 +933,6 @@ public class VirtualFS implements VirtualFSInterface {
     }
 
   }
-
-  /**
-   * public void bindSpaceToFile(StoRI space, StoRI file) throws
-   * NamespaceException { file.setSpace(space.getSpace()); }
-   **/
 
   /****************************************************************
    * Methods used by StoRI to perform EXPLICIT SPACE RESERVATION
@@ -1265,22 +1204,6 @@ public class VirtualFS implements VirtualFSInterface {
     return result;
   }
 
-  /**
-   * private SpaceSystem retrieveSpaceSystem() throws NamespaceException {
-   * SpaceSystem ss = null; try { ss = (SpaceSystem)
-   * (this.getSpaceSystemDriver()).newInstance(); } catch (NamespaceException
-   * ex) { log.error("Error while retrieving Space System Driver for VFS :" +
-   * this.aliasName, ex); throw new NamespaceException("Error while retrieving
-   * Space System Driver for VFS :" + this.aliasName, ex); } catch
-   * (IllegalAccessException ex) { log.error("Error while accessing Space System
-   * driver for VFS :" + this.aliasName, ex); throw new
-   * NamespaceException("Error while accessing Space System driver for VFS :" +
-   * this.aliasName, ex); } catch (InstantiationException ex) { log.error("Error
-   * while instancianging Space System driver for VFS :" + this.aliasName, ex);
-   * throw new NamespaceException( "Error while instancianging Space System
-   * driver for VFS :" + this.aliasName, ex); } return ss; }
-   **/
-
   private Space createSpace(TSizeInBytes guarSize, TSizeInBytes totalSize,
     LocalFile file, SpaceSystem spaceSystem) throws NamespaceException {
 
@@ -1344,8 +1267,7 @@ public class VirtualFS implements VirtualFSInterface {
     return this.spaceToken;
   }
 
-  public BalancingStrategy<? extends Node> getProtocolBalancingStrategy(
-    Protocol protocol) {
+  public BalancingStrategy getProtocolBalancingStrategy(Protocol protocol) {
 
     return this.capabilities.getBalancingStrategyByScheme(protocol);
   }

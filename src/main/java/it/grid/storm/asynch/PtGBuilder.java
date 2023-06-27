@@ -17,8 +17,6 @@
 
 package it.grid.storm.asynch;
 
-import it.grid.storm.asynch.BuilderException;
-import it.grid.storm.asynch.PtG;
 import it.grid.storm.catalogs.AnonymousPtGData;
 import it.grid.storm.catalogs.IdentityPtGData;
 import it.grid.storm.catalogs.InvalidFileTransferDataAttributesException;

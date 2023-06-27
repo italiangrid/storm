@@ -17,15 +17,6 @@
 
 package it.grid.storm.namespace.config;
 
-import it.grid.storm.namespace.CapabilityInterface;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.VirtualFSInterface;
-import it.grid.storm.namespace.model.ACLEntry;
-import it.grid.storm.namespace.model.ApproachableRule;
-import it.grid.storm.namespace.model.DefaultACL;
-import it.grid.storm.namespace.model.MappingRule;
-import it.grid.storm.namespace.util.userinfo.LocalGroups;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,34 +25,25 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 
-/**
- * <p>
- * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * 
- * <p>
- * Company: INFN-CNAF and ICTP/eGrid project
- * </p>
- * 
- * @author Riccardo Zappi
- * @version 1.0
- */
+import com.google.common.collect.Lists;
+
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.model.ACLEntry;
+import it.grid.storm.namespace.model.ApproachableRule;
+import it.grid.storm.namespace.model.Capability;
+import it.grid.storm.namespace.model.DefaultACL;
+import it.grid.storm.namespace.model.MappingRule;
+import it.grid.storm.namespace.model.VirtualFS;
+import it.grid.storm.namespace.util.userinfo.LocalGroups;
+
 public class NamespaceCheck {
 
 	private final Logger log = NamespaceDirector.getLogger();
-	private final Map<String, VirtualFSInterface> vfss;
+	private final Map<String, VirtualFS> vfss;
 	private final Map<String, MappingRule> maprules;
 	private final Map<String, ApproachableRule> apprules;
 
-	public NamespaceCheck(Map<String, VirtualFSInterface> vfss,
+	public NamespaceCheck(Map<String, VirtualFS> vfss,
 		Map<String, MappingRule> maprules,
 		Map<String, ApproachableRule> apprules) {
 
@@ -89,11 +71,11 @@ public class NamespaceCheck {
 				.warn("Skip the check of the needed Local Group, because check of VFSs failed.");
 		} else {
 
-			List<VirtualFSInterface> vf = new ArrayList<>(vfss.values());
-			for (VirtualFSInterface vfs : vf) {
+			List<VirtualFS> vf = new ArrayList<>(vfss.values());
+			for (VirtualFS vfs : vf) {
 				
 				// Check the presence of Default ACL
-				CapabilityInterface cap = vfs.getCapabilities();
+				Capability cap = vfs.getCapabilities();
 				if (cap != null) {
 					DefaultACL defACL = cap.getDefaultACL();
 					if (defACL != null) {
@@ -135,11 +117,11 @@ public class NamespaceCheck {
 			log.error("Anyone VFS is defined in namespace!");
 			return false;
 		} else {
-			List<VirtualFSInterface> rules = new ArrayList<>(vfss.values());
-			Iterator<VirtualFSInterface> scan = rules.iterator();
+			List<VirtualFS> rules = new ArrayList<>(vfss.values());
+			Iterator<VirtualFS> scan = rules.iterator();
 
 			while (scan.hasNext()) {
-				VirtualFSInterface vfs = scan.next();
+				VirtualFS vfs = scan.next();
 
 					String aliasName = vfs.getAliasName();
 					log.debug("VFS named '{}' found.", aliasName);
@@ -198,8 +180,8 @@ public class NamespaceCheck {
 			boolean check = false;
 			while (scan.hasNext()) {
 				ApproachableRule rule = scan.next();
-				List<VirtualFSInterface> approachVFSs = new ArrayList<>(rule.getApproachableVFS());
-				for (VirtualFSInterface aVfs : approachVFSs) {
+				List<VirtualFS> approachVFSs = Lists.newArrayList(rule.getApproachableVFS());
+				for (VirtualFS aVfs : approachVFSs) {
 					check = vfss.containsKey(aVfs.getAliasName());
 					if (!check) {
 						log.error("ERROR in NAMESPACE - APP RULE '{}' point a UNKNOWN VFS '{}'!", rule.getRuleName(), aVfs);

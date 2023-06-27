@@ -2,7 +2,7 @@ package it.grid.storm.space.gpfsquota;
 
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.filesystem.swig.quota_info;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.util.GPFSSizeHelper;
 
@@ -13,8 +13,7 @@ import it.grid.storm.util.GPFSSizeHelper;
  */
 public class GPFSQuotaInfo implements GPFSFilesetQuotaInfo {
 
-	public static GPFSQuotaInfo fromNativeQuotaInfo(VirtualFSInterface fs,
-		quota_info qi) {
+    public static GPFSQuotaInfo fromNativeQuotaInfo(VirtualFS fs, quota_info qi) {
 
 		return new GPFSQuotaInfo(fs, qi);
 	}
@@ -25,9 +24,9 @@ public class GPFSQuotaInfo implements GPFSFilesetQuotaInfo {
 
 	private String filesetName;
 	private boolean quotaEnabled = false;
-	private VirtualFSInterface VFS;
+	private VirtualFS VFS;
 
-	private GPFSQuotaInfo(VirtualFSInterface fs, quota_info qi) {
+	private GPFSQuotaInfo(VirtualFS fs, quota_info qi) {
 
 		this.VFS = fs;
 		this.filesetName = qi.getFileset_name();
@@ -63,7 +62,7 @@ public class GPFSQuotaInfo implements GPFSFilesetQuotaInfo {
 		return SizeUnit.BYTES;
 	}
 
-	public VirtualFSInterface getVFS() {
+	public VirtualFS getVFS() {
 
 		return VFS;
 	}
@@ -94,7 +93,7 @@ public class GPFSQuotaInfo implements GPFSFilesetQuotaInfo {
 		this.filesetName = filesetName;
 	}
 
-	public void setVFS(VirtualFSInterface vFS) {
+	public void setVFS(VirtualFS vFS) {
 
 		VFS = vFS;
 	}

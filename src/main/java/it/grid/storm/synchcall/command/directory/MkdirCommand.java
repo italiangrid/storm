@@ -17,6 +17,25 @@
 
 package it.grid.storm.synchcall.command.directory;
 
+import static it.grid.storm.filesystem.FilesystemPermission.ListTraverse;
+import static it.grid.storm.filesystem.FilesystemPermission.ListTraverseWrite;
+import static it.grid.storm.srm.types.TStatusCode.SRM_AUTHORIZATION_FAILURE;
+import static it.grid.storm.srm.types.TStatusCode.SRM_DUPLICATION_ERROR;
+import static it.grid.storm.srm.types.TStatusCode.SRM_FAILURE;
+import static it.grid.storm.srm.types.TStatusCode.SRM_INTERNAL_ERROR;
+import static it.grid.storm.srm.types.TStatusCode.SRM_INVALID_PATH;
+import static it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS;
+import static it.grid.storm.synchcall.command.directory.MkdirException.srmAuthorizationFailure;
+import static it.grid.storm.synchcall.command.directory.MkdirException.srmFailure;
+import static it.grid.storm.synchcall.command.directory.MkdirException.srmInternalError;
+import static it.grid.storm.synchcall.command.directory.MkdirException.srmInvalidPath;
+import static java.lang.String.format;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
+
 import it.grid.storm.acl.AclManager;
 import it.grid.storm.acl.AclManagerFS;
 import it.grid.storm.authz.AuthzDecision;
@@ -36,9 +55,9 @@ import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.srm.types.SRMCommandException;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
@@ -52,25 +71,6 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.MkdirInputData;
 import it.grid.storm.synchcall.data.directory.MkdirOutputData;
-
-import static it.grid.storm.filesystem.FilesystemPermission.ListTraverse;
-import static it.grid.storm.filesystem.FilesystemPermission.ListTraverseWrite;
-import static it.grid.storm.srm.types.TStatusCode.SRM_AUTHORIZATION_FAILURE;
-import static it.grid.storm.srm.types.TStatusCode.SRM_DUPLICATION_ERROR;
-import static it.grid.storm.srm.types.TStatusCode.SRM_FAILURE;
-import static it.grid.storm.srm.types.TStatusCode.SRM_INTERNAL_ERROR;
-import static it.grid.storm.srm.types.TStatusCode.SRM_INVALID_PATH;
-import static it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS;
-import static it.grid.storm.synchcall.command.directory.MkdirException.srmAuthorizationFailure;
-import static it.grid.storm.synchcall.command.directory.MkdirException.srmFailure;
-import static it.grid.storm.synchcall.command.directory.MkdirException.srmInternalError;
-import static it.grid.storm.synchcall.command.directory.MkdirException.srmInvalidPath;
-import static java.lang.String.format;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
 
 class MkdirException extends SRMCommandException {
 
@@ -335,7 +335,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
   private void manageDefaultACL(LocalFile dir, FilesystemPermission permission)
       throws NamespaceException {
 
-    VirtualFSInterface vfs = namespace.resolveVFSbyLocalFile(dir);
+    VirtualFS vfs = namespace.resolveVFSbyLocalFile(dir);
     DefaultACL dacl = vfs.getCapabilities().getDefaultACL();
     if ((dacl == null) || (dacl.isEmpty())) {
       log.debug("srmMkdir: default acl NULL or empty");

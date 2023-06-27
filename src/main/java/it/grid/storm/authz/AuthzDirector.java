@@ -17,17 +17,6 @@
 
 package it.grid.storm.authz;
 
-import it.grid.storm.authz.path.PathAuthz;
-import it.grid.storm.authz.path.conf.PathAuthzDBReader;
-import it.grid.storm.authz.sa.SpaceDBAuthz;
-import it.grid.storm.authz.sa.test.MockSpaceAuthz;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
-import it.grid.storm.namespace.VirtualFSInterface;
-import it.grid.storm.namespace.model.SAAuthzType;
-import it.grid.storm.srm.types.TSpaceToken;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +24,18 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.grid.storm.authz.path.PathAuthz;
+import it.grid.storm.authz.path.conf.PathAuthzDBReader;
+import it.grid.storm.authz.sa.AuthzDBReaderException;
+import it.grid.storm.authz.sa.SpaceDBAuthz;
+import it.grid.storm.authz.sa.test.MockSpaceAuthz;
+import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.NamespaceInterface;
+import it.grid.storm.namespace.model.SAAuthzType;
+import it.grid.storm.namespace.model.VirtualFS;
+import it.grid.storm.srm.types.TSpaceToken;
 
 public class AuthzDirector {
 
@@ -57,10 +58,10 @@ public class AuthzDirector {
 
 		// Retrieve the list of VFS from Namespace
 		NamespaceInterface ns = NamespaceDirector.getNamespace();
-		ArrayList<VirtualFSInterface> vfss;
+		ArrayList<VirtualFS> vfss;
 		try {
-			vfss = new ArrayList<VirtualFSInterface>(ns.getAllDefinedVFS());
-			for (VirtualFSInterface vfs : vfss) {
+			vfss = new ArrayList<VirtualFS>(ns.getAllDefinedVFS());
+			for (VirtualFS vfs : vfss) {
 				String vfsName = vfs.getAliasName();
 				SAAuthzType authzTp = vfs.getStorageAreaAuthzType();
 				String authzName = "";

@@ -17,30 +17,11 @@
 
 package it.grid.storm.balancer;
 
-/**
- * 
- * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
- * <p>
- * 
- * This is done thorough a strategy pattern in order to let balancers choose the
- * desired strategy at run time.
- * 
- * {@link http://en.wikipedia.org/wiki/Strategy_pattern}
- * 
- * 
- * Authors:
- * 
- * @author lucamag luca.magnoniATcnaf.infn.it
- * 
- * @date = Oct 16, 2008
- * 
- */
+import it.grid.storm.balancer.exception.BalancingStrategyException;
 
-public interface BalancingStrategy<E extends Node> {
+public interface BalancingStrategy {
 
-	public abstract E getNextElement() throws BalancingStrategyException;
+  public Node getNextElement() throws BalancingStrategyException;
 
-	public abstract BalancingStrategyType getType();
-
-	public abstract void notifyChangeInPool();
+  public BalancingStrategyType getType();
 }

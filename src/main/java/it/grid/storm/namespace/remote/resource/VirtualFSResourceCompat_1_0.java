@@ -15,8 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.namespace.remote.Constants;
 
 /**
@@ -37,8 +37,8 @@ public class VirtualFSResourceCompat_1_0 {
 
     log.info("Serving VFS resource listing");
     String vfsListString = "";
-    List<VirtualFSInterface> vfsCollection = NamespaceDirector.getNamespace().getAllDefinedVFS();
-    for (VirtualFSInterface vfs : vfsCollection) {
+    List<VirtualFS> vfsCollection = NamespaceDirector.getNamespace().getAllDefinedVFS();
+    for (VirtualFS vfs : vfsCollection) {
       if (!vfsListString.equals("")) {
         vfsListString += Constants.VFS_LIST_SEPARATOR;
       }
@@ -60,7 +60,7 @@ public class VirtualFSResourceCompat_1_0 {
    * @return
    * @throws NamespaceException
    */
-  private String encodeVFS(VirtualFSInterface vfs) throws NamespaceException {
+  private String encodeVFS(VirtualFS vfs) throws NamespaceException {
 
     String vfsEncoded = Constants.VFS_NAME_KEY + Constants.VFS_FIELD_MATCHER + vfs.getAliasName();
     vfsEncoded += Constants.VFS_FIELD_SEPARATOR;

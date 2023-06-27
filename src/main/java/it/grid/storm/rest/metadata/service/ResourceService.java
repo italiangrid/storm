@@ -13,18 +13,18 @@ import org.slf4j.LoggerFactory;
 
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.StoRIType;
+import it.grid.storm.namespace.model.VirtualFS;
 
 public class ResourceService {
 
   private static final Logger log = LoggerFactory.getLogger(ResourceService.class);
 
-  protected Collection<VirtualFSInterface> vfsList;
+  protected Collection<VirtualFS> vfsList;
   protected Collection<MappingRule> rulesList;
 
-  public ResourceService(Collection<VirtualFSInterface> vfsList,
+  public ResourceService(Collection<VirtualFS> vfsList,
       Collection<MappingRule> rulesList) {
 
     checkNotNull(vfsList, "Invalid null list of Virtual FS");

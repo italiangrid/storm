@@ -17,51 +17,33 @@
 
 package it.grid.storm.space;
 
-import it.grid.storm.catalogs.InvalidRetrievedDataException;
-import it.grid.storm.catalogs.InvalidSpaceDataAttributesException;
-import it.grid.storm.catalogs.MultipleDataEntriesException;
-import it.grid.storm.catalogs.NoDataFoundException;
-import it.grid.storm.catalogs.ReducedPtPChunkData;
-import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.common.types.InvalidPFNAttributeException;
-import it.grid.storm.common.types.PFN;
-import it.grid.storm.common.types.SizeUnit;
-import it.grid.storm.config.Configuration;
-import it.grid.storm.filesystem.LocalFile;
-import it.grid.storm.griduser.GridUserInterface;
-import it.grid.storm.griduser.GridUserManager;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.StoRI;
-import it.grid.storm.namespace.VirtualFSInterface;
-import it.grid.storm.persistence.exceptions.DataAccessException;
-import it.grid.storm.persistence.model.TransferObjectDecodingException;
-import it.grid.storm.srm.types.ArrayOfTSpaceToken;
-import it.grid.storm.srm.types.InvalidTSizeAttributesException;
-import it.grid.storm.srm.types.TLifeTimeInSeconds;
-import it.grid.storm.srm.types.TSURL;
-import it.grid.storm.srm.types.TSizeInBytes;
-import it.grid.storm.srm.types.TSpaceToken;
-import it.grid.storm.srm.types.TSpaceType;
-
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
- * <p>
- * 
- * This class implements a Space Manager.
- * 
- * Authors:
- * 
- * @author lucamag
- * 
- */
+import it.grid.storm.catalogs.InvalidRetrievedDataException;
+import it.grid.storm.catalogs.InvalidSpaceDataAttributesException;
+import it.grid.storm.catalogs.MultipleDataEntriesException;
+import it.grid.storm.catalogs.NoDataFoundException;
+import it.grid.storm.catalogs.ReservedSpaceCatalog;
+import it.grid.storm.common.types.InvalidPFNAttributeException;
+import it.grid.storm.common.types.PFN;
+import it.grid.storm.common.types.SizeUnit;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.griduser.GridUserManager;
+import it.grid.storm.namespace.StoRI;
+import it.grid.storm.namespace.model.VirtualFS;
+import it.grid.storm.persistence.exceptions.DataAccessException;
+import it.grid.storm.persistence.model.TransferObjectDecodingException;
+import it.grid.storm.srm.types.ArrayOfTSpaceToken;
+import it.grid.storm.srm.types.InvalidTSizeAttributesException;
+import it.grid.storm.srm.types.TLifeTimeInSeconds;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.srm.types.TSpaceToken;
+import it.grid.storm.srm.types.TSpaceType;
 
 public class SpaceHelper {
 
@@ -81,7 +63,7 @@ public class SpaceHelper {
 
 		log.debug("Checking if the Storage Area is full");
 
-		VirtualFSInterface fs = stori.getVirtualFileSystem();
+		VirtualFS fs = stori.getVirtualFileSystem();
 		ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
 
 		// Get StorageSpaceData from the database
@@ -101,7 +83,7 @@ public class SpaceHelper {
 
 		log.debug("Checking if the Storage Area is full");
 
-		VirtualFSInterface fs = stori.getVirtualFileSystem();
+		VirtualFS fs = stori.getVirtualFileSystem();
 		ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
 
 		// Get StorageSpaceData from the database
@@ -133,7 +115,7 @@ public class SpaceHelper {
 					+ log + " , stori : " + stori);
 		}
 		boolean response = false;
-		VirtualFSInterface fs = stori.getVirtualFileSystem();
+		VirtualFS fs = stori.getVirtualFileSystem();
 		ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
 		// Get StorageSpaceData from the database
 		String ssDesc = fs.getSpaceTokenDescription();
@@ -160,7 +142,7 @@ public class SpaceHelper {
 	public TSpaceToken getTokenFromStoRI(Logger log, StoRI stori) {
 
 		log.debug("SpaceHelper: getting space token from StoRI");
-		VirtualFSInterface fs = stori.getVirtualFileSystem();
+		VirtualFS fs = stori.getVirtualFileSystem();
 		return fs.getSpaceToken();
 
 	}

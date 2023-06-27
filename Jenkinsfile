@@ -1,17 +1,7 @@
-@Library('sd')_
-def kubeLabel = getKubeLabel()
-
 pipeline {
 
-  agent {
-    kubernetes {
-      label "${kubeLabel}"
-      cloud 'Kube mwdevel'
-      defaultContainer 'jnlp'
-      inheritFrom 'ci-template'
-    }
-  }
-  
+  agent { label 'java11' }
+
   options {
     buildDiscarder(logRotator(numToKeepStr: '5'))
     timeout(time: 1, unit: 'HOURS')
@@ -23,17 +13,13 @@ pipeline {
 
     stage('build') {
       steps {
-        container('runner') {
-          sh 'mvn -B clean compile'
-        }
+        sh 'mvn -B clean compile'
       }
     }
   
     stage('test') {
       steps {
-        container('runner') {
-          sh 'mvn -B clean test'
-        }
+        sh 'mvn -B clean test'
         script {
           currentBuild.result = 'SUCCESS'
         }
@@ -41,18 +27,14 @@ pipeline {
 
       post {
         always {
-          container('runner') {
-            junit '**/target/surefire-reports/TEST-*.xml'
-          }
+          junit '**/target/surefire-reports/TEST-*.xml'
         }
       }
     }
   
     stage('package') {
       steps {
-        container('runner') {
-          sh 'mvn -B -DskipTests=true clean package'
-        }
+        sh 'mvn -B -DskipTests=true clean package'
       }
     }
   }

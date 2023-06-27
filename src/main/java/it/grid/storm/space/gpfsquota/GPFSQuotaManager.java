@@ -6,7 +6,7 @@ import it.grid.storm.concurrency.NamedThreadFactory;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.filesystem.FilesystemError;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.VirtualFSInterface;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.TSizeInBytes;
@@ -72,7 +72,7 @@ public enum GPFSQuotaManager {
   /**
    * The list of GPFS filesystems which have quota enabled.
    */
-  private List<VirtualFSInterface> quotaEnabledFilesystems;
+  private List<VirtualFS> quotaEnabledFilesystems;
 
   /**
    * The last exception thrown by a GPFS quota calculation job.
@@ -131,7 +131,7 @@ public enum GPFSQuotaManager {
 
       int completedTasks = 0;
 
-      for (VirtualFSInterface vfs : quotaEnabledFilesystems) {
+      for (VirtualFS vfs : quotaEnabledFilesystems) {
         log.info("Submitting GPFS quota info computation for vfs rooted at {}", vfs.getRootPath());
 
         quotaService.submit(new GetGPFSFilesetQuotaInfoCommand(vfs));
@@ -215,7 +215,7 @@ public enum GPFSQuotaManager {
       }
     }
 
-    private StorageSpaceData getStorageSpaceDataForVFS(VirtualFSInterface vfs) {
+    private StorageSpaceData getStorageSpaceDataForVFS(VirtualFS vfs) {
 
       ReservedSpaceCatalog rsc = new ReservedSpaceCatalog();
       String spaceToken = vfs.getSpaceTokenDescription();

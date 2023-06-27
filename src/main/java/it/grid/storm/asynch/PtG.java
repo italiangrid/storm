@@ -11,6 +11,13 @@
 
 package it.grid.storm.asynch;
 
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.acl.AclManagerFS;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
@@ -37,10 +44,10 @@ import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.TURLBuildingException;
 import it.grid.storm.namespace.UnapprochableSurlException;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
 import it.grid.storm.namespace.model.Protocol;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
@@ -57,13 +64,6 @@ import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
-
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class PtG implements Delegable, Chooser, Request, Suspendedable {
 
@@ -725,7 +725,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
   private void setDefaultAcl(StoRI fileStoRI, LocalFile localFile) {
 
     /* Manage DefaultACL */
-    VirtualFSInterface vfs = fileStoRI.getVirtualFileSystem();
+    VirtualFS vfs = fileStoRI.getVirtualFileSystem();
     DefaultACL acl = vfs.getCapabilities().getDefaultACL();
 
     if ((acl == null) || (acl.isEmpty())) {

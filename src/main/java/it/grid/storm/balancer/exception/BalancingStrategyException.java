@@ -1,4 +1,4 @@
-package it.grid.storm.balancer;
+package it.grid.storm.balancer.exception;
 
 public class BalancingStrategyException extends Exception {
 

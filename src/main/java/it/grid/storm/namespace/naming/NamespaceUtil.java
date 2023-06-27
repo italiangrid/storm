@@ -31,8 +31,8 @@ import com.google.common.collect.Lists;
 import it.grid.storm.griduser.VONameMatchingRule;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.VirtualFSInterface;
 import it.grid.storm.namespace.model.MappingRule;
+import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.srm.types.TSURL;
 
 public class NamespaceUtil {
@@ -101,10 +101,10 @@ public class NamespaceUtil {
 	 * @param mountPointPath
 	 * @return the set
 	 */
-	public static Collection<VirtualFSInterface> getResidentVFS(String mountPointPath) {
+	public static Collection<VirtualFS> getResidentVFS(String mountPointPath) {
 
-		List<VirtualFSInterface> vfsSet = NamespaceDirector.getNamespace().getAllDefinedVFS();
-		for (VirtualFSInterface vfs : vfsSet) {
+		List<VirtualFS> vfsSet = NamespaceDirector.getNamespace().getAllDefinedVFS();
+		for (VirtualFS vfs : vfsSet) {
 			String vfsRootPath;
 			boolean enclosed;
 
@@ -204,7 +204,7 @@ public class NamespaceUtil {
 	 * @return the mapped rule or null if not found
 	 */
 	public static MappingRule getWinnerRule(String stfnPath, Collection<MappingRule> mappingRules,
-			Collection<VirtualFSInterface> vfsApproachable) {
+			Collection<VirtualFS> vfsApproachable) {
 
 		Preconditions.checkNotNull(stfnPath, "Unable to get winning rule: invalid null stfnPath");
 		Preconditions.checkNotNull(mappingRules,
@@ -242,15 +242,15 @@ public class NamespaceUtil {
 	}
 
 	public static MappingRule getWinnerRule(TSURL surl, Collection<MappingRule> mappingRules,
-			Collection<VirtualFSInterface> vfsApproachable) {
+			Collection<VirtualFS> vfsApproachable) {
 
 		return getWinnerRule(surl.sfn().stfn().toString(), mappingRules, vfsApproachable);
 	}
 
-	public static VirtualFSInterface getWinnerVFS(String absolutePath,
-			Map<String, VirtualFSInterface> vfsListByRootPath) throws NamespaceException {
+	public static VirtualFS getWinnerVFS(String absolutePath,
+			Map<String, VirtualFS> vfsListByRootPath) throws NamespaceException {
 
-		VirtualFSInterface vfsWinner = null;
+		VirtualFS vfsWinner = null;
 		int distance = Integer.MAX_VALUE;
 		for (String vfsRoot : vfsListByRootPath.keySet()) {
 			int d = computeDistanceFromPath(vfsRoot, absolutePath);
@@ -273,9 +273,9 @@ public class NamespaceUtil {
 	}
 
 	public static String resolveVOName(String filename,
-			Map<String, VirtualFSInterface> vfsListByRootPath) throws NamespaceException {
+			Map<String, VirtualFS> vfsListByRootPath) throws NamespaceException {
 
-		VirtualFSInterface vfs = getWinnerVFS(filename, vfsListByRootPath);
+		VirtualFS vfs = getWinnerVFS(filename, vfsListByRootPath);
 		/* NamespaceException raised if vfs is not found => vfs is not null */
 		VONameMatchingRule rule =
 				vfs.getApproachableRules().get(0).getSubjectRules().getVONameMatchingRule();

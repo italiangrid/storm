@@ -10,6 +10,13 @@
  */
 package it.grid.storm.check.sanity.filesystem;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Calendar;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.check.Check;
 import it.grid.storm.check.CheckResponse;
 import it.grid.storm.check.CheckStatus;
@@ -21,12 +28,7 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.VirtualFSInterface;
-import java.io.File;
-import java.io.IOException;
-import java.util.Calendar;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import it.grid.storm.namespace.model.VirtualFS;
 
 /**
  * @author Michele Dibenedetto
@@ -64,7 +66,7 @@ public class NamespaceFSExtendedACLUsageCheck implements Check {
     }
     try {
       // load declared file systems from namespace.xml
-      for (VirtualFSInterface vfs : NamespaceDirector.getNamespace().getAllDefinedVFS()) {
+      for (VirtualFS vfs : NamespaceDirector.getNamespace().getAllDefinedVFS()) {
         String fsRootPath = vfs.getRootPath().trim();
         if (fsRootPath.charAt(fsRootPath.length() - 1) != File.separatorChar) {
           fsRootPath += File.separatorChar;
