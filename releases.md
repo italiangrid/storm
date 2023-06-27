@@ -7,11 +7,25 @@ title: StoRM releases
 
 The following is the list of last StoRM releases, with the released components list and a link to the release notes.
 
-## StoRM v.1.11.21
+## StoRM v.1.11.22
 
-<span class="label" style="margin-top: -20px;">07.05.2021</span> <span class="label label-info" style="margin-top: -20px;">current</span>
+<span class="label" style="margin-top: -20px;">21.06.2023</span> <span class="label label-info" style="margin-top: -20px;">current</span>
 
 This is the latest release for StoRM, available on StoRM repositories.
+
+| Component            | Version    | Platform
+|:---------------------|:-----------|:--------
+|StoRM Backend         |[1.11.22]({{site.baseurl}}/release-notes/storm-backend-server/1.11.22/)    | <span class="label label-info ">centos7</span>
+|StoRM WebDAV          |[1.4.2]({{site.baseurl}}/release-notes/storm-webdav/1.4.2/)                | <span class="label label-info ">centos7</span>
+|StoRM Info Provider   |[1.8.3]({{site.baseurl}}/release-notes/storm-dynamic-info-provider/1.8.3/) | <span class="label label-info ">centos7</span>
+|StoRM Native Libs     |[1.0.7]({{site.baseurl}}/release-notes/storm-native-libs/1.0.7/)           | <span class="label label-info ">centos7</span> 
+
+See more details on the [release notes]({{site.baseurl}}/release-notes/StoRM-v1.11.22.html).
+
+
+## StoRM v.1.11.21
+
+<span class="label" style="margin-top: -20px;">07.05.2021</span>
 
 | Component            | Version    | Platform
 |:---------------------|:-----------|:--------

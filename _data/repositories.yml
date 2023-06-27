@@ -14,19 +14,3 @@ CentOS 7:
     description: "Nightly built packages (unstable)."
     url: https://repo.cloud.cnaf.infn.it/service/rest/repository/browse/storm-rpm-nightly/centos7/
     repofile: https://repo.cloud.cnaf.infn.it/repository/storm/storm-nightly-centos7.repo
-#CentOS 6:
-#   stable:
-#    name: "Stable"
-#    description: "Certified packages."
-#    url: https://repo.cloud.cnaf.infn.it/service/rest/repository/browse/storm-rpm-stable/centos6/
-#    repofile: https://repo.cloud.cnaf.infn.it/repository/storm/storm-stable-centos6.repo
-#  beta:
-#    name: "Beta"
-#    description: "Pre-released packages."
-#    url: https://repo.cloud.cnaf.infn.it/service/rest/repository/browse/storm-rpm-beta/centos6/
-#    repofile: https://repo.cloud.cnaf.infn.it/repository/storm/storm-beta-centos6.repo
-#  nightly:
-#    name: "Nightly"
-#    description: "Nightly built packages (unstable)."
-#    url: https://repo.cloud.cnaf.infn.it/service/rest/repository/browse/storm-rpm-nightly/centos6/
-#    repofile: https://repo.cloud.cnaf.infn.it/repository/storm/storm-nightly-centos6.repo

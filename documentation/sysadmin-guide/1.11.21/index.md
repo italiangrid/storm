@@ -5,8 +5,6 @@ version: 1.11.21
 navigation:
   - link: documentation/sysadmin-guide/1.11.21/index.html
     label: Index
-redirect_from:
-  - /documentation/sysadmin-guide/
 ---
 
 # StoRM System Administration Guide

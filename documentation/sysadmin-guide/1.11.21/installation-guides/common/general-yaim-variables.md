@@ -2,11 +2,11 @@
 layout: service-guide
 title: StoRM YAIM configuration - general YAIM variables
 navigation:
-  - link: documentation/sysadmin-guide/1.11.20/index.html
+  - link: documentation/sysadmin-guide/1.11.21/index.html
     label: Index
-  - link: documentation/sysadmin-guide/1.11.20/installation-guides/index.html
+  - link: documentation/sysadmin-guide/1.11.21/installation-guides/index.html
     label: Installation Guides
-  - link: documentation/sysadmin-guide/1.11.20/installation-guides/common/general-yaim-variables.html
+  - link: documentation/sysadmin-guide/1.11.21/installation-guides/common/general-yaim-variables.html
     label: General YAIM variables
 ---
 

@@ -14,7 +14,6 @@ title: StoRM releases
 ### Platforms
 
 * **CentOS 7** <span class="label label-success">SUPPORTED</span> - All the latest StoRM components are certified to work on **RHEL 7 platform**.
-* **CentOS 6** and minors <span class="label label-danger">NOT SUPPORTED</span> - CentOS 6 has reached EOL on Nov. 30th 2020. Since StoRM v1.11.20 release, CentOS 6 platform is no more supported by our components. The last StoRM release which supports CentOS 6 platform is v1.11.19.
 
 ### Repositories <a name="stable-releases">&nbsp;</a>
 
@@ -24,10 +23,6 @@ title: StoRM releases
 
 > <span class="label label-success">README</span> You **must** have **UMD repositories** installed for your setup to work as
 expected. Read and follow [UMD repositories installation instructions][umd-install-guide].
-
-> <span class="label label-success">README</span> Since
-[StoRM v1.11.18]({{site.baseurl}}/release-notes/StoRM-v1.11.18.html)
-the package repository **has been migrated**. Be sure to upgrade your repository configuration.
 
 #### Install Repositories
 
@@ -42,7 +37,6 @@ StoRM RHEL6 package repository is still available and can be installed as follow
 ```shell
 yum-config-manager --add-repo https://repo.cloud.cnaf.infn.it/repository/storm/storm-stable-centos6.repo
 ```
-
 
 ### Source code
 
@@ -63,4 +57,4 @@ The StoRM source is available on [Github](https://github.com) in the following r
 
 [storm-repo-index]: https://repo.cloud.cnaf.infn.it/repository/storm/index.html
 
-[umd-install-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.18/#umdrepos
+[umd-install-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.22/repositories/index.html
