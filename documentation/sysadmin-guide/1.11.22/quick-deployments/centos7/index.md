@@ -51,18 +51,18 @@ Install the following puppet modules:
 
 ```shell
 # Puppet Standard Library
-puppet module install puppetlabs-stdlib --version 8.6.0
-puppet module install puppetlabs-apt --version 8.5.0
+puppet module install puppetlabs-stdlib --version '8.6.0'
+puppet module install puppetlabs-apt --version '8.5.0'
 # fetch-crl and all CA certificates
-puppet module install puppet-fetchcrl --version 5.1.0
+puppet module install puppet-fetchcrl --version '5.1.0'
 # EPEL repo
-puppet module install puppet-epel --version 4.1.0
-puppet module install puppetlabs-firewall --version 5.0.0
-puppet module install saz-sudo --version 14.0.0
+puppet module install puppet-epel --version '4.1.0'
+puppet module install puppetlabs-firewall --version '5.0.0'
+puppet module install saz-sudo --version '14.0.0'
 # MySQL
-puppet module install puppetlabs-mysql --version 14.0.0
-puppet module install puppetlabs-accounts --version 8.0.0
-puppet module install CERNOps-bdii --version 1.2.2
+puppet module install puppetlabs-mysql --version '14.0.0'
+puppet module install puppetlabs-accounts --version '8.0.0'
+puppet module install CERNOps-bdii --version '1.2.2'
 # UMD4 repo
 puppet module install cnafsd-umd4
 # VOMS VO configuration
@@ -70,7 +70,7 @@ puppet module install cnafsd-voms
 # LCMAPS module (only for test purpose)
 puppet module install cnafsd-lcmaps
 # StoRM services and utils
-puppet module install cnafsd-storm
+puppet module install cnafsd-storm --version '4.0.0'
 ```
 
 ### Setup node
@@ -120,10 +120,7 @@ class { 'lcmaps':
 }
 
 # install bdii
-class { 'bdii':
-  firewall   => false,
-  bdiipasswd => 'supersecretpassword', # avoid service reloading at each run of Puppet agent
-}
+include bdii
 
 Class['storm::users']
 -> Class['storm::repo']
@@ -144,10 +141,11 @@ A pair of dteam VO storage areas are defined for Backend and WebDAV services.
 Example of **manifest.pp**:
 
 ```puppet
-# Edit value for your host
+# Edit this value for your FQDN hostname
 $host='storm-test.example.org'
-
-include storm::db
+$security_token='justasecretstring'
+$db_root_password='supersecret'
+$db_storm_password='secret'
 
 Class['storm::db']
 -> Class['storm::backend']
@@ -155,9 +153,15 @@ Class['storm::db']
 -> Class['storm::gridftp']
 -> Class['storm::webdav']
 
+class { 'storm::db':
+  root_password  => $db_root_password,
+  storm_password => $db_storm_password,
+}
+
 class { 'storm::backend':
-  db_username           => 'storm',
-  db_password           => 'storm',
+  db_password           => $db_storm_password,
+  xmlrpc_security_token => $security_token,
+  transfer_protocols    => ['file', 'gsiftp', 'webdav'],
   gsiftp_pool_members   => [
     {
       'hostname' => $host,
@@ -184,8 +188,7 @@ class { 'storm::backend':
       'online_size'   => 500,
     },
   ],
-  transfer_protocols    => ['file', 'gsiftp', 'webdav'],
-  xmlrpc_security_token => 'NS4kYAZuR65XJCq',
+
   webdav_pool_members   => [
     {
       'hostname' => $host,
@@ -195,15 +198,11 @@ class { 'storm::backend':
 
 class { 'storm::frontend':
   be_xmlrpc_host  => $host,
-  be_xmlrpc_token => 'NS4kYAZuR65XJCq',
-  db_user         => 'storm',
-  db_passwd       => 'storm',
+  be_xmlrpc_token => $security_token,
+  db_passwd       => $db_storm_password,
 }
 
-class { 'storm::gridftp':
-  redirect_lcmaps_log => true,
-  llgt_log_file       => '/var/log/storm/storm-gridftp-lcmaps.log',
-}
+include storm::gridftp
 
 class { 'storm::webdav':
   storage_areas => [
