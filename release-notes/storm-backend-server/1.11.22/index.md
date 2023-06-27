@@ -9,22 +9,22 @@ rfcs:
     title: Load balancing strategy for StoRM WebDAV server pool
   - id: STOR-1561
     title: CREATE date in the future in table storage_space
+  - id: STOR-1510
+    title: Storage space info creation timestamp must not be overwritten during UPDATE queries
 ---
 
-## StoRM Backend v. 1.11.21
+## StoRM Backend v. 1.11.22
 
-Released on **{{ page.release_date }}** with [StoRM v. 1.11.21][release-notes].
+Released on **{{ page.release_date }}** with [StoRM v. 1.11.22][release-notes].
 <span style="float: right; margin-left: 8px;" class="label label-info">centos7</span>
 
 ### Description
 
-This release:
+This release mainly:
 
-* fixes the [known issue][known-issue-post] about the upgrade to StoRM v1.11.20 which could break connections with MariaDB;
-* fixes the boot order ensuring that mariadb service is started before StoRM Backend;
-* fixes the failed state shown on stop/restart of the service due to a misunderstood exit code meaning.
-
-We should be able to suppress this by adding the exit code into the unit file as a "success" exit status:
+* adds WebDAV pools support with a load balancing strategy as already present for GridFTP endpoints;
+* fixes bug on storage space table update;
+* fixes not published VOs in case of multiple support.
 
 ### Bug fixes
 
@@ -49,10 +49,8 @@ Read more at:
 * [StoRM Puppet module generated documentation][stormpuppetmoduledoc] forge page.
 
 
-[release-notes]: {{site.baseurl}}/release-notes/StoRM-v1.11.21.html
-[storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.21
-[quickdeploy]: {{site.baseurl}}/documentation/documentation/sysadmin-guide/1.11.21/quick-deployments/centos7/index.html
+[release-notes]: {{site.baseurl}}/release-notes/StoRM-v1.11.22.html
+[storm-sysadmin-guide]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.22
+[quickdeploy]: {{site.baseurl}}/documentation/documentation/sysadmin-guide/1.11.22/quick-deployments/centos7/index.html
 [stormpuppetmodule]: https://forge.puppet.com/cnafsd/storm
 [stormpuppetmoduledoc]: https://italiangrid.github.io/storm-puppet-module/
-
-[known-issue-post]: {{site.baseurl}}/2021/04/30/storm-v1.11.20-known-issue.html
