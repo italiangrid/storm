@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package it.grid.storm.tape.recalltable.resources;
 
 import static it.grid.storm.config.Configuration.CONFIG_FILE_PATH;

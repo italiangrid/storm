@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package it.grid.storm.rest.auth;
 
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;

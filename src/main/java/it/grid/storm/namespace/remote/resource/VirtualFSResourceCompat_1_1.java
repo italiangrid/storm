@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package it.grid.storm.namespace.remote.resource;
 
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;

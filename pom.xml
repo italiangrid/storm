@@ -45,7 +45,13 @@
     <mockitoVersion>1.10.19</mockitoVersion>
     <hamcrestVersion>1.3</hamcrestVersion>
 
-    <nativeInterfaceVersion>1.0.6</nativeInterfaceVersion>
+    <!-- maven plugins -->
+    <plugin.license.version>1.9.0</plugin.license.version>
+    <plugin.compiler.version>3.6.1</plugin.compiler.version>
+    <plugin.surefire.version>2.20</plugin.surefire.version>
+    <java.version>11</java.version>
+
+    <nativeInterfaceVersion>1.0.7</nativeInterfaceVersion>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
   </properties>
@@ -60,24 +66,64 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.6.1</version>
+        <version>${plugin.compiler.version}</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-          <compilerArgs>
-            <arg>-Xlint:deprecation</arg>
-          </compilerArgs>
-        </configuration>
+          <source>11</source>
+          <target>11</target>
+      </configuration>
       </plugin>
 
       <!-- Enable maven surefire plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.20</version>
+        <version>${plugin.surefire.version}</version>
         <configuration>
           <skipTests>false</skipTests>
         </configuration>
+      </plugin>
+
+      <!-- Enable maven license plugin -->
+      <plugin>
+        <groupId>com.mycila.maven-license-plugin</groupId>
+        <artifactId>maven-license-plugin</artifactId>
+        <version>${plugin.license.version}</version>
+        <configuration>
+          <header>LICENSE</header>
+          <excludes>
+            <exclude>databases/**</exclude>
+            <exclude>doc/**</exclude>
+            <exclude>travis/**</exclude>
+            <exclude>etc/**</exclude>
+            <exclude>**/.factorypath</exclude>
+            <exclude>**/*.md</exclude>
+            <exclude>**/*.yml</exclude>
+            <exclude>Makefile</exclude>
+            <exclude>.gitignore</exclude>
+            <exclude>spec/**</exclude>
+            <exclude>**/*.template</exclude>
+            <exclude>src/main/resources/templates/**</exclude>
+            <exclude>robot/**</exclude>
+            <exclude>compose/**</exclude>
+            <exclude>docker/**</exclude>
+            <exclude>src/test/resources/**</exclude>
+            <exclude>Jenkinsfile</exclude>
+            <exlude>src/main/resources/static/**</exlude>
+            <exclude>src/main/resources/META-INF/spring.factories</exclude>
+            <exclude>maven/**</exclude>
+          </excludes>
+          <useDefaultExcludes>true</useDefaultExcludes>
+          <strictCheck>true</strictCheck>
+        </configuration>
+        <executions>
+          <execution>
+            <id>check-headers</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>
