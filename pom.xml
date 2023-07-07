@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
   <name>StoRM Backend server</name>
@@ -10,48 +10,54 @@
   <properties>
 
     <!-- versions of the project dependencies -->
-    <commonsConfigurationVersion>1.10</commonsConfigurationVersion>
-    <jerseyVersion>2.25.1</jerseyVersion>
-    <jettyVersion>8.1.9.v20130131</jettyVersion>
-    <slf4jVersion>1.7.2</slf4jVersion>
-    <logbackVersion>1.2.3</logbackVersion>
-    <nettyVersion>3.5.0.Final</nettyVersion>
-    <jnaVersion>3.3.0</jnaVersion>
-    <jettisonVersion>1.1</jettisonVersion>
-    <commonsDbcpVersion>2.8.0</commonsDbcpVersion>
-    <commonsIoVersion>2.8.0</commonsIoVersion>
-    <commonsNetVersion>3.8.0</commonsNetVersion>
-    <ini4jVersion>0.5.2</ini4jVersion>
-    <xmlrpcVersion>3.1.3</xmlrpcVersion>
-    <jaxrpcVersion>1.1</jaxrpcVersion>
-    <jsonVersion>20080701</jsonVersion>
-    <junitVersion>4.13.2</junitVersion>
+    <activationVersion>1.1.1</activationVersion>
     <commonsCliVersion>1.4</commonsCliVersion>
+    <commonsCollections4Version>4.4</commonsCollections4Version>
+    <commonsConfigurationVersion>1.10</commonsConfigurationVersion>
+    <commonsDbcpVersion>2.8.0</commonsDbcpVersion>
     <commonsDiscoveryVersion>0.5</commonsDiscoveryVersion>
     <commonsHttpClientVersion>3.1</commonsHttpClientVersion>
-    <activationVersion>1.1.1</activationVersion>
+    <commonsIoVersion>2.8.0</commonsIoVersion>
+    <commonsNetVersion>3.8.0</commonsNetVersion>
     <commonsValidatorVersion>1.7</commonsValidatorVersion>
+    <guavaVersion>30.0-jre</guavaVersion>
+    <hamcrestVersion>1.3</hamcrestVersion>
+	<ini4jVersion>0.5.2</ini4jVersion>
+	<jacksonVersion>2.9.0</jacksonVersion>
+    <jakartaXmlBindVersion>2.3.3</jakartaXmlBindVersion>
+	<jaxrpcVersion>1.1</jaxrpcVersion>
+    <jerseyVersion>2.25.1</jerseyVersion>
+    <jettisonVersion>1.1</jettisonVersion>
+    <jettyVersion>8.1.9.v20130131</jettyVersion>
+    <jnaVersion>3.3.0</jnaVersion>
+    <jsonVersion>20080701</jsonVersion>
+    <junitVersion>4.13.2</junitVersion>
+    <logbackVersion>1.2.3</logbackVersion>
+    <mailVersion>1.4.6</mailVersion>
+    <metrics.version>3.1.0</metrics.version>
+    <micrometerCoreVersion>1.6.6</micrometerCoreVersion>
+    <mockitoVersion>4.3.1</mockitoVersion>
+    <mysqlConnectorVersion>8.0.16</mysqlConnectorVersion>
+    <nettyVersion>3.5.0.Final</nettyVersion>
+    <slf4jVersion>1.7.2</slf4jVersion>
+    <xmlrpcVersion>3.1.3</xmlrpcVersion>
     <wsdl4jVersion>1.5.1</wsdl4jVersion>
     <xalanVersion>2.7.1</xalanVersion>
-    <mailVersion>1.4.6</mailVersion>
-    <jakartaXmlBindVersion>2.3.3</jakartaXmlBindVersion>
-
-    <mysqlConnectorVersion>8.0.16</mysqlConnectorVersion>
-
-    <guavaVersion>24.1.1-jre</guavaVersion>
-    <metrics.version>3.1.0</metrics.version>
     <xercesImplVersion>2.12.2</xercesImplVersion>
 
-    <mockitoVersion>1.10.19</mockitoVersion>
-    <hamcrestVersion>1.3</hamcrestVersion>
-
     <!-- maven plugins -->
-    <plugin.license.version>1.9.0</plugin.license.version>
+    <plugin.assembly.version>3.3.0</plugin.assembly.version>
     <plugin.compiler.version>3.6.1</plugin.compiler.version>
+    <plugin.enforcer.version>3.0.0</plugin.enforcer.version>
+    <plugin.license.version>1.9.0</plugin.license.version>
     <plugin.surefire.version>2.20</plugin.surefire.version>
+
+	<!-- java -->
     <java.version>11</java.version>
 
+	<!-- storm-native-libs -->
     <nativeInterfaceVersion>1.0.7</nativeInterfaceVersion>
+
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
   </properties>
@@ -61,6 +67,28 @@
     <finalName>storm-backend-server</finalName>
 
     <plugins>
+
+      <!-- Enforce maven version -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>${plugin.enforcer.version}</version>
+        <executions>
+          <execution>
+            <id>enforce-maven</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>3.1.1</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
       <!-- Enable maven compiler plugin -->
       <plugin>
@@ -128,7 +156,7 @@
 
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>${plugin.assembly.version}</version>
         <configuration>
           <finalName>storm-backend-server</finalName>
           <appendAssemblyId>false</appendAssemblyId>
@@ -147,139 +175,6 @@
         </executions>
       </plugin>
 
-      <!-- Enable the wagon plugin (which in turn need some work from the dependency
-        plugin) to deploy to a remote machine. It copies over ssh the storm-backend-server
-        jar, the dependency jars, and all configuration files except those that are not supposed
-        to be overwritten by a re-deployment, i.e. those that are marked config noreplace
-        in the rpm -->
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.0.1</version>
-        <executions>
-          <execution>
-            <id>copy-dependencies</id>
-            <phase>deploy</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <!-- configure the plugin here -->
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>wagon-maven-plugin</artifactId>
-        <version>1.0-beta-4</version>
-        <executions>
-          <execution>
-            <id>upload-config</id>
-            <phase>deploy</phase>
-            <goals>
-              <goal>upload</goal>
-            </goals>
-            <configuration>
-              <url>${remoteDeployment.url}/</url>
-              <serverId>${remoteDeployment.serverId}</serverId>
-              <fromDir>etc</fromDir>
-              <!-- exclude config files that might have edited remotely, the same
-                that are marked config noreplace in rpm -->
-              <excludes>
-                logging.xml, namespace.xml, path-authz.db,
-                init.d/*, logrotate.d/*, sysconfig/*
-              </excludes>
-              <toDir>/etc/storm/backend-server</toDir>
-            </configuration>
-          </execution>
-          <execution>
-            <id>upload-logrotated</id>
-            <phase>deploy</phase>
-            <goals>
-              <goal>upload</goal>
-            </goals>
-            <configuration>
-              <url>${remoteDeployment.url}</url>
-              <serverId>${remoteDeployment.serverId}</serverId>
-              <fromDir>etc/logrotate.d</fromDir>
-              <toDir>/etc/logrotate.d</toDir>
-            </configuration>
-          </execution>
-          <execution>
-            <id>upload-systemd-unit</id>
-            <phase>deploy</phase>
-            <goals>
-              <goal>upload</goal>
-            </goals>
-            <configuration>
-              <url>${remoteDeployment.url}</url>
-              <serverId>${remoteDeployment.serverId}</serverId>
-              <fromDir>etc/systemd</fromDir>
-              <toDir>/usr/lib/systemd/system</toDir>
-            </configuration>
-          </execution>
-          <execution>
-            <id>upload-systemd-conf</id>
-            <phase>deploy</phase>
-            <goals>
-              <goal>upload</goal>
-            </goals>
-            <configuration>
-              <url>${remoteDeployment.url}</url>
-              <serverId>${remoteDeployment.serverId}</serverId>
-              <fromDir>etc/systemd/service.d</fromDir>
-              <toDir>/usr/lib/systemd/system/storm-backend-server.service.d</toDir>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>upload-deps</id>
-            <phase>deploy</phase>
-            <goals>
-              <goal>upload</goal>
-            </goals>
-            <configuration>
-              <url>${remoteDeployment.url}</url>
-              <serverId>${remoteDeployment.serverId}</serverId>
-              <fromDir>target/dependency</fromDir>
-              <includes>*</includes>
-              <toDir>/usr/share/java/storm-backend-server</toDir>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>upload-jar</id>
-            <phase>deploy</phase>
-            <goals>
-              <goal>upload</goal>
-            </goals>
-            <configuration>
-              <url>${remoteDeployment.url}</url>
-              <serverId>${remoteDeployment.serverId}</serverId>
-              <fromDir>target</fromDir>
-              <includes>storm-backend-server.jar</includes>
-              <toDir>/usr/share/java/storm-backend-server</toDir>
-            </configuration>
-          </execution>
-
-        </executions>
-      </plugin>
-
-      <!-- needed so that mvn is not going to try to deploy (classic maven deploy),
-        because we are using mvn deploy to deploy the complete project to a remote machine
-        in development -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <version>2.7</version>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -288,21 +183,13 @@
           <archive>
             <manifest>
               <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
             </manifest>
           </archive>
         </configuration>
       </plugin>
 
     </plugins>
-
-    <!-- Needed by the wagon plugin -->
-    <extensions>
-      <extension>
-        <groupId>org.apache.maven.wagon</groupId>
-        <artifactId>wagon-ssh</artifactId>
-        <version>1.0</version>
-      </extension>
-    </extensions>
   </build>
 
   <dependencies>
@@ -424,6 +311,12 @@
       <groupId>org.codehaus.jettison</groupId>
       <artifactId>jettison</artifactId>
       <version>${jettisonVersion}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>stax</groupId>
+          <artifactId>stax-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -458,6 +351,10 @@
         <exclusion>
           <groupId>javax.servlet</groupId>
           <artifactId>servlet-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>xml-apis</groupId>
+          <artifactId>xml-apis</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -527,6 +424,12 @@
       <artifactId>xalan</artifactId>
       <version>${xalanVersion}</version>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>xml-apis</groupId>
+          <artifactId>xml-apis</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -538,10 +441,11 @@
 
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
+      <artifactId>mockito-core</artifactId>
       <version>${mockitoVersion}</version>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-all</artifactId>
@@ -565,8 +469,25 @@
       <groupId>xerces</groupId>
       <artifactId>xercesImpl</artifactId>
       <version>${xercesImplVersion}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>xml-apis</groupId>
+          <artifactId>xml-apis</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-core</artifactId>
+      <version>${micrometerCoreVersion}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>${commonsCollections4Version}</version>
+    </dependency>
   </dependencies>
 
 </project>
