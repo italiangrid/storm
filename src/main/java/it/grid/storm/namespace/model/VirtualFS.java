@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 
 import it.grid.storm.balancer.BalancingStrategy;
-import it.grid.storm.balancer.Node;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.GUID;
 import it.grid.storm.common.types.PFN;

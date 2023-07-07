@@ -4,10 +4,11 @@
  */
 package it.grid.storm.catalogs;
 
-import it.grid.storm.common.types.TURLPrefix;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
+
+import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.namespace.model.Protocol;
 
 /**
@@ -19,7 +20,7 @@ import it.grid.storm.namespace.model.Protocol;
 class TransferProtocolListConverter {
 
 	/**
-	 * Method that returns a List of Uppercase Strings used in the DB to represent
+	 * Method that returns a List of upper-case Strings used in the DB to represent
 	 * the given TURLPrefix. An empty List is returned in case the conversion does
 	 * not succeed, a null TURLPrefix is supplied, or its size is 0.
 	 */
@@ -43,11 +44,8 @@ class TransferProtocolListConverter {
 	public static TURLPrefix toSTORM(List<String> listOfProtocol) {
 
 		TURLPrefix turlPrefix = new TURLPrefix();
-		Protocol protocol = null;
 		for (Iterator<String> i = listOfProtocol.iterator(); i.hasNext();) {
-			protocol = Protocol.getProtocol(i.next());
-			if (!(protocol.equals(Protocol.UNKNOWN)))
-				turlPrefix.addProtocol(protocol);
+		  turlPrefix.addProtocol(Protocol.valueOf(i.next()));
 		}
 		return turlPrefix;
 	}

@@ -41,10 +41,6 @@ public class Capability {
 
   private DefaultACL defaultACL;
 
-  /**
-   * Constructor
-   * 
-   */
   public Capability(ACLMode aclMode) throws NamespaceException {
 
     setACLMode(aclMode);
@@ -72,11 +68,6 @@ public class Capability {
     this.aclMode = aclMode;
   }
 
-  /**
-   * addProtocol
-   * 
-   * @param prot Protocol
-   */
   public void addTransportProtocolByScheme(Protocol protocol, TransportProtocol trasfProt) {
 
     transpProtocolsByScheme.put(protocol, trasfProt);
@@ -128,8 +119,8 @@ public class Capability {
       Node node = null;
       boolean weighedPool = protPool.getBalanceStrategy().requireWeight();
       for (PoolMember member : protPool.getPoolMembers()) {
-        String hostname = member.getMemberProtocol().getAuthority().getServiceHostname();
-        int port = member.getMemberProtocol().getAuthority().getServicePort();
+        String hostname = member.getMemberProtocol().getAuthority().getHostname();
+        int port = member.getMemberProtocol().getAuthority().getPort();
         int id = member.getMemberID();
         if (weighedPool) {
           try {

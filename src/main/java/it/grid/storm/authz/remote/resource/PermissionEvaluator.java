@@ -48,8 +48,8 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.Protocol;
+import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.srm.types.TOverwriteMode;
 

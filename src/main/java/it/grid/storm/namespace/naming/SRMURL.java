@@ -74,17 +74,17 @@ public abstract class SRMURL {
 
 	public String getServiceHostname() {
 
-		return this.transfProtocol.getAuthority().getServiceHostname();
+		return this.transfProtocol.getAuthority().getHostname();
 	}
 
 	public void setServiceHostPort(int port) {
 
-		this.transfProtocol.getAuthority().setServicePort(port);
+		this.transfProtocol.getAuthority().setPort(port);
 	}
 
 	public int getServiceHostPort() {
 
-		return this.transfProtocol.getAuthority().getServicePort();
+		return this.transfProtocol.getAuthority().getPort();
 	}
 
 	public String getPath() {

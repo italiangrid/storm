@@ -15,6 +15,8 @@ import java.util.List;
 
 import org.slf4j.Logger;
 
+import com.google.common.collect.Lists;
+
 import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.balancer.Node;
 import it.grid.storm.balancer.exception.BalancingStrategyException;
@@ -24,7 +26,6 @@ import it.grid.storm.common.types.InvalidStFNAttributeException;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.common.types.TURLPrefix;
-import it.grid.storm.config.Configuration;
 import it.grid.storm.filesystem.FilesystemIF;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.ReservationException;
@@ -33,9 +34,9 @@ import it.grid.storm.filesystem.SpaceSystem;
 import it.grid.storm.namespace.model.ACLMode;
 import it.grid.storm.namespace.model.Authority;
 import it.grid.storm.namespace.model.Capability;
+import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.PathCreator;
-import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.model.StoRIType;
 import it.grid.storm.namespace.model.TransportProtocol;
 import it.grid.storm.namespace.model.VirtualFS;
@@ -436,8 +437,8 @@ public class StoRIImpl implements StoRI {
 			// Within the request there are some protocol preferences
 			// Calculate the intersection between Desired Protocols and Available
 			// Protocols
-			List<Protocol> desiredP = new ArrayList<>(desiredProtocols.getDesiredProtocols());
-			List<Protocol> availableP = new ArrayList<>(capability.getAllManagedProtocols());
+			List<Protocol> desiredP = Lists.newArrayList(desiredProtocols.getDesiredProtocols());
+			List<Protocol> availableP = Lists.newArrayList(capability.getAllManagedProtocols());
 			desiredP.retainAll(availableP);
 
 			if (desiredP.isEmpty()) {
@@ -485,11 +486,7 @@ public class StoRIImpl implements StoRI {
 						authority = transProt.getAuthority();
 					}
 					
-					if (choosen.equals(Protocol.HTTP) || choosen.equals(Protocol.HTTPS)){
-					  resultTURL = buildHTTPTURL(choosen,authority);
-					} else {
-					  resultTURL = buildTURL(choosen, authority);
-					}
+					resultTURL = buildTURL(choosen, authority);
 					
 					turlBuilt = true;
 				}
@@ -570,51 +567,59 @@ public class StoRIImpl implements StoRI {
 		return surl.toString();
 	}
 
-	private TTURL buildHTTPTURL(Protocol p, Authority authority){
-	  
-	  String prefix = Configuration.getInstance().getHTTPTURLPrefix(); 
-	  StringBuilder sb = new StringBuilder();
-	  sb.append(p.getProtocolPrefix());
-	  sb.append(authority);
-	  
-	  if ( prefix != null){
-      sb.append(prefix);
-    }
+//	private TTURL buildHTTPTURL(Protocol p, Authority authority){
+//	  
+//	  String prefix = Configuration.getInstance().getHTTPTURLPrefix(); 
+//	  StringBuilder sb = new StringBuilder();
+//	  sb.append(p.getProtocolPrefix());
+//	  sb.append(authority);
+//	  
+//	  if ( prefix != null){
+//      sb.append(prefix);
+//    }
+//
+//	  sb.append(getStFN().toString());
+//	  
+//	  log.debug("built http turl: {}", sb.toString());
+//	  
+//	  return TTURL.makeFromString(sb.toString());
+//	  
+//	}
 
-	  sb.append(getStFN().toString());
-	  
-	  log.debug("built http turl: {}", sb.toString());
-	  
-	  return TTURL.makeFromString(sb.toString());
-	  
-	}
 	private TTURL buildTURL(Protocol protocol, Authority authority)
 		throws InvalidProtocolForTURLException {
 
 		TTURL result = null;
 
-		switch (protocol.getProtocolIndex()) {
-		case 0: // EMPTY Protocol
-			throw new InvalidProtocolForTURLException(protocol.getSchema());
-		case 1:
-			result = TURLBuilder.buildFileTURL(authority, this.getPFN());
-			break; // FILE Protocol
-		case 2:
-			result = TURLBuilder.buildGsiftpTURL(authority, this.getPFN());
-			break; // GSIFTP Protocol
-		case 3:
-			result = TURLBuilder.buildRFIOTURL(authority, this.getPFN());
-			break; // RFIO Protocol
-		case 4: // SRM Protocol
-			throw new InvalidProtocolForTURLException(protocol.getSchema());
-		case 5:
-			result = TURLBuilder.buildROOTTURL(authority, this.getPFN());
-			break; // ROOT Protocol
-		case 8:
-			result = TURLBuilder.buildXROOTTURL(authority, this.getPFN());
-			break; // XROOT Protocol
+		switch (protocol) {
+		case FILE:
+			result = TURLBuilder.buildFileTURL(authority, getPFN());
+			break;
+		case GSIFTP:
+			result = TURLBuilder.buildGsiftpTURL(authority, getPFN());
+			break;
+		case RFIO:
+			result = TURLBuilder.buildRFIOTURL(authority, getPFN());
+			break;
+		case ROOT:
+			result = TURLBuilder.buildROOTTURL(authority, getPFN());
+			break;
+		case XROOT:
+			result = TURLBuilder.buildXROOTTURL(authority, getPFN());
+			break;
+        case HTTP:
+            result = TURLBuilder.buildHttpURL(authority, getStFN());
+            break;
+        case HTTPS:
+          result = TURLBuilder.buildHttpsURL(authority, getStFN());
+          break;
+        case DAV:
+          result = TURLBuilder.buildDavURL(authority, getStFN());
+          break;
+        case DAVS:
+          result = TURLBuilder.buildDavsURL(authority, getStFN());
+          break;
 		default:
-		  // Unknown protocol
 			throw new InvalidProtocolForTURLException(protocol.getSchema()); 
 		}
 		return result;

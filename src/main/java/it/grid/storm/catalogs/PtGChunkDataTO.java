@@ -4,11 +4,12 @@
  */
 package it.grid.storm.catalogs;
 
-import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.common.types.TURLPrefix;
 import java.sql.Timestamp;
 import java.util.List;
+
+import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.namespace.model.Protocol;
+import it.grid.storm.srm.types.TStatusCode;
 
 /**
  * Class that represents a row in the Persistence Layer: this is all raw data

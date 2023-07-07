@@ -4,113 +4,109 @@
  */
 package it.grid.storm.common.types;
 
-import java.util.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import com.google.common.collect.Lists;
+
 import it.grid.storm.namespace.model.Protocol;
 
 /**
- * This class represent the Transport Protocol available to get file from a
- * certain Storage Element. This Trasnport Protocol prefix will be used to match
- * with user specifed prefix to TTURL Creation.
+ * This class represent the Transport Protocol available to get file from a certain Storage Element.
+ * This Transport Protocol prefix will be used to match with user specified prefix to TTURL
+ * Creation.
  */
 public class TURLPrefix {
 
-	private static final Logger log = LoggerFactory.getLogger(TURLPrefix.class);
-	public static final String PNAME_TURL_PREFIX = "turlPrefix";
-	private ArrayList<Protocol> desiredProtocols;
+  public static final String PNAME_TURL_PREFIX = "turlPrefix";
+  private List<Protocol> desiredProtocols;
 
-	public TURLPrefix() {
+  public TURLPrefix() {
 
-		this.desiredProtocols = new ArrayList<Protocol>();
-	}
+    desiredProtocols = Lists.newArrayList();
+  }
 
-	public TURLPrefix(Collection<Protocol> protocols) {
+  public TURLPrefix(Collection<Protocol> protocols) {
 
-		this.desiredProtocols = new ArrayList<Protocol>(protocols);
-	}
+    desiredProtocols = Lists.newArrayList(protocols);
+  }
 
-	/**
-	 * Method used to add a TransferProtocol to this holding structure. Null may
-	 * also be added. A boolean true is returned if the holding structure changed
-	 * as a result of the add. If this holding structure does not change, then
-	 * false is returned.
-	 */
-	public boolean addProtocol(Protocol protocol) {
+  /**
+   * Method used to add a TransferProtocol to this holding structure. Null may also be added. A
+   * boolean true is returned if the holding structure changed as a result of the add. If this
+   * holding structure does not change, then false is returned.
+   */
+  public boolean addProtocol(Protocol protocol) {
 
-		return this.desiredProtocols.add(protocol);
-	}
+    return desiredProtocols.add(protocol);
+  }
 
-	/**
-	 * Method used to retrieve a TransferProtocol from this holding structure. An
-	 * int is needed as index to the TransferProtocol to retrieve. Elements are
-	 * not removed!
-	 */
-	public Protocol getProtocol(int index) {
+  /**
+   * Method used to retrieve a TransferProtocol from this holding structure. An int is needed as
+   * index to the TransferProtocol to retrieve. Elements are not removed!
+   */
+  public Protocol getProtocol(int index) {
 
-		return desiredProtocols.get(index);
-	}
+    return desiredProtocols.get(index);
+  }
 
-	public List<Protocol> getDesiredProtocols() {
+  public List<Protocol> getDesiredProtocols() {
 
-		return this.desiredProtocols;
-	}
+    return this.desiredProtocols;
+  }
 
-	public int size() {
+  public int size() {
 
-		return desiredProtocols.size();
-	}
+    return desiredProtocols.size();
+  }
 
-	public void print() {
+  public void print() {
 
-	}
+  }
 
-	public String toString() {
+  public String toString() {
 
-		StringBuilder sb = new StringBuilder();
-		sb.append("TURLPrefix: ");
-		for (Iterator<Protocol> i = desiredProtocols.iterator(); i.hasNext();) {
-			sb.append(i.next());
-			sb.append(" ");
-		}
-		return sb.toString();
-	}
+    StringBuilder sb = new StringBuilder();
+    sb.append("TURLPrefix: ");
+    for (Iterator<Protocol> i = desiredProtocols.iterator(); i.hasNext();) {
+      sb.append(i.next());
+      sb.append(" ");
+    }
+    return sb.toString();
+  }
 
-	/**
-	 * @param inputParam
-	 * @param memberName
-	 * @return
-	 */
-	public static TURLPrefix decode(Map inputParam, String memberName) {
+  /**
+   * @param inputParam
+   * @param memberName
+   * @return
+   */
+  public static TURLPrefix decode(Map<String, Object> inputParam, String memberName) {
 
-		TURLPrefix decodedTurlPrefix = null;
-		if (inputParam.containsKey(memberName)) {
-			if (inputParam.get(memberName) != null) {
-				Object[] valueArray = null;
-				if (inputParam.get(memberName).getClass().isArray()) {
-					valueArray = (Object[]) inputParam.get(memberName);
-				} else {
-					valueArray = new Object[] { inputParam.get(memberName) };
-				}
-				LinkedList<Protocol> protocols = new LinkedList<Protocol>();
-				for (Object value : valueArray) {
-					Protocol protocol = Protocol.getProtocol(value.toString());
-					if (protocol.equals(Protocol.UNKNOWN)) {
-						log.warn("Protocol {} is unknown." , value);
-					} else {
-						protocols.add(protocol);
-					}
-				}
-				if (protocols.size() > 0) {
-					decodedTurlPrefix = new TURLPrefix(protocols);
-				}
-			}
-		}
-		return decodedTurlPrefix;
-	}
+    TURLPrefix decodedTurlPrefix = null;
+    if (inputParam.containsKey(memberName)) {
+      if (inputParam.get(memberName) != null) {
+        Object[] valueArray = null;
+        if (inputParam.get(memberName).getClass().isArray()) {
+          valueArray = (Object[]) inputParam.get(memberName);
+        } else {
+          valueArray = new Object[] {inputParam.get(memberName)};
+        }
+        List<Protocol> protocols = Lists.newLinkedList();
+        for (Object value : valueArray) {
+          protocols.add(Protocol.valueOf(value.toString()));
+        }
+        if (protocols.size() > 0) {
+          decodedTurlPrefix = new TURLPrefix(protocols);
+        }
+      }
+    }
+    return decodedTurlPrefix;
+  }
 
-	public boolean allows(Protocol protocol) {
+  public boolean allows(Protocol protocol) {
 
-		return desiredProtocols.contains(protocol);
-	}
+    return desiredProtocols.contains(protocol);
+  }
 }

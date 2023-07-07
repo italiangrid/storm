@@ -4,100 +4,84 @@
  */
 package it.grid.storm.namespace.model;
 
+import java.util.Objects;
+
+import com.google.common.base.Preconditions;
+
 public class Authority {
 
-	private String hostname;
-	private int port = -1;
+  public static final Authority EMPTY = new Authority();
 
-	public final static Authority EMPTY = new Authority("");
+  private String hostname;
+  private int port;
 
-	/**
-	 * Complete constructor
-	 * 
-	 * @param serviceHostname
-	 *          String
-	 * @param servicePort
-	 *          int
-	 */
-	public Authority(String serviceHostname, int servicePort) {
+  private Authority() {
+    hostname = null;
+    port = -1;
+  }
 
-		this.hostname = serviceHostname;
-		this.port = servicePort;
-	}
+  public Authority(String hostname, int port) {
+    this(hostname);
+    Preconditions.checkArgument(port > 0, "Authority builder: invalid port value");
+    this.port = port;
+  }
 
-	/**
-	 * Cnstructor with default port
-	 * 
-	 * @param serviceHostname
-	 *          String
-	 */
-	public Authority(String serviceHostname) {
+  public Authority(String hostname) {
+    Preconditions.checkNotNull(hostname, "Authority builder: invalid null hostname");
+    Preconditions.checkArgument(!hostname.isEmpty(), "Authority builder: invalid empty hostname");
+    setHostname(hostname);
+    setPort(-1);
+  }
 
-		this.hostname = serviceHostname;
-	}
+  public String getHostname() {
 
-	public String getServiceHostname() {
+    return this.hostname;
+  }
 
-		return this.hostname;
-	}
+  public void setHostname(String hostname) {
 
-	public void setServiceHostname(String hostname) {
+    this.hostname = hostname;
+  }
 
-		this.hostname = hostname;
-	}
+  public int getPort() {
 
-	public int getServicePort() {
+    return this.port;
+  }
 
-		return this.port;
-	}
+  public void setPort(int port) {
 
-	public void setServicePort(int port) {
+    this.port = port;
+  }
 
-		this.port = port;
-	}
+  public String toString() {
 
-	private String getHostnameAndPort() {
+    StringBuilder result = new StringBuilder();
+    if (hostname != null) {
+      result.append(hostname);
+      if (port > 0) {
+        result.append(":");
+        result.append(port);
+      }
+    }
+    return result.toString();
+  }
 
-		StringBuilder result = new StringBuilder();
-		if (hostname != null) {
-			result.append(hostname);
-			if (port > 0) {
-				result.append(":");
-				result.append(port);
-			}
-		}
-		return result.toString();
-	}
+  @Override
+  public int hashCode() {
+    return Objects.hash(hostname, port);
+  }
 
-	public String toString() {
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    Authority other = (Authority) obj;
+    return Objects.equals(hostname, other.hostname) && port == other.port;
+  }
 
-		return getHostnameAndPort();
-	}
-
-	public boolean equals(Object other) {
-
-		boolean result = false;
-		if (other instanceof Authority) {
-			Authority otherA = (Authority) other;
-			if (otherA.getServiceHostname().equals(this.getServiceHostname())) { // Hostname
-																																						// is
-																																						// equal
-				// Check if the Port is equal.
-				if (otherA.getServicePort() == this.getServicePort()) {
-					result = true;
-				}
-			}
-		}
-		return result;
-	}
-
-	@Override
-	public int hashCode() {
-
-		int result = 17;
-		result = 31 * result + (hostname != null ? hostname.hashCode() : 0);
-		result = 31 * result + port;
-		return result;
-	}
-
+  
 }

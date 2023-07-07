@@ -4,105 +4,86 @@
  */
 package it.grid.storm.namespace.model;
 
-import it.grid.storm.namespace.naming.*;
+import java.util.Objects;
 
 public class TransportProtocol {
 
-	private int protocolID = -1;
-	private Protocol protocol = null;
-	private Authority service = null;
+  private Protocol protocol;
+  private Authority authority;
 
-	public TransportProtocol(Protocol protocol, Authority service) {
+  public TransportProtocol(Protocol protocol, Authority authority) {
+    setProtocol(protocol);
+    setAuthority(authority);
+  }
 
-		this.protocol = protocol;
-		this.service = service;
-	}
+  public TransportProtocol(Protocol protocol) {
+    this(protocol, null);
+  }
 
-	public TransportProtocol(Protocol protocol) {
+  public Protocol getProtocol() {
 
-		this.protocol = protocol;
-	}
+    return protocol;
+  }
 
-	public Protocol getProtocol() {
+  public int getProtocolId() {
 
-		return this.protocol;
-	}
+    return protocol.ordinal();
+  }
 
-	// Used in Protocol Pool definition
-	public void setProtocolID(int id) {
+   public Authority getAuthority() {
 
-		this.protocolID = id;
-	}
+     return authority;
+   }
 
-	// Used in Protocol Pool definition
-	public int getProtocolID() {
+//  public void setLocalAuthority() {
+//
+//    if (!this.protocol.equals(Protocol.FILE)) {
+//      this.service = new Authority(NamingConst.getServiceDefaultHost());
+//    }
+//  }
 
-		return this.protocolID;
-	}
+  public void setAuthority(Authority authority) {
 
-	public Authority getAuthority() {
+    this.authority = authority;
+  }
 
-		if (this.protocol.equals(Protocol.FILE)) {
-			return Authority.EMPTY;
-		} else {
-			return this.service;
-		}
-	}
+  public void setProtocol(Protocol protocol) {
 
-	public void setLocalAuthority() {
+    this.protocol = protocol;
+  }
 
-		if (!this.protocol.equals(Protocol.FILE)) {
-			this.service = new Authority(NamingConst.getServiceDefaultHost());
-		}
-	}
+  private String getURIRoot() {
 
-	public void setAuthority(Authority service) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("[id:" + protocol.ordinal() + "] ");
+    sb.append(protocol.getSchema());
+    sb.append("://");
+    if (authority != null) {
+      sb.append(authority.toString());
+    }
+    return sb.toString();
+  }
 
-		this.service = service;
-	}
+  public String toString() {
 
-	private String getURIRoot() {
+    return getURIRoot();
+  }
 
-		StringBuilder sb = new StringBuilder();
-		if (protocolID != -1)
-			sb.append("[id:" + this.protocolID + "] ");
-		sb.append(protocol.getSchema());
-		sb.append("://");
-		if (service != null) {
-			sb.append(service);
-		}
-		return sb.toString();
-	}
+  @Override
+  public int hashCode() {
+    return Objects.hash(authority, protocol);
+  }
 
-	public String toString() {
-
-		return getURIRoot();
-	}
-
-	public boolean equals(Object other) {
-
-		boolean result = false;
-		if (other instanceof TransportProtocol) {
-			TransportProtocol otherTP = (TransportProtocol) other;
-			if (otherTP.getProtocol().equals(this.getProtocol())) { // Protocol is
-																															// equal
-				// Check if the Authority is equal.
-				if (otherTP.getAuthority().equals(this.getAuthority())) {
-					result = true;
-				}
-			}
-		}
-		return result;
-	}
-
-	@Override
-	public int hashCode() {
-
-		int result = 17;
-		result = 31 * result + protocolID;
-		result = 31 * result + ((protocol == null) ? 0 : protocol.hashCode());
-		result = 31 * result + ((service == null) ? 0 : service.hashCode());
-		return result;
-	}
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    TransportProtocol other = (TransportProtocol) obj;
+    return Objects.equals(authority, other.authority) && protocol == other.protocol;
+  }
 
 }
