@@ -6,9 +6,9 @@ package it.grid.storm.asynch;
 
 import java.util.Arrays;
 import it.grid.storm.catalogs.PtGChunkCatalog;
-import it.grid.storm.catalogs.PtGData;
-import it.grid.storm.catalogs.PtGPersistentChunkData;
-import it.grid.storm.catalogs.RequestSummaryData;
+import it.grid.storm.persistence.model.PtGData;
+import it.grid.storm.persistence.model.PtGPersistentChunkData;
+import it.grid.storm.persistence.model.RequestSummaryData;
 import it.grid.storm.scheduler.PersistentRequestChunk;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.CommandHelper;

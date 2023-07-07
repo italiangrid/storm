@@ -11,10 +11,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
-import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.ApproachableRule;
 import it.grid.storm.namespace.model.Capability;
@@ -25,158 +25,157 @@ import it.grid.storm.namespace.util.userinfo.LocalGroups;
 
 public class NamespaceCheck {
 
-	private final Logger log = NamespaceDirector.getLogger();
-	private final Map<String, VirtualFS> vfss;
-	private final Map<String, MappingRule> maprules;
-	private final Map<String, ApproachableRule> apprules;
+  private static Logger log = LoggerFactory.getLogger(NamespaceCheck.class);
 
-	public NamespaceCheck(Map<String, VirtualFS> vfss,
-		Map<String, MappingRule> maprules,
-		Map<String, ApproachableRule> apprules) {
+  private final Map<String, VirtualFS> vfss;
+  private final Map<String, MappingRule> maprules;
+  private final Map<String, ApproachableRule> apprules;
 
-		this.vfss = vfss;
-		this.maprules = maprules;
-		this.apprules = apprules;
-	}
+  public NamespaceCheck(Map<String, VirtualFS> vfss, Map<String, MappingRule> maprules,
+      Map<String, ApproachableRule> apprules) {
 
-	public boolean check() {
+    this.vfss = vfss;
+    this.maprules = maprules;
+    this.apprules = apprules;
+  }
 
-		boolean vfsCheck = checkVFS();
-		boolean mapRulesCheck = checkMapRules();
-		boolean appRules = checkAppRules();
-		checkGroups(vfsCheck);
-		return vfsCheck && mapRulesCheck && appRules;
-	}
+  public boolean check() {
 
-	private boolean checkGroups(boolean vfsCheckResult) {
+    boolean vfsCheck = checkVFS();
+    boolean mapRulesCheck = checkMapRules();
+    boolean appRules = checkAppRules();
+    checkGroups(vfsCheck);
+    return vfsCheck && mapRulesCheck && appRules;
+  }
 
-		log
-			.info("Namespace check. Checking of the existence of the needed Local group ...");
-		boolean result = true;
-		if (!vfsCheckResult) {
-			log
-				.warn("Skip the check of the needed Local Group, because check of VFSs failed.");
-		} else {
+  private boolean checkGroups(boolean vfsCheckResult) {
 
-			List<VirtualFS> vf = new ArrayList<>(vfss.values());
-			for (VirtualFS vfs : vf) {
-				
-				// Check the presence of Default ACL
-				Capability cap = vfs.getCapabilities();
-				if (cap != null) {
-					DefaultACL defACL = cap.getDefaultACL();
-					if (defACL != null) {
-						List<ACLEntry> acl = new ArrayList<>(defACL.getACL());
-						if (!acl.isEmpty()) {
-							for (ACLEntry aclEntry : acl) {
-								if (!LocalGroups.getInstance().isGroupDefined(
-									aclEntry.getGroupName())) {
-									log.warn("!!!!! Local Group for ACL ('{}') is not defined!", aclEntry);
-									result = false;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		if (result) {
-			log.info("All local groups are defined. ");
-		} else {
-			log.warn("Please check the local group needed to StoRM");
-		}
-		return result;
-	}
+    log.info("Namespace check. Checking of the existence of the needed Local group ...");
+    boolean result = true;
+    if (!vfsCheckResult) {
+      log.warn("Skip the check of the needed Local Group, because check of VFSs failed.");
+    } else {
 
-	/**
-	 * Check if the root of the VFS exists.
-	 * 
-	 * @todo: this method don't check if the root is accessible by storm user.
-	 * 
-	 * @return true if "filesystems" element (list of VFS) is valid false
-	 *         otherwise
-	 */
-	private boolean checkVFS() {
+      List<VirtualFS> vf = new ArrayList<>(vfss.values());
+      for (VirtualFS vfs : vf) {
 
-		log.info("Namespace checking VFSs ..");
-		boolean result = true;
-		if (vfss == null) {
-			log.error("Anyone VFS is defined in namespace!");
-			return false;
-		} else {
-			List<VirtualFS> rules = new ArrayList<>(vfss.values());
-			Iterator<VirtualFS> scan = rules.iterator();
+        // Check the presence of Default ACL
+        Capability cap = vfs.getCapabilities();
+        if (cap != null) {
+          DefaultACL defACL = cap.getDefaultACL();
+          if (defACL != null) {
+            List<ACLEntry> acl = new ArrayList<>(defACL.getACL());
+            if (!acl.isEmpty()) {
+              for (ACLEntry aclEntry : acl) {
+                if (!LocalGroups.getInstance().isGroupDefined(aclEntry.getGroupName())) {
+                  log.warn("!!!!! Local Group for ACL ('{}') is not defined!", aclEntry);
+                  result = false;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    if (result) {
+      log.info("All local groups are defined. ");
+    } else {
+      log.warn("Please check the local group needed to StoRM");
+    }
+    return result;
+  }
 
-			while (scan.hasNext()) {
-				VirtualFS vfs = scan.next();
+  /**
+   * Check if the root of the VFS exists.
+   * 
+   * @todo: this method don't check if the root is accessible by storm user.
+   * 
+   * @return true if "filesystems" element (list of VFS) is valid false otherwise
+   */
+  private boolean checkVFS() {
 
-					String aliasName = vfs.getAliasName();
-					log.debug("VFS named '{}' found.", aliasName);
-					String root = vfs.getRootPath();
-					File file = new File(root);
-					boolean exists = file.exists();
-					if (!exists) {
-						log.error("ERROR in NAMESPACE: The VFS '{}' does not have a valid root :'{}'", aliasName, root);
-						result = false;
-					}
-			}
-		}
-		if (result) {
-			log.info(" VFSs are well-defined.");
-		}
-		return result;
-	}
+    log.info("Namespace checking VFSs ..");
+    boolean result = true;
+    if (vfss == null) {
+      log.error("Anyone VFS is defined in namespace!");
+      return false;
+    } else {
+      List<VirtualFS> rules = new ArrayList<>(vfss.values());
+      Iterator<VirtualFS> scan = rules.iterator();
 
-	private boolean checkMapRules() {
+      while (scan.hasNext()) {
+        VirtualFS vfs = scan.next();
 
-		boolean result = true;
-		if (maprules == null) {
-			return false;
-		} else {
-			int nrOfMappingRules = maprules.size();
-			log.debug("Number of Mapping rules = {}", nrOfMappingRules);
-			List<MappingRule> rules = new ArrayList<>(maprules.values());
-			Iterator<MappingRule> scan = rules.iterator();
-			MappingRule rule;
-			String mappedVFS;
-			boolean check = false;
-			while (scan.hasNext()) {
-				rule = scan.next();
-				mappedVFS = rule.getMappedFS().getAliasName();
-				check = vfss.containsKey(mappedVFS);
-				if (!check) {
-					log.error("ERROR in NAMESPACE - MAP RULE '{}' point a UNKNOWN VFS '{}'!", rule.getRuleName(), mappedVFS);
-					result = false;
-				}
-			}
-		}
-		return result;
+        String aliasName = vfs.getAliasName();
+        log.debug("VFS named '{}' found.", aliasName);
+        String root = vfs.getRootPath();
+        File file = new File(root);
+        boolean exists = file.exists();
+        if (!exists) {
+          log.error("ERROR in NAMESPACE: The VFS '{}' does not have a valid root :'{}'", aliasName,
+              root);
+          result = false;
+        }
+      }
+    }
+    if (result) {
+      log.info(" VFSs are well-defined.");
+    }
+    return result;
+  }
 
-	}
+  private boolean checkMapRules() {
 
-	private boolean checkAppRules() {
+    boolean result = true;
+    if (maprules == null) {
+      return false;
+    } else {
+      int nrOfMappingRules = maprules.size();
+      log.debug("Number of Mapping rules = {}", nrOfMappingRules);
+      List<MappingRule> rules = new ArrayList<>(maprules.values());
+      Iterator<MappingRule> scan = rules.iterator();
+      MappingRule rule;
+      String mappedVFS;
+      boolean check = false;
+      while (scan.hasNext()) {
+        rule = scan.next();
+        mappedVFS = rule.getMappedFS().getAliasName();
+        check = vfss.containsKey(mappedVFS);
+        if (!check) {
+          log.error("ERROR in NAMESPACE - MAP RULE '{}' point a UNKNOWN VFS '{}'!",
+              rule.getRuleName(), mappedVFS);
+          result = false;
+        }
+      }
+    }
+    return result;
 
-		boolean result = true;
-		if (apprules == null) {
-			return false;
-		} else {
-			int nrOfApproachableRules = apprules.size();
-			log.debug("Number of Approachable rules = {}", nrOfApproachableRules);
-			List<ApproachableRule> rules = new ArrayList<>(apprules.values());
-			Iterator<ApproachableRule> scan = rules.iterator();
-			boolean check = false;
-			while (scan.hasNext()) {
-				ApproachableRule rule = scan.next();
-				List<VirtualFS> approachVFSs = Lists.newArrayList(rule.getApproachableVFS());
-				for (VirtualFS aVfs : approachVFSs) {
-					check = vfss.containsKey(aVfs.getAliasName());
-					if (!check) {
-						log.error("ERROR in NAMESPACE - APP RULE '{}' point a UNKNOWN VFS '{}'!", rule.getRuleName(), aVfs);
-						result = false;
-					}
-				}
-			}
-		}
-		return result;
-	}
+  }
+
+  private boolean checkAppRules() {
+
+    boolean result = true;
+    if (apprules == null) {
+      return false;
+    } else {
+      int nrOfApproachableRules = apprules.size();
+      log.debug("Number of Approachable rules = {}", nrOfApproachableRules);
+      List<ApproachableRule> rules = new ArrayList<>(apprules.values());
+      Iterator<ApproachableRule> scan = rules.iterator();
+      boolean check = false;
+      while (scan.hasNext()) {
+        ApproachableRule rule = scan.next();
+        List<VirtualFS> approachVFSs = Lists.newArrayList(rule.getApproachableVFS());
+        for (VirtualFS aVfs : approachVFSs) {
+          check = vfss.containsKey(aVfs.getAliasName());
+          if (!check) {
+            log.error("ERROR in NAMESPACE - APP RULE '{}' point a UNKNOWN VFS '{}'!",
+                rule.getRuleName(), aVfs);
+            result = false;
+          }
+        }
+      }
+    }
+    return result;
+  }
 }

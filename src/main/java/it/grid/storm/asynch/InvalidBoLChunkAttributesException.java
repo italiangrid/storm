@@ -4,9 +4,9 @@
  */
 package it.grid.storm.asynch;
 
-import it.grid.storm.catalogs.BoLPersistentChunkData;
-import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.persistence.model.BoLPersistentChunkData;
+import it.grid.storm.persistence.model.RequestSummaryData;
 
 /**
  * This class represents an Exception thrown when a BoLChunk is created with any null attribute:

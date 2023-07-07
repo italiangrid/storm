@@ -4,9 +4,9 @@
  */
 package it.grid.storm.asynch;
 
-import it.grid.storm.catalogs.RequestSummaryData;
-import it.grid.storm.catalogs.PtGData;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.persistence.model.PtGData;
+import it.grid.storm.persistence.model.RequestSummaryData;
 
 /**
  * This class represents an Exceptin thrown when a PtGChunk is created with any null attribute:

@@ -4,8 +4,8 @@
  */
 package it.grid.storm.asynch;
 
-import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.persistence.model.RequestSummaryData;
 
 /**
  * Class that represents an Exception thrown when a PtPFeeder could not be created because the

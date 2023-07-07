@@ -4,86 +4,109 @@
  */
 package it.grid.storm.health;
 
-import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Timer;
 
 import org.slf4j.Logger;
 
+import com.google.common.collect.Lists;
+
+import it.grid.storm.config.Configuration;
+
 public class HealthMonitor {
 
-	private Logger HEARTLOG = HealthDirector.HEARTLOG;
-	private Logger PERFLOG = HealthDirector.getPerformanceLogger();
+  private static HealthMonitor instance = null;
 
-	private Timer healthTimer = null;
-	private Hashtable<String, BookKeeper> bookKeepers;
+  private Logger HEARTLOG = HealthDirector.HEARTLOG;
+  private Logger PERFLOG = HealthDirector.getPerformanceLogger();
 
-	public static int perfGlanceTimeInterval = 15; // 15 sec
+  private Timer healthTimer;
+  private Hashtable<String, BookKeeper> bookKeepers;
 
-	public HealthMonitor(int delay, int period) {
+  private long period;
+  private long bornInstant;
 
-		healthTimer = new Timer();
-		this.heartbeat(delay * 1000, period * 1000);
+  public synchronized static HealthMonitor getInstance() {
 
-		// Create the Book Keepers
-		bookKeepers = new Hashtable<String, BookKeeper>();
+    if (instance == null) {
+      instance = new HealthMonitor(Configuration.getInstance());
+    }
+    return instance;
+  }
 
-		// Add the Simple BookKeeper
-		bookKeepers.put(SimpleBookKeeper.KEY, new SimpleBookKeeper());
+  public static void init() {
+    instance = new HealthMonitor(Configuration.getInstance());
+  }
 
-		HEARTLOG.info("HEART MONITOR Initialized");
-	}
+  private HealthMonitor(Configuration config) {
 
-	public void initializePerformanceMonitor(int logTimeInterval,
-		int defaultGlangeTimeInterval) {
+    healthTimer = new Timer();
+    bookKeepers = new Hashtable<String, BookKeeper>();
 
-		if (defaultGlangeTimeInterval > logTimeInterval) {
-			HealthDirector.getPerformanceLogger().warn(
-				"WARNING: Log Book has the time "
-					+ "interval lower than Glance time interval!");
-		}
-		// Add the Performance BookKeeper
-		PerformanceBookKeeper pbk = new PerformanceBookKeeper(logTimeInterval,
-			defaultGlangeTimeInterval);
-		bookKeepers.put(PerformanceBookKeeper.KEY, pbk);
+    if (!config.isHearthbeatBookkeepingEnabled() && !config.isHearthbeatPerformanceMeasuringEnabled()) {
+      return;
+    }
 
-		long pulseTimeInterval = pbk.getGlanceWindowInMSec();
-		// this.perfEnabled = true;
-		healthTimer.scheduleAtFixedRate(new PerformancePulse(), 0,
-			pulseTimeInterval);
-		PERFLOG.info("Set PERFORMANCE MONITOR in Timer Task (PERIOD:{})",
-		  perfGlanceTimeInterval);
-		
-		PERFLOG.info("--- PERFORMANCE MONITOR Initialized");
-	}
+    if (config.isHearthbeatPerformanceMeasuringEnabled()) {
 
-	public ArrayList<BookKeeper> getBookKeepers() {
+      int logTimeInterval = config.getHearthbeatPerformanceLogbookTimeInterval();
+      int defaultGlangeTimeInterval= config.getHearthbeatPerformanceGlanceTimeInterval();
 
-		return new ArrayList<BookKeeper>(bookKeepers.values());
-	}
+      if (defaultGlangeTimeInterval > logTimeInterval) {
+        HealthDirector.getPerformanceLogger()
+          .warn("WARNING: Log Book has the time interval lower than Glance time interval!");
+      }
+      PerformanceBookKeeper pbk =
+          new PerformanceBookKeeper(logTimeInterval, defaultGlangeTimeInterval);
+      period = pbk.getGlanceWindowInMSec();
+      healthTimer.scheduleAtFixedRate(new PerformancePulse(), 0, period);
+      PERFLOG.info("Set PERFORMANCE MONITOR in Timer Task (PERIOD:{})", period);
+      bookKeepers.put(PerformanceBookKeeper.KEY, pbk);
+      PERFLOG.info("--- PERFORMANCE MONITOR Initialized");
 
-	public PerformanceBookKeeper getPerformanceBookKeeper() {
+    }
+    
+    if (config.isHearthbeatPerformanceMeasuringEnabled()) {
 
-		if (bookKeepers.containsKey(PerformanceBookKeeper.KEY)) {
-			return (PerformanceBookKeeper) bookKeepers.get(PerformanceBookKeeper.KEY);
-		} else {
-			return null;
-		}
-	}
+      period = config.getHearthbeatPeriod();
+      healthTimer.scheduleAtFixedRate(new Hearthbeat(), 1000L, period * 1000L);
+      HEARTLOG.info("Set HEARTHBEAT in Timer Task (DELAY: {}, PERIOD: {})", 1000L, period);
+      bookKeepers.put(SimpleBookKeeper.KEY, new SimpleBookKeeper());
+      HEARTLOG.info("HEART MONITOR Initialized");
+    }
 
-	public SimpleBookKeeper getSimpleBookKeeper() {
+    bornInstant = System.currentTimeMillis();
+  }
 
-		if (bookKeepers.containsKey(SimpleBookKeeper.KEY)) {
-			return (SimpleBookKeeper) bookKeepers.get(SimpleBookKeeper.KEY);
-		} else {
-			return null;
-		}
-	}
+  public List<BookKeeper> getBookKeepers() {
 
-	public void heartbeat(int delay, int period) {
+    return Lists.newArrayList(bookKeepers.values());
+  }
 
-		healthTimer.scheduleAtFixedRate(new Hearthbeat(), delay, period);
-		HEARTLOG.info("Set HEARTHBEAT in Timer Task (DELAY: {}, PERIOD: {})", delay,
-		  period);
-	}
+  public PerformanceBookKeeper getPerformanceBookKeeper() {
+
+    if (bookKeepers.containsKey(PerformanceBookKeeper.KEY)) {
+      return (PerformanceBookKeeper) bookKeepers.get(PerformanceBookKeeper.KEY);
+    }
+    return null;
+  }
+
+  public SimpleBookKeeper getSimpleBookKeeper() {
+
+    if (bookKeepers.containsKey(SimpleBookKeeper.KEY)) {
+      return (SimpleBookKeeper) bookKeepers.get(SimpleBookKeeper.KEY);
+    }
+    return null;
+  }
+
+  public long getPeriod() {
+
+    return period;
+  }
+
+  public long getBornInstant() {
+
+    return bornInstant;
+  }
 }

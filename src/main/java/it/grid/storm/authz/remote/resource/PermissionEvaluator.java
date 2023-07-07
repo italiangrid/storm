@@ -17,40 +17,23 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/*
- * 
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
-
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.path.model.PathOperation;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.remote.Constants;
-import it.grid.storm.catalogs.OverwriteModeConverter;
 import it.grid.storm.common.types.InvalidStFNAttributeException;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.FQAN;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.model.VirtualFS;
+import it.grid.storm.persistence.converter.OverwriteModeConverter;
 import it.grid.storm.srm.types.TOverwriteMode;
 
 class PermissionEvaluator {
@@ -59,8 +42,7 @@ class PermissionEvaluator {
 
   public static Boolean isOverwriteAllowed() {
 
-    return OverwriteModeConverter.getInstance()
-      .toSTORM(Configuration.getInstance().getDefaultOverwriteMode())
+    return OverwriteModeConverter.toSTORM(Configuration.getInstance().getDefaultOverwriteMode())
       .equals(TOverwriteMode.ALWAYS);
   }
 
@@ -72,7 +54,7 @@ class PermissionEvaluator {
 
     VirtualFS fileVFS;
     try {
-      fileVFS = NamespaceDirector.getNamespace().resolveVFSbyAbsolutePath(filePathDecoded);
+      fileVFS = Namespace.getInstance().resolveVFSbyAbsolutePath(filePathDecoded);
     } catch (NamespaceException e) {
       log.error("Unable to determine a VFS that maps the requested file "
           + "path '{}'. NamespaceException: {}", filePathDecoded, e.getMessage());
@@ -114,7 +96,7 @@ class PermissionEvaluator {
 
     VirtualFS fileVFS;
     try {
-      fileVFS = NamespaceDirector.getNamespace().resolveVFSbyAbsolutePath(filePathDecoded);
+      fileVFS = Namespace.getInstance().resolveVFSbyAbsolutePath(filePathDecoded);
     } catch (NamespaceException e) {
       log.error("Unable to determine a VFS that maps the requested file "
           + "path '{}'. NamespaceException: {}", filePathDecoded, e.getMessage());
@@ -138,7 +120,7 @@ class PermissionEvaluator {
 
     VirtualFS fileVFS;
     try {
-      fileVFS = NamespaceDirector.getNamespace().resolveVFSbyAbsolutePath(filePathDecoded);
+      fileVFS = Namespace.getInstance().resolveVFSbyAbsolutePath(filePathDecoded);
     } catch (NamespaceException e) {
       log.error("Unable to determine a VFS that maps the requested file "
           + "path '{}'. NamespaceException: {}", filePathDecoded, e.getMessage());
@@ -160,7 +142,7 @@ class PermissionEvaluator {
 
     VirtualFS fileVFS;
     try {
-      fileVFS = NamespaceDirector.getNamespace().resolveVFSbyAbsolutePath(filePathDecoded);
+      fileVFS = Namespace.getInstance().resolveVFSbyAbsolutePath(filePathDecoded);
     } catch (NamespaceException e) {
       log.error("Unable to determine a VFS that maps the requested file "
           + "path '{}'. NamespaceException: {}", filePathDecoded, e.getMessage());

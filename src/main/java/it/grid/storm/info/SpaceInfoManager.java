@@ -16,10 +16,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.config.Configuration;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceInterface;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.space.StorageSpaceData;
@@ -39,9 +37,9 @@ public class SpaceInfoManager {
   private static final Logger log = LoggerFactory.getLogger(SpaceInfoManager.class);
 
   // Reference to the Catalog
-  private final ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
+  private final ReservedSpaceCatalog spaceCatalog = ReservedSpaceCatalog.getInstance();
   // Reference to the NamespaceDirector
-  private final NamespaceInterface namespace = NamespaceDirector.getNamespace();
+  private final Namespace namespace = Namespace.getInstance();
 
   private SpaceInfoManager() {}
 
@@ -142,7 +140,7 @@ public class SpaceInfoManager {
 
     if (ssd != null) {
       try {
-        ssd.setUsedSpaceSize(TSizeInBytes.make(usedSize.getUsedSize(), SizeUnit.BYTES));
+        ssd.setUsedSpaceSize(TSizeInBytes.make(usedSize.getUsedSize()));
         spaceCatalog.updateStorageSpace(ssd);
         log.debug("StorageSpace table updated for SA: '{}' with used size = {}",
             usedSize.getSaName(), usedSize.getUsedSize());

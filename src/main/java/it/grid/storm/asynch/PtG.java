@@ -17,11 +17,10 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
-import it.grid.storm.catalogs.PtGData;
+import it.grid.storm.catalogs.TapeRecallCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
-import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FSException;
@@ -32,7 +31,7 @@ import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.InvalidGetTURLProtocolException;
 import it.grid.storm.namespace.InvalidSURLException;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.TURLBuildingException;
@@ -42,6 +41,7 @@ import it.grid.storm.namespace.model.DefaultACL;
 import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.persistence.exceptions.DataAccessException;
+import it.grid.storm.persistence.model.PtGData;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
@@ -55,7 +55,6 @@ import it.grid.storm.srm.types.TTURL;
 import it.grid.storm.synchcall.command.CommandHelper;
 import it.grid.storm.synchcall.data.DataHelper;
 import it.grid.storm.synchcall.data.IdentityInputData;
-import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 
 public class PtG implements Delegable, Chooser, Request, Suspendedable {
@@ -70,12 +69,12 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
   protected PtGData requestData;
 
   /**
-   * Time that wil be used in all jit and volatile tracking.
+   * Time that will be used in all JiT and volatile tracking.
    */
   protected final Calendar start;
 
   /**
-   * boolean that indicates the state of the shunk is failure
+   * boolean that indicates the state of the chunk is failure
    */
   protected boolean failure = false;
 
@@ -139,7 +138,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
     try {
       if (!downgradedToAnonymous && requestData instanceof IdentityInputData) {
         try {
-          fileStoRI = NamespaceDirector.getNamespace()
+          fileStoRI = Namespace.getInstance()
             .resolveStoRIbySURL(surl, ((IdentityInputData) requestData).getUser());
         } catch (UnapprochableSurlException e) {
           unapprochableSurl = true;
@@ -158,7 +157,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
         }
       } else {
         try {
-          fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL());
+          fileStoRI = Namespace.getInstance().resolveStoRIbySURL(requestData.getSURL());
         } catch (UnapprochableSurlException e) {
           failure = true;
           log.info("Unable to build a stori for surl {}. " + "UnapprochableSurlException: {}", surl,
@@ -195,7 +194,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
       } else {
         if (requestData.getTransferProtocols().allows(Protocol.HTTP)) {
           try {
-            fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(requestData.getSURL());
+            fileStoRI = Namespace.getInstance().resolveStoRIbySURL(requestData.getSURL());
           } catch (UnapprochableSurlException e) {
             failure = true;
             log.info("Unable to build a stori for surl {}. " + "UnapprochableSurlException: {}",
@@ -334,8 +333,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 
 
               try {
-                TSizeInBytes fileSize =
-                    TSizeInBytes.make(fileStoRI.getLocalFile().length(), SizeUnit.BYTES);
+                TSizeInBytes fileSize = TSizeInBytes.make(fileStoRI.getLocalFile().length());
 
                 requestData.setFileSize(fileSize);
                 log.debug("File size: {}", fileSize);
@@ -369,8 +367,8 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
                 }
               }
               try {
-                new TapeRecallCatalog().insertTask(this, voName,
-                    fileStoRI.getLocalFile().getAbsolutePath());
+                TapeRecallCatalog.getInstance()
+                  .insertTask(this, voName, fileStoRI.getLocalFile().getAbsolutePath());
               } catch (DataAccessException e) {
                 requestData.changeStatusSRM_FAILURE("Unable to request file recall from tape");
                 failure = true;
@@ -423,8 +421,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
               if (canRead) {
 
                 try {
-                  TSizeInBytes fileSize =
-                      TSizeInBytes.make(fileStoRI.getLocalFile().length(), SizeUnit.BYTES);
+                  TSizeInBytes fileSize = TSizeInBytes.make(fileStoRI.getLocalFile().length());
 
                   requestData.setFileSize(fileSize);
                   log.debug("File size: {}", fileSize);

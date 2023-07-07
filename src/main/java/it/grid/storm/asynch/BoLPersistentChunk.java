@@ -5,9 +5,9 @@
 package it.grid.storm.asynch;
 
 import it.grid.storm.catalogs.BoLChunkCatalog;
-import it.grid.storm.catalogs.BoLPersistentChunkData;
-import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.persistence.model.BoLPersistentChunkData;
+import it.grid.storm.persistence.model.RequestSummaryData;
 import it.grid.storm.scheduler.PersistentRequestChunk;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;

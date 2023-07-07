@@ -52,7 +52,9 @@ storm.service.SURL.default-ports =
 # Parameters to connect to the DB used as channel for the requests. 
 storm.service.request-db.host =  
 storm.service.request-db.username =   
-storm.service.request-db.passwd =  
+storm.service.request-db.passwd =
+# Added v1.12.0
+storm.service.request-db.port =
 
 #############################################
 ############  PROFILE PARAMETERS ############
@@ -106,7 +108,12 @@ default.storagetype = P
 # ============================
 persistence.internal-db.connection-pool.maxActive = 50
 persistence.internal-db.connection-pool.maxWait = 50
-
+persistence.internal-db.connection-pool.size = 50
+# Added with 1.12.0:
+persistence.internal-db.connection-pool.minIdle = 10
+persistence.internal-db.connection-pool.maxWaitMillis = -1
+persistence.internal-db.connection-pool.testOnBorrow = true
+persistence.internal-db.connection-pool.testWhileIdle = true
 
 # ============================
 # ASYNCH SCHEDULER Component parameters
@@ -132,8 +139,8 @@ scheduler.chunksched.copy.queueSize=500
 # ============================
 # ASYNCH PICKER Component parameters
 # ============================
-asynch.db.ReconnectPeriod=18000
-asynch.db.DelayPeriod=30
+asynch.db.ReconnectPeriod=18000 # removed since v1.12.0
+asynch.db.DelayPeriod=30 # removed since v1.12.0
 asynch.PickingInitialDelay=1
 # Polling time in seconds for pick up new requests from DB
 asynch.PickingTimeInterval=2
