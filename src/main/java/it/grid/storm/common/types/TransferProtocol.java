@@ -15,84 +15,94 @@ public class TransferProtocol {
   private String protocol;
 
   /** Static attribute that indicates EMPTY TransferProtocol */
-  public static TransferProtocol EMPTY =
-      new TransferProtocol("empty") {
+  public static TransferProtocol EMPTY = new TransferProtocol("empty") {
 
-        public int hashCode() {
+    public int hashCode() {
 
-          return 0;
-        }
-      };
+      return 0;
+    }
+  };
 
   /** Static attribute that indicates FILE TransferProtocol. */
-  public static TransferProtocol FILE =
-      new TransferProtocol("file") {
+  public static TransferProtocol FILE = new TransferProtocol("file") {
 
-        public int hashCode() {
+    public int hashCode() {
 
-          return 1;
-        }
-      };
+      return 1;
+    }
+  };
 
   /** Static attribute that indicates GSIFTP TransferProtocol. */
-  public static TransferProtocol GSIFTP =
-      new TransferProtocol("gsiftp") {
+  public static TransferProtocol GSIFTP = new TransferProtocol("gsiftp") {
 
-        public int hashCode() {
+    public int hashCode() {
 
-          return 2;
-        }
-      };
+      return 2;
+    }
+  };
 
   /** Static attribute that indicates RFIO TransferProtocol. */
-  public static TransferProtocol RFIO =
-      new TransferProtocol("rfio") {
+  public static TransferProtocol RFIO = new TransferProtocol("rfio") {
 
-        public int hashCode() {
+    public int hashCode() {
 
-          return 3;
-        }
-      };
+      return 3;
+    }
+  };
 
   /** Static attribute that indicates ROOT TransferProtocol. */
-  public static TransferProtocol ROOT =
-      new TransferProtocol("root") {
+  public static TransferProtocol ROOT = new TransferProtocol("root") {
 
-        public int hashCode() {
+    public int hashCode() {
 
-          return 4;
-        }
-      };
+      return 4;
+    }
+  };
 
   /** Static attribute that indicates XROOT TransferProtocol. */
-  public static TransferProtocol XROOT =
-      new TransferProtocol("xroot") {
+  public static TransferProtocol XROOT = new TransferProtocol("xroot") {
 
-        public int hashCode() {
+    public int hashCode() {
 
-          return 8;
-        }
-      };
+      return 8;
+    }
+  };
 
   /** Static attribute that indicates HTTP TransferProtocol. */
-  public static TransferProtocol HTTP =
-      new TransferProtocol("http") {
+  public static TransferProtocol HTTP = new TransferProtocol("http") {
 
-        public int hashCode() {
+    public int hashCode() {
 
-          return 5;
-        }
-      };
+      return 5;
+    }
+  };
 
   /** Static attribute that indicates HTTPS TransferProtocol. */
-  public static TransferProtocol HTTPS =
-      new TransferProtocol("https") {
+  public static TransferProtocol HTTPS = new TransferProtocol("https") {
 
-        public int hashCode() {
+    public int hashCode() {
 
-          return 6;
-        }
-      };
+      return 6;
+    }
+  };
+
+  /** Static attribute that indicates HTTP TransferProtocol. */
+  public static TransferProtocol DAV = new TransferProtocol("dav") {
+
+    public int hashCode() {
+
+      return 7;
+    }
+  };
+
+  /** Static attribute that indicates HTTPS TransferProtocol. */
+  public static TransferProtocol DAVS = new TransferProtocol("davs") {
+
+    public int hashCode() {
+
+      return 9;
+    }
+  };
 
   private TransferProtocol(String protocol) {
 
@@ -115,13 +125,24 @@ public class TransferProtocol {
    */
   public static TransferProtocol getTransferProtocol(String protocol) {
 
-    if (protocol.toLowerCase().replaceAll(" ", "").equals(FILE.toString())) return FILE;
-    if (protocol.toLowerCase().replaceAll(" ", "").equals(GSIFTP.toString())) return GSIFTP;
-    if (protocol.toLowerCase().replaceAll(" ", "").equals(RFIO.toString())) return RFIO;
-    if (protocol.toLowerCase().replaceAll(" ", "").equals(ROOT.toString())) return ROOT;
-    if (protocol.toLowerCase().replaceAll(" ", "").equals(XROOT.toString())) return XROOT;
-    if (protocol.toLowerCase().replaceAll(" ", "").equals(HTTP.toString())) return HTTP;
-    if (protocol.toLowerCase().replaceAll(" ", "").equals(HTTPS.toString())) return HTTPS;
+    if (protocol.toLowerCase().replaceAll(" ", "").equals(FILE.toString()))
+      return FILE;
+    if (protocol.toLowerCase().replaceAll(" ", "").equals(GSIFTP.toString()))
+      return GSIFTP;
+    if (protocol.toLowerCase().replaceAll(" ", "").equals(RFIO.toString()))
+      return RFIO;
+    if (protocol.toLowerCase().replaceAll(" ", "").equals(ROOT.toString()))
+      return ROOT;
+    if (protocol.toLowerCase().replaceAll(" ", "").equals(XROOT.toString()))
+      return XROOT;
+    if (protocol.toLowerCase().replaceAll(" ", "").equals(HTTP.toString()))
+      return HTTP;
+    if (protocol.toLowerCase().replaceAll(" ", "").equals(HTTPS.toString()))
+      return HTTPS;
+    if (protocol.toLowerCase().replaceAll(" ", "").equals(DAV.toString()))
+      return DAV;
+    if (protocol.toLowerCase().replaceAll(" ", "").equals(DAVS.toString()))
+      return DAVS;
     return EMPTY;
   }
 }

@@ -3,18 +3,6 @@
  */
 package it.grid.storm.namespace.model;
 
-/**
- * Title:
- *
- * <p>Description:
- *
- * <p>Copyright: Copyright (c) 2006
- *
- * <p>Company:
- *
- * @author not attributable
- * @version 1.0
- */
 public class Protocol {
 
   private int protocolIndex = -1;
@@ -29,21 +17,18 @@ public class Protocol {
   public static final Protocol RFIO = new Protocol(3, "RFIO", "rfio", 5001);
   public static final Protocol SRM = new Protocol(4, "SRM", "srm", 8444);
   public static final Protocol ROOT = new Protocol(5, "ROOT", "root", 1094);
-  // TODO HTTPS TURL
+
   public static final Protocol HTTP = new Protocol(6, "HTTP", "http", 8080);
   public static final Protocol HTTPS = new Protocol(7, "HTTPS", "https", 443);
 
   public static final Protocol XROOT = new Protocol(8, "XROOT", "xroot", 1094);
 
+  public static final Protocol DAV = new Protocol(9, "DAV", "dav", 8080);
+  public static final Protocol DAVS = new Protocol(10, "DAVS", "davs", 443);
+
   public static final Protocol EMPTY = new Protocol(0, "EMPTY", "", -1);
   public static final Protocol UNKNOWN = new Protocol(-1, "UNKNOWN", "", -1);
 
-  /**
-   * Constructor
-   *
-   * @param protocolName String
-   * @param protocolSchema String
-   */
   private Protocol(int protocolIndex, String protocolName, String protocolScheme, int defaultPort) {
 
     this.protocolIndex = protocolIndex;
@@ -52,25 +37,21 @@ public class Protocol {
     this.defaultPort = defaultPort;
   }
 
-  // Return internal index for equals method and to use in a switch statement
   public int getProtocolIndex() {
 
     return protocolIndex;
   }
 
-  // Only get method for Name
   public String getProtocolName() {
 
     return protocolName;
   }
 
-  // Only get method for Schema
   public String getSchema() {
 
     return schema;
   }
 
-  // Only get method for Schema
   public String getProtocolPrefix() {
 
     return this.schema + "://";
@@ -108,12 +89,17 @@ public class Protocol {
     if (scheme.toLowerCase().replaceAll(" ", "").equals(SRM.getSchema().toLowerCase())) {
       return SRM;
     }
-    // TODO HTTPS TURL
     if (scheme.toLowerCase().replaceAll(" ", "").equals(HTTP.getSchema().toLowerCase())) {
       return HTTP;
     }
     if (scheme.toLowerCase().replaceAll(" ", "").equals(HTTPS.getSchema().toLowerCase())) {
       return HTTPS;
+    }
+    if (scheme.toLowerCase().replaceAll(" ", "").equals(DAV.getSchema().toLowerCase())) {
+      return DAV;
+    }
+    if (scheme.toLowerCase().replaceAll(" ", "").equals(DAVS.getSchema().toLowerCase())) {
+      return DAVS;
     }
 
     if (scheme.toLowerCase().replaceAll(" ", "").equals(EMPTY.getSchema().toLowerCase())) {
