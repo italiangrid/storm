@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.grid.storm.catalogs.InvalidSpaceDataAttributesException;
-import it.grid.storm.common.types.InvalidPFNAttributeException;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.common.types.TimeUnit;
@@ -180,11 +179,7 @@ public class StorageSpaceData {
       }
 
       // Storage Space File Name
-      try {
-        this.spaceFileName = PFN.make(ssTO.getSpaceFile());
-      } catch (InvalidPFNAttributeException e) {
-        log.error("Error while constructing Storage Space File Name", e);
-      }
+      this.spaceFileName = PFN.make(ssTO.getSpaceFile());
       if (this.spaceFileName != null) {
         log.trace("StorageSpaceData - spaceFileName: {}", this.spaceFileName);
       }

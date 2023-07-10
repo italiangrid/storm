@@ -21,7 +21,6 @@ import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.balancer.Node;
 import it.grid.storm.balancer.exception.BalancingStrategyException;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
-import it.grid.storm.common.types.InvalidPFNAttributeException;
 import it.grid.storm.common.types.InvalidStFNAttributeException;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.StFN;
@@ -34,9 +33,9 @@ import it.grid.storm.filesystem.SpaceSystem;
 import it.grid.storm.namespace.model.ACLMode;
 import it.grid.storm.namespace.model.Authority;
 import it.grid.storm.namespace.model.Capability;
-import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.PathCreator;
+import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.model.StoRIType;
 import it.grid.storm.namespace.model.TransportProtocol;
 import it.grid.storm.namespace.model.VirtualFS;
@@ -336,11 +335,7 @@ public class StoRIImpl implements StoRI {
   public PFN getPFN() {
 
     if (pfn == null) {
-      try {
-        this.pfn = PFN.make(getAbsolutePath());
-      } catch (InvalidPFNAttributeException e) {
-        log.error(e.getMessage(), e);
-      }
+      this.pfn = PFN.make(getAbsolutePath());
     }
     return this.pfn;
   }

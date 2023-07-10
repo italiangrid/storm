@@ -5,8 +5,8 @@
 package it.grid.storm.common.types;
 
 /**
- * This class represents an exception thrown when the SFN constructor is invoked
- * with null Machine, Port or PathName.
+ * This class represents an exception thrown when the SFN constructor is invoked with null Machine,
+ * Port or PathName.
  * 
  * @author Ezio Corso
  * @author EGRID - ICTP Trieste
@@ -15,79 +15,79 @@ package it.grid.storm.common.types;
  */
 public class InvalidSFNAttributesException extends Exception {
 
-	private boolean nullMachine; // boolean true if Machine is null
-	private boolean nullPort; // boolean true if Port is null
-	private boolean nullEndPoint; // boolean true if EndPoint is null
-	private boolean nullStFN; // boolean true if PathName is null
-	private boolean emptyMachine = false; // boolean indicating if Machine is
-																				// empty
-	private boolean emptyPort = false; // boolean indicating if Port is empty
-	private boolean emptyEndPoint = false; // boolean indicating if EndPoint is
-																					// empty
-	private boolean emptyStFN = false; // boolean indicating if StFN is empty
+  private static final long serialVersionUID = 1L;
 
-	private boolean queryForm = false;
+  private boolean nullMachine; // boolean true if Machine is null
+  private boolean nullPort; // boolean true if Port is null
+  private boolean nullEndPoint; // boolean true if EndPoint is null
+  private boolean nullStFN; // boolean true if PathName is null
+  private boolean emptyMachine = false; // boolean indicating if Machine is
+                                        // empty
+  private boolean emptyPort = false; // boolean indicating if Port is empty
+  private boolean emptyEndPoint = false; // boolean indicating if EndPoint is
+                                         // empty
+  private boolean emptyStFN = false; // boolean indicating if StFN is empty
 
-	/**
-	 * Constructor that requires the Machine m, the Port p and the PathName pn
-	 * that caused the Exception to be thrown.
-	 */
-	public InvalidSFNAttributesException(Machine m, Port p, StFN s) {
+  private boolean queryForm = false;
 
-		nullMachine = (m == null);
-		if (!nullMachine)
-			emptyMachine = m.isEmpty();
-		nullPort = (p == null);
-		if (!nullPort)
-			emptyPort = p.isEmpty();
-		nullStFN = (s == null);
-		if (!nullStFN)
-			emptyStFN = s.isEmpty();
-	}
+  /**
+   * Constructor that requires the Machine m, the Port p and the PathName pn that caused the
+   * Exception to be thrown.
+   */
+  public InvalidSFNAttributesException(Machine m, Port p, StFN s) {
 
-	public InvalidSFNAttributesException(Machine m, Port p, EndPoint e, StFN s) {
+    nullMachine = (m == null);
+    if (!nullMachine)
+      emptyMachine = m.isEmpty();
+    nullPort = (p == null);
+    if (!nullPort)
+      emptyPort = p.isEmpty();
+    nullStFN = (s == null);
+    if (!nullStFN)
+      emptyStFN = s.isEmpty();
+  }
 
-		nullMachine = (m == null);
-		if (!nullMachine)
-			emptyMachine = m.isEmpty();
-		nullPort = (p == null);
-		if (!nullPort)
-			emptyPort = p.isEmpty();
-		nullEndPoint = (e == null);
-		if (!nullEndPoint)
-			emptyEndPoint = e.isEmpty();
-		nullStFN = (s == null);
-		if (!nullStFN)
-			emptyStFN = s.isEmpty();
-		queryForm = true;
-	}
+  public InvalidSFNAttributesException(Machine m, Port p, EndPoint e, StFN s) {
 
-	/**
-	 * Constructor that makes an InvalidSFNAttributesException with Machine, Port
-	 * and StFN, as though they had been supplied all null.
-	 */
-	public InvalidSFNAttributesException() {
+    nullMachine = (m == null);
+    if (!nullMachine)
+      emptyMachine = m.isEmpty();
+    nullPort = (p == null);
+    if (!nullPort)
+      emptyPort = p.isEmpty();
+    nullEndPoint = (e == null);
+    if (!nullEndPoint)
+      emptyEndPoint = e.isEmpty();
+    nullStFN = (s == null);
+    if (!nullStFN)
+      emptyStFN = s.isEmpty();
+    queryForm = true;
+  }
 
-		nullMachine = true;
-		nullPort = true;
-		nullEndPoint = true;
-		nullStFN = true;
-	}
+  /**
+   * Constructor that makes an InvalidSFNAttributesException with Machine, Port and StFN, as though
+   * they had been supplied all null.
+   */
+  public InvalidSFNAttributesException() {
 
-	public String toString() {
+    nullMachine = true;
+    nullPort = true;
+    nullEndPoint = true;
+    nullStFN = true;
+  }
 
-		if (queryForm) {
-			return "Invalid SFN Attributes: nullMachine=" + nullMachine
-				+ "; nullPort=" + nullPort + "; nullEndPoint=" + nullEndPoint
-				+ "; nullStFN=" + nullStFN + "; emptyMachine=" + emptyMachine
-				+ "; emptyPort=" + emptyPort + "; emptyEndPoint=" + emptyEndPoint
-				+ "; emptyStFN=" + emptyStFN + ".";
-		} else {
-			return "Invalid SFN Attributes: nullMachine=" + nullMachine
-				+ "; nullPort=" + nullPort + "; nullStFN=" + nullStFN
-				+ "; emptyMachine=" + emptyMachine + "; emptyPort=" + emptyPort
-				+ "; emptyStFN=" + emptyStFN + ".";
-		}
-	}
+  public String toString() {
+
+    if (queryForm) {
+      return "Invalid SFN Attributes: nullMachine=" + nullMachine + "; nullPort=" + nullPort
+          + "; nullEndPoint=" + nullEndPoint + "; nullStFN=" + nullStFN + "; emptyMachine="
+          + emptyMachine + "; emptyPort=" + emptyPort + "; emptyEndPoint=" + emptyEndPoint
+          + "; emptyStFN=" + emptyStFN + ".";
+    } else {
+      return "Invalid SFN Attributes: nullMachine=" + nullMachine + "; nullPort=" + nullPort
+          + "; nullStFN=" + nullStFN + "; emptyMachine=" + emptyMachine + "; emptyPort=" + emptyPort
+          + "; emptyStFN=" + emptyStFN + ".";
+    }
+  }
 
 }

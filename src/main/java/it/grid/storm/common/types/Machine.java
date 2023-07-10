@@ -4,6 +4,8 @@
  */
 package it.grid.storm.common.types;
 
+import com.google.common.base.Preconditions;
+
 /**
  * This class represents the name of a machine in a SFN.
  * 
@@ -13,73 +15,68 @@ package it.grid.storm.common.types;
  */
 public class Machine {
 
-	private String name = ""; // name of the machine in the SFN
-	private boolean empty = true; // boolean true if this object is the empty
-																// object
+  private String name = ""; // name of the machine in the SFN
+  private boolean empty = true; // boolean true if this object is the empty
+                                // object
 
-	private Machine(String name, boolean empty) {
+  private Machine(String name, boolean empty) {
 
-		this.name = name.replaceAll(" ", "");
-		this.empty = empty;
-	}
+    this.name = name.replaceAll(" ", "");
+    this.empty = empty;
+  }
 
-	/**
-	 * Static method that returns an empty Machine.
-	 */
-	public static Machine makeEmpty() {
+  /**
+   * Static method that returns an empty Machine.
+   */
+  public static Machine makeEmpty() {
 
-		return new Machine("", true);
-	}
+    return new Machine("", true);
+  }
 
-	/**
-	 * Static method requiring the name of the machine: it cannot be null or the
-	 * empty String, otherwise an InvalidMachineAttributeException is thrown.
-	 * Beware that any empty space is removed.
-	 */
-	public static Machine make(String s) throws InvalidMachineAttributeException {
+  public static Machine make(String s) {
 
-		if ((s == null) || (s.equals("")))
-			throw new InvalidMachineAttributeException(s);
-		return new Machine(s, false);
-	}
+    Preconditions.checkNotNull(s, "Invalid machine: null");
+    Preconditions.checkArgument(!s.trim().isEmpty(), "Invalid machine: empty");
+    return new Machine(s.trim(), false);
+  }
 
-	/**
-	 * Return true if Empty instance of machine object
-	 */
-	public boolean isEmpty() {
+  /**
+   * Return true if Empty instance of machine object
+   */
+  public boolean isEmpty() {
 
-		return empty;
-	}
+    return empty;
+  }
 
-	public String getValue() {
+  public String getValue() {
 
-		return name;
-	}
+    return name;
+  }
 
-	public String toString() {
+  public String toString() {
 
-		if (empty)
-			return "Empty Machine";
-		return name;
-	}
+    if (empty)
+      return "Empty Machine";
+    return name;
+  }
 
-	public boolean equals(Object o) {
+  public boolean equals(Object o) {
 
-		if (o == this)
-			return true;
-		if (!(o instanceof Machine))
-			return false;
-		Machine mo = (Machine) o;
-		if (mo.empty && empty)
-			return true;
-		return (!mo.empty && !empty && mo.getValue().equals(name));
-	}
+    if (o == this)
+      return true;
+    if (!(o instanceof Machine))
+      return false;
+    Machine mo = (Machine) o;
+    if (mo.empty && empty)
+      return true;
+    return (!mo.empty && !empty && mo.getValue().equals(name));
+  }
 
-	public int hashCode() {
+  public int hashCode() {
 
-		if (empty)
-			return 0;
-		int hash = 17;
-		return 37 * hash + name.hashCode();
-	}
+    if (empty)
+      return 0;
+    int hash = 17;
+    return 37 * hash + name.hashCode();
+  }
 }

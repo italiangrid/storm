@@ -9,11 +9,12 @@ import it.grid.storm.srm.types.InvalidTTURLAttributesException;
 public class InvalidProtocolForTURLException extends
 	InvalidTTURLAttributesException {
 
-	private String protocolSchema;
+	private static final long serialVersionUID = 1L;
+  private String protocolSchema;
 
 	public InvalidProtocolForTURLException(String protocolSchema) {
 
-		super();
+		super("Invalid protocol schema");
 		this.protocolSchema = protocolSchema;
 	}
 

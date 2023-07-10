@@ -4,10 +4,11 @@
  */
 package it.grid.storm.common.types;
 
+import com.google.common.base.Preconditions;
+
 /**
- * This class represents a port in a SFN. An int between 0 and 65535 is
- * required: if the limits are exceeded then an InvalidPortAttributeException is
- * thrown.
+ * This class represents a port in a SFN. An int between 0 and 65535 is required: if the limits are
+ * exceeded then an InvalidPortAttributeException is thrown.
  * 
  * @author EGRID - ICTP Trieste; CNAF - Bologna
  * @date March 25th, 2005
@@ -15,87 +16,69 @@ package it.grid.storm.common.types;
  */
 public class Port {
 
-	private int port; // int representing the port number
-	private boolean empty = true; // boolean true id this object refers to the
-																// empty port
+  private int port;
+  private boolean empty = true;
 
-	/**
-	 * Private constructor.
-	 */
-	private Port(int port, boolean empty) {
+  /**
+   * Private constructor.
+   */
+  private Port(int port, boolean empty) {
 
-		this.port = port;
-		this.empty = empty;
-	}
+    this.port = port;
+    this.empty = empty;
+  }
 
-	/**
-	 * Static method to make an empty port.
-	 */
-	public static Port makeEmpty() {
+  /**
+   * Static method to make an empty port.
+   */
+  public static Port makeEmpty() {
 
-		return new Port(-1, true);
-	}
+    return new Port(0, true);
+  }
 
-	/**
-	 * Static method used to make a non empty Port object. It requires an int
-	 * between 0 and 65535 representing the port: if the limits are exceeded then
-	 * an InvalidPortAttributeException is thrown.
-	 */
-	public static Port make(int port) throws InvalidPortAttributeException {
+  public static Port make(int port) {
 
-		if ((port < 0) || (port > 65535))
-			throw new InvalidPortAttributeException(port);
-		return new Port(port, false);
-	}
+    Preconditions.checkArgument((port >= 0) && (port <= 65535), "Invalid port value");
+    return new Port(port, false);
+  }
 
-	/**
-	 * Method that returns whether this object refers to the empty port or not.
-	 */
-	public boolean isEmpty() {
+  /**
+   * Method that returns whether this object refers to the empty port or not.
+   */
+  public boolean isEmpty() {
 
-		return empty;
-	}
+    return empty;
+  }
 
-	/**
-	 * Method that returns an int representing this port. An empty port will
-	 * return -1.
-	 */
-	public int toInt() {
+  public int getValue() {
 
-		if (empty)
-			return -1;
-		return port;
-	}
+    return port;
+  }
 
-	public int getValue() {
+  public String toString() {
 
-		return port;
-	}
+    if (empty)
+      return "Empty Port";
+    return "" + port;
+  }
 
-	public String toString() {
+  public boolean equals(Object o) {
 
-		if (empty)
-			return "Empty Port";
-		return "" + port;
-	}
+    if (o == this)
+      return true;
+    if (!(o instanceof Port))
+      return false;
+    Port po = (Port) o;
+    if (po.empty && empty)
+      return true;
+    return (!po.empty) && (!empty) && (port == po.port);
+  }
 
-	public boolean equals(Object o) {
+  public int hashCode() {
 
-		if (o == this)
-			return true;
-		if (!(o instanceof Port))
-			return false;
-		Port po = (Port) o;
-		if (po.empty && empty)
-			return true;
-		return (!po.empty) && (!empty) && (port == po.port);
-	}
-
-	public int hashCode() {
-
-		if (empty)
-			return -1;
-		int hash = 17;
-		return 37 * hash + port;
-	}
+    if (empty)
+      return -1;
+    int hash = 17;
+    return 37 * hash + port;
+  }
 }

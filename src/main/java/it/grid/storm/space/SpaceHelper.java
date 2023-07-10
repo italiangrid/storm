@@ -15,7 +15,6 @@ import it.grid.storm.catalogs.InvalidSpaceDataAttributesException;
 import it.grid.storm.catalogs.MultipleDataEntriesException;
 import it.grid.storm.catalogs.NoDataFoundException;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.common.types.InvalidPFNAttributeException;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.config.Configuration;
@@ -201,12 +200,7 @@ public class SpaceHelper {
 			// the VOSpaceArea does not exist yet
 			SpaceHelper.log.debug("VoSpaceArea {} still does not exists. Start creation process." , spaceTokenAlias);
 
-			PFN sfname = null;
-			try {
-				sfname = PFN.make(spaceFileName);
-			} catch (InvalidPFNAttributeException e1) {
-				log.error("Error building PFN with {} : " , spaceFileName , e1);
-			}
+			PFN sfname = PFN.make(spaceFileName);
 
 			StorageSpaceData ssd = null;
 
@@ -291,13 +285,7 @@ public class SpaceHelper {
 					catalog_ssd.setTotalSpaceSize(totalOnLineSize);
 					catalog_ssd.setTotalGuaranteedSize(totalOnLineSize);
 
-					PFN sfn = null;
-					try {
-						sfn = PFN.make(spaceFileName);
-					} catch (InvalidPFNAttributeException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					PFN sfn = PFN.make(spaceFileName);
 					catalog_ssd.setSpaceFileName(sfn);
 
 					spaceCatalog.updateAllStorageSpace(catalog_ssd);
