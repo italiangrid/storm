@@ -1,18 +1,15 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.authz.sa.model;
 
 import it.grid.storm.authz.sa.AuthzDBInterface;
 import it.grid.storm.authz.sa.AuthzDBReaderException;
 import it.grid.storm.namespace.model.SAAuthzType;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
-
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,8 +55,15 @@ public class FileAuthzDB implements AuthzDBInterface {
 
   public String getHeader() {
 
-    return "" + getMajorVersion() + "." + getMinorVersion() + " - " + versionDescription + " ["
-        + authzDBType + "]";
+    return ""
+        + getMajorVersion()
+        + "."
+        + getMinorVersion()
+        + " - "
+        + versionDescription
+        + " ["
+        + authzDBType
+        + "]";
   }
 
   public List<SpaceACE> getOrderedListOfACE() {
@@ -95,12 +99,8 @@ public class FileAuthzDB implements AuthzDBInterface {
       String value = authzDB.getString(key);
       log.debug("KEY: {} VALUE: {}", key, value);
       /** @todo IMPLEMENT PARSING OF VALUE */
-
     }
-    /**
-     * @todo Add the default ACL
-     */
+    /** @todo Add the default ACL */
     return spaceACL;
   }
-
 }

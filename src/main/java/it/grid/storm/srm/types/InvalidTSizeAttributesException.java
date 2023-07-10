@@ -1,13 +1,12 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.srm.types;
 
 /**
- * This class represents an Exception thrown when FileSize receives null as
- * constructor attributes; or a negative size.
- * 
+ * This class represents an Exception thrown when FileSize receives null as constructor attributes;
+ * or a negative size.
+ *
  * @author Ezio Corso
  * @author EGRID - ICTP Trieste
  * @date March 23rd, 2005
@@ -17,27 +16,24 @@ import it.grid.storm.common.types.SizeUnit;
 
 public class InvalidTSizeAttributesException extends RuntimeException {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	
-	private boolean negativeSize;
-	private boolean nullUnit;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-	/**
-	 * Constructor that requires the long and the SizeUnit that caused the
-	 * exception to be thrown.
-	 */
-	public InvalidTSizeAttributesException(long size, SizeUnit unit) {
+  private boolean negativeSize;
+  private boolean nullUnit;
 
-		nullUnit = unit == null;
-		negativeSize = size < 0;
-	}
+  /** Constructor that requires the long and the SizeUnit that caused the exception to be thrown. */
+  public InvalidTSizeAttributesException(long size, SizeUnit unit) {
 
-	public String toString() {
+    nullUnit = unit == null;
+    negativeSize = size < 0;
+  }
 
-		return "Ivalid TFileSize Attributes: nullSizeUnit=" + nullUnit
-			+ "; negativeSize=" + negativeSize;
-	}
+  public String toString() {
+
+    return "Ivalid TFileSize Attributes: nullSizeUnit="
+        + nullUnit
+        + "; negativeSize="
+        + negativeSize;
+  }
 }

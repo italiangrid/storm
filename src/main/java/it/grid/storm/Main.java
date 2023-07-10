@@ -1,15 +1,13 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm;
 
 import static java.lang.System.exit;
 
+import it.grid.storm.startup.BootstrapException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import it.grid.storm.startup.BootstrapException;
 
 public class Main {
 
@@ -44,5 +42,4 @@ public class Main {
       exit(1);
     }
   }
-
 }

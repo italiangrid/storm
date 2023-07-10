@@ -1,28 +1,27 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.namespace;
 
 public class ExpiredSpaceTokenException extends Exception {
 
-	public ExpiredSpaceTokenException() {
+  public ExpiredSpaceTokenException() {
 
-		super();
-	}
+    super();
+  }
 
-	public ExpiredSpaceTokenException(String message) {
+  public ExpiredSpaceTokenException(String message) {
 
-		super(message);
-	}
+    super(message);
+  }
 
-	public ExpiredSpaceTokenException(String message, Throwable cause) {
+  public ExpiredSpaceTokenException(String message, Throwable cause) {
 
-		super(message, cause);
-	}
+    super(message, cause);
+  }
 
-	public ExpiredSpaceTokenException(Throwable cause) {
+  public ExpiredSpaceTokenException(Throwable cause) {
 
-		super(cause);
-	}
+    super(cause);
+  }
 }

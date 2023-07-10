@@ -1,10 +1,6 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.command;
 
-
-public abstract class DataTransferCommand extends AbstractCommand {
-
-}
+public abstract class DataTransferCommand extends AbstractCommand {}

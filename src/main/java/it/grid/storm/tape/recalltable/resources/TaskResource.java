@@ -1,10 +1,7 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
-/**
- * 
- */
+/** */
 package it.grid.storm.tape.recalltable.resources;
 
 import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.RCLL;
@@ -30,10 +27,6 @@ import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusLogic;
 import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusValidator;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
 import it.grid.storm.tape.recalltable.model.TaskInsertRequestValidator;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +35,6 @@ import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -54,6 +46,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Riccardo Zappi
@@ -86,10 +80,10 @@ public class TaskResource {
 
   /**
    * Get recall tasks that are currently in progress.
-   * 
+   *
    * @param maxResults the maximum number of result to be returned
    * @return a Response with a 200 code containing a list of the tasks currently in progress or with
-   *         a 500 if something went wrong
+   *     a 500 if something went wrong
    */
   @GET
   public Response getTasks(@QueryParam("maxResults") Integer maxResults) {
@@ -103,24 +97,24 @@ public class TaskResource {
 
   /**
    * This method takes a request token and a SURL encoded as a string as follows
-   * 
+   *
    * <pre>
    *  requestToken=<TOKEN> surl=<SURL>
    * </pre>
-   * 
+   *
    * This method checks that the requested SURL has been recalled and if so updates the request
    * status to the proper final status.
-   * 
-   * This method returns a 200 response status and a string containing either true or false. It
+   *
+   * <p>This method returns a 200 response status and a string containing either true or false. It
    * returns true if the file is present on the filesystem, false otherwise (this may happen when
    * querying the status of a surl for which the recall operation is still in progress on a tape
    * enabled storage area).
-   * 
-   * This method returns a 500 response in case of errors
-   * 
-   * The StoRM Frontend calls this method whenever a ptg or bol status request is submitted and the
-   * related ptg or bol status is marked as in progress in StoRM database. (for both tape enabled
-   * and disk only SA).
+   *
+   * <p>This method returns a 500 response in case of errors
+   *
+   * <p>The StoRM Frontend calls this method whenever a ptg or bol status request is submitted and
+   * the related ptg or bol status is marked as in progress in StoRM database. (for both tape
+   * enabled and disk only SA).
    */
   @PUT
   @Consumes("text/plain")
@@ -158,13 +152,12 @@ public class TaskResource {
   /**
    * Updates the status or retry value of a recall task. Called by GEMSS after a recall tasks is
    * finished.
-   * 
    */
   @PUT
   @Path("/{groupTaskId}")
   @Consumes("text/plain")
-  public void putNewTaskStatusOrRetryValue(@PathParam("groupTaskId") UUID groupTaskId,
-      InputStream input) throws TapeRecallException {
+  public void putNewTaskStatusOrRetryValue(
+      @PathParam("groupTaskId") UUID groupTaskId, InputStream input) throws TapeRecallException {
 
     log.debug("Requested to change recall table value for taskId {}", groupTaskId);
 
@@ -191,11 +184,18 @@ public class TaskResource {
 
     } catch (DataAccessException e) {
 
-      log.error("Unable to retrieve Recall Group Task with ID = '{}' DataAccessException: {}",
-          groupTaskId, e.getMessage(), e);
+      log.error(
+          "Unable to retrieve Recall Group Task with ID = '{}' DataAccessException: {}",
+          groupTaskId,
+          e.getMessage(),
+          e);
 
-      throw new TapeRecallException("Unable to retrieve recall group task " + "with ID = '"
-          + groupTaskId + "' " + e.getMessage());
+      throw new TapeRecallException(
+          "Unable to retrieve recall group task "
+              + "with ID = '"
+              + groupTaskId
+              + "' "
+              + e.getMessage());
     }
 
     String keyRetryValue = config.getRetryValueKey();
@@ -243,18 +243,25 @@ public class TaskResource {
 
         try {
 
-          recallCatalog.changeGroupTaskStatus(groupTaskId,
-              TapeRecallStatus.getRecallTaskStatus(intValue), new Date());
+          recallCatalog.changeGroupTaskStatus(
+              groupTaskId, TapeRecallStatus.getRecallTaskStatus(intValue), new Date());
 
         } catch (DataAccessException e) {
 
           log.error(
               "Unable to change the status for group task id {} to status {} DataAccessException : {}",
-              groupTaskId, intValue, e.getMessage(), e);
+              groupTaskId,
+              intValue,
+              e.getMessage(),
+              e);
 
           throw new TapeRecallException(
-              "Unable to change the status for group task id " + groupTaskId + " to status "
-                  + intValue + " . DataAccessException : " + e.getMessage());
+              "Unable to change the status for group task id "
+                  + groupTaskId
+                  + " to status "
+                  + intValue
+                  + " . DataAccessException : "
+                  + e.getMessage());
         }
 
       } else {
@@ -268,7 +275,7 @@ public class TaskResource {
 
   /**
    * Creates a new recall task.
-   * 
+   *
    * @author Enrico Vianello
    */
   @POST
@@ -305,12 +312,14 @@ public class TaskResource {
 
     try {
 
-      voName = resource.getVirtualFileSystem()
-        .getApproachableRules()
-        .get(0)
-        .getSubjectRules()
-        .getVONameMatchingRule()
-        .getVOName();
+      voName =
+          resource
+              .getVirtualFileSystem()
+              .getApproachableRules()
+              .get(0)
+              .getSubjectRules()
+              .getVONameMatchingRule()
+              .getVOName();
 
     } catch (NamespaceException e) {
 
@@ -319,9 +328,10 @@ public class TaskResource {
     }
 
     if (request.getVoName() != null && !request.getVoName().equals(voName)) {
-      String message = String.format(
-          "The voName included in the request does not match the voName resolved for this request: %s != %s",
-          request.getVoName(), voName);
+      String message =
+          String.format(
+              "The voName included in the request does not match the voName resolved for this request: %s != %s",
+              request.getVoName(), voName);
       log.error(message);
       throw new WebApplicationException(message, BAD_REQUEST);
     }
@@ -352,8 +362,9 @@ public class TaskResource {
       throw new WebApplicationException(e, INTERNAL_SERVER_ERROR);
     }
 
-    String location = String.format("/recalltable/task/%s?requestToken=%s", groupTaskId,
-        task.getRequestToken().getValue());
+    String location =
+        String.format(
+            "/recalltable/task/%s?requestToken=%s", groupTaskId, task.getRequestToken().getValue());
     log.debug("Location: {}", location);
 
     return Response.created(URI.create(location)).build();
@@ -362,7 +373,8 @@ public class TaskResource {
   @GET
   @Path("/{groupTaskId}")
   @Produces(APPLICATION_JSON)
-  public Response getGroupTaskInfo(@PathParam("groupTaskId") String groupTaskId,
+  public Response getGroupTaskInfo(
+      @PathParam("groupTaskId") String groupTaskId,
       @QueryParam("requestToken") String requestToken) {
 
     log.info("GET info for groupTaskId={} and requestToken={})", groupTaskId, requestToken);
@@ -387,8 +399,8 @@ public class TaskResource {
       }
     }
     if (task == null) {
-      throw new WebApplicationException("No task found for requestToken " + requestToken,
-          NOT_FOUND);
+      throw new WebApplicationException(
+          "No task found for requestToken " + requestToken, NOT_FOUND);
     }
 
     String jsonString = null;
@@ -402,10 +414,7 @@ public class TaskResource {
     return Response.ok(jsonString).build();
   }
 
-  /**
-   * Utility method.
-   * 
-   */
+  /** Utility method. */
   private String buildInputString(InputStream input) {
 
     BufferedReader reader = new BufferedReader(new InputStreamReader(input));
@@ -439,5 +448,4 @@ public class TaskResource {
 
     return sb.toString();
   }
-
 }

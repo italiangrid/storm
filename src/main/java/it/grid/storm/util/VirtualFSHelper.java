@@ -1,17 +1,14 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.util;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
-
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.model.Capability;
 import it.grid.storm.namespace.model.Quota;
 import it.grid.storm.namespace.model.VirtualFS;
+import java.util.List;
 
 public class VirtualFSHelper {
 
@@ -46,11 +43,9 @@ public class VirtualFSHelper {
     List<VirtualFS> allVFS = NamespaceDirector.getNamespace().getAllDefinedVFS();
 
     for (VirtualFS vfs : allVFS) {
-      if (isGPFSQuotaEnabledForVFS(vfs))
-        fss.add(vfs);
+      if (isGPFSQuotaEnabledForVFS(vfs)) fss.add(vfs);
     }
 
     return fss;
-
   }
 }

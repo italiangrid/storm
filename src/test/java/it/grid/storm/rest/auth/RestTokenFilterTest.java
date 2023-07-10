@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.rest.auth;
 
@@ -16,12 +15,10 @@ import static org.mockito.Mockito.verify;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.junit.After;
 import org.junit.Test;
@@ -29,10 +26,10 @@ import org.mockito.Mockito;
 
 public class RestTokenFilterTest {
 
-  private final static String TOKEN = "abracadabra";
-  private final static String WRONG_TOKEN = "alakazam";
+  private static final String TOKEN = "abracadabra";
+  private static final String WRONG_TOKEN = "alakazam";
 
-  private final static String TMP_FILENAME = "tmp.txt";
+  private static final String TMP_FILENAME = "tmp.txt";
 
   private HttpServletRequest getMockRequest(String token) {
     HttpServletRequest request = Mockito.mock(HttpServletRequest.class);

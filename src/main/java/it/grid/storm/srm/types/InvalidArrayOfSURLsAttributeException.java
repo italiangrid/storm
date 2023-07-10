@@ -1,31 +1,29 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 /**
  * This class represents an Exception throws if TExtraInfo is not well formed. *
- * 
+ *
  * @author Magnoni Luca
  * @author Cnaf - INFN Bologna
  * @date
  * @version 1.0
  */
-
 package it.grid.storm.srm.types;
 
 import java.util.List;
 
 public class InvalidArrayOfSURLsAttributeException extends Exception {
 
-	private boolean nullArray = true;
+  private boolean nullArray = true;
 
-	public InvalidArrayOfSURLsAttributeException(List array) {
+  public InvalidArrayOfSURLsAttributeException(List array) {
 
-		nullArray = (array == null);
-	}
+    nullArray = (array == null);
+  }
 
-	public String toString() {
+  public String toString() {
 
-		return "surlList = " + nullArray;
-	}
+    return "surlList = " + nullArray;
+  }
 }

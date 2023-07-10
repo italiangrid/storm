@@ -1,11 +1,9 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 /**
- * This class represents an Exception throws if ReleaseFiles input data is not
- * well formed. *
- * 
+ * This class represents an Exception throws if ReleaseFiles input data is not well formed. *
+ *
  * @author Alberto Forti
  * @author CNAF - INFN Bologna
  * @date AUG 2006
@@ -17,16 +15,15 @@ import it.grid.storm.srm.types.ArrayOfSURLs;
 
 public class InvalidReleaseFilesInputAttributeException extends Exception {
 
-	private boolean nullArrayOfSURLs = true;
+  private boolean nullArrayOfSURLs = true;
 
-	public InvalidReleaseFilesInputAttributeException(ArrayOfSURLs arrayOfSURLs) {
+  public InvalidReleaseFilesInputAttributeException(ArrayOfSURLs arrayOfSURLs) {
 
-		nullArrayOfSURLs = (arrayOfSURLs == null);
-	}
+    nullArrayOfSURLs = (arrayOfSURLs == null);
+  }
 
-	public String toString() {
+  public String toString() {
 
-		return "nullArrayOfSURLs = " + nullArrayOfSURLs;
-	}
-
+    return "nullArrayOfSURLs = " + nullArrayOfSURLs;
+  }
 }

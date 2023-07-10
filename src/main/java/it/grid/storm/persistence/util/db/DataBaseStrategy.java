@@ -1,123 +1,121 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.persistence.util.db;
 
 public class DataBaseStrategy {
 
-	private final String dbmsVendor;
-	private final String driverName;
-	private final String jdbcPrefix;
-	private String dbName;
-	private String dbPrefix;
-	private String dbHost;
-	private String dbUsr;
-	private String dbPwd;
-	private SQLFormat formatter;
-	private String properties;
+  private final String dbmsVendor;
+  private final String driverName;
+  private final String jdbcPrefix;
+  private String dbName;
+  private String dbPrefix;
+  private String dbHost;
+  private String dbUsr;
+  private String dbPwd;
+  private SQLFormat formatter;
+  private String properties;
 
-	public DataBaseStrategy(String dbmsVendor, String driverName, String prefix,
-		SQLFormat formatter) {
+  public DataBaseStrategy(
+      String dbmsVendor, String driverName, String prefix, SQLFormat formatter) {
 
-		this.dbmsVendor = dbmsVendor;
-		this.driverName = driverName;
-		jdbcPrefix = prefix;
-		this.formatter = formatter;
-		this.properties = "";
-	}
+    this.dbmsVendor = dbmsVendor;
+    this.driverName = driverName;
+    jdbcPrefix = prefix;
+    this.formatter = formatter;
+    this.properties = "";
+  }
 
+  public String getDbmsVendor() {
+    return dbmsVendor;
+  }
 
-	public String getDbmsVendor() {
-		return dbmsVendor;
-	}
+  public String getDriverName() {
+    return driverName;
+  }
 
-	public String getDriverName() {
-		return driverName;
-	}
+  public String getJdbcPrefix() {
 
-	public String getJdbcPrefix() {
+    return jdbcPrefix;
+  }
 
-		return jdbcPrefix;
-	}
+  public void setDbUsr(String usrDb) {
 
-	public void setDbUsr(String usrDb) {
+    dbUsr = usrDb;
+  }
 
-		dbUsr = usrDb;
-	}
+  public String getDbUsr() {
 
-	public String getDbUsr() {
+    return dbUsr;
+  }
 
-		return dbUsr;
-	}
+  public void setDbPwd(String pwd) {
 
-	public void setDbPwd(String pwd) {
+    dbPwd = pwd;
+  }
 
-		dbPwd = pwd;
-	}
+  public String getDbPwd() {
 
-	public String getDbPwd() {
+    return dbPwd;
+  }
 
-		return dbPwd;
-	}
+  public void setDbName(String dbName) {
 
-	public void setDbName(String dbName) {
+    this.dbName = dbName;
+  }
 
-		this.dbName = dbName;
-	}
+  public String getDbName() {
 
-	public String getDbName() {
+    return dbName;
+  }
 
-		return dbName;
-	}
+  public void setDbPrefix(String dbName) {
 
-	public void setDbPrefix(String dbName) {
+    dbPrefix = dbName;
+  }
 
-		dbPrefix = dbName;
-	}
+  public String getDbPrefix() {
 
-	public String getDbPrefix() {
+    return dbPrefix;
+  }
 
-		return dbPrefix;
-	}
+  public void setDbHost(String host) {
 
-	public void setDbHost(String host) {
+    dbHost = host;
+  }
 
-		dbHost = host;
-	}
+  public String getDbHost() {
 
-	public String getDbHost() {
+    return dbHost;
+  }
 
-		return dbHost;
-	}
+  public String getConnectionString() {
 
-	public String getConnectionString() {
+    String connStr = jdbcPrefix + dbHost + "/" + dbName;
+    if (!properties.isEmpty()) {
+      connStr += "?" + properties;
+    }
+    return connStr;
+  }
 
-		String connStr = jdbcPrefix + dbHost + "/" + dbName;
-		if (!properties.isEmpty()) {
-		  connStr += "?" + properties;
-		}
-		return connStr;
-	}
+  public void setFormatter(SQLFormat formatter) {
 
-	public void setFormatter(SQLFormat formatter) {
+    this.formatter = formatter;
+  }
 
-		this.formatter = formatter;
-	}
+  public SQLFormat getFormatter() {
 
-	public SQLFormat getFormatter() {
+    return formatter;
+  }
 
-		return formatter;
-	}
+  public void setProperties(String encodedProperties) {
 
-	public void setProperties(String encodedProperties) {
+    this.properties = encodedProperties;
+  }
 
-	    this.properties = encodedProperties;
-	}
+  @Override
+  public String toString() {
 
-	@Override
-	public String toString() {
-
-		return dbmsVendor;
-	}
+    return dbmsVendor;
+  }
 }

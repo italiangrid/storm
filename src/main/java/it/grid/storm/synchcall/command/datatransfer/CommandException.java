@@ -1,37 +1,28 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.command.datatransfer;
 
-/**
- * @author Michele Dibenedetto
- * 
- */
+/** @author Michele Dibenedetto */
 public class CommandException extends Exception {
 
-	/**
-     * 
-     */
-	private static final long serialVersionUID = -2644088500951303729L;
+  /** */
+  private static final long serialVersionUID = -2644088500951303729L;
 
-	public CommandException() {
+  public CommandException() {}
 
-	}
+  public CommandException(String message) {
 
-	public CommandException(String message) {
+    super(message);
+  }
 
-		super(message);
-	}
+  public CommandException(Throwable cause) {
 
-	public CommandException(Throwable cause) {
+    super(cause);
+  }
 
-		super(cause);
-	}
+  public CommandException(String message, Throwable cause) {
 
-	public CommandException(String message, Throwable cause) {
-
-		super(message, cause);
-	}
-
+    super(message, cause);
+  }
 }

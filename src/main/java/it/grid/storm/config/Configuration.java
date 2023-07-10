@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.config;
 
@@ -9,6 +8,9 @@ import static it.grid.storm.info.du.DiskUsageService.DEFAULT_TASKS_INTERVAL;
 import static it.grid.storm.info.du.DiskUsageService.DEFAULT_TASKS_PARALLEL;
 import static java.lang.System.getProperty;
 
+import com.google.common.collect.Lists;
+import it.grid.storm.rest.RestServer;
+import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -16,14 +18,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.ArrayUtils;
-
-import com.google.common.collect.Lists;
-
-import it.grid.storm.rest.RestServer;
-import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 
 /**
  * Singleton holding all configuration values that any other object in the StoRM backend reads from
@@ -34,7 +30,6 @@ import it.grid.storm.xmlrpc.XMLRPCHttpServer;
  * configuration medium, default values, as well as the option of holding multiple values, is
  * specified in each method comment.
  */
-
 public class Configuration {
 
   public static final String DEFAULT_STORM_CONFIG_FILE =
@@ -184,9 +179,7 @@ public class Configuration {
     cr = new ConfigReader(filePath, refreshRate);
   }
 
-  /**
-   * Returns the sole instance of the Configuration class.
-   */
+  /** Returns the sole instance of the Configuration class. */
   public static Configuration getInstance() {
 
     return Configuration.instance;
@@ -205,7 +198,7 @@ public class Configuration {
 
   /**
    * getNamespaceConfigPath
-   * 
+   *
    * @return String
    */
   public String namespaceConfigPath() {
@@ -215,7 +208,7 @@ public class Configuration {
 
   /**
    * MANDATORY CONFIGURATION PARAMETER! Define the SURL end-points.
-   * 
+   *
    * @return String[]
    */
   public String[] getManagedSURLs() {
@@ -227,9 +220,7 @@ public class Configuration {
     return cr.getConfiguration().getStringArray(MANAGED_SURLS_KEY);
   }
 
-  /**
-   * @return
-   */
+  /** @return */
   public Integer[] getManagedSurlDefaultPorts() {
 
     Integer[] portsArray;
@@ -247,9 +238,7 @@ public class Configuration {
     return portsArray;
   }
 
-  /**
-   * @return String
-   */
+  /** @return String */
   public String getServiceHostname() {
 
     return cr.getConfiguration().getString(SERVICE_HOSTNAME_KEY, "UNDEFINED_STORM_HOSTNAME");
@@ -343,7 +332,8 @@ public class Configuration {
 
   public String getDBProperties() {
 
-    return cr.getConfiguration().getString(DB_URL_PROPERTIES, "serverTimezone=UTC&autoReconnect=true");
+    return cr.getConfiguration()
+        .getString(DB_URL_PROPERTIES, "serverTimezone=UTC&autoReconnect=true");
   }
 
   /**
@@ -398,7 +388,7 @@ public class Configuration {
 
   /**
    * Get the default file size
-   * 
+   *
    * @return
    */
   public long getFileDefaultSize() {
@@ -490,24 +480,22 @@ public class Configuration {
     return cr.getConfiguration().getInt(PICKING_MAX_BATCH_SIZE_KEY, 100);
   }
 
-  /**
-   * Get max number of XMLRPC threads into for the XMLRPC server.
-   */
+  /** Get max number of XMLRPC threads into for the XMLRPC server. */
   public int getXMLRPCMaxThread() {
 
     return cr.getConfiguration()
-      .getInt(XMLRPC_MAX_THREAD_KEY, XMLRPCHttpServer.DEFAULT_MAX_THREAD_NUM);
+        .getInt(XMLRPC_MAX_THREAD_KEY, XMLRPCHttpServer.DEFAULT_MAX_THREAD_NUM);
   }
 
   public int getXMLRPCMaxQueueSize() {
 
     return cr.getConfiguration()
-      .getInt(XMLRPC_MAX_QUEUE_SIZE_KEY, XMLRPCHttpServer.DEFAULT_MAX_QUEUE_SIZE);
+        .getInt(XMLRPC_MAX_QUEUE_SIZE_KEY, XMLRPCHttpServer.DEFAULT_MAX_QUEUE_SIZE);
   }
 
   /**
    * Get Default Space Tokens
-   * 
+   *
    * @return
    */
   public List<String> getListOfDefaultSpaceToken() {
@@ -571,7 +559,7 @@ public class Configuration {
    * Method used by the Synch Component to set the maximum number of entries to return for the srmLs
    * functionality. If no value is found in the configuration medium, then the default value is
    * returned instead. key="synchcall.directoryManager.maxLsEntry"; default value=500;
-   * 
+   *
    * @return int
    */
   public int getLSMaxNumberOfEntry() {
@@ -581,7 +569,7 @@ public class Configuration {
 
   /**
    * Default value for the parameter "allLevelRecursive" of the LS request.
-   * 
+   *
    * @return boolean
    */
   public boolean getLSallLevelRecursive() {
@@ -591,7 +579,7 @@ public class Configuration {
 
   /**
    * Default value for the parameter "numOfLevels" of the LS request.
-   * 
+   *
    * @return int
    */
   public int getLSnumOfLevels() {
@@ -601,7 +589,7 @@ public class Configuration {
 
   /**
    * Default value for the parameter "offset" of the LS request.
-   * 
+   *
    * @return int
    */
   public int getLSoffset() {
@@ -822,7 +810,7 @@ public class Configuration {
 
   /**
    * getNamespaceConfigFilename
-   * 
+   *
    * @return String
    */
   public String getNamespaceConfigFilename() {
@@ -832,7 +820,7 @@ public class Configuration {
 
   /**
    * Retrieve the namespace schema file name from the first line (attribute) of namespace.xml.
-   * 
+   *
    * @return String
    */
   public String getNamespaceSchemaFilename() {
@@ -847,11 +835,11 @@ public class Configuration {
 
   /**
    * getNamespaceAutomaticReloading
-   * 
+   *
    * @return boolean Method used by Namespace Configuration Reloading Strategy (Peeper). If "peeper"
-   *         found namespace.xml config file changed it checks if it can perform an automatic
-   *         reload. If no value is found in the configuration medium, then the default one is used
-   *         instead. key="namespace.automatic-config-reload"; default value=false
+   *     found namespace.xml config file changed it checks if it can perform an automatic reload. If
+   *     no value is found in the configuration medium, then the default one is used instead.
+   *     key="namespace.automatic-config-reload"; default value=false
    */
   public boolean getNamespaceAutomaticReloading() {
 
@@ -1018,9 +1006,9 @@ public class Configuration {
 
   /**
    * getPerformanceGlancePeriod
-   * 
+   *
    * @return int If no value is found in the configuration medium, then the default one is used
-   *         instead. key="health.performance.glance.timeInterval"; default value=15 (15 sec)
+   *     instead. key="health.performance.glance.timeInterval"; default value=15 (15 sec)
    */
   public int getPerformanceGlanceTimeInterval() {
 
@@ -1029,9 +1017,9 @@ public class Configuration {
 
   /**
    * getPerformanceGlancePeriod
-   * 
+   *
    * @return int If no value is found in the configuration medium, then the default one is used
-   *         instead. key="health.performance.logbook.timeInterval"; default value=15 (15 sec)
+   *     instead. key="health.performance.logbook.timeInterval"; default value=15 (15 sec)
    */
   public int getPerformanceLogbookTimeInterval() {
 
@@ -1040,9 +1028,9 @@ public class Configuration {
 
   /**
    * getPerformanceMeasuring
-   * 
+   *
    * @return boolean If no value is found in the configuration medium, then the default one is used
-   *         instead. key="health.performance.mesauring.enabled"; default value=false
+   *     instead. key="health.performance.mesauring.enabled"; default value=false
    */
   public boolean getPerformanceMeasuring() {
 
@@ -1051,11 +1039,11 @@ public class Configuration {
 
   /**
    * getBookKeppeingEnabled
-   * 
+   *
    * @return boolean Method used by Namespace Configuration Reloading Strategy (Peeper). If "peeper"
-   *         found namespace.xml config file changed it checks if it can perform an automatic
-   *         reload. If no value is found in the configuration medium, then the default one is used
-   *         instead. key="health.bookkeeping.enabled"; default value=false
+   *     found namespace.xml config file changed it checks if it can perform an automatic reload. If
+   *     no value is found in the configuration medium, then the default one is used instead.
+   *     key="health.bookkeeping.enabled"; default value=false
    */
   public boolean getBookKeepingEnabled() {
 
@@ -1064,7 +1052,7 @@ public class Configuration {
 
   /**
    * Enable write permission on new created directory for LocalAuthorizationSource usage.
-   * 
+   *
    * @return false by default, otherwise what is specified in the properties
    */
   public boolean getEnableWritePermOnDirectory() {
@@ -1125,12 +1113,14 @@ public class Configuration {
 
   public int getRestServicesMaxThreads() {
 
-    return cr.getConfiguration().getInt(REST_SERVICES_MAX_THREAD, RestServer.DEFAULT_MAX_THREAD_NUM);
+    return cr.getConfiguration()
+        .getInt(REST_SERVICES_MAX_THREAD, RestServer.DEFAULT_MAX_THREAD_NUM);
   }
 
   public int getRestServicesMaxQueueSize() {
 
-    return cr.getConfiguration().getInt(REST_SERVICES_MAX_QUEUE_SIZE, RestServer.DEFAULT_MAX_QUEUE_SIZE);
+    return cr.getConfiguration()
+        .getInt(REST_SERVICES_MAX_QUEUE_SIZE, RestServer.DEFAULT_MAX_QUEUE_SIZE);
   }
 
   /**
@@ -1167,7 +1157,7 @@ public class Configuration {
 
   /**
    * Flag to support or not the TAPE integration. Default value is false.
-   * 
+   *
    * @return
    */
   public boolean getTapeSupportEnabled() {
@@ -1175,34 +1165,25 @@ public class Configuration {
     return cr.getConfiguration().getBoolean(TAPE_SUPPORT_ENABLED_KEY, false);
   }
 
-  /**
-   * @return
-   */
+  /** @return */
   public boolean getSynchronousQuotaCheckEnabled() {
 
     return cr.getConfiguration().getBoolean(SYNCHRONOUS_QUOTA_CHECK_ENABLED_KEY, false);
   }
 
-  /**
-   * 
-   * @return the refresh period in seconds
-   */
+  /** @return the refresh period in seconds */
   public int getGPFSQuotaRefreshPeriod() {
 
     return cr.getConfiguration().getInt(GPFS_QUOTA_REFRESH_PERIOD_KEY, 900);
   }
 
-  /**
-   * @return
-   */
+  /** @return */
   public boolean getFastBootstrapEnabled() {
 
     return cr.getConfiguration().getBoolean(FAST_BOOTSTRAP_ENABLED_KEY, true);
   }
 
-  /**
-   * @return
-   */
+  /** @return */
   public Long getServerPoolStatusCheckTimeout() {
 
     return cr.getConfiguration().getLong(SERVER_POOL_STATUS_CHECK_TIMEOUT_KEY, 20000);
@@ -1246,8 +1227,12 @@ public class Configuration {
           // "tape.buffer.group.write"
           // puts in the map the pair
           // <getgrouptapewritebuffer,tape.buffer.group.write>
-          String mapKey = "get"
-              + fieldName.substring(0, fieldName.lastIndexOf('_')).replace("_", "").toLowerCase();
+          String mapKey =
+              "get"
+                  + fieldName
+                      .substring(0, fieldName.lastIndexOf('_'))
+                      .replace("_", "")
+                      .toLowerCase();
           if (methodKeyMap.containsKey(mapKey)) {
             String value = methodKeyMap.get(mapKey);
             methodKeyMap.put(mapKey, value + " , " + (String) field.get(Configuration.instance));
@@ -1265,15 +1250,16 @@ public class Configuration {
          * request real parameters)
          */
         if (method.getName().substring(0, 3).equals("get")
-            && (!method.getName().equals("getInstance")) && method.getModifiers() == 1) {
+            && (!method.getName().equals("getInstance"))
+            && method.getModifiers() == 1) {
           field = method.invoke(Configuration.instance, dummyArray);
           if (field.getClass().isArray()) {
             field = ArrayUtils.toString(field);
           }
           String value = methodKeyMap.get(method.getName().toLowerCase());
           if (value == null) {
-            configurationStringBuilder.insert(0,
-                "!! Unable to find method " + method.getName() + " in methode key map!");
+            configurationStringBuilder.insert(
+                0, "!! Unable to find method " + method.getName() + " in methode key map!");
           } else {
             configurationStringBuilder.append("Property " + value + " : ");
           }
@@ -1286,11 +1272,11 @@ public class Configuration {
       return configurationStringBuilder.toString();
     } catch (Exception e) {
       if (e.getClass().isAssignableFrom(java.lang.reflect.InvocationTargetException.class)) {
-        configurationStringBuilder.insert(0,
-            "!!! Cannot do toString! Got an Exception: " + e.getCause() + "\n");
+        configurationStringBuilder.insert(
+            0, "!!! Cannot do toString! Got an Exception: " + e.getCause() + "\n");
       } else {
-        configurationStringBuilder.insert(0,
-            "!!! Cannot do toString! Got an Exception: " + e + "\n");
+        configurationStringBuilder.insert(
+            0, "!!! Cannot do toString! Got an Exception: " + e + "\n");
       }
       return configurationStringBuilder.toString();
     }
@@ -1330,7 +1316,8 @@ public class Configuration {
 
   public boolean getDiskUsageServiceTasksParallel() {
 
-    return cr.getConfiguration().getBoolean(DISKUSAGE_SERVICE_TASKS_PARALLEL, DEFAULT_TASKS_PARALLEL);
+    return cr.getConfiguration()
+        .getBoolean(DISKUSAGE_SERVICE_TASKS_PARALLEL, DEFAULT_TASKS_PARALLEL);
   }
 
   public boolean getPreferIPv6Addresses() {

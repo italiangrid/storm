@@ -1,8 +1,9 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.catalogs.surl;
+
+import static it.grid.storm.srm.types.TStatusCode.SRM_ABORTED;
 
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.TRequestToken;
@@ -12,59 +13,50 @@ import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.surl.SURLStatusStore;
 import it.grid.storm.synchcall.surl.SURLStatusStoreIF;
 import it.grid.storm.synchcall.surl.UnknownSurlException;
-
-import static it.grid.storm.srm.types.TStatusCode.SRM_ABORTED;
-
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
 
-  public static final Logger LOGGER = LoggerFactory
-    .getLogger(InMemorySURLStatusManager.class);
+  public static final Logger LOGGER = LoggerFactory.getLogger(InMemorySURLStatusManager.class);
 
-  private static final EnumSet<TStatusCode> busyStatuses = EnumSet
-    .of(TStatusCode.SRM_SPACE_AVAILABLE);
+  private static final EnumSet<TStatusCode> busyStatuses =
+      EnumSet.of(TStatusCode.SRM_SPACE_AVAILABLE);
 
-  private static final EnumSet<TStatusCode> pinnedStatuses = EnumSet
-    .of(TStatusCode.SRM_FILE_PINNED);
+  private static final EnumSet<TStatusCode> pinnedStatuses =
+      EnumSet.of(TStatusCode.SRM_FILE_PINNED);
 
   public InMemorySURLStatusManager(SURLStatusManager delegate) {
 
     super(delegate);
-
   }
 
   @Override
-  public boolean abortAllGetRequestsForSURL(GridUserInterface user, TSURL surl,
-    String explanation) {
+  public boolean abortAllGetRequestsForSURL(
+      GridUserInterface user, TSURL surl, String explanation) {
 
     SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
     boolean someRequestAborted = (store.abortAllRequestForSURL(surl) != 0);
 
-    return (someRequestAborted || super.abortAllGetRequestsForSURL(user, surl,
-      explanation));
+    return (someRequestAborted || super.abortAllGetRequestsForSURL(user, surl, explanation));
   }
 
   @Override
-  public boolean abortAllPutRequestsForSURL(GridUserInterface user, TSURL surl,
-    String explanation) {
+  public boolean abortAllPutRequestsForSURL(
+      GridUserInterface user, TSURL surl, String explanation) {
 
     final SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
     boolean someRequestAborted = (store.abortAllRequestForSURL(surl) != 0);
 
-    return (someRequestAborted || super.abortAllPutRequestsForSURL(user, surl,
-      explanation));
+    return (someRequestAborted || super.abortAllPutRequestsForSURL(user, surl, explanation));
   }
 
   @Override
-  public boolean abortRequest(GridUserInterface user, TRequestToken token,
-    String explanation) {
+  public boolean abortRequest(GridUserInterface user, TRequestToken token, String explanation) {
 
     SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
 
@@ -73,22 +65,20 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
 
       try {
 
-        return (store.update(token, new TReturnStatus(TStatusCode.SRM_ABORTED,
-          explanation)) != 0);
+        return (store.update(token, new TReturnStatus(TStatusCode.SRM_ABORTED, explanation)) != 0);
 
       } catch (UnknownSurlException e) {
         LOGGER.error(e.getMessage(), e);
         throw new RuntimeException(e.getMessage(), e);
       }
-
     }
 
     return super.abortRequest(user, token, explanation);
   }
 
   @Override
-  public boolean abortRequestForSURL(GridUserInterface user,
-    TRequestToken token, TSURL surl, String explanation) {
+  public boolean abortRequestForSURL(
+      GridUserInterface user, TRequestToken token, TSURL surl, String explanation) {
 
     SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
 
@@ -109,14 +99,22 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
   }
 
   @Override
-  public boolean failRequestForSURL(GridUserInterface user,
-    TRequestToken token, TSURL surl, TStatusCode code, String explanation) {
+  public boolean failRequestForSURL(
+      GridUserInterface user,
+      TRequestToken token,
+      TSURL surl,
+      TStatusCode code,
+      String explanation) {
 
     SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
 
     if (store.hasEntryForToken(token)) {
-      LOGGER.debug("failRequestForSURL in memory: token={}, surl={}, code={}, "
-        + "explanation={}", token, surl, code, explanation);
+      LOGGER.debug(
+          "failRequestForSURL in memory: token={}, surl={}, code={}, " + "explanation={}",
+          token,
+          surl,
+          code,
+          explanation);
 
       try {
 
@@ -128,24 +126,26 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
       }
     }
 
-    LOGGER.debug("failRequestForSURL on DB: token={}, surl={}, code={}, "
-      + "explanation={}", token, surl, code, explanation);
+    LOGGER.debug(
+        "failRequestForSURL on DB: token={}, surl={}, code={}, " + "explanation={}",
+        token,
+        surl,
+        code,
+        explanation);
 
     return super.failRequestForSURL(user, token, surl, code, explanation);
   }
 
   @Override
   public Map<TSURL, TReturnStatus> getPinnedSURLsForUser(
-    GridUserInterface user, List<TSURL> surls) {
+      GridUserInterface user, List<TSURL> surls) {
 
     SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
 
-    Map<TSURL, TReturnStatus> surlsMap = store.getPinnedSURLsForUser(user,
-      null, surls);
+    Map<TSURL, TReturnStatus> surlsMap = store.getPinnedSURLsForUser(user, null, surls);
 
     if (!surlsMap.isEmpty()) {
-      LOGGER.debug("getPinnedSURLsForUser user={}, surls={} got {}", user,
-        surls, surlsMap);
+      LOGGER.debug("getPinnedSURLsForUser user={}, surls={} got {}", user, surls, surlsMap);
       return surlsMap;
     }
 
@@ -154,16 +154,15 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
 
   @Override
   public Map<TSURL, TReturnStatus> getPinnedSURLsForUser(
-    GridUserInterface user, TRequestToken token, List<TSURL> surls) {
+      GridUserInterface user, TRequestToken token, List<TSURL> surls) {
 
     SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
 
-    Map<TSURL, TReturnStatus> surlsMap = store.getPinnedSURLsForUser(user,
-      token, surls);
+    Map<TSURL, TReturnStatus> surlsMap = store.getPinnedSURLsForUser(user, token, surls);
 
     if (!surlsMap.isEmpty()) {
-      LOGGER.debug("getPinnedSURLsForUser user={}, token={}, surls={} got {}",
-        user, surls, surlsMap);
+      LOGGER.debug(
+          "getPinnedSURLsForUser user={}, token={}, surls={} got {}", user, surls, surlsMap);
       return surlsMap;
     }
 
@@ -171,8 +170,7 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
   }
 
   @Override
-  public Map<TSURL, TReturnStatus> getSURLStatuses(GridUserInterface user, 
-    TRequestToken token) {
+  public Map<TSURL, TReturnStatus> getSURLStatuses(GridUserInterface user, TRequestToken token) {
 
     SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
     if (store.hasEntryForToken(token)) {
@@ -185,26 +183,23 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
   }
 
   @Override
-  public Map<TSURL, TReturnStatus> getSURLStatuses(GridUserInterface user,
-    TRequestToken token,
-    List<TSURL> surls) {
+  public Map<TSURL, TReturnStatus> getSURLStatuses(
+      GridUserInterface user, TRequestToken token, List<TSURL> surls) {
 
     SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
 
     if (store.hasEntryForToken(token)) {
-      LOGGER.debug("getSURLStatuses from memory for token {} and SURLs {}",
-        token, surls);
-      return store.getSurlStatuses(user,token, surls);
+      LOGGER.debug("getSURLStatuses from memory for token {} and SURLs {}", token, surls);
+      return store.getSurlStatuses(user, token, surls);
     }
 
-    LOGGER.debug("getSURLStatuses from DB for token {} and SURLs {}", token,
-      surls);
+    LOGGER.debug("getSURLStatuses from DB for token {} and SURLs {}", token, surls);
 
     return super.getSURLStatuses(user, token, surls);
   }
 
   private Map<TRequestToken, TReturnStatus> getSURLStatusesExcludingToken(
-    TRequestToken token, TSURL surl) {
+      TRequestToken token, TSURL surl) {
 
     SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
 
@@ -220,11 +215,9 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
     }
 
     return statusMap;
-
   }
 
-  private Collection<TReturnStatus> getSURLStatusList(GridUserInterface user,
-    TSURL surl) {
+  private Collection<TReturnStatus> getSURLStatusList(GridUserInterface user, TSURL surl) {
 
     SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
 
@@ -244,8 +237,8 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
   @Override
   public boolean isSURLBusy(TRequestToken requestTokenToExclude, TSURL surl) {
 
-    final Map<TRequestToken, TReturnStatus> statusMap = getSURLStatusesExcludingToken(
-      requestTokenToExclude, surl);
+    final Map<TRequestToken, TReturnStatus> statusMap =
+        getSURLStatusesExcludingToken(requestTokenToExclude, surl);
 
     if (statusMap != null && !statusMap.isEmpty()) {
 
@@ -264,13 +257,12 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
     }
 
     return busyOnDB;
-
   }
 
   @Override
   public boolean isSURLBusy(TSURL surl) {
 
-    final Collection<TReturnStatus> statusList = getSURLStatusList(null,surl);
+    final Collection<TReturnStatus> statusList = getSURLStatusList(null, surl);
 
     if (statusList != null && (!statusList.isEmpty())) {
 
@@ -298,8 +290,7 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
     return false;
   }
 
-  private boolean isSURLBusy(TSURL surl,
-    Map<TRequestToken, TReturnStatus> statusMap) {
+  private boolean isSURLBusy(TSURL surl, Map<TRequestToken, TReturnStatus> statusMap) {
 
     for (TReturnStatus status : statusMap.values()) {
       if (busyStatuses.contains(status.getStatusCode())) {
@@ -312,7 +303,7 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
   @Override
   public boolean isSURLPinned(TSURL surl) {
 
-    final Collection<TReturnStatus> statusList = getSURLStatusList(null,surl);
+    final Collection<TReturnStatus> statusList = getSURLStatusList(null, surl);
 
     if (statusList != null && !statusList.isEmpty()) {
 
@@ -351,14 +342,17 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
       LOGGER.debug("PutDone on SURLs on in memory cache for token {}", token);
 
       try {
-        return store.checkedUpdate(token, surls, TStatusCode.SRM_SPACE_AVAILABLE,
-          TStatusCode.SRM_SUCCESS, "Put done. SURL ready.");
+        return store.checkedUpdate(
+            token,
+            surls,
+            TStatusCode.SRM_SPACE_AVAILABLE,
+            TStatusCode.SRM_SUCCESS,
+            "Put done. SURL ready.");
 
       } catch (Throwable e) {
 
         LOGGER.error(e.getMessage(), e);
         throw new RuntimeException(e.getMessage(), e);
-
       }
     }
 
@@ -371,8 +365,10 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
 
     SURLStatusStoreIF store = SURLStatusStore.INSTANCE;
 
-    boolean statusUpdated = (store.checkedUpdate(user, surls,
-      TStatusCode.SRM_FILE_PINNED, TStatusCode.SRM_RELEASED, "File released") != 0);
+    boolean statusUpdated =
+        (store.checkedUpdate(
+                user, surls, TStatusCode.SRM_FILE_PINNED, TStatusCode.SRM_RELEASED, "File released")
+            != 0);
 
     if (statusUpdated) {
       LOGGER.debug("SURLs released in memory cache for user {}", user);
@@ -381,7 +377,6 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
 
     LOGGER.debug("Releasing SURLs on DB for user {}", user);
     super.releaseSURLs(user, surls);
-
   }
 
   @Override
@@ -394,8 +389,12 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
 
       try {
 
-        store.checkedUpdate(token, surls, TStatusCode.SRM_FILE_PINNED,
-          TStatusCode.SRM_RELEASED, "File released succesfully.");
+        store.checkedUpdate(
+            token,
+            surls,
+            TStatusCode.SRM_FILE_PINNED,
+            TStatusCode.SRM_RELEASED,
+            "File released succesfully.");
 
         return;
 
@@ -403,13 +402,10 @@ public class InMemorySURLStatusManager extends DelegatingSURLStatusManager {
 
         LOGGER.error(e.getMessage(), e);
         throw new RuntimeException(e.getMessage(), e);
-
       }
-
     }
 
     LOGGER.debug("Releasing SURLs on DB for token {}", token);
     super.releaseSURLs(token, surls);
   }
-
 }

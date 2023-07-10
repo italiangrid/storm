@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.rest.metadata.model;
 
@@ -9,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Date;
 import java.util.List;
 
@@ -17,17 +15,20 @@ import java.util.List;
 public class StoriMetadata {
 
   public enum ResourceType {
-    FILE, FOLDER
+    FILE,
+    FOLDER
   }
 
   public enum ResourceStatus {
-    ONLINE, NEARLINE
+    ONLINE,
+    NEARLINE
   }
 
   private String absolutePath;
   private VirtualFsMetadata filesystem;
   private ResourceType type;
   private ResourceStatus status;
+
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
   private Date lastModified;
 
@@ -37,7 +38,7 @@ public class StoriMetadata {
 
   /**
    * Constructor with params.
-   * 
+   *
    * @param absolutePath The absolute path of the resource
    * @param type The resource type: FILE or FOLDER
    * @param status The status of the resource in order of latency: ONLINE or NEARLINE
@@ -47,8 +48,10 @@ public class StoriMetadata {
    * @param children In case of FOLDER, the list of children
    */
   @JsonCreator
-  public StoriMetadata(@JsonProperty("absolutePath") String absolutePath,
-      @JsonProperty("type") ResourceType type, @JsonProperty("status") ResourceStatus status,
+  public StoriMetadata(
+      @JsonProperty("absolutePath") String absolutePath,
+      @JsonProperty("type") ResourceType type,
+      @JsonProperty("status") ResourceStatus status,
       @JsonProperty("filesystem") VirtualFsMetadata filesystem,
       @JsonProperty("attributes") FileAttributes attributes,
       @JsonProperty("lastModified") Date lastModified,
@@ -64,7 +67,7 @@ public class StoriMetadata {
 
   /**
    * Constructor through the builder.
-   * 
+   *
    * @param builder The @StoriMetadata.Builder instance.
    */
   private StoriMetadata(Builder builder) {
@@ -107,9 +110,21 @@ public class StoriMetadata {
 
   @Override
   public String toString() {
-    return "StoriMetadata [absolutePath=" + absolutePath + ", filesystem=" + filesystem + ", type="
-        + type + ", status=" + status + ", lastModified=" + lastModified + ", children=" + children
-        + ", attributes=" + attributes + "]";
+    return "StoriMetadata [absolutePath="
+        + absolutePath
+        + ", filesystem="
+        + filesystem
+        + ", type="
+        + type
+        + ", status="
+        + status
+        + ", lastModified="
+        + lastModified
+        + ", children="
+        + children
+        + ", attributes="
+        + attributes
+        + "]";
   }
 
   public static Builder builder() {

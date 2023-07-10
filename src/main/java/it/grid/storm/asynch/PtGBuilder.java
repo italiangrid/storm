@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.asynch;
 
@@ -23,10 +22,7 @@ import it.grid.storm.synchcall.data.datatransfer.FileTransferInputData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @author Michele Dibenedetto
- * 
- */
+/** @author Michele Dibenedetto */
 public class PtGBuilder {
 
   private static Logger log = LoggerFactory.getLogger(PtGBuilder.class);
@@ -47,25 +43,39 @@ public class PtGBuilder {
     PtGData data;
     try {
       if (inputData instanceof IdentityInputData) {
-        data = new IdentityPtGData(((IdentityInputData) inputData).getUser(), toSURL, pinLifetime,
-            dirOption, transferProtocols, fileSize, status, transferURL);
+        data =
+            new IdentityPtGData(
+                ((IdentityInputData) inputData).getUser(),
+                toSURL,
+                pinLifetime,
+                dirOption,
+                transferProtocols,
+                fileSize,
+                status,
+                transferURL);
       } else {
-        data = new AnonymousPtGData(toSURL, pinLifetime, dirOption, transferProtocols, fileSize,
-            status, transferURL);
+        data =
+            new AnonymousPtGData(
+                toSURL, pinLifetime, dirOption, transferProtocols, fileSize, status, transferURL);
       }
       data.store();
     } catch (InvalidPtGDataAttributesException e) {
-      log.error("Unable to build PtGChunkData. " + "InvalidPtGChunkDataAttributesException: {}",
-          e.getMessage(), e);
+      log.error(
+          "Unable to build PtGChunkData. " + "InvalidPtGChunkDataAttributesException: {}",
+          e.getMessage(),
+          e);
       throw new BuilderException("Error building PtG PtGChunkData. Building failed");
     } catch (InvalidFileTransferDataAttributesException e) {
       log.error(
           "Unable to build PtGChunkData. " + "InvalidFileTransferChunkDataAttributesException: {}",
-          e.getMessage(), e);
+          e.getMessage(),
+          e);
       throw new BuilderException("Error building PtG PtGChunkData. Building failed");
     } catch (InvalidSurlRequestDataAttributesException e) {
-      log.error("Unable to build PtGChunkData. " + "InvalidSurlRequestDataAttributesException: {}",
-          e.getMessage(), e);
+      log.error(
+          "Unable to build PtGChunkData. " + "InvalidSurlRequestDataAttributesException: {}",
+          e.getMessage(),
+          e);
       throw new BuilderException("Error building PtG PtGChunkData. Building failed");
     }
     return new PtG(data);

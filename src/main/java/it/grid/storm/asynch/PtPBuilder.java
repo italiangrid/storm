@@ -1,11 +1,8 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.asynch;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import it.grid.storm.catalogs.AnonymousPtPData;
 import it.grid.storm.catalogs.IdentityPtPData;
 import it.grid.storm.catalogs.InvalidFileTransferDataAttributesException;
@@ -25,11 +22,10 @@ import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TTURL;
 import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.datatransfer.PrepareToPutInputData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * @author Michele Dibenedetto
- * 
- */
+/** @author Michele Dibenedetto */
 public class PtPBuilder {
 
   private static Logger log = LoggerFactory.getLogger(PtPBuilder.class);
@@ -41,8 +37,9 @@ public class PtPBuilder {
     TSURL toSURL = inputData.getSurl();
     TLifeTimeInSeconds pinLifetime = inputData.getDesiredPinLifetime();
     TLifeTimeInSeconds fileLifetime = inputData.getDesiredFileLifetime();
-    TFileStorageType fileStorageType = TFileStorageType
-      .getTFileStorageType(Configuration.getInstance().getDefaultFileStorageType());
+    TFileStorageType fileStorageType =
+        TFileStorageType.getTFileStorageType(
+            Configuration.getInstance().getDefaultFileStorageType());
     TSpaceToken spaceToken = inputData.getTargetSpaceToken();
     TSizeInBytes expectedFileSize = inputData.getFileSize();
     TURLPrefix transferProtocols = inputData.getTransferProtocols();
@@ -53,16 +50,37 @@ public class PtPBuilder {
     PtPData data;
     try {
       if (inputData instanceof IdentityInputData) {
-        data = new IdentityPtPData(((IdentityInputData) inputData).getUser(), toSURL, pinLifetime,
-            fileLifetime, fileStorageType, spaceToken, expectedFileSize, transferProtocols,
-            overwriteOption, status, transferURL);
+        data =
+            new IdentityPtPData(
+                ((IdentityInputData) inputData).getUser(),
+                toSURL,
+                pinLifetime,
+                fileLifetime,
+                fileStorageType,
+                spaceToken,
+                expectedFileSize,
+                transferProtocols,
+                overwriteOption,
+                status,
+                transferURL);
       } else {
-        data = new AnonymousPtPData(toSURL, pinLifetime, fileLifetime, fileStorageType, spaceToken,
-            expectedFileSize, transferProtocols, overwriteOption, status, transferURL);
+        data =
+            new AnonymousPtPData(
+                toSURL,
+                pinLifetime,
+                fileLifetime,
+                fileStorageType,
+                spaceToken,
+                expectedFileSize,
+                transferProtocols,
+                overwriteOption,
+                status,
+                transferURL);
       }
       data.store();
     } catch (InvalidPtPDataAttributesException e) {
-      log.error("Unable to build PtPChunkData. " + "InvalidPtPChunkDataAttributesException: {}",
+      log.error(
+          "Unable to build PtPChunkData. " + "InvalidPtPChunkDataAttributesException: {}",
           e.getMessage());
       throw new BuilderException("Error building PtP PtPChunkData. Building failed");
     } catch (InvalidFileTransferDataAttributesException e) {
@@ -71,7 +89,8 @@ public class PtPBuilder {
           e.getMessage());
       throw new BuilderException("Error building PtP PtPChunkData. Building failed");
     } catch (InvalidSurlRequestDataAttributesException e) {
-      log.error("Unable to build PtPChunkData. " + "InvalidSurlRequestDataAttributesException: ",
+      log.error(
+          "Unable to build PtPChunkData. " + "InvalidSurlRequestDataAttributesException: ",
           e.getMessage());
       throw new BuilderException("Error building PtP PtPChunkData. Building failed");
     }

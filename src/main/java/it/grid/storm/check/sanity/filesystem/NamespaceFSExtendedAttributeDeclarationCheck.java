@@ -1,14 +1,7 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.check.sanity.filesystem;
-
-import java.io.IOException;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import it.grid.storm.check.Check;
 import it.grid.storm.check.CheckResponse;
@@ -18,10 +11,12 @@ import it.grid.storm.filesystem.MtabRow;
 import it.grid.storm.filesystem.MtabUtil;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.model.VirtualFS;
+import java.io.IOException;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * @author Michele Dibenedetto
- */
+/** @author Michele Dibenedetto */
 public class NamespaceFSExtendedAttributeDeclarationCheck implements Check {
 
   private static final Logger log =
@@ -47,7 +42,8 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check {
       rows = MtabUtil.getRows();
     } catch (IOException e) {
       log.warn("Unable to get the rows from mtab. IOException : {}", e.getMessage());
-      return new CheckResponse(CheckStatus.INDETERMINATE,
+      return new CheckResponse(
+          CheckStatus.INDETERMINATE,
           "Check not performed. Unable to get the rows from mtab. IOException : " + e.getMessage());
     }
     log.debug("Retrieved Mtab : {}", rows.toString());
@@ -58,7 +54,9 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check {
       if (fsTypeName == null || fsRootPath == null) {
         log.warn(
             "Skipping chek on VFS with alias '{}' has null type ->{}<- " + "or root path ->{}<-",
-            vfs.getAliasName(), vfs.getFSType(), vfs.getRootPath());
+            vfs.getAliasName(),
+            vfs.getFSType(),
+            vfs.getRootPath());
         continue;
       }
       log.debug("Checking fs at {} with type {}", fsRootPath, fsTypeName);
@@ -73,11 +71,17 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check {
           try {
             fsType = SupportedFSType.parseFS(fsTypeName);
           } catch (IllegalArgumentException e) {
-            log.warn("Unable to get the SupportedFSType for file system '{}'. "
-                + "IllegalArgumentException: {}", fsTypeName, e.getMessage());
+            log.warn(
+                "Unable to get the SupportedFSType for file system '{}'. "
+                    + "IllegalArgumentException: {}",
+                fsTypeName,
+                e.getMessage());
             throw new GenericCheckException(
-                "Unable to get the " + "SupportedFSType for file system \'" + fsTypeName
-                    + "\' IllegalArgumentException: " + e.getMessage());
+                "Unable to get the "
+                    + "SupportedFSType for file system \'"
+                    + fsTypeName
+                    + "\' IllegalArgumentException: "
+                    + e.getMessage());
           }
 
           // given the file system specified in the row check if the
@@ -90,12 +94,13 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check {
             case GPFS:
               retrievedStatus = checkGPFS(row.getMountOptions());
               break;
-            default: {
-              log.error("Unable to switch on the provided SupportedFSType " + "(unknown): {}",
-                  fsType);
-              throw new GenericCheckException(
-                  "Unable to switch on the " + "provided SupportedFSType (unknown) : " + fsType);
-            }
+            default:
+              {
+                log.error(
+                    "Unable to switch on the provided SupportedFSType " + "(unknown): {}", fsType);
+                throw new GenericCheckException(
+                    "Unable to switch on the " + "provided SupportedFSType (unknown) : " + fsType);
+              }
           }
           if (!retrievedStatus.equals(CheckStatus.SUCCESS)) {
             log.error("Check failed for file system at {} with type {}", fsRootPath, fsType);
@@ -118,13 +123,14 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check {
   /**
    * Checks if the ext3 mount option POSIX_EXTENDED_ATTRIBUTES_OPTION_NAME is in the provided mount
    * options list
-   * 
+   *
    * @param fsOptions a comma separated list of mount options
    * @return a successful CheckStatus if the option is available
    */
   private CheckStatus checkEXT3(List<String> fsOptions) {
 
-    log.debug("Checking ext3 file system estended attribute options " + "against '{}'",
+    log.debug(
+        "Checking ext3 file system estended attribute options " + "against '{}'",
         fsOptions.toString());
     CheckStatus response = CheckStatus.FAILURE;
     if (fsOptions.contains(POSIX_EXTENDED_ATTRIBUTES_OPTION_NAME)) {
@@ -136,13 +142,14 @@ public class NamespaceFSExtendedAttributeDeclarationCheck implements Check {
 
   /**
    * Checks if the gpfs mount option is in the provided mount options list
-   * 
+   *
    * @param fsOptions a comma separated list of mount options
    * @return always a successful CheckStatus, gpfs has always EA enabled
    */
   private CheckStatus checkGPFS(List<String> fsOptions) {
 
-    log.debug("Checking gpfs file system estended attribute options " + "against '{}'",
+    log.debug(
+        "Checking gpfs file system estended attribute options " + "against '{}'",
         fsOptions.toString());
     /*
      * According to Vladimir for GPFS the EA are enabled by default and their status doesn't have

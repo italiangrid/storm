@@ -1,23 +1,15 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.persistence.exceptions;
 
-/**
- * This exception is used to mark generic failures in persistence layer
- */
-
+/** This exception is used to mark generic failures in persistence layer */
 public class DataAccessException extends Exception {
 
-  /**
-   * 
-   */
+  /** */
   private static final long serialVersionUID = 1L;
 
-  public DataAccessException() {
-
-  }
+  public DataAccessException() {}
 
   public DataAccessException(String message) {
 

@@ -1,86 +1,93 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.info.model;
 
 public class TreeStructureSummary {
 
-	private String path;
-	private long nodes;
-	private long files;
-	private int maxDepthToLeaves;
-	private int maxBranches;
-	private long maxFilePerNode;
+  private String path;
+  private long nodes;
+  private long files;
+  private int maxDepthToLeaves;
+  private int maxBranches;
+  private long maxFilePerNode;
 
-	public TreeStructureSummary(String path) {
+  public TreeStructureSummary(String path) {
 
-		super();
-		this.path = path;
-	}
+    super();
+    this.path = path;
+  }
 
-	public final String getPath() {
+  public final String getPath() {
 
-		return path;
-	}
+    return path;
+  }
 
-	public final long getNodes() {
+  public final long getNodes() {
 
-		return nodes;
-	}
+    return nodes;
+  }
 
-	public final void setNodes(long nodes) {
+  public final void setNodes(long nodes) {
 
-		this.nodes = nodes;
-	}
+    this.nodes = nodes;
+  }
 
-	public final long getFiles() {
+  public final long getFiles() {
 
-		return files;
-	}
+    return files;
+  }
 
-	public final void setFiles(long files) {
+  public final void setFiles(long files) {
 
-		this.files = files;
-	}
+    this.files = files;
+  }
 
-	public final int getMaxDepthToLeaves() {
+  public final int getMaxDepthToLeaves() {
 
-		return maxDepthToLeaves;
-	}
+    return maxDepthToLeaves;
+  }
 
-	public final void setMaxDepthToLeaves(int maxDepthToLeaves) {
+  public final void setMaxDepthToLeaves(int maxDepthToLeaves) {
 
-		this.maxDepthToLeaves = maxDepthToLeaves;
-	}
+    this.maxDepthToLeaves = maxDepthToLeaves;
+  }
 
-	public final int getMaxBranches() {
+  public final int getMaxBranches() {
 
-		return maxBranches;
-	}
+    return maxBranches;
+  }
 
-	public final void setMaxBranches(int maxBranches) {
+  public final void setMaxBranches(int maxBranches) {
 
-		this.maxBranches = maxBranches;
-	}
+    this.maxBranches = maxBranches;
+  }
 
-	public final long getMaxFilePerNode() {
+  public final long getMaxFilePerNode() {
 
-		return maxFilePerNode;
-	}
+    return maxFilePerNode;
+  }
 
-	public final void setMaxFilePerNode(long maxFilePerNode) {
+  public final void setMaxFilePerNode(long maxFilePerNode) {
 
-		this.maxFilePerNode = maxFilePerNode;
-	}
+    this.maxFilePerNode = maxFilePerNode;
+  }
 
-	@Override
-	public String toString() {
+  @Override
+  public String toString() {
 
-		return "TreeStructureSummary [nodes=" + nodes + ", files=" + files
-			+ ", maxDepthToLeaves=" + maxDepthToLeaves + ", maxBranches="
-			+ maxBranches + ", maxFilePerNode=" + maxFilePerNode + ", path=" + path
-			+ "]";
-	}
-
+    return "TreeStructureSummary [nodes="
+        + nodes
+        + ", files="
+        + files
+        + ", maxDepthToLeaves="
+        + maxDepthToLeaves
+        + ", maxBranches="
+        + maxBranches
+        + ", maxFilePerNode="
+        + maxFilePerNode
+        + ", path="
+        + path
+        + "]";
+  }
 }

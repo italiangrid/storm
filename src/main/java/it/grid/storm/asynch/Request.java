@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.asynch;
 
@@ -10,9 +9,6 @@ public interface Request {
 
   public String getSURL();
 
-  /**
-   * @return boolean
-   */
+  /** @return boolean */
   public boolean isResultSuccess();
-
 }

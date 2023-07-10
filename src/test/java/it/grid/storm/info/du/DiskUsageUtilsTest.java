@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.info.du;
 
@@ -8,15 +7,12 @@ import static it.grid.storm.space.ExitStatus.FAILURE;
 import static it.grid.storm.space.ExitStatus.SUCCESS;
 import static org.junit.Assert.assertEquals;
 
+import com.google.common.collect.Lists;
+import it.grid.storm.space.DUResult;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-
 import org.junit.Test;
-
-import com.google.common.collect.Lists;
-
-import it.grid.storm.space.DUResult;
 
 public class DiskUsageUtilsTest {
 
@@ -35,7 +31,6 @@ public class DiskUsageUtilsTest {
     assertEquals(result.getDetail(), "empty output");
     assertEquals(result.getDurationInMillis(), fiveMinutes.toMillis());
     assertEquals(result.getSizeInBytes(), -1L);
-
   }
 
   @Test
@@ -53,7 +48,6 @@ public class DiskUsageUtilsTest {
     assertEquals(result.getDetail(), "");
     assertEquals(result.getDurationInMillis(), fiveMinutes.toMillis());
     assertEquals(result.getSizeInBytes(), 474839632L);
-
   }
 
   @Test
@@ -71,7 +65,6 @@ public class DiskUsageUtilsTest {
     assertEquals(result.getDetail(), "NumberFormatException on parsing du output");
     assertEquals(result.getDurationInMillis(), fiveMinutes.toMillis());
     assertEquals(result.getSizeInBytes(), -1L);
-
   }
 
   @Test(expected = NullPointerException.class)
@@ -84,5 +77,4 @@ public class DiskUsageUtilsTest {
 
     DiskUsageUtils.getResult(ABS_PATH, start, end, null);
   }
-
 }

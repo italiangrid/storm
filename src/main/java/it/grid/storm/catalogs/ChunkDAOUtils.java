@@ -1,13 +1,11 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.catalogs;
 
+import java.sql.SQLWarning;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.sql.SQLWarning;
 
 public class ChunkDAOUtils {
 
@@ -31,9 +29,9 @@ public class ChunkDAOUtils {
 
   public static String buildInClauseForArray(int size) {
     StringBuilder b = new StringBuilder();
-    for (int i=1; i<=size; i++) {
+    for (int i = 1; i <= size; i++) {
       b.append('?');
-      if (i<size) {
+      if (i < size) {
         b.append(',');
       }
     }

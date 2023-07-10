@@ -1,32 +1,28 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.griduser;
 
-/**
- * Root class for errors arising with the GridUser instanciation.
- */
+/** Root class for errors arising with the GridUser instanciation. */
 public class GridUserException extends Exception {
 
-	public GridUserException() {
+  public GridUserException() {
 
-		super();
-	}
+    super();
+  }
 
-	public GridUserException(String message) {
+  public GridUserException(String message) {
 
-		super(message);
-	}
+    super(message);
+  }
 
-	public GridUserException(String message, Throwable cause) {
+  public GridUserException(String message, Throwable cause) {
 
-		super(message, cause);
-	}
+    super(message, cause);
+  }
 
-	public GridUserException(Throwable cause) {
+  public GridUserException(Throwable cause) {
 
-		super(cause);
-	}
-
+    super(cause);
+  }
 }

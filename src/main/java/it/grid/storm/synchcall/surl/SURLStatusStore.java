@@ -1,16 +1,20 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.surl;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TStatusCode;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -19,25 +23,16 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 public enum SURLStatusStore implements SURLStatusStoreIF {
-
   INSTANCE;
 
   static class Entry {
 
-    public static Entry from(TRequestToken token, GridUserInterface usr,
-        Map<TSURL, TReturnStatus> statuses) {
+    public static Entry from(
+        TRequestToken token, GridUserInterface usr, Map<TSURL, TReturnStatus> statuses) {
 
       return new Entry(token, usr, statuses);
     }
@@ -57,23 +52,16 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
     @Override
     public boolean equals(Object obj) {
 
-      if (this == obj)
-        return true;
-      if (obj == null)
-        return false;
-      if (getClass() != obj.getClass())
-        return false;
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (getClass() != obj.getClass()) return false;
       Entry other = (Entry) obj;
       if (surlStatuses == null) {
-        if (other.surlStatuses != null)
-          return false;
-      } else if (!surlStatuses.equals(other.surlStatuses))
-        return false;
+        if (other.surlStatuses != null) return false;
+      } else if (!surlStatuses.equals(other.surlStatuses)) return false;
       if (token == null) {
-        if (other.token != null)
-          return false;
-      } else if (!token.equals(other.token))
-        return false;
+        if (other.token != null) return false;
+      } else if (!token.equals(other.token)) return false;
       return true;
     }
 
@@ -90,52 +78,66 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
     @Override
     public String toString() {
 
-      return "SURLStore.Entry [token=" + token + ", user=" + user + ", surlStatuses=" + surlStatuses
+      return "SURLStore.Entry [token="
+          + token
+          + ", user="
+          + user
+          + ", surlStatuses="
+          + surlStatuses
           + "]";
     }
-
   }
 
   final Logger logger = LoggerFactory.getLogger(SURLStatusStore.class);
 
   final Cache<TRequestToken, Entry> statusStore;
 
-  final EnumSet<TStatusCode> interestingStatuses = EnumSet.of(TStatusCode.SRM_SPACE_AVAILABLE,
-      TStatusCode.SRM_FILE_BUSY, TStatusCode.SRM_FILE_PINNED, TStatusCode.SRM_REQUEST_QUEUED,
-      TStatusCode.SRM_REQUEST_INPROGRESS);
+  final EnumSet<TStatusCode> interestingStatuses =
+      EnumSet.of(
+          TStatusCode.SRM_SPACE_AVAILABLE,
+          TStatusCode.SRM_FILE_BUSY,
+          TStatusCode.SRM_FILE_PINNED,
+          TStatusCode.SRM_REQUEST_QUEUED,
+          TStatusCode.SRM_REQUEST_INPROGRESS);
 
   final ScheduledExecutorService cacheStatsLoggerService = Executors.newScheduledThreadPool(1);
 
   private SURLStatusStore() {
 
-    statusStore = CacheBuilder.newBuilder()
-      .maximumSize(1000)
-      .recordStats()
-      .expireAfterWrite(10L, TimeUnit.MINUTES)
-      .concurrencyLevel(1)
-      .removalListener(new RemovalListener<TRequestToken, Entry>() {
+    statusStore =
+        CacheBuilder.newBuilder()
+            .maximumSize(1000)
+            .recordStats()
+            .expireAfterWrite(10L, TimeUnit.MINUTES)
+            .concurrencyLevel(1)
+            .removalListener(
+                new RemovalListener<TRequestToken, Entry>() {
 
-        @Override
-        public void onRemoval(RemovalNotification<TRequestToken, Entry> notification) {
+                  @Override
+                  public void onRemoval(RemovalNotification<TRequestToken, Entry> notification) {
 
-          if (notification.wasEvicted()) {
-            logger.debug("SURLStatusStore: Entry {} evicted. Cause: {}", notification.getValue(),
-                notification.getCause());
+                    if (notification.wasEvicted()) {
+                      logger.debug(
+                          "SURLStatusStore: Entry {} evicted. Cause: {}",
+                          notification.getValue(),
+                          notification.getCause());
+                    }
+                  }
+                })
+            .build();
+
+    Runnable cacheStatsLogger =
+        new Runnable() {
+
+          @Override
+          public void run() {
+
+            logger.debug(
+                "SURLStatusStore status: size={}, stats={}",
+                statusStore.size(),
+                statusStore.stats());
           }
-        }
-      })
-      .build();
-
-    Runnable cacheStatsLogger = new Runnable() {
-
-      @Override
-      public void run() {
-
-        logger.debug("SURLStatusStore status: size={}, stats={}", statusStore.size(),
-            statusStore.stats());
-
-      }
-    };
+        };
 
     cacheStatsLoggerService.scheduleWithFixedDelay(cacheStatsLogger, 1L, 1L, TimeUnit.MINUTES);
   }
@@ -152,7 +154,6 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
 
         if (e.getValue().surlStatuses.isEmpty()) {
           toBeRemoved.add(e.getKey());
-
         }
       }
     }
@@ -171,8 +172,9 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
     if (user != null && e.user != null) {
 
       if (!user.getDn().equals(e.user.getDn())) {
-        String errorMsg = String.format("User %s is not authorized to access request with token %s",
-            user.getDn(), e.token);
+        String errorMsg =
+            String.format(
+                "User %s is not authorized to access request with token %s", user.getDn(), e.token);
 
         throw new AuthzException(errorMsg);
       }
@@ -184,13 +186,21 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
   }
 
   @Override
-  public int checkedUpdate(GridUserInterface user, List<TSURL> surls,
-      TStatusCode requiredStatusCode, TStatusCode newStatusCode, String explanation) {
+  public int checkedUpdate(
+      GridUserInterface user,
+      List<TSURL> surls,
+      TStatusCode requiredStatusCode,
+      TStatusCode newStatusCode,
+      String explanation) {
 
     logger.debug(
         "checkedUpdate: user={}, surls={}, requiredStatusCode={}, "
             + "newStatusCode={}, explanation={}",
-        user, surls, requiredStatusCode, newStatusCode, explanation);
+        user,
+        surls,
+        requiredStatusCode,
+        newStatusCode,
+        explanation);
 
     int updateCount = 0;
     for (Map.Entry<TRequestToken, Entry> e : statusStore.asMap().entrySet()) {
@@ -211,14 +221,15 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
                 logger.warn(
                     "checkedUpdate: status not updated for surl {}. "
                         + "inCacheStatus does not match requiredStatus. {} != {}",
-                    s, inCacheStatus, requiredStatusCode);
+                    s,
+                    inCacheStatus,
+                    requiredStatusCode);
 
               } else {
 
                 entry.surlStatuses.put(s, new TReturnStatus(newStatusCode, explanation));
                 updateCount++;
               }
-
             }
           }
 
@@ -234,15 +245,22 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
   }
 
   @Override
-  public int checkedUpdate(TRequestToken requestToken, List<TSURL> surls,
-      TStatusCode requiredStatusCode, TStatusCode newStatusCode, String explanation)
-      throws UnknownTokenException, ExpiredTokenException,
-      UnknownSurlException {
+  public int checkedUpdate(
+      TRequestToken requestToken,
+      List<TSURL> surls,
+      TStatusCode requiredStatusCode,
+      TStatusCode newStatusCode,
+      String explanation)
+      throws UnknownTokenException, ExpiredTokenException, UnknownSurlException {
 
     logger.debug(
         "checkedUpdate: token={}, surls={}, requiredStatusCode={}, "
             + "newStatusCode={}, explanation={}",
-        requestToken, surls, requiredStatusCode, newStatusCode, explanation);
+        requestToken,
+        surls,
+        requiredStatusCode,
+        newStatusCode,
+        explanation);
 
     Entry e = statusStore.getIfPresent(requestToken);
 
@@ -265,7 +283,9 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
         logger.warn(
             "checkedUpdate: status not updated for surl {}. "
                 + "inCacheStatus does not match requiredStatus. {} != {}",
-            s, inCacheStatus, requiredStatusCode);
+            s,
+            inCacheStatus,
+            requiredStatusCode);
       } else {
         e.surlStatuses.put(s, new TReturnStatus(newStatusCode, explanation));
         updateCount++;
@@ -278,7 +298,6 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
     }
 
     return updateCount;
-
   }
 
   private boolean entryUserMatchesRequestUser(Entry e, GridUserInterface user) {
@@ -291,8 +310,8 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
   }
 
   @Override
-  public Map<TSURL, TReturnStatus> getPinnedSURLsForUser(GridUserInterface user,
-      TRequestToken token, List<TSURL> surls) {
+  public Map<TSURL, TReturnStatus> getPinnedSURLsForUser(
+      GridUserInterface user, TRequestToken token, List<TSURL> surls) {
 
     Map<TSURL, TReturnStatus> statusMap = Maps.newHashMap();
 
@@ -342,7 +361,6 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
       if (e.getValue().surlStatuses.containsKey(surl)) {
         statusMap.put(e.getValue().token, e.getValue().surlStatuses.get(surl));
       }
-
     }
 
     return statusMap;
@@ -358,12 +376,11 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
       return e.surlStatuses;
     }
     return null;
-
   }
 
   @Override
-  public Map<TSURL, TReturnStatus> getSurlStatuses(GridUserInterface user, TRequestToken token,
-      List<TSURL> surls) {
+  public Map<TSURL, TReturnStatus> getSurlStatuses(
+      GridUserInterface user, TRequestToken token, List<TSURL> surls) {
 
     return getSurlStatuses(user, token);
   }
@@ -404,8 +421,8 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
   }
 
   @Override
-  public void store(TRequestToken requestToken, GridUserInterface user,
-      Map<TSURL, TReturnStatus> surlStatuses) {
+  public void store(
+      TRequestToken requestToken, GridUserInterface user, Map<TSURL, TReturnStatus> surlStatuses) {
 
     Entry e = Entry.from(requestToken, user, surlStatuses);
 
@@ -447,7 +464,6 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
     }
 
     return updateCount;
-
   }
 
   @Override
@@ -482,5 +498,4 @@ public enum SURLStatusStore implements SURLStatusStoreIF {
 
     return update(requestToken, Arrays.asList(surl), status);
   }
-
 }

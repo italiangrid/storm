@@ -1,28 +1,26 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.namespace;
 
-import it.grid.storm.srm.types.TSizeInBytes;
-import it.grid.storm.namespace.model.RetentionPolicy;
-import it.grid.storm.namespace.model.ExpirationMode;
 import it.grid.storm.namespace.model.AccessLatency;
+import it.grid.storm.namespace.model.ExpirationMode;
+import it.grid.storm.namespace.model.RetentionPolicy;
+import it.grid.storm.srm.types.TSizeInBytes;
 
 public interface PropertyInterface {
 
-	public TSizeInBytes getTotalOnlineSize();
+  public TSizeInBytes getTotalOnlineSize();
 
-	public TSizeInBytes getTotalNearlineSize();
+  public TSizeInBytes getTotalNearlineSize();
 
-	public RetentionPolicy getRetentionPolicy();
+  public RetentionPolicy getRetentionPolicy();
 
-	public ExpirationMode getExpirationMode();
+  public ExpirationMode getExpirationMode();
 
-	public AccessLatency getAccessLatency();
+  public AccessLatency getAccessLatency();
 
-	public boolean isOnlineSpaceLimited();
+  public boolean isOnlineSpaceLimited();
 
-	public boolean hasLimitedSize();
-
+  public boolean hasLimitedSize();
 }

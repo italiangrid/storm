@@ -1,96 +1,93 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.namespace.model;
 
 import it.grid.storm.namespace.NamespaceDirector;
-
 import org.slf4j.Logger;
 
 public class Quota {
 
-	private final Logger log = NamespaceDirector.getLogger();
+  private final Logger log = NamespaceDirector.getLogger();
 
-	private boolean defined = false;
-	private boolean enabled = false;
-	private String device = null;
-	private QuotaType quotaType = null;
+  private boolean defined = false;
+  private boolean enabled = false;
+  private String device = null;
+  private QuotaType quotaType = null;
 
-	public Quota() {
+  public Quota() {
 
-		super();
-	}
+    super();
+  }
 
-	public Quota(boolean enabled, String device, QuotaType quotaType) {
+  public Quota(boolean enabled, String device, QuotaType quotaType) {
 
-		defined = true;
-		this.enabled = enabled;
-		this.device = device;
-		this.quotaType = quotaType;
-	}
+    defined = true;
+    this.enabled = enabled;
+    this.device = device;
+    this.quotaType = quotaType;
+  }
 
-	/**
-	 * Read only attribute
-	 * 
-	 * @return boolean
-	 */
-	public boolean getDefined() {
+  /**
+   * Read only attribute
+   *
+   * @return boolean
+   */
+  public boolean getDefined() {
 
-		return defined;
-	}
+    return defined;
+  }
 
-	public boolean getEnabled() {
+  public boolean getEnabled() {
 
-		return enabled;
-	}
+    return enabled;
+  }
 
-	public void setEnabled(boolean enabled) {
+  public void setEnabled(boolean enabled) {
 
-		this.enabled = enabled;
-	}
+    this.enabled = enabled;
+  }
 
-	public String getDevice() {
+  public String getDevice() {
 
-		return device;
-	}
+    return device;
+  }
 
-	public void setDevice(String device) {
+  public void setDevice(String device) {
 
-		this.device = device;
-	}
+    this.device = device;
+  }
 
-	public QuotaType getQuotaType() {
+  public QuotaType getQuotaType() {
 
-		return quotaType;
-	}
+    return quotaType;
+  }
 
-	public void setQuotaType(QuotaType quotaType) {
+  public void setQuotaType(QuotaType quotaType) {
 
-		this.quotaType = quotaType;
-	}
+    this.quotaType = quotaType;
+  }
 
-	/**
-	 * Return the value of UserName or GroupName or FileSetName. The meaning of
-	 * the value depends on QuotaType.
-	 * 
-	 * @return the quotaElementName
-	 */
-	public String getQuotaElementName() {
+  /**
+   * Return the value of UserName or GroupName or FileSetName. The meaning of the value depends on
+   * QuotaType.
+   *
+   * @return the quotaElementName
+   */
+  public String getQuotaElementName() {
 
-		return quotaType.getValue();
-	}
+    return quotaType.getValue();
+  }
 
-	@Override
-	public String toString() {
+  @Override
+  public String toString() {
 
-		StringBuilder result = new StringBuilder();
-		result.append("Quota : [ Defined:'" + defined + "' ");
-		result.append("Enabled:'" + enabled + "' ");
-		result.append("device:'" + device + "', ");
-		result.append("quotaType:'" + quotaType + " ");
-		result.append("]");
-		return result.toString();
-	}
-
+    StringBuilder result = new StringBuilder();
+    result.append("Quota : [ Defined:'" + defined + "' ");
+    result.append("Enabled:'" + enabled + "' ");
+    result.append("device:'" + device + "', ");
+    result.append("quotaType:'" + quotaType + " ");
+    result.append("]");
+    return result.toString();
+  }
 }

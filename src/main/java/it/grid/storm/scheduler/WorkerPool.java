@@ -1,41 +1,29 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.scheduler;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * <p>
  * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2005-2007
- * </p>
- * 
- * <p>
- * Company: INFN-CNAF, Bologna, Italy
- * </p>
- * 
+ *
+ * <p>Description:
+ *
+ * <p>Copyright: Copyright (c) 2005-2007
+ *
+ * <p>Company: INFN-CNAF, Bologna, Italy
+ *
  * @author Zappi Riccardo <mailto://riccardo.zappi@cnaf.infn.it>
  * @version 1.2
  * @date
- * 
  */
-
 public class WorkerPool {
 
   public static final int DEFAULT_CORE_POOL_SIZE = 10;
@@ -47,7 +35,6 @@ public class WorkerPool {
   private ThreadPoolExecutor workers;
   private BlockingQueue<Runnable> taskQueue;
   private int queueSize = 100;
-
 
   private long keepAliveTime = 10000; // 10 seconds.
   private TimeUnit unit = TimeUnit.MILLISECONDS;
@@ -65,7 +52,6 @@ public class WorkerPool {
   }
 
   /**
-   * 
    * @param task Task
    * @throws SchedulerException
    */
@@ -87,7 +73,6 @@ public class WorkerPool {
   }
 
   /**
-   * 
    * @param task Task
    * @throws SchedulerException
    */
@@ -98,7 +83,7 @@ public class WorkerPool {
     log.debug("Aborting task {}", task.getName());
     if (workers.remove(task)) {
       // Remove task named "Future task" from internal Queue.
-      workers.purge(); 
+      workers.purge();
     }
   }
 

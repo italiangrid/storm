@@ -1,22 +1,19 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.metrics;
 
 import static com.codahale.metrics.MetricRegistry.name;
-
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
-import org.eclipse.jetty.io.Connection;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
 
 import com.codahale.metrics.Clock;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import org.eclipse.jetty.io.Connection;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
 
 public class NamedInstrumentedSelectChannelConnector extends SelectChannelConnector {
 

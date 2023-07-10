@@ -1,14 +1,13 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.authz.sa.model;
 
 public class SubjectType {
 
-  public final static SubjectType DN = new SubjectType("DN");
-  public final static SubjectType FQAN = new SubjectType("FQAN");
-  public final static SubjectType UNKNOWN = new SubjectType("UNKNOWN");
+  public static final SubjectType DN = new SubjectType("DN");
+  public static final SubjectType FQAN = new SubjectType("FQAN");
+  public static final SubjectType UNKNOWN = new SubjectType("UNKNOWN");
 
   private final String subjectType;
 

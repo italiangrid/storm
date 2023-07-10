@@ -1,25 +1,12 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.namespace.model;
 
 import static it.grid.storm.metrics.StormMetricRegistry.METRIC_REGISTRY;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Hashtable;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Lists;
-
 import it.grid.storm.balancer.BalancingStrategy;
-import it.grid.storm.balancer.Node;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.GUID;
 import it.grid.storm.common.types.PFN;
@@ -57,6 +44,14 @@ import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TSpaceType;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Hashtable;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class VirtualFS {
 
@@ -89,10 +84,10 @@ public class VirtualFS {
   // For debug purpose only
   public long creationTime = System.currentTimeMillis();
 
-  /*****************************************************************************
-   * BUILDING METHODs
-   ****************************************************************************/
-
+  /**
+   * *************************************************************************** BUILDING METHODs
+   * **************************************************************************
+   */
   public void setAliasName(String name) {
 
     this.aliasName = name;
@@ -110,9 +105,9 @@ public class VirtualFS {
     this.genericFS = makeFSInstance();
 
     fsWrapper = RandomWaitFilesystemAdapter.maybeWrapFilesystem(fsWrapper);
-    this.fsWrapper = new MetricsFilesystemAdapter(
-      new Filesystem(getFSDriverInstance()),
-      METRIC_REGISTRY.getRegistry());
+    this.fsWrapper =
+        new MetricsFilesystemAdapter(
+            new Filesystem(getFSDriverInstance()), METRIC_REGISTRY.getRegistry());
   }
 
   public void setSpaceTokenDescription(String spaceTokenDescription) {
@@ -135,8 +130,7 @@ public class VirtualFS {
     this.properties = prop;
   }
 
-  public void setSpaceSystemDriver(Class spaceDriver)
-    throws NamespaceException {
+  public void setSpaceSystemDriver(Class spaceDriver) throws NamespaceException {
 
     if (spaceDriver == null) {
       throw new NamespaceException("NULL space driver");
@@ -193,25 +187,22 @@ public class VirtualFS {
       rootPathUri = new URI(rootPath);
     } catch (URISyntaxException e) {
       throw new NamespaceException(
-        "Unable to set rootPath. Invalid string. URISyntaxException: "
-          + e.getMessage());
+          "Unable to set rootPath. Invalid string. URISyntaxException: " + e.getMessage());
     }
     return rootPathUri.normalize().toString();
   }
 
   private void buildStoRIRoot(String rootPath) throws NamespaceException {
 
-    /**
-     * @todo
-     */
+    /** @todo */
 
     // storiRoot = new StoRIImpl(this, rootPath, StoRIType.FOLDER);
   }
 
-  /*****************************************************************************
-   * READ METHODs
-   ****************************************************************************/
-
+  /**
+   * *************************************************************************** READ METHODs
+   * **************************************************************************
+   */
   public String getFSType() {
 
     return this.type;
@@ -236,11 +227,10 @@ public class VirtualFS {
 
     TSizeInBytes result = TSizeInBytes.makeEmpty();
     /**
-     * @todo : This method must contact Space Manager (or who for him) to
-     * retrieve the real situation
-     * 
-     * @todo : Contact Space Catalog to retrieve the logical space occupied.
-     * This space must to be equal to space occupied in underlying FS.
+     * @todo : This method must contact Space Manager (or who for him) to retrieve the real
+     *     situation
+     * @todo : Contact Space Catalog to retrieve the logical space occupied. This space must to be
+     *     equal to space occupied in underlying FS.
      */
     return result;
   }
@@ -249,14 +239,12 @@ public class VirtualFS {
 
     TSizeInBytes result = TSizeInBytes.makeEmpty();
     /**
-     * @todo : This method must contact Space Manager (or who for him) to
-     * retrieve the real situation
-     * 
-     * @todo : Contact Space Catalog to retrieve the logical space occupied.
-     * This space must to be equal to space occupied in underlying FS.
+     * @todo : This method must contact Space Manager (or who for him) to retrieve the real
+     *     situation
+     * @todo : Contact Space Catalog to retrieve the logical space occupied. This space must to be
+     *     equal to space occupied in underlying FS.
      */
     return result;
-
   }
 
   public TSizeInBytes getUsedNearlineSpace() throws NamespaceException {
@@ -302,51 +290,46 @@ public class VirtualFS {
 
     if (this.mappingRules.isEmpty()) {
       throw new NamespaceException(
-        "No one MAPPING RULES bound with this VFS (" + aliasName + "). ");
+          "No one MAPPING RULES bound with this VFS (" + aliasName + "). ");
     }
     return this.mappingRules;
   }
 
-  public List<ApproachableRule> getApproachableRules()
-    throws NamespaceException {
+  public List<ApproachableRule> getApproachableRules() throws NamespaceException {
 
     if (this.approachableRules.isEmpty()) {
       throw new NamespaceException(
-        "No one APPROACHABLE RULES bound with this VFS (" + aliasName + "). ");
+          "No one APPROACHABLE RULES bound with this VFS (" + aliasName + "). ");
     }
     return this.approachableRules;
   }
 
   /**
    * makeFSInstance
-   * 
+   *
    * @return genericfs
    */
   private genericfs makeFSInstance() throws NamespaceException {
 
     genericfs fs = null;
     if (fsDriver == null) {
-      throw new NamespaceException(
-        "Cannot build FS Driver istance without a valid Driver Class!");
+      throw new NamespaceException("Cannot build FS Driver istance without a valid Driver Class!");
     }
 
     Class fsArgumentsClass[] = new Class[1];
     fsArgumentsClass[0] = String.class;
-    Object[] fsArguments = new Object[] { this.rootPath };
+    Object[] fsArguments = new Object[] {this.rootPath};
     Constructor fsConstructor = null;
     try {
       fsConstructor = fsDriver.getConstructor(fsArgumentsClass);
     } catch (SecurityException ex) {
-      log.error(
-        "Unable to retrieve the FS Driver Constructor. Security problem.", ex);
+      log.error("Unable to retrieve the FS Driver Constructor. Security problem.", ex);
       throw new NamespaceException(
-        "Unable to retrieve the FS Driver Constructor. Security problem.", ex);
+          "Unable to retrieve the FS Driver Constructor. Security problem.", ex);
     } catch (NoSuchMethodException ex) {
-      log.error(
-        "Unable to retrieve the FS Driver Constructor. Security problem.", ex);
+      log.error("Unable to retrieve the FS Driver Constructor. Security problem.", ex);
       throw new NamespaceException(
-        "Unable to retrieve the FS Driver Constructor. No such constructor.",
-        ex);
+          "Unable to retrieve the FS Driver Constructor. No such constructor.", ex);
     }
     try {
       fs = (genericfs) fsConstructor.newInstance(fsArguments);
@@ -357,21 +340,17 @@ public class VirtualFS {
       log.debug("VFS Ex Stack: ");
       ex1.printStackTrace();
 
-      throw new NamespaceException("Unable to instantiate the FS Driver. ",
-        ex1);
+      throw new NamespaceException("Unable to instantiate the FS Driver. ", ex1);
     } catch (IllegalArgumentException ex1) {
-      log.error("Unable to instantiate the FS Driver. Using wrong argument.",
-        ex1);
+      log.error("Unable to instantiate the FS Driver. Using wrong argument.", ex1);
       throw new NamespaceException(
-        "Unable to instantiate the FS Driver. Using wrong argument.", ex1);
+          "Unable to instantiate the FS Driver. Using wrong argument.", ex1);
     } catch (IllegalAccessException ex1) {
       log.error("Unable to instantiate the FS Driver. Illegal Access.", ex1);
-      throw new NamespaceException(
-        "Unable to instantiate the FS Driver. Illegal Access.", ex1);
+      throw new NamespaceException("Unable to instantiate the FS Driver. Illegal Access.", ex1);
     } catch (InstantiationException ex1) {
       log.error("Unable to instantiate the FS Driver. Generic problem..", ex1);
-      throw new NamespaceException(
-        "Unable to instantiate the FS Driver. Generic problem..", ex1);
+      throw new NamespaceException("Unable to instantiate the FS Driver. Generic problem..", ex1);
     }
 
     return fs;
@@ -384,10 +363,8 @@ public class VirtualFS {
       FilesystemIF fs = new Filesystem(getFSDriverInstance());
 
       fs = RandomWaitFilesystemAdapter.maybeWrapFilesystem(fs);
-      
-      fsWrapper = new MetricsFilesystemAdapter(fs,
-        METRIC_REGISTRY.getRegistry());
 
+      fsWrapper = new MetricsFilesystemAdapter(fs, METRIC_REGISTRY.getRegistry());
     }
     return this.fsWrapper;
   }
@@ -407,7 +384,7 @@ public class VirtualFS {
 
   /**
    * makeSpaceSystemInstance
-   * 
+   *
    * @return SpaceSystem
    */
   private SpaceSystem makeSpaceSystemInstance() throws NamespaceException {
@@ -416,72 +393,52 @@ public class VirtualFS {
 
     if (spaceSystemDriver == null) {
       throw new NamespaceException(
-        "Cannot build Space Driver istance without a valid Driver Class!");
+          "Cannot build Space Driver istance without a valid Driver Class!");
     }
 
     // Check if SpaceSystem is GPFSSpaceSystem used for GPFS FS
     // Check if SpaceSystem is MockSpaceSystem used for Posix FS
-    if ((this.spaceSystemDriver.getName()
-      .equals(GPFSSpaceSystem.class.getName()))
-      || (this.spaceSystemDriver.getName()
-        .equals(MockSpaceSystem.class.getName()))) {
+    if ((this.spaceSystemDriver.getName().equals(GPFSSpaceSystem.class.getName()))
+        || (this.spaceSystemDriver.getName().equals(MockSpaceSystem.class.getName()))) {
 
       // The class type argument is the mount point of GPFS file system
       Class ssArgumentsClass[] = new Class[1];
       ssArgumentsClass[0] = String.class;
-      Object[] ssArguments = new Object[] { this.rootPath };
+      Object[] ssArguments = new Object[] {this.rootPath};
 
       Constructor ssConstructor = null;
       try {
         ssConstructor = spaceSystemDriver.getConstructor(ssArgumentsClass);
       } catch (SecurityException ex) {
-        log.error(
-          "Unable to retrieve the FS Driver Constructor. Security problem.",
-          ex);
+        log.error("Unable to retrieve the FS Driver Constructor. Security problem.", ex);
         throw new NamespaceException(
-          "Unable to retrieve the FS Driver Constructor. Security problem.",
-          ex);
+            "Unable to retrieve the FS Driver Constructor. Security problem.", ex);
       } catch (NoSuchMethodException ex) {
-        log.error(
-          "Unable to retrieve the FS Driver Constructor. Security problem.",
-          ex);
+        log.error("Unable to retrieve the FS Driver Constructor. Security problem.", ex);
         throw new NamespaceException(
-          "Unable to retrieve the FS Driver Constructor. No such constructor.",
-          ex);
+            "Unable to retrieve the FS Driver Constructor. No such constructor.", ex);
       }
 
       try {
         ss = (SpaceSystem) ssConstructor.newInstance(ssArguments);
       } catch (InvocationTargetException ex1) {
-        log.error("Unable to instantiate the SpaceSystem Driver. Wrong target.",
-          ex1);
-        throw new NamespaceException("Unable to instantiate the FS Driver. ",
-          ex1);
+        log.error("Unable to instantiate the SpaceSystem Driver. Wrong target.", ex1);
+        throw new NamespaceException("Unable to instantiate the FS Driver. ", ex1);
       } catch (IllegalArgumentException ex1) {
-        log.error(
-          "Unable to instantiate the SpaceSystem Driver. Using wrong argument.",
-          ex1);
+        log.error("Unable to instantiate the SpaceSystem Driver. Using wrong argument.", ex1);
         throw new NamespaceException(
-          "Unable to instantiate the FS Driver. Using wrong argument.", ex1);
+            "Unable to instantiate the FS Driver. Using wrong argument.", ex1);
       } catch (IllegalAccessException ex1) {
-        log.error(
-          "Unable to instantiate the SpaceSystem Driver. Illegal Access.", ex1);
-        throw new NamespaceException(
-          "Unable to instantiate the FS Driver. Illegal Access.", ex1);
+        log.error("Unable to instantiate the SpaceSystem Driver. Illegal Access.", ex1);
+        throw new NamespaceException("Unable to instantiate the FS Driver. Illegal Access.", ex1);
       } catch (InstantiationException ex1) {
-        log.error(
-          "Unable to instantiate the SpaceSystem Driver. Generic problem..",
-          ex1);
-        throw new NamespaceException(
-          "Unable to instantiate the FS Driver. Generic problem..", ex1);
+        log.error("Unable to instantiate the SpaceSystem Driver. Generic problem..", ex1);
+        throw new NamespaceException("Unable to instantiate the FS Driver. Generic problem..", ex1);
       }
 
     } else {
       log.error("None Space System Driver built");
-      /**
-       * @todo : Perhaps a "genericSpaceSystem" could be more disederable rather
-       * than NULL
-       */
+      /** @todo : Perhaps a "genericSpaceSystem" could be more disederable rather than NULL */
       ss = null;
     }
 
@@ -508,10 +465,10 @@ public class VirtualFS {
     return storiRoot;
   }
 
-  /*****************************************************************************
-   * BUSINESS METHODs
-   ****************************************************************************/
-
+  /**
+   * *************************************************************************** BUSINESS METHODs
+   * **************************************************************************
+   */
   public boolean isApproachableByUser(GridUserInterface user) {
 
     for (ApproachableRule approachableRule : this.approachableRules) {
@@ -534,9 +491,7 @@ public class VirtualFS {
 
   public StoRI createFile(String relativePath) throws NamespaceException {
 
-    /**
-     * @todo Check if relativePath is a valid path for a file.
-     */
+    /** @todo Check if relativePath is a valid path for a file. */
     StoRIType type = StoRIType.UNKNOWN;
     // log.debug("CREATING STORI BY RELATIVE PATH : "+relativePath);
     StoRI stori = new StoRIImpl(this, mappingRules.get(0), relativePath, type);
@@ -545,36 +500,32 @@ public class VirtualFS {
 
   public StoRI createFile(String relativePath, StoRIType type) {
 
-    /**
-     * @todo Check if relativePath is a valid path for a file.
-     */
+    /** @todo Check if relativePath is a valid path for a file. */
     log.debug("VFS Class - Relative Path : " + relativePath);
     StoRI stori = new StoRIImpl(this, mappingRules.get(0), relativePath, type);
     return stori;
   }
 
-	public StoRI createFile(String relativePath, StoRIType type, MappingRule rule)
-			throws NamespaceException {
+  public StoRI createFile(String relativePath, StoRIType type, MappingRule rule)
+      throws NamespaceException {
 
-		return new StoRIImpl(this, rule, relativePath, type);
-	}
-
-  /****************************************************************
-   * Methods used by StoRI to perform IMPLICIT SPACE RESERVATION
-   *****************************************************************/
+    return new StoRIImpl(this, rule, relativePath, type);
+  }
 
   /**
-   * Workaround to manage the DEFAULT SPACE TOKEN defined per Storage Area. This
-   * workaround simply give the possibility to define a list of DEFAULT SPACE
-   * TOKENs by the StoRM configuration file. If the token specified into the
-   * PrepareToPut request belongs to the list of default space token, the space
-   * file is not used (since it does not exists into the space catalog) and a
-   * simple allocation of blocks is performed for the file
-   * 
-   * Return true if the space token specified is a DEAFULT SPACE TOKENS.
-   * 
+   * ************************************************************** Methods used by StoRI to perform
+   * IMPLICIT SPACE RESERVATION ***************************************************************
    */
 
+  /**
+   * Workaround to manage the DEFAULT SPACE TOKEN defined per Storage Area. This workaround simply
+   * give the possibility to define a list of DEFAULT SPACE TOKENs by the StoRM configuration file.
+   * If the token specified into the PrepareToPut request belongs to the list of default space
+   * token, the space file is not used (since it does not exists into the space catalog) and a
+   * simple allocation of blocks is performed for the file
+   *
+   * <p>Return true if the space token specified is a DEAFULT SPACE TOKENS.
+   */
   private Boolean isVOSAToken(TSpaceToken token) throws NamespaceException {
 
     ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
@@ -584,18 +535,16 @@ public class VirtualFS {
       ssd = catalog.getStorageSpace(token);
     } catch (TransferObjectDecodingException e) {
       log.error(
-        "Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
-          + e.getMessage());
+          "Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
+              + e.getMessage());
       throw new NamespaceException(
-        "Error retrieving Storage Area space information. TransferObjectDecodingException : "
-          + e.getMessage());
+          "Error retrieving Storage Area space information. TransferObjectDecodingException : "
+              + e.getMessage());
     } catch (DataAccessException e) {
-      log
-        .error("Unable to get StorageSpaceTO from the DB. DataAccessException: "
-          + e.getMessage());
+      log.error("Unable to get StorageSpaceTO from the DB. DataAccessException: " + e.getMessage());
       throw new NamespaceException(
-        "Error retrieving Storage Area space information. DataAccessException : "
-          + e.getMessage());
+          "Error retrieving Storage Area space information. DataAccessException : "
+              + e.getMessage());
     }
 
     if ((ssd != null) && (ssd.getSpaceType().equals(TSpaceType.VOSPACE))) {
@@ -606,15 +555,13 @@ public class VirtualFS {
   }
 
   public void makeSilhouetteForFile(StoRI stori, TSizeInBytes presumedSize)
-    throws NamespaceException {
+      throws NamespaceException {
 
     // Check if StoRI is a file
     if (!(stori.getStoRIType().equals(StoRIType.FILE))) {
-      log.error("Unable to associate a Space to the StoRI with type: "
-        + stori.getStoRIType());
+      log.error("Unable to associate a Space to the StoRI with type: " + stori.getStoRIType());
       throw new NamespaceException(
-        "Unable to associate a Space to the StoRI with type: "
-          + stori.getStoRIType());
+          "Unable to associate a Space to the StoRI with type: " + stori.getStoRIType());
     }
 
     // Retrieve the instance of the right Space System
@@ -625,7 +572,6 @@ public class VirtualFS {
 
     Space space = createSpace(presumedSize, presumedSize, localFile, spaceSystem);
     stori.setSpace(space);
-
   }
 
   /*
@@ -635,17 +581,14 @@ public class VirtualFS {
    * update will be overwritten from the other thread!
    */
 
-  public synchronized void useSpaceForFile(TSpaceToken token, StoRI file,
-    TSizeInBytes sizePresumed)
+  public synchronized void useSpaceForFile(TSpaceToken token, StoRI file, TSizeInBytes sizePresumed)
       throws NamespaceException, ExpiredSpaceTokenException {
 
     // Check if StoRI is a file
     if (!(file.getStoRIType().equals(StoRIType.FILE))) {
-      log.error("Unable to associate a Space to the StoRI with type: "
-        + file.getStoRIType());
+      log.error("Unable to associate a Space to the StoRI with type: " + file.getStoRIType());
       throw new NamespaceException(
-        "Unable to associate a Space to the StoRI with type: "
-          + file.getStoRIType());
+          "Unable to associate a Space to the StoRI with type: " + file.getStoRIType());
     }
 
     if (isVOSAToken(token)) {
@@ -658,8 +601,8 @@ public class VirtualFS {
     }
 
     /**
-     * Token for Dynamic space reservation specified. Go ahead in the old way,
-     * look into the space reservation catalog, ...
+     * Token for Dynamic space reservation specified. Go ahead in the old way, look into the space
+     * reservation catalog, ...
      */
 
     // Use of Reserve Space Manager
@@ -668,22 +611,20 @@ public class VirtualFS {
       spaceData = new ReservedSpaceCatalog().getStorageSpace(token);
     } catch (TransferObjectDecodingException e) {
       log.error(
-        "Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
-          + e.getMessage());
+          "Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
+              + e.getMessage());
       throw new NamespaceException(
-        "Error retrieving Storage Area information from Token. TransferObjectDecodingException : "
-          + e.getMessage());
+          "Error retrieving Storage Area information from Token. TransferObjectDecodingException : "
+              + e.getMessage());
     } catch (DataAccessException e) {
-      log.error("Unable to build get StorageSpaceTO. DataAccessException: "
-        + e.getMessage());
+      log.error("Unable to build get StorageSpaceTO. DataAccessException: " + e.getMessage());
       throw new NamespaceException(
-        "Error retrieving Storage Area information from Token. DataAccessException : "
-          + e.getMessage());
+          "Error retrieving Storage Area information from Token. DataAccessException : "
+              + e.getMessage());
     }
 
     if (spaceData == null) {
-      throw new NamespaceException(
-        "No Storage Space stored with this token :" + token);
+      throw new NamespaceException("No Storage Space stored with this token :" + token);
     }
 
     // Check here if Space Reservation is expired
@@ -702,9 +643,7 @@ public class VirtualFS {
     log.debug("Available Space : " + availableSpaceSize);
 
     // The unusedSpaceSize should have the same size of Space File
-    /**
-     * @todo : compare Real size and Available Space size.
-     */
+    /** @todo : compare Real size and Available Space size. */
 
     // Verify that Size retrieved from DB are not null.
     if (availableSpaceSize == null) {
@@ -739,26 +678,22 @@ public class VirtualFS {
       // Create Space StoRI
       StoRI spaceFile = retrieveSpaceFileByPFN(pfn, totalSize);
 
-      if ((!(spaceFile.getLocalFile().exists()))
-        || (spaceFile.getLocalFile().isDirectory())) {
+      if ((!(spaceFile.getLocalFile().exists())) || (spaceFile.getLocalFile().isDirectory())) {
         log.error(
-          "Unable to get  the correct space file!spaceFile does not exsists or it is a directory.");
+            "Unable to get  the correct space file!spaceFile does not exsists or it is a directory.");
         return;
       }
 
       /**
-       * Splitting the Space File. In this first version the original space file
-       * is truncated at the original size minus the new ptp file size presumed,
-       * and a new space pre_allocation, bound with the new ptp file, is done.
-       * 
-       * @todo In the final version, if the new size requested is greater then
-       * the half of the original space file, the original spacefile is renamed
-       * to the desired ptp file name and then truncated to the requested size.
-       * A new space pre_allocation is perfored and bound with the old original
-       * space file name.
-       * 
+       * Splitting the Space File. In this first version the original space file is truncated at the
+       * original size minus the new ptp file size presumed, and a new space pre_allocation, bound
+       * with the new ptp file, is done.
+       *
+       * @todo In the final version, if the new size requested is greater then the half of the
+       *     original space file, the original spacefile is renamed to the desired ptp file name and
+       *     then truncated to the requested size. A new space pre_allocation is perfored and bound
+       *     with the old original space file name.
        */
-
       spaceFile.setStoRIType(StoRIType.SPACE_BOUND);
       file.setSpace(spaceFile.getSpace());
 
@@ -766,10 +701,9 @@ public class VirtualFS {
       TSizeInBytes newUsedSpaceSize = TSizeInBytes.makeEmpty();
       TSizeInBytes newAvailableSpaceSize = TSizeInBytes.makeEmpty();
       try {
-        newUsedSpaceSize = TSizeInBytes
-          .make(totalSpaceSize.value() - remainingSize, SizeUnit.BYTES);
-        newAvailableSpaceSize = TSizeInBytes.make(remainingSize,
-          SizeUnit.BYTES);
+        newUsedSpaceSize =
+            TSizeInBytes.make(totalSpaceSize.value() - remainingSize, SizeUnit.BYTES);
+        newAvailableSpaceSize = TSizeInBytes.make(remainingSize, SizeUnit.BYTES);
       } catch (InvalidTSizeAttributesException ex) {
         log.error("Unable to create Used Space Size, so use EMPTY size ", ex);
       }
@@ -780,14 +714,11 @@ public class VirtualFS {
       spaceData.setUsedSpaceSize(newAvailableSpaceSize);
       // Update the catalogs
       storeSpaceByToken(spaceData);
-    }
-
-    else { // Case presumedSize is empty
+    } else { // Case presumedSize is empty
 
       log.warn(" --- Here there is a call with a empty presumed size!--- ");
       useAllSpaceForFile(token, file);
     }
-
   }
 
   /*
@@ -800,22 +731,20 @@ public class VirtualFS {
    * the half size of the available spaceFile. TODO
    */
   public synchronized void useAllSpaceForFile(TSpaceToken token, StoRI file)
-    throws NamespaceException, ExpiredSpaceTokenException {
+      throws NamespaceException, ExpiredSpaceTokenException {
 
     // Check if StoRI is a file
     if (!(file.getStoRIType().equals(StoRIType.FILE))) {
-      log.error("Unable to associate a Space to the StoRI with type: "
-        + file.getStoRIType());
+      log.error("Unable to associate a Space to the StoRI with type: " + file.getStoRIType());
       throw new NamespaceException(
-        "Unable to associate a Space to the StoRI with type: "
-          + file.getStoRIType());
+          "Unable to associate a Space to the StoRI with type: " + file.getStoRIType());
     }
 
     // Get the default space size
     TSizeInBytes defaultFileSize = null;
     try {
-      defaultFileSize = TSizeInBytes
-        .make(Configuration.getInstance().getFileDefaultSize(), SizeUnit.BYTES);
+      defaultFileSize =
+          TSizeInBytes.make(Configuration.getInstance().getFileDefaultSize(), SizeUnit.BYTES);
     } catch (it.grid.storm.srm.types.InvalidTSizeAttributesException e) {
       log.debug("Invalid size created.");
     }
@@ -826,22 +755,20 @@ public class VirtualFS {
       spaceData = new ReservedSpaceCatalog().getStorageSpace(token);
     } catch (TransferObjectDecodingException e) {
       log.error(
-        "Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
-          + e.getMessage());
+          "Unable to build StorageSpaceData from StorageSpaceTO. TransferObjectDecodingException: "
+              + e.getMessage());
       throw new NamespaceException(
-        "Error retrieving Storage Area information from Token. TransferObjectDecodingException : "
-          + e.getMessage());
+          "Error retrieving Storage Area information from Token. TransferObjectDecodingException : "
+              + e.getMessage());
     } catch (DataAccessException e) {
-      log.error("Unable to build get StorageSpaceTO. DataAccessException: "
-        + e.getMessage());
+      log.error("Unable to build get StorageSpaceTO. DataAccessException: " + e.getMessage());
       throw new NamespaceException(
-        "Error retrieving Storage Area information from Token. DataAccessException : "
-          + e.getMessage());
+          "Error retrieving Storage Area information from Token. DataAccessException : "
+              + e.getMessage());
     }
 
     if (spaceData == null) {
-      throw new NamespaceException(
-        "No Storage Space stored with this token :" + token);
+      throw new NamespaceException("No Storage Space stored with this token :" + token);
     }
 
     // Check here if Space Reservation is expired
@@ -849,23 +776,18 @@ public class VirtualFS {
       throw new ExpiredSpaceTokenException("Space Token Expired :" + token);
     }
 
-    /**
-     * First of all, Check if it's default or not
-     */
+    /** First of all, Check if it's default or not */
 
     // if(spaceData.getSpaceType()== StorageSpaceData.DEFAULT) {
     if (isVOSAToken(token)) {
       // ADD HERE THE LOGIC TO MANAGE DEFAULT SPACE RESERVATION
       /**
-       * Check if a DEFAULT SPACE TOKEN is specified. IN that case do nothing
-       * and create a simple silhouette for the file...
-       * 
-       * 
-       * TOREMOVE. The space data will contains this information!!! i METADATA
-       * non venfgono agrgiornati, sara fatta una funzionalita' nella
-       * getspacemetadatacatalog che in caso di query sul defaulr space token
-       * vada a vedre la quota sul file system.
-       * 
+       * Check if a DEFAULT SPACE TOKEN is specified. IN that case do nothing and create a simple
+       * silhouette for the file...
+       *
+       * <p>TOREMOVE. The space data will contains this information!!! i METADATA non venfgono
+       * agrgiornati, sara fatta una funzionalita' nella getspacemetadatacatalog che in caso di
+       * query sul defaulr space token vada a vedre la quota sul file system.
        */
       // WARNING, This double check have to be removed, the firs should be fdone
       // on teh space type
@@ -882,8 +804,8 @@ public class VirtualFS {
 
     } else {
       /**
-       * Token for Dynamic space reservation specified. Go ahead in the old way,
-       * look into the space reservation catalog, ...
+       * Token for Dynamic space reservation specified. Go ahead in the old way, look into the space
+       * reservation catalog, ...
        */
 
       // Check here if Space Reservation is expired
@@ -909,8 +831,7 @@ public class VirtualFS {
       } else {
         TSizeInBytes fileSizeToUse = null;
         try {
-          fileSizeToUse = TSizeInBytes.make(availableSpaceSize.value() / 2,
-            SizeUnit.BYTES);
+          fileSizeToUse = TSizeInBytes.make(availableSpaceSize.value() / 2, SizeUnit.BYTES);
         } catch (it.grid.storm.srm.types.InvalidTSizeAttributesException e) {
           log.debug("Invalid size created.");
         }
@@ -918,15 +839,14 @@ public class VirtualFS {
         useSpaceForFile(token, file, fileSizeToUse);
       }
     }
-
   }
 
-  /****************************************************************
-   * Methods used by StoRI to perform EXPLICIT SPACE RESERVATION
-   *****************************************************************/
-
-  public StoRI createSpace(String relativePath, long guaranteedSize,
-    long totalSize) throws NamespaceException {
+  /**
+   * ************************************************************** Methods used by StoRI to perform
+   * EXPLICIT SPACE RESERVATION ***************************************************************
+   */
+  public StoRI createSpace(String relativePath, long guaranteedSize, long totalSize)
+      throws NamespaceException {
 
     StoRIType type = StoRIType.SPACE;
     /*
@@ -948,46 +868,38 @@ public class VirtualFS {
     TSizeInBytes totSize = TSizeInBytes.makeEmpty();
     try {
       totSize = TSizeInBytes.make(totalSize, SizeUnit.BYTES);
-    }
-
-    catch (InvalidTSizeAttributesException ex2) {
+    } catch (InvalidTSizeAttributesException ex2) {
       log.error("Unable to create Total Size, so use EMPTY size", ex2);
     }
 
-    Space space = createSpace(guarSize, totSize, stori.getLocalFile(),
-      spaceSystem);
+    Space space = createSpace(guarSize, totSize, stori.getLocalFile(), spaceSystem);
 
     stori.setSpace(space);
     return stori;
   }
 
-  public StoRI createSpace(String relativePath, long totalsize)
-    throws NamespaceException {
+  public StoRI createSpace(String relativePath, long totalsize) throws NamespaceException {
 
     StoRI stori = createSpace(relativePath, totalsize, totalsize);
     return stori;
   }
 
   /**
-   * This method is used to split the specified spaceFile to the desired PtP
-   * file. The operations performed depends on the input parameters. If the
-   * desired new size is minor then the half of the total reserved space size,
-   * the original space file is truncated to new size : (original size - new PtP
-   * file presumed size), then a new space_preallocation, of the new PtP file
+   * This method is used to split the specified spaceFile to the desired PtP file. The operations
+   * performed depends on the input parameters. If the desired new size is minor then the half of
+   * the total reserved space size, the original space file is truncated to new size : (original
+   * size - new PtP file presumed size), then a new space_preallocation, of the new PtP file
    * presumed size, is bound to the requested file.
-   * 
-   * If the presumed size is greater then the half fo the global space
-   * available, the original space file is renamed to the new PtP file and
-   * truncated to the presumed size. A new space_preallocation is done to
-   * recreate the remaining original space file
-   * 
-   * @param spaceOrig StoRI bounds to the original space file. @param file StoRI
-   * bounds to the desired new PtP file. @param long new PtP file size
-   * presumed. @returns new Size
+   *
+   * <p>If the presumed size is greater then the half fo the global space available, the original
+   * space file is renamed to the new PtP file and truncated to the presumed size. A new
+   * space_preallocation is done to recreate the remaining original space file
+   *
+   * @param spaceOrig StoRI bounds to the original space file. @param file StoRI bounds to the
+   *     desired new PtP file. @param long new PtP file size presumed. @returns new Size
    */
-
   public TSizeInBytes splitSpace(StoRI spaceOrig, StoRI file, long sizePresumed)
-    throws NamespaceException {
+      throws NamespaceException {
 
     // Update Storage Space to new values of size
     TSizeInBytes newSize = TSizeInBytes.makeEmpty();
@@ -995,14 +907,11 @@ public class VirtualFS {
     // Save the name of the current Space File
     String spacePFN = spaceOrig.getAbsolutePath();
     log.debug("VFS Split: spaceFileName:" + spacePFN);
-    String relativeSpacePFN = NamespaceUtil
-      .extractRelativePath(this.getRootPath(), spacePFN);
+    String relativeSpacePFN = NamespaceUtil.extractRelativePath(this.getRootPath(), spacePFN);
     /**
      * extractRelativePath seems not working in this case! WHY?
-     * 
-     * @todo Because the mapping rule choosen is always the same, for all
-     * StFNRoot...BUG to FIX..
-     * 
+     *
+     * @todo Because the mapping rule choosen is always the same, for all StFNRoot...BUG to FIX..
      */
     log.debug("Looking for root:" + this.getRootPath());
     int index = spacePFN.indexOf(this.getRootPath());
@@ -1017,12 +926,13 @@ public class VirtualFS {
     log.debug("VFS Split: relativeSpacePFN:" + relativeSpacePFN);
 
     if (failure) {
-      log.warn(
-        "SpacePFN does not refer to this VFS root! Something goes wrong in app-rule?");
+      log.warn("SpacePFN does not refer to this VFS root! Something goes wrong in app-rule?");
       try {
         newSize = TSizeInBytes.make(sizePresumed, SizeUnit.BYTES);
-        file = createSpace(NamespaceUtil.extractRelativePath(this.getRootPath(),
-          file.getAbsolutePath()), sizePresumed);
+        file =
+            createSpace(
+                NamespaceUtil.extractRelativePath(this.getRootPath(), file.getAbsolutePath()),
+                sizePresumed);
         file.getSpace().allot();
       } catch (InvalidTSizeAttributesException ex) {
         log.error("Unable to create UNUsed Space Size, so use EMPTY size ", ex);
@@ -1036,34 +946,34 @@ public class VirtualFS {
       long realSize = spaceOrig.getLocalFile().getSize();
 
       /**
-       * The next steps depends on the input parameters. Case (1) : new PtP file
-       * size minor than the half of the available space file. In this case the
-       * spaceFile is truncated, and a new file is created with the desired
-       * amount of preallocated blocks. Case(2) : new PtP file size greater than
-       * the half of the available space file. The spaceFile is renamed to the
-       * new PtP file, truncated to the presumed size and a new preallocation is
-       * done bound to the original space file name.
-       * 
+       * The next steps depends on the input parameters. Case (1) : new PtP file size minor than the
+       * half of the available space file. In this case the spaceFile is truncated, and a new file
+       * is created with the desired amount of preallocated blocks. Case(2) : new PtP file size
+       * greater than the half of the available space file. The spaceFile is renamed to the new PtP
+       * file, truncated to the presumed size and a new preallocation is done bound to the original
+       * space file name.
        */
-
       if (sizePresumed <= (realSize / 2)) {
         log.debug("SplitSpace Case (1)");
 
         // Truncate
-        log.debug("SplitSpace: " + spaceOrig.getAbsolutePath()
-          + " truncating file to size:" + (realSize - sizePresumed));
-        spaceOrig.getSpace().getSpaceFile()
-          .truncateFile((realSize - sizePresumed));
+        log.debug(
+            "SplitSpace: "
+                + spaceOrig.getAbsolutePath()
+                + " truncating file to size:"
+                + (realSize - sizePresumed));
+        spaceOrig.getSpace().getSpaceFile().truncateFile((realSize - sizePresumed));
 
         // Allocate space for file
         try {
           newSize = TSizeInBytes.make(sizePresumed, SizeUnit.BYTES);
-          file = createSpace(NamespaceUtil.extractRelativePath(
-            this.getRootPath(), file.getAbsolutePath()), sizePresumed);
+          file =
+              createSpace(
+                  NamespaceUtil.extractRelativePath(this.getRootPath(), file.getAbsolutePath()),
+                  sizePresumed);
           file.getSpace().allot();
         } catch (InvalidTSizeAttributesException ex) {
-          log.error("Unable to create UNUsed Space Size, so use EMPTY size ",
-            ex);
+          log.error("Unable to create UNUsed Space Size, so use EMPTY size ", ex);
         } catch (it.grid.storm.filesystem.ReservationException e2) {
           log.error("Unable to create space into File System");
         }
@@ -1087,31 +997,27 @@ public class VirtualFS {
           newSize = TSizeInBytes.make(remainingSize, SizeUnit.BYTES);
           // Create a new Space file with the old name and with the size
           // computed.
-          spaceOrig = createSpace(
-            NamespaceUtil.extractRelativePath(this.getRootPath(), spacePFN),
-            newSize.value());
+          spaceOrig =
+              createSpace(
+                  NamespaceUtil.extractRelativePath(this.getRootPath(), spacePFN), newSize.value());
           // Create the new SpaceFile into the file system
           spaceOrig.getSpace().allot();
         } catch (InvalidTSizeAttributesException ex) {
-          log.error("Unable to create UNUsed Space Size, so use EMPTY size ",
-            ex);
+          log.error("Unable to create UNUsed Space Size, so use EMPTY size ", ex);
         } catch (it.grid.storm.filesystem.ReservationException e2) {
           log.error("Unable to create space into File System");
         }
-
       }
-
     } // failure else
 
     return newSize;
   }
 
-  /**************************************************
-   * Methods used by Space Reservation Manager
-   *************************************************/
-
-  public StoRI createSpace(long guarSize, long totalSize)
-    throws NamespaceException {
+  /**
+   * ************************************************ Methods used by Space Reservation Manager
+   * ***********************************************
+   */
+  public StoRI createSpace(long guarSize, long totalSize) throws NamespaceException {
 
     // retrieve SPACE FILE NAME
     String relativePath = makeSpaceFilePath();
@@ -1127,7 +1033,6 @@ public class VirtualFS {
     TSizeInBytes guarSize = defValue.getDefaultGuaranteedSpaceSize();
     StoRI stori = createSpace(relativePath, guarSize.value(), totalSize);
     return stori;
-
   }
 
   public StoRI createSpace() throws NamespaceException {
@@ -1141,16 +1046,13 @@ public class VirtualFS {
     TSizeInBytes guarSize = defValue.getDefaultGuaranteedSpaceSize();
     // retrieve DEFAULT TOTAL size
     TSizeInBytes totalSize = defValue.getDefaultTotalSpaceSize();
-    StoRI stori = createSpace(relativePath, guarSize.value(),
-      totalSize.value());
+    StoRI stori = createSpace(relativePath, guarSize.value(), totalSize.value());
     return stori;
   }
 
   public StoRI createDefaultStoRI() throws NamespaceException {
 
-    /**
-     * @todo: When is used this method?
-     */
+    /** @todo: When is used this method? */
     return null;
   }
 
@@ -1163,8 +1065,7 @@ public class VirtualFS {
     sb.append(" VFS Name         : '" + this.aliasName + "'" + sep);
     sb.append(" VFS root         : '" + this.rootPath + "'" + sep);
     sb.append(" VFS FS driver    : '" + this.fsDriver.getName() + "'" + sep);
-    sb.append(
-      " VFS Space driver : '" + this.spaceSystemDriver.getName() + "'" + sep);
+    sb.append(" VFS Space driver : '" + this.spaceSystemDriver.getName() + "'" + sep);
     sb.append(" -- DEFAULT VALUES --" + sep);
     sb.append(this.defValue);
     sb.append(" -- CAPABILITY --" + sep);
@@ -1173,14 +1074,15 @@ public class VirtualFS {
     return sb.toString();
   }
 
-  /****************************************************************************
-   * UTILITY METHODS
-   ****************************************************************************/
+  /**
+   * ************************************************************************** UTILITY METHODS
+   * **************************************************************************
+   */
 
-  /*****************************************
-   * Methods used for manage SPACE
-   *****************************************/
-
+  /**
+   * *************************************** Methods used for manage SPACE
+   * ***************************************
+   */
   private String makeSpaceFilePath() throws NamespaceException {
 
     String result = "";
@@ -1191,22 +1093,21 @@ public class VirtualFS {
     return result;
   }
 
-  private Space createSpace(TSizeInBytes guarSize, TSizeInBytes totalSize,
-    LocalFile file, SpaceSystem spaceSystem) throws NamespaceException {
+  private Space createSpace(
+      TSizeInBytes guarSize, TSizeInBytes totalSize, LocalFile file, SpaceSystem spaceSystem)
+      throws NamespaceException {
 
     Space space = null;
     try {
       space = new Space(guarSize, totalSize, file, spaceSystem);
     } catch (InvalidSpaceAttributesException ex3) {
       log.error("Error while retrieving Space System Driver for VFS ", ex3);
-      throw new NamespaceException(
-        "Error while retrieving Space System Driver for VFS ", ex3);
+      throw new NamespaceException("Error while retrieving Space System Driver for VFS ", ex3);
     }
     return space;
   }
 
-  public StorageSpaceData getSpaceByAlias(String desc)
-    throws NamespaceException {
+  public StorageSpaceData getSpaceByAlias(String desc) throws NamespaceException {
 
     // Retrieve Storage Space from Persistence
     ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
@@ -1214,8 +1115,7 @@ public class VirtualFS {
     return spaceData;
   }
 
-  public void storeSpaceByToken(StorageSpaceData spaceData)
-    throws NamespaceException {
+  public void storeSpaceByToken(StorageSpaceData spaceData) throws NamespaceException {
 
     // Retrieve Storage Space from Persistence
     ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
@@ -1226,8 +1126,7 @@ public class VirtualFS {
     }
   }
 
-  public StoRI retrieveSpaceFileByPFN(PFN pfn, long totalSize)
-    throws NamespaceException {
+  public StoRI retrieveSpaceFileByPFN(PFN pfn, long totalSize) throws NamespaceException {
 
     NamespaceInterface namespace = NamespaceDirector.getNamespace();
     StoRI stori = namespace.resolveStoRIbyPFN(pfn);
@@ -1245,10 +1144,10 @@ public class VirtualFS {
     return creationTime;
   }
 
-  /******************************************
-   * VERSION 1.4 *
-   *******************************************/
-
+  /**
+   * **************************************** VERSION 1.4 *
+   * *****************************************
+   */
   public TSpaceToken getSpaceToken() {
 
     return this.spaceToken;
@@ -1283,8 +1182,7 @@ public class VirtualFS {
     if (getStorageAreaAuthzType().equals(SAAuthzType.FIXED)) {
       return saAuthzSourceName;
     } else {
-      throw new NamespaceException(
-        "Required FIXED-AUTHZ, but it is UNDEFINED.");
+      throw new NamespaceException("Required FIXED-AUTHZ, but it is UNDEFINED.");
     }
   }
 

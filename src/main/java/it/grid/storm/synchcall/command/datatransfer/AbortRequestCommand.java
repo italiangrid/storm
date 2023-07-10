@@ -1,8 +1,14 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.command.datatransfer;
+
+import static it.grid.storm.srm.types.TStatusCode.SRM_ABORTED;
+import static it.grid.storm.srm.types.TStatusCode.SRM_AUTHORIZATION_FAILURE;
+import static it.grid.storm.srm.types.TStatusCode.SRM_INVALID_REQUEST;
+import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_QUEUED;
+import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_TIMED_OUT;
+import static it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS;
 
 import it.grid.storm.asynch.AdvancedPicker;
 import it.grid.storm.authz.AuthzException;
@@ -23,42 +29,25 @@ import it.grid.storm.synchcall.data.datatransfer.AbortInputData;
 import it.grid.storm.synchcall.data.datatransfer.AbortRequestOutputData;
 import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
-
-import static it.grid.storm.srm.types.TStatusCode.SRM_ABORTED;
-import static it.grid.storm.srm.types.TStatusCode.SRM_AUTHORIZATION_FAILURE;
-import static it.grid.storm.srm.types.TStatusCode.SRM_INVALID_REQUEST;
-import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_QUEUED;
-import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_TIMED_OUT;
-import static it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
  * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
- * <p>
- * 
- * 
- * Authors:
- * 
+ *
+ * <p>Authors:
+ *
  * @author lucamag luca.magnoniATcnaf.infn.it
- * 
  * @date = Oct 10, 2008
- * 
  */
-
 public class AbortRequestCommand extends DataTransferCommand implements Command {
 
-  private static final Logger log = LoggerFactory
-    .getLogger(AbortRequestCommand.class);
+  private static final Logger log = LoggerFactory.getLogger(AbortRequestCommand.class);
 
   private AdvancedPicker advancedPicker = null;
   private AbortExecutorInterface executor = null;
 
-  public AbortRequestCommand() {
-
-  }
+  public AbortRequestCommand() {}
 
   public OutputData execute(InputData data) {
 
@@ -71,16 +60,16 @@ public class AbortRequestCommand extends DataTransferCommand implements Command 
 
     AbortRequestCommand.log.debug("Started AbortRequest function.");
 
-    if (inputData == null || inputData.getRequestToken() == null
-      || (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES))) {
+    if (inputData == null
+        || inputData.getRequestToken() == null
+        || (inputData.getType().equals(AbortInputData.AbortType.ABORT_FILES))) {
       log.debug("SrmAbortRequest: Invalid input parameter specified");
 
-      globalStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-        "Missing mandatory parameters");
+      globalStatus =
+          new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "Missing mandatory parameters");
       outputData.setReturnStatus(globalStatus);
       outputData.setArrayOfFileStatuses(null);
-      log
-        .error(
+      log.error(
           "srmAbortRequest: <> Request for [token:] [SURL:] failed with [status: {}]",
           globalStatus);
       return outputData;
@@ -91,12 +80,10 @@ public class AbortRequestCommand extends DataTransferCommand implements Command 
 
     if (inputData.getType().equals(AbortInputData.AbortType.ABORT_REQUEST)) {
 
-      AbortRequestCommand.log
-        .debug("Phase (1.A) AbortRequest: SurlArray Not specified.");
+      AbortRequestCommand.log.debug("Phase (1.A) AbortRequest: SurlArray Not specified.");
 
       GridUserInterface user = getUserFromInputData(inputData);
-      SURLStatusManager manager = SURLStatusManagerFactory
-        .newSURLStatusManager();
+      SURLStatusManager manager = SURLStatusManagerFactory.newSURLStatusManager();
 
       boolean hasErrors = false;
       try {
@@ -125,26 +112,29 @@ public class AbortRequestCommand extends DataTransferCommand implements Command 
         globalStatus = new TReturnStatus(SRM_AUTHORIZATION_FAILURE, e.getMessage());
 
       } catch (IllegalArgumentException e) {
-        
+
         hasErrors = true;
         log.info("Invalid request error: {}", e.getMessage());
         globalStatus = new TReturnStatus(SRM_INVALID_REQUEST, e.getMessage());
-        
+
       } finally {
-        
+
         if (hasErrors) {
-          
+
           outputData.setArrayOfFileStatuses(null);
           outputData.setReturnStatus(globalStatus);
-          CommandHelper.printRequestOutcome("srmAbortRequest", log, globalStatus,
-            inputData, inputData.getRequestToken());
+          CommandHelper.printRequestOutcome(
+              "srmAbortRequest", log, globalStatus, inputData, inputData.getRequestToken());
           return outputData;
         }
       }
 
       RequestSummaryCatalog.getInstance()
-        .updateFromPreviousGlobalStatus(inputData.getRequestToken(), SRM_REQUEST_QUEUED,
-            SRM_ABORTED, "User aborted request!");
+          .updateFromPreviousGlobalStatus(
+              inputData.getRequestToken(),
+              SRM_REQUEST_QUEUED,
+              SRM_ABORTED,
+              "User aborted request!");
 
       res = false;
 
@@ -173,16 +163,14 @@ public class AbortRequestCommand extends DataTransferCommand implements Command 
       log.debug("Phase (1.B) AbortRequest: Token not found.");
     }
 
-
-    TRequestType rtype = RequestSummaryCatalog.getInstance().typeOf(
-      requestToken);
+    TRequestType rtype = RequestSummaryCatalog.getInstance().typeOf(requestToken);
 
     if (rtype == TRequestType.EMPTY) {
 
       globalStatus = new TReturnStatus(SRM_SUCCESS, "Request aborted succesfully");
 
-      CommandHelper.printRequestOutcome("srmAbortRequest", log, globalStatus,
-        inputData, inputData.getRequestToken());
+      CommandHelper.printRequestOutcome(
+          "srmAbortRequest", log, globalStatus, inputData, inputData.getRequestToken());
 
       outputData.setReturnStatus(globalStatus);
       outputData.setArrayOfFileStatuses(null);
@@ -197,16 +185,16 @@ public class AbortRequestCommand extends DataTransferCommand implements Command 
     } else {
       log.debug("SrmAbortRequest : Invalid input parameter specified");
 
-      globalStatus = new TReturnStatus(SRM_INVALID_REQUEST,
-        "Invalid request token. Abort only works for PtG and PtP.");
+      globalStatus =
+          new TReturnStatus(
+              SRM_INVALID_REQUEST, "Invalid request token. Abort only works for PtG and PtP.");
 
-      CommandHelper.printRequestOutcome("srmAbortRequest", log, globalStatus,
-        inputData, inputData.getRequestToken());
+      CommandHelper.printRequestOutcome(
+          "srmAbortRequest", log, globalStatus, inputData, inputData.getRequestToken());
 
       outputData.setReturnStatus(globalStatus);
       outputData.setArrayOfFileStatuses(null);
       return outputData;
     }
   }
-
 }

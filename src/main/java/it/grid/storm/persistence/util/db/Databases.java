@@ -1,14 +1,11 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.persistence.util.db;
 
-import java.util.Map;
-
 import com.google.common.collect.Maps;
-
 import it.grid.storm.config.Configuration;
+import java.util.Map;
 
 public class Databases {
 
@@ -23,7 +20,8 @@ public class Databases {
 
   static {
     Configuration config = Configuration.getInstance();
-    DataBaseStrategy dbs = new DataBaseStrategy(MYSQL_VENDOR, MYSQL_DRIVER, MYSQL_PREFIX, MYSQL_FORMATTER);
+    DataBaseStrategy dbs =
+        new DataBaseStrategy(MYSQL_VENDOR, MYSQL_DRIVER, MYSQL_PREFIX, MYSQL_FORMATTER);
     dbs.setDbUsr(config.getDBUserName());
     dbs.setDbPwd(config.getDBPassword());
     dbs.setProperties(config.getDBProperties());
@@ -35,5 +33,5 @@ public class Databases {
   public static DataBaseStrategy getDataBaseStrategy(String vendor) {
 
     return DATABASES.get(vendor);
-}
+  }
 }

@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.xmlrpc.converter.space;
 
@@ -16,85 +15,70 @@ import it.grid.storm.synchcall.data.space.ReleaseSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReleaseSpaceOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
 import it.grid.storm.xmlrpc.converter.ParameterDisplayHelper;
-
 import java.util.HashMap;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class represents the Type Converter for ReleaseSpace function . This
- * class have get an input data from xmlrpc call anc convert it into a StoRM
- * Type that can be used to invoke the ReleaseSpaceManager
- * 
+ * This class represents the Type Converter for ReleaseSpace function . This class have get an input
+ * data from xmlrpc call anc convert it into a StoRM Type that can be used to invoke the
+ * ReleaseSpaceManager
+ *
  * @author Magnoni Luca
  * @author Cnaf -INFN Bologna
  * @date
  * @version 1.0
  */
-
 public class ReleaseSpaceConverter implements Converter {
 
-	/**
-	 * Logger
-	 */
-	private static final Logger log = LoggerFactory
-		.getLogger(ReleaseSpaceConverter.class);
+  /** Logger */
+  private static final Logger log = LoggerFactory.getLogger(ReleaseSpaceConverter.class);
 
-	public ReleaseSpaceConverter() {
+  public ReleaseSpaceConverter() {};
 
-	};
+  /**
+   * This method return a ReleaseSpaceInputData created from input Hashtable structure of an xmlrpc
+   * releaseSpace v2.1 call. ReleaseSpaceInputData can be used to invoke ReleaseSpace Manager
+   */
+  public InputData convertToInputData(Map inputParam) {
 
-	/**
-	 * This method return a ReleaseSpaceInputData created from input Hashtable
-	 * structure of an xmlrpc releaseSpace v2.1 call. ReleaseSpaceInputData can be
-	 * used to invoke ReleaseSpace Manager
-	 */
+    log.debug(
+        "ReleaseSpaceConverter :Call received :Creation of SpaceResData = {}", inputParam.size());
+    log.debug(
+        "ReleaseSpaceConverter: Input Structure toString: {}",
+        ParameterDisplayHelper.display(inputParam));
 
-	public InputData convertToInputData(Map inputParam) {
+    GridUserInterface guser = GridUserManager.decode(inputParam);
 
-		log
-			.debug("ReleaseSpaceConverter :Call received :Creation of SpaceResData = {}"
-				, inputParam.size());
-		log.debug("ReleaseSpaceConverter: Input Structure toString: {}"
-			, ParameterDisplayHelper.display(inputParam));
+    TSpaceToken spaceToken = TSpaceToken.decode(inputParam, TSpaceToken.PNAME_SPACETOKEN);
 
-		GridUserInterface guser = GridUserManager.decode(inputParam);
+    Boolean force = (Boolean) inputParam.get("forceFileRelease");
+    if (force == null) {
+      force = new Boolean(false);
+    }
 
-		TSpaceToken spaceToken = TSpaceToken.decode(inputParam,
-			TSpaceToken.PNAME_SPACETOKEN);
+    ReleaseSpaceInputData inputData;
+    if (guser != null) {
+      inputData = new IdentityReleaseSpaceInputData(guser, spaceToken, force.booleanValue());
+    } else {
+      inputData = new AnonymousReleaseSpaceInputData(spaceToken, force.booleanValue());
+    }
+    return inputData;
+  }
 
-		Boolean force = (Boolean) inputParam.get("forceFileRelease");
-		if (force == null) {
-			force = new Boolean(false);
-		}
+  public Map convertFromOutputData(OutputData data) {
 
-		ReleaseSpaceInputData inputData;
-		if (guser != null) {
-			inputData = new IdentityReleaseSpaceInputData(guser, spaceToken,
-				force.booleanValue());
-		} else {
-			inputData = new AnonymousReleaseSpaceInputData(spaceToken,
-				force.booleanValue());
-		}
-		return inputData;
+    log.debug("releaseSpaceConverter :Call received :Creation of XMLRPC Output Structure! ");
+    ReleaseSpaceOutputData outputData = (ReleaseSpaceOutputData) data;
 
-	}
+    // Creation of new Hashtable to return
+    Map outputParam = new HashMap();
 
-	public Map convertFromOutputData(OutputData data) {
+    TReturnStatus returnStatus = outputData.getStatus();
+    returnStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
 
-		log
-			.debug("releaseSpaceConverter :Call received :Creation of XMLRPC Output Structure! ");
-		ReleaseSpaceOutputData outputData = (ReleaseSpaceOutputData) data;
-
-		// Creation of new Hashtable to return
-		Map outputParam = new HashMap();
-
-		TReturnStatus returnStatus = outputData.getStatus();
-		returnStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
-
-		// Return output Parameter structure
-		return outputParam;
-	}
+    // Return output Parameter structure
+    return outputParam;
+  }
 }

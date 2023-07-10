@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.balancer.cache;
 
@@ -11,11 +10,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Before;
-import org.junit.Test;
-
 import it.grid.storm.balancer.BalancerUtils;
 import it.grid.storm.balancer.Node;
+import org.junit.Before;
+import org.junit.Test;
 
 public class ResponsivenessCacheTest extends BalancerUtils {
 
@@ -64,5 +62,4 @@ public class ResponsivenessCacheTest extends BalancerUtils {
     assertEquals(UNRESPONSIVE, CACHE.getResponsiveness(ftp2));
     assertTrue(CACHE.isCached(ftp2));
   }
-
 }

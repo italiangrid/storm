@@ -1,172 +1,166 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.scheduler;
 
 /**
- * <p>
  * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2005
- * </p>
- * 
- * <p>
- * Company: Project 'Grid.it' for INFN-CNAF, Bologna, Italy
- * </p>
- * 
+ *
+ * <p>Description:
+ *
+ * <p>Copyright: Copyright (c) 2005
+ *
+ * <p>Company: Project 'Grid.it' for INFN-CNAF, Bologna, Italy
+ *
  * @author Zappi Riccardo <mailto://riccardo.zappi@cnaf.infn.it>
  * @version 1.0
  * @date
- * 
  */
-
 public class SchedulerStatus {
 
-	// represent the name of scheduler
-	private String name = null;
+  // represent the name of scheduler
+  private String name = null;
 
-	// nr. of threads that are actively executing tasks. (approximate)
-	private int activeCount = -1;
+  // nr. of threads that are actively executing tasks. (approximate)
+  private int activeCount = -1;
 
-	// Total number of tasks that have completed execution
-	private long completedTaskCount = -1;
+  // Total number of tasks that have completed execution
+  private long completedTaskCount = -1;
 
-	// Core number of threads
-	private int corePoolSize = -1;
+  // Core number of threads
+  private int corePoolSize = -1;
 
-	// Largest number of threads
-	private int largestPoolSize = -1;
+  // Largest number of threads
+  private int largestPoolSize = -1;
 
-	// Maximum allowed number of threads
-	private int maxPoolSize = -1;
+  // Maximum allowed number of threads
+  private int maxPoolSize = -1;
 
-	// Actual pool size
-	private int poolSize = -1;
+  // Actual pool size
+  private int poolSize = -1;
 
-	// Actual number of Task scheduled
-	private long taskCount = -1;
+  // Actual number of Task scheduled
+  private long taskCount = -1;
 
-	// Queue Size
-	private int queueSize = -1;
+  // Queue Size
+  private int queueSize = -1;
 
-	// Queue : remaining capacity
-	private int remainingCapacity = -1;
+  // Queue : remaining capacity
+  private int remainingCapacity = -1;
 
-	protected SchedulerStatus(String name) {
+  protected SchedulerStatus(String name) {
 
-		this.name = name;
-	}
+    this.name = name;
+  }
 
-	public int getActiveCount() {
+  public int getActiveCount() {
 
-		return activeCount;
-	}
+    return activeCount;
+  }
 
-	public long getCompletedTaskCount() {
+  public long getCompletedTaskCount() {
 
-		return completedTaskCount;
-	}
+    return completedTaskCount;
+  }
 
-	public int getCorePoolSize() {
+  public int getCorePoolSize() {
 
-		return corePoolSize;
-	}
+    return corePoolSize;
+  }
 
-	public int getLargestPoolSize() {
+  public int getLargestPoolSize() {
 
-		return largestPoolSize;
-	}
+    return largestPoolSize;
+  }
 
-	public int getMaxPoolSize() {
+  public int getMaxPoolSize() {
 
-		return maxPoolSize;
-	}
+    return maxPoolSize;
+  }
 
-	public int getPoolSize() {
+  public int getPoolSize() {
 
-		return poolSize;
-	}
+    return poolSize;
+  }
 
-	public long getTaskCount() {
+  public long getTaskCount() {
 
-		return taskCount;
-	}
+    return taskCount;
+  }
 
-	public int getQueueSize() {
+  public int getQueueSize() {
 
-		return this.queueSize;
-	}
+    return this.queueSize;
+  }
 
-	public int getRemainingSize() {
+  public int getRemainingSize() {
 
-		return this.remainingCapacity;
-	}
+    return this.remainingCapacity;
+  }
 
-	protected void setActiveCount(int activeCount) {
+  protected void setActiveCount(int activeCount) {
 
-		this.activeCount = activeCount;
-	}
+    this.activeCount = activeCount;
+  }
 
-	protected void setCompletedTaskCount(long completedTaskCount) {
+  protected void setCompletedTaskCount(long completedTaskCount) {
 
-		this.completedTaskCount = completedTaskCount;
-	}
+    this.completedTaskCount = completedTaskCount;
+  }
 
-	protected void setCorePoolSize(int corePoolSize) {
+  protected void setCorePoolSize(int corePoolSize) {
 
-		this.corePoolSize = corePoolSize;
-	}
+    this.corePoolSize = corePoolSize;
+  }
 
-	protected void setLargestPoolSize(int largestPoolSize) {
+  protected void setLargestPoolSize(int largestPoolSize) {
 
-		this.largestPoolSize = largestPoolSize;
-	}
+    this.largestPoolSize = largestPoolSize;
+  }
 
-	protected void setMaxPoolSize(int maxPoolSize) {
+  protected void setMaxPoolSize(int maxPoolSize) {
 
-		this.maxPoolSize = maxPoolSize;
-	}
+    this.maxPoolSize = maxPoolSize;
+  }
 
-	protected void setPoolSize(int poolSize) {
+  protected void setPoolSize(int poolSize) {
 
-		this.poolSize = poolSize;
-	}
+    this.poolSize = poolSize;
+  }
 
-	protected void setTaskCount(long taskCount) {
+  protected void setTaskCount(long taskCount) {
 
-		this.taskCount = taskCount;
-	}
+    this.taskCount = taskCount;
+  }
 
-	protected void setQueueSize(int queueSize) {
+  protected void setQueueSize(int queueSize) {
 
-		this.queueSize = queueSize;
-	}
+    this.queueSize = queueSize;
+  }
 
-	protected void setRemainingCapacity(int remainingCapacity) {
+  protected void setRemainingCapacity(int remainingCapacity) {
 
-		this.remainingCapacity = remainingCapacity;
-	}
+    this.remainingCapacity = remainingCapacity;
+  }
 
-	@Override
-	public String toString() {
+  @Override
+  public String toString() {
 
-		StringBuilder sb = new StringBuilder();
-		sb.append("WorkerPool (Sched-Name=");
-		sb.append(this.name);
-		sb.append(") = [core:" + corePoolSize + " ; largest:" + maxPoolSize
-			+ " ; size:" + poolSize + "]" + "\n");
-		sb.append("Queue (Sched-Name=");
-		sb.append(this.name);
-		sb.append(") = [size:" + queueSize + " ; remaining capacity:"
-			+ remainingCapacity + "]");
-		return sb.toString();
-	}
-
+    StringBuilder sb = new StringBuilder();
+    sb.append("WorkerPool (Sched-Name=");
+    sb.append(this.name);
+    sb.append(
+        ") = [core:"
+            + corePoolSize
+            + " ; largest:"
+            + maxPoolSize
+            + " ; size:"
+            + poolSize
+            + "]"
+            + "\n");
+    sb.append("Queue (Sched-Name=");
+    sb.append(this.name);
+    sb.append(") = [size:" + queueSize + " ; remaining capacity:" + remainingCapacity + "]");
+    return sb.toString();
+  }
 }

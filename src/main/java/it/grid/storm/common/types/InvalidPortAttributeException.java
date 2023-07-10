@@ -1,13 +1,12 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.common.types;
 
 /**
- * This class represents an exception thrown if a Port is attempted to be built
- * with an int <0 or >65535.
- * 
+ * This class represents an exception thrown if a Port is attempted to be built with an int <0 or
+ * >65535.
+ *
  * @author Ezio Corso
  * @author EGRID - ICTP Trieste
  * @date March 25th, 2005
@@ -15,18 +14,16 @@ package it.grid.storm.common.types;
  */
 public class InvalidPortAttributeException extends Exception {
 
-	private int port;
+  private int port;
 
-	/**
-	 * Constructor requiring the port that caused the exception.
-	 */
-	public InvalidPortAttributeException(int port) {
+  /** Constructor requiring the port that caused the exception. */
+  public InvalidPortAttributeException(int port) {
 
-		this.port = port;
-	}
+    this.port = port;
+  }
 
-	public String toString() {
+  public String toString() {
 
-		return "Port exceeded limits; supplied port was: " + port;
-	}
+    return "Port exceeded limits; supplied port was: " + port;
+  }
 }

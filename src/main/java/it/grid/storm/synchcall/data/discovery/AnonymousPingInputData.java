@@ -1,21 +1,20 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.data.discovery;
 
 import it.grid.storm.synchcall.data.AbstractInputData;
 
 /*
- * 
+ *
  * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -23,26 +22,24 @@ import it.grid.storm.synchcall.data.AbstractInputData;
  * the License.
  */
 
-public class AnonymousPingInputData extends AbstractInputData implements
-	PingInputData {
+public class AnonymousPingInputData extends AbstractInputData implements PingInputData {
 
-	private final String authorizationID;
+  private final String authorizationID;
 
-	public AnonymousPingInputData(String authorizationID) {
+  public AnonymousPingInputData(String authorizationID) {
 
-		this.authorizationID = authorizationID;
-	}
+    this.authorizationID = authorizationID;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * it.grid.storm.synchcall.data.discovery.PingInputData#getAuthorizationID()
-	 */
-	@Override
-	public String getAuthorizationID() {
+  /*
+   * (non-Javadoc)
+   *
+   * @see
+   * it.grid.storm.synchcall.data.discovery.PingInputData#getAuthorizationID()
+   */
+  @Override
+  public String getAuthorizationID() {
 
-		return this.authorizationID;
-	}
-
+    return this.authorizationID;
+  }
 }

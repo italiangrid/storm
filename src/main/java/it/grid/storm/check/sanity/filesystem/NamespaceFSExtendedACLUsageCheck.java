@@ -1,15 +1,7 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.check.sanity.filesystem;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Calendar;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import it.grid.storm.check.Check;
 import it.grid.storm.check.CheckResponse;
@@ -23,21 +15,22 @@ import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.model.VirtualFS;
+import java.io.File;
+import java.io.IOException;
+import java.util.Calendar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * @author Michele Dibenedetto
- * 
- */
+/** @author Michele Dibenedetto */
 public class NamespaceFSExtendedACLUsageCheck implements Check {
 
   private static final Logger log = LoggerFactory.getLogger(NamespaceFSExtendedACLUsageCheck.class);
   private static final String CHECK_NAME = "NamespaceFSEACLTest";
   private static final String CHECK_DESCRIPTION =
       "This check tries to use file system extended ACL on all the file systems declared in namespace.xml";
-  /**
-   * The maximum number of attempts of temporary file creation
-   */
+  /** The maximum number of attempts of temporary file creation */
   private static final int MAX_FILE_CREATION_ATTEMPTS = 10;
+
   private static final GridUserInterface TEST_USER =
       new FakeGridUser("/C=IT/O=INFN/L=CNAF/CN=Fake User");
   private static LocalUser TEST_LOCAL_USER = null;
@@ -70,10 +63,13 @@ public class NamespaceFSExtendedACLUsageCheck implements Check {
         try {
           checkFile = provideCheckFile(fsRootPath, TEST_FILE_INFIX);
         } catch (GenericCheckException e) {
-          log.warn("Unable to obtain a check temporary file. " + "GenericCheckException: {}",
+          log.warn(
+              "Unable to obtain a check temporary file. " + "GenericCheckException: {}",
               e.getMessage());
-          errorMessage += "Unable to obtain a check temporary file. GenericCheckException : "
-              + e.getMessage() + "; ";
+          errorMessage +=
+              "Unable to obtain a check temporary file. GenericCheckException : "
+                  + e.getMessage()
+                  + "; ";
           status = CheckStatus.INDETERMINATE;
           continue;
         }
@@ -84,17 +80,30 @@ public class NamespaceFSExtendedACLUsageCheck implements Check {
           log.error(
               "Check on VFS {} to add an extended ACL on file {} failed. "
                   + "File System type = {}, root path = {}",
-              vfs.getAliasName(), checkFile.getAbsolutePath(), vfs.getFSType(), fsRootPath);
-          errorMessage += "Check on VFS " + vfs.getAliasName() + " to add an extended ACL on file "
-              + checkFile.getAbsolutePath() + " failed. File System type =" + vfs.getFSType()
-              + " , root path =" + fsRootPath + "; ";
+              vfs.getAliasName(),
+              checkFile.getAbsolutePath(),
+              vfs.getFSType(),
+              fsRootPath);
+          errorMessage +=
+              "Check on VFS "
+                  + vfs.getAliasName()
+                  + " to add an extended ACL on file "
+                  + checkFile.getAbsolutePath()
+                  + " failed. File System type ="
+                  + vfs.getFSType()
+                  + " , root path ="
+                  + fsRootPath
+                  + "; ";
         }
-        log.debug("Check response for path {} is {}", fsRootPath,
+        log.debug(
+            "Check response for path {} is {}",
+            fsRootPath,
             currentResponse ? "success" : "failure");
         status = CheckStatus.and(status, currentResponse);
         log.debug("Partial result is {}", status.toString());
         if (!checkFile.delete()) {
-          log.warn("Unable to delete the temporary file used for the check {}",
+          log.warn(
+              "Unable to delete the temporary file used for the check {}",
               checkFile.getAbsolutePath());
         }
       }
@@ -110,7 +119,7 @@ public class NamespaceFSExtendedACLUsageCheck implements Check {
   /**
    * Provides a File located in rootPath with a pseudo-random name. It tries to provide the file and
    * in case of error retries for MAX_FILE_CREATION_ATTEMPTS times changing file name
-   * 
+   *
    * @param rootPath
    * @return
    * @throws GenericCheckException if is unable to provide a valid file
@@ -126,8 +135,8 @@ public class NamespaceFSExtendedACLUsageCheck implements Check {
       if (checkFile.exists()) {
         if (checkFile.isFile()) {
           fileAvailable = true;
-          log.debug("A good check temporary file already exists at {}",
-              checkFile.getAbsolutePath());
+          log.debug(
+              "A good check temporary file already exists at {}", checkFile.getAbsolutePath());
         } else {
           log.warn(
               "Unable to create check file, it already exists but is not " + "a simple file : {}",
@@ -140,14 +149,17 @@ public class NamespaceFSExtendedACLUsageCheck implements Check {
             log.debug("Created check temporary file at {}", checkFile.getAbsolutePath());
           }
         } catch (IOException e) {
-          log.warn("Unable to create the check file : {}. IOException: {}",
-              checkFile.getAbsolutePath(), e.getMessage());
+          log.warn(
+              "Unable to create the check file : {}. IOException: {}",
+              checkFile.getAbsolutePath(),
+              e.getMessage());
         }
       }
       attempCount++;
     }
     if (!fileAvailable) {
-      log.warn("Unable to create check file, reaced maximum iterations at " + "path : {}",
+      log.warn(
+          "Unable to create check file, reaced maximum iterations at " + "path : {}",
           checkFile.getAbsolutePath());
       throw new GenericCheckException(
           "Unable to create the check file for root path '" + rootPath + "'");
@@ -158,11 +170,11 @@ public class NamespaceFSExtendedACLUsageCheck implements Check {
   /**
    * Tries to write CHECK_ATTRIBUTE_NAME EA on file with value CHECK_ATTRIBUTE_VALUE, retrieve its
    * value and remove it
-   * 
+   *
    * @param file
    * @param filesystem
    * @return true if the write, read and remove operations succeeds and the retrieved value matches
-   *         CHECK_ATTRIBUTE_VALUE
+   *     CHECK_ATTRIBUTE_VALUE
    */
   private boolean checkEACL(File file, FilesystemIF filesystem) {
 
@@ -175,20 +187,27 @@ public class NamespaceFSExtendedACLUsageCheck implements Check {
       oldPermisssion = FilesystemPermission.None;
     }
     FilesystemPermission testPermission = TEST_PERMISSION.deny(oldPermisssion);
-    log.debug("Trying to set the extended ACL {} to group {} on file {}", testPermission,
-        TEST_LOCAL_USER.getPrimaryGid(), file.getAbsolutePath());
+    log.debug(
+        "Trying to set the extended ACL {} to group {} on file {}",
+        testPermission,
+        TEST_LOCAL_USER.getPrimaryGid(),
+        file.getAbsolutePath());
     filesystem.grantGroupPermission(TEST_LOCAL_USER, file.getAbsolutePath(), testPermission);
 
     log.debug("Original group permission : {}", oldPermisssion);
-    log.debug("Trying to get the extended ACL  of group {} from file {}",
-        TEST_LOCAL_USER.getPrimaryGid(), file.getAbsolutePath());
+    log.debug(
+        "Trying to get the extended ACL  of group {} from file {}",
+        TEST_LOCAL_USER.getPrimaryGid(),
+        file.getAbsolutePath());
     FilesystemPermission currentPermission =
         filesystem.getGroupPermission(TEST_LOCAL_USER, file.getAbsolutePath());
     if (currentPermission == null) {
       currentPermission = FilesystemPermission.None;
     }
     log.debug("Returned value is '{}'", currentPermission);
-    log.debug("Trying to remove the extended group ACL {} from file {}", testPermission,
+    log.debug(
+        "Trying to remove the extended group ACL {} from file {}",
+        testPermission,
         file.getAbsolutePath());
     FilesystemPermission previousPermission =
         filesystem.revokeGroupPermission(TEST_LOCAL_USER, file.getAbsolutePath(), testPermission);
@@ -197,8 +216,11 @@ public class NamespaceFSExtendedACLUsageCheck implements Check {
     }
     log.debug("Revoked group permission is : {}", previousPermission);
     if (currentPermission.getInt() != previousPermission.getInt()) {
-      log.warn("Undesired behaviour! The revoked extended group ACL value '{}' "
-          + "differs from the one setted '{}'", previousPermission, currentPermission);
+      log.warn(
+          "Undesired behaviour! The revoked extended group ACL value '{}' "
+              + "differs from the one setted '{}'",
+          previousPermission,
+          currentPermission);
       response &= false;
     } else {
       response &= true;
@@ -209,8 +231,11 @@ public class NamespaceFSExtendedACLUsageCheck implements Check {
     }
     log.debug("Final group permission is : {}", currentPermission);
     if (currentPermission.getInt() != oldPermisssion.getInt()) {
-      log.warn("Undesired behaviour! The final extended group ACL value '{}' "
-          + "differs from the original '{}'", currentPermission, oldPermisssion);
+      log.warn(
+          "Undesired behaviour! The final extended group ACL value '{}' "
+              + "differs from the original '{}'",
+          currentPermission,
+          oldPermisssion);
       response &= false;
     } else {
       response &= true;
@@ -220,18 +245,25 @@ public class NamespaceFSExtendedACLUsageCheck implements Check {
       oldPermisssion = FilesystemPermission.None;
     }
     testPermission = TEST_PERMISSION.deny(oldPermisssion);
-    log.debug("Trying to set the extended ACL {} to user {} on file {}", testPermission,
-        TEST_LOCAL_USER.getUid(), file.getAbsolutePath());
+    log.debug(
+        "Trying to set the extended ACL {} to user {} on file {}",
+        testPermission,
+        TEST_LOCAL_USER.getUid(),
+        file.getAbsolutePath());
     filesystem.grantUserPermission(TEST_LOCAL_USER, file.getAbsolutePath(), testPermission);
     log.debug("Original user permission : {}", oldPermisssion);
-    log.debug("Trying to get the extended ACL  of user {} from file {}", TEST_LOCAL_USER.getUid(),
+    log.debug(
+        "Trying to get the extended ACL  of user {} from file {}",
+        TEST_LOCAL_USER.getUid(),
         file.getAbsolutePath());
     currentPermission = filesystem.getUserPermission(TEST_LOCAL_USER, file.getAbsolutePath());
     if (currentPermission == null) {
       currentPermission = FilesystemPermission.None;
     }
     log.debug("Returned value is '{}'", currentPermission);
-    log.debug("Trying to remove the extended user ACL {} from file {}", testPermission,
+    log.debug(
+        "Trying to remove the extended user ACL {} from file {}",
+        testPermission,
         file.getAbsolutePath());
     previousPermission =
         filesystem.revokeUserPermission(TEST_LOCAL_USER, file.getAbsolutePath(), testPermission);
@@ -240,8 +272,11 @@ public class NamespaceFSExtendedACLUsageCheck implements Check {
     }
     log.debug("Revoked user permission is : {}", previousPermission);
     if (currentPermission.getInt() != previousPermission.getInt()) {
-      log.warn("Undesired behaviour! The removed extended user ACL value '{}' "
-          + "differs from the one setted '{}'", previousPermission, currentPermission);
+      log.warn(
+          "Undesired behaviour! The removed extended user ACL value '{}' "
+              + "differs from the one setted '{}'",
+          previousPermission,
+          currentPermission);
       response &= false;
     } else {
       response &= true;
@@ -252,8 +287,11 @@ public class NamespaceFSExtendedACLUsageCheck implements Check {
     }
     log.debug("Final user permission is : {}", currentPermission);
     if (currentPermission.getInt() != oldPermisssion.getInt()) {
-      log.warn("Undesired behaviour! The final extended user ACL value '{}' "
-          + "differs from the original '{}'", currentPermission, oldPermisssion);
+      log.warn(
+          "Undesired behaviour! The final extended user ACL value '{}' "
+              + "differs from the original '{}'",
+          currentPermission,
+          oldPermisssion);
       response &= false;
     } else {
       response &= true;

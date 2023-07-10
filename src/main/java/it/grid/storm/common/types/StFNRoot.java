@@ -1,52 +1,46 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.common.types;
 
 /**
- * This class represent a Storage File Name Root. A virtual directory path
- * assigned to a single Virtual Oraganization, so each SURL of this VO must
- * start with correct StFNRoot.
+ * This class represent a Storage File Name Root. A virtual directory path assigned to a single
+ * Virtual Oraganization, so each SURL of this VO must start with correct StFNRoot.
  */
 public class StFNRoot {
 
-	private String stfnroot;
+  private String stfnroot;
 
-	public StFNRoot(String stfnroot) throws InvalidStFNRootAttributeException {
+  public StFNRoot(String stfnroot) throws InvalidStFNRootAttributeException {
 
-		if ((stfnroot == null) || (stfnroot.equals(""))
-			|| (stfnroot.charAt(0) != '/'))
-			throw new InvalidStFNRootAttributeException(stfnroot);
-		this.stfnroot = stfnroot.replaceAll(" ", "");
-	}
+    if ((stfnroot == null) || (stfnroot.equals("")) || (stfnroot.charAt(0) != '/'))
+      throw new InvalidStFNRootAttributeException(stfnroot);
+    this.stfnroot = stfnroot.replaceAll(" ", "");
+  }
 
-	public String getValue() {
+  public String getValue() {
 
-		return stfnroot;
-	}
+    return stfnroot;
+  }
 
-	public String toString() {
+  public String toString() {
 
-		return stfnroot;
-	}
+    return stfnroot;
+  }
 
-	public boolean equals(Object o) {
+  public boolean equals(Object o) {
 
-		if (o == this)
-			return true;
-		if (!(o instanceof StFNRoot))
-			return false;
-		StFNRoot po = (StFNRoot) o;
-		return stfnroot.equals(po.stfnroot);
-	}
+    if (o == this) return true;
+    if (!(o instanceof StFNRoot)) return false;
+    StFNRoot po = (StFNRoot) o;
+    return stfnroot.equals(po.stfnroot);
+  }
 
-	@Override
-	public int hashCode() {
+  @Override
+  public int hashCode() {
 
-		int result = 17;
-		result = 31 * result + (stfnroot != null ? stfnroot.hashCode() : 0);
-		return result;
-	}
-
+    int result = 17;
+    result = 31 * result + (stfnroot != null ? stfnroot.hashCode() : 0);
+    return result;
+  }
 }

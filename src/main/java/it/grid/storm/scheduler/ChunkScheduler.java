@@ -1,34 +1,23 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.scheduler;
 
 import it.grid.storm.config.Configuration;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <p>
  * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2005
- * </p>
- * 
- * <p>
- * Company: Project 'Grid.it' for INFN-CNAF, Bologna, Italy
- * </p>
- * 
+ *
+ * <p>Description:
+ *
+ * <p>Copyright: Copyright (c) 2005
+ *
+ * <p>Company: Project 'Grid.it' for INFN-CNAF, Bologna, Italy
+ *
  * @author Zappi Riccardo <mailto://riccardo.zappi@cnaf.infn.it>
  * @version 1.0
- * 
  */
 public class ChunkScheduler implements Scheduler, Streets {
 
@@ -75,7 +64,6 @@ public class ChunkScheduler implements Scheduler, Streets {
     bolSchedulerStatus.setCorePoolSize(bolWorkerCorePoolSize);
     bolSchedulerStatus.setMaxPoolSize(bolWorkerMaxPoolSize);
     bolSchedulerStatus.setQueueSize(bolQueueSize);
-
   }
 
   public static ChunkScheduler getInstance() {
@@ -168,7 +156,6 @@ public class ChunkScheduler implements Scheduler, Streets {
     } catch (SchedulerException e) {
       log.error(e.getMessage(), e);
     }
-
   }
 
   public void bolStreet(Delegable chunk) {
@@ -190,5 +177,4 @@ public class ChunkScheduler implements Scheduler, Streets {
   public void suspend(Delegable task) throws SchedulerException {
     log.warn("suspend is not implemented");
   }
-
 }

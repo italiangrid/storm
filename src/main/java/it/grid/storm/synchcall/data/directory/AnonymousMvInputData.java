@@ -1,50 +1,48 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.data.directory;
 
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.synchcall.data.AbstractInputData;
 
-public class AnonymousMvInputData extends AbstractInputData implements
-	MvInputData {
+public class AnonymousMvInputData extends AbstractInputData implements MvInputData {
 
-	private final TSURL fromSURL;
-	private final TSURL toSURL;
+  private final TSURL fromSURL;
+  private final TSURL toSURL;
 
-	public AnonymousMvInputData(TSURL fromSURL, TSURL toSURL)
-		throws IllegalArgumentException {
+  public AnonymousMvInputData(TSURL fromSURL, TSURL toSURL) throws IllegalArgumentException {
 
-		if (fromSURL == null || toSURL == null) {
-			throw new IllegalArgumentException(
-				"Unable to create the object, invalid arguments: fromSURL=" + fromSURL
-					+ " toSURL=" + toSURL);
-		}
-		this.fromSURL = fromSURL;
-		this.toSURL = toSURL;
-	}
+    if (fromSURL == null || toSURL == null) {
+      throw new IllegalArgumentException(
+          "Unable to create the object, invalid arguments: fromSURL="
+              + fromSURL
+              + " toSURL="
+              + toSURL);
+    }
+    this.fromSURL = fromSURL;
+    this.toSURL = toSURL;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see it.grid.storm.synchcall.data.directory.MvInputData#getToSURL()
-	 */
-	@Override
-	public TSURL getToSURL() {
+  /*
+   * (non-Javadoc)
+   *
+   * @see it.grid.storm.synchcall.data.directory.MvInputData#getToSURL()
+   */
+  @Override
+  public TSURL getToSURL() {
 
-		return toSURL;
-	}
+    return toSURL;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see it.grid.storm.synchcall.data.directory.MvInputData#getFromSURL()
-	 */
-	@Override
-	public TSURL getFromSURL() {
+  /*
+   * (non-Javadoc)
+   *
+   * @see it.grid.storm.synchcall.data.directory.MvInputData#getFromSURL()
+   */
+  @Override
+  public TSURL getFromSURL() {
 
-		return fromSURL;
-	}
-
+    return fromSURL;
+  }
 }

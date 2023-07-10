@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.asynch;
 
@@ -11,7 +10,7 @@ import it.grid.storm.griduser.GridUserInterface;
 /**
  * This class represents an Exception thrown when a BoLChunk is created with any null attribute:
  * GridUser, RequestSummaryData, BoLChunkData or GlobalStatusManager.
- * 
+ *
  * @author: CNAF
  * @version: 1.0
  * @date: Aug 2009
@@ -29,8 +28,11 @@ public class InvalidBoLChunkAttributesException extends Exception {
    * Constructor that requires the GridUser, RequestSummaryData, BoLChunkData and
    * GlobalStatusManager that caused the exception to be thrown.
    */
-  public InvalidBoLChunkAttributesException(GridUserInterface gu, RequestSummaryData rsd,
-      BoLPersistentChunkData chunkData, GlobalStatusManager gsm) {
+  public InvalidBoLChunkAttributesException(
+      GridUserInterface gu,
+      RequestSummaryData rsd,
+      BoLPersistentChunkData chunkData,
+      GlobalStatusManager gsm) {
 
     nullGu = (gu == null);
     nullRsd = (rsd == null);

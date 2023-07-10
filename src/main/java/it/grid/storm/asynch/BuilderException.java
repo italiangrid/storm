@@ -1,23 +1,15 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.asynch;
 
-/**
- * @author Michele Dibenedetto
- * 
- */
+/** @author Michele Dibenedetto */
 public class BuilderException extends Exception {
 
-  /**
-   * 
-   */
+  /** */
   private static final long serialVersionUID = -7167592101486133296L;
 
-  public BuilderException() {
-
-  }
+  public BuilderException() {}
 
   public BuilderException(String message) {
 

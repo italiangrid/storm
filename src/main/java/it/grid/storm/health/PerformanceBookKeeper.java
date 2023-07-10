@@ -1,126 +1,117 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
-/**
- * 
- */
+/** */
 package it.grid.storm.health;
 
 import java.util.ArrayList;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.TimeUnit;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @author zappi
- * 
- */
+/** @author zappi */
 public class PerformanceBookKeeper extends BookKeeper {
 
-	private static final Logger log = LoggerFactory.getLogger(PerformanceBookKeeper.class);
-	
-	public static final String KEY = "PERF";
+  private static final Logger log = LoggerFactory.getLogger(PerformanceBookKeeper.class);
 
-	private static long THOUSAND = 1000L;
+  public static final String KEY = "PERF";
 
-	private DelayQueue<LogEvent> timedLogBook = new DelayQueue<LogEvent>();
-	private int lengthInSeconds = 0;
-	private long lengthInMSec = 0;
-	private long visibleToGlancerInMSec = 0;
+  private static long THOUSAND = 1000L;
 
-	public PerformanceBookKeeper(int timeWindowInSecond, int glancerPeriodInSec) {
+  private DelayQueue<LogEvent> timedLogBook = new DelayQueue<LogEvent>();
+  private int lengthInSeconds = 0;
+  private long lengthInMSec = 0;
+  private long visibleToGlancerInMSec = 0;
 
-		this.lengthInSeconds = timeWindowInSecond;
-		this.lengthInMSec = timeWindowInSecond * THOUSAND;
-		this.visibleToGlancerInMSec = glancerPeriodInSec * THOUSAND;
-	}
+  public PerformanceBookKeeper(int timeWindowInSecond, int glancerPeriodInSec) {
 
-	@Override
-	public void addLogEvent(LogEvent logEvent) {
+    this.lengthInSeconds = timeWindowInSecond;
+    this.lengthInMSec = timeWindowInSecond * THOUSAND;
+    this.visibleToGlancerInMSec = glancerPeriodInSec * THOUSAND;
+  }
 
-		boolean result = timedLogBook.offer(logEvent);
-		HealthDirector.LOGGER.debug("TimedLOGBOOK (offering result) {}", result);
-		HealthDirector.LOGGER.debug("TimedLOGBOOK : {}", timedLogBook.size());
-	}
+  @Override
+  public void addLogEvent(LogEvent logEvent) {
 
-	public long getGlanceWindowInMSec() {
+    boolean result = timedLogBook.offer(logEvent);
+    HealthDirector.LOGGER.debug("TimedLOGBOOK (offering result) {}", result);
+    HealthDirector.LOGGER.debug("TimedLOGBOOK : {}", timedLogBook.size());
+  }
 
-		return this.visibleToGlancerInMSec;
-	}
+  public long getGlanceWindowInMSec() {
 
-	public int getTimeWindowInSecond() {
+    return this.visibleToGlancerInMSec;
+  }
 
-		return this.lengthInSeconds;
-	}
+  public int getTimeWindowInSecond() {
 
-	/**
-	 * getZombieEvents
-	 * 
-	 * Remove from the queue LogBook the event with lifetime expired
-	 * 
-	 * @return the arraylist of removed delayed Log Event
-	 */
-	public ArrayList<LogEvent> removeZombieEvents() {
+    return this.lengthInSeconds;
+  }
 
-		ArrayList<LogEvent> zombies = new ArrayList<LogEvent>();
-		int nZombies = timedLogBook.drainTo(zombies);
-		logDebug("Removed " + nZombies + "oldest event in Delayed log book.");
-		return zombies;
-	}
+  /**
+   * getZombieEvents
+   *
+   * <p>Remove from the queue LogBook the event with lifetime expired
+   *
+   * @return the arraylist of removed delayed Log Event
+   */
+  public ArrayList<LogEvent> removeZombieEvents() {
 
-	/**
-	 * getSnapshot
-	 * 
-	 * create a purged copy of LogBook of all LogEvent yet alive.
-	 * 
-	 * @return
-	 */
-	public ArrayList<LogEvent> getCompleteSnapshot() {
+    ArrayList<LogEvent> zombies = new ArrayList<LogEvent>();
+    int nZombies = timedLogBook.drainTo(zombies);
+    logDebug("Removed " + nZombies + "oldest event in Delayed log book.");
+    return zombies;
+  }
 
-		removeZombieEvents(); // discard the zombies
-		ArrayList<LogEvent> snapshot = new ArrayList<LogEvent>(timedLogBook);
-		return snapshot;
-	}
+  /**
+   * getSnapshot
+   *
+   * <p>create a purged copy of LogBook of all LogEvent yet alive.
+   *
+   * @return
+   */
+  public ArrayList<LogEvent> getCompleteSnapshot() {
 
-	/**
-	 * getGlancedLogBook
-	 * 
-	 * return the list cointaing only the LogEvents within the Glance time
-	 * interval specified by the parameter 'timeToLiveGraterThan'.
-	 * 
-	 * Note: When the event is inserted into the timedLogBook has a maximum delay
-	 * and when the delay is negative the event is tagged as zombie
-	 * 
-	 * @return
-	 */
-	public ArrayList<LogEvent> getEventsGlanced(long timeToLiveGraterThan) {
+    removeZombieEvents(); // discard the zombies
+    ArrayList<LogEvent> snapshot = new ArrayList<LogEvent>(timedLogBook);
+    return snapshot;
+  }
 
-		ArrayList<LogEvent> eGlanced = new ArrayList<LogEvent>();
-		log.debug("time to live - glance: {}",timeToLiveGraterThan);
-		removeZombieEvents();
-		for (LogEvent event : timedLogBook) {
-			log.debug("event: {}", event.getDelay(TimeUnit.MILLISECONDS));
-			if ((event.getDelay(TimeUnit.MILLISECONDS)) < timeToLiveGraterThan) {
-				eGlanced.add(event);
-			}
-		}
-		log.debug("Nr. Events to analyze: {}", eGlanced.size());
+  /**
+   * getGlancedLogBook
+   *
+   * <p>return the list cointaing only the LogEvents within the Glance time interval specified by
+   * the parameter 'timeToLiveGraterThan'.
+   *
+   * <p>Note: When the event is inserted into the timedLogBook has a maximum delay and when the
+   * delay is negative the event is tagged as zombie
+   *
+   * @return
+   */
+  public ArrayList<LogEvent> getEventsGlanced(long timeToLiveGraterThan) {
 
-		return eGlanced;
-	}
+    ArrayList<LogEvent> eGlanced = new ArrayList<LogEvent>();
+    log.debug("time to live - glance: {}", timeToLiveGraterThan);
+    removeZombieEvents();
+    for (LogEvent event : timedLogBook) {
+      log.debug("event: {}", event.getDelay(TimeUnit.MILLISECONDS));
+      if ((event.getDelay(TimeUnit.MILLISECONDS)) < timeToLiveGraterThan) {
+        eGlanced.add(event);
+      }
+    }
+    log.debug("Nr. Events to analyze: {}", eGlanced.size());
 
-	public PerformanceStatus getPerformanceStatus(long timeToLiveGraterThan) {
-		PerformanceStatus pStatus = new PerformanceStatus(
-			getEventsGlanced(timeToLiveGraterThan));
-		return pStatus;
-	}
+    return eGlanced;
+  }
 
-	public PerformanceStatus getPerformanceStatus() {
+  public PerformanceStatus getPerformanceStatus(long timeToLiveGraterThan) {
+    PerformanceStatus pStatus = new PerformanceStatus(getEventsGlanced(timeToLiveGraterThan));
+    return pStatus;
+  }
 
-		return getPerformanceStatus(this.visibleToGlancerInMSec);
-	}
+  public PerformanceStatus getPerformanceStatus() {
 
+    return getPerformanceStatus(this.visibleToGlancerInMSec);
+  }
 }

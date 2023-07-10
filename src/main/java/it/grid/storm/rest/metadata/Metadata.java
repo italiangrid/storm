@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.rest.metadata;
 
@@ -16,17 +15,14 @@ import it.grid.storm.rest.metadata.model.StoriMetadata;
 import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
 import it.grid.storm.rest.metadata.service.ResourceService;
 import it.grid.storm.rest.metadata.service.StoriMetadataService;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/metadata")
 public class Metadata {
@@ -38,8 +34,10 @@ public class Metadata {
   public Metadata() throws NamespaceException {
 
     NamespaceInterface namespace = NamespaceDirector.getNamespace();
-    metadataService = new StoriMetadataService(
-        new ResourceService(namespace.getAllDefinedVFS(), namespace.getAllDefinedMappingRules()));
+    metadataService =
+        new StoriMetadataService(
+            new ResourceService(
+                namespace.getAllDefinedVFS(), namespace.getAllDefinedMappingRules()));
   }
 
   public Metadata(StoriMetadataService metadataService) {

@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.ea;
 
@@ -11,9 +10,7 @@ public class ExtendedAttributesFactory {
   public static ExtendedAttributes getExtendedAttributes() {
 
     ExtendedAttributes eaImpl = new ExtendedAttributesSwigImpl();
-    
-    return new MetricsEAAdapter(eaImpl,
-      METRIC_REGISTRY.getRegistry());
-  }
 
+    return new MetricsEAAdapter(eaImpl, METRIC_REGISTRY.getRegistry());
+  }
 }

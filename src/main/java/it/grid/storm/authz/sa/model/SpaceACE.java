@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.authz.sa.model;
 
@@ -14,21 +13,15 @@ public class SpaceACE {
   private SpaceAccessMask spaceAccessMask;
   private AceType aceType;
 
-  public SpaceACE() {
+  public SpaceACE() {}
 
-  }
-
-  /**
-   * @return the aceNumber
-   */
+  /** @return the aceNumber */
   public int getAceNumber() {
 
     return aceNumber;
   }
 
-  /**
-   * @param aceNumber the aceNumber to set
-   */
+  /** @param aceNumber the aceNumber to set */
   public void setAceNumber(int aceNumber) {
 
     this.aceNumber = aceNumber;
@@ -64,9 +57,7 @@ public class SpaceACE {
     return subjectPattern;
   }
 
-  /**
-   * @return the spacePermission
-   */
+  /** @return the spacePermission */
   public SpaceAccessMask getSpaceAccessMask() {
 
     return spaceAccessMask;
@@ -81,8 +72,15 @@ public class SpaceACE {
   public String toString() {
 
     String spacePermissionStr = spaceAccessMask.toString();
-    return "SpaceACE (" + getAceNumber() + "): " + getSubjectType() + ":" + getSubjectPattern()
-        + ":" + spacePermissionStr + ":" + aceType;
+    return "SpaceACE ("
+        + getAceNumber()
+        + "): "
+        + getSubjectType()
+        + ":"
+        + getSubjectPattern()
+        + ":"
+        + spacePermissionStr
+        + ":"
+        + aceType;
   }
-
 }

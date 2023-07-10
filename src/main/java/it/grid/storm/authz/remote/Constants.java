@@ -1,13 +1,9 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.authz.remote;
 
-/**
- * @author Michele Dibenedetto
- * 
- */
+/** @author Michele Dibenedetto */
 public class Constants {
 
   public static final String ENCODING_SCHEME = "UTF-8";
@@ -64,7 +60,7 @@ public class Constants {
    * /USER?DN_KEY=dn&FQANS_KEY=fquanFQANS_SEPARATORfquan /RESOURCE/VERSION/path/READ_OPERATION
    * /PLAIN/USER?DN_KEY=dn&FQANS_KEY=fquanFQANS_SEPARATORfquan /RESOURCE/VERSION/
    * path/WRITE_OPERATION/PLAIN/USER?DN_KEY=dn&FQANS_KEY=fquanFQANS_SEPARATORfquan
-   * 
+   *
    * /RESOURCE/VERSION/path/READ_OPERATION
    */
 }

@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.concurrency;
 
@@ -10,60 +9,57 @@ import org.slf4j.LoggerFactory;
 
 public class NamedThread extends Thread {
 
-	public static final String DEFAULT_NAME = "StoRM-Thread";
-	private static final AtomicInteger created = new AtomicInteger();
-	private static final AtomicInteger alive = new AtomicInteger();
-	private static final Logger log = LoggerFactory.getLogger(NamedThread.class);
+  public static final String DEFAULT_NAME = "StoRM-Thread";
+  private static final AtomicInteger created = new AtomicInteger();
+  private static final AtomicInteger alive = new AtomicInteger();
+  private static final Logger log = LoggerFactory.getLogger(NamedThread.class);
 
-	/**
-	 * @param target
-	 */
-	public NamedThread(Runnable target) {
+  /** @param target */
+  public NamedThread(Runnable target) {
 
-		this(target, DEFAULT_NAME);
-	}
+    this(target, DEFAULT_NAME);
+  }
 
-	/**
-	 * @param target
-	 * @param name
-	 */
-	public NamedThread(Runnable target, String name) {
+  /**
+   * @param target
+   * @param name
+   */
+  public NamedThread(Runnable target, String name) {
 
-		super(target, name + "-" + created.incrementAndGet());
+    super(target, name + "-" + created.incrementAndGet());
 
-		log.trace("Created  thread {}", getName());
-		
-		setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+    log.trace("Created  thread {}", getName());
 
-			public void uncaughtException(Thread t, Throwable e) {
+    setUncaughtExceptionHandler(
+        new Thread.UncaughtExceptionHandler() {
 
-				log.error("UNCAUGHT in thread {}", t.getName(), e);
-			}
-		});
+          public void uncaughtException(Thread t, Throwable e) {
 
-	}
+            log.error("UNCAUGHT in thread {}", t.getName(), e);
+          }
+        });
+  }
 
-	public void run() {
+  public void run() {
 
-	  log.trace("NamedThread.run name={}", getName());
+    log.trace("NamedThread.run name={}", getName());
 
-		try {
-			alive.incrementAndGet();
-			super.run();
-		} finally {
-			alive.decrementAndGet();
-			log.trace("NamedThread.run name={} done.", getName());
-		}
-	}
+    try {
+      alive.incrementAndGet();
+      super.run();
+    } finally {
+      alive.decrementAndGet();
+      log.trace("NamedThread.run name={} done.", getName());
+    }
+  }
 
-	public static int getThreadsCreated() {
+  public static int getThreadsCreated() {
 
-		return created.get();
-	}
+    return created.get();
+  }
 
-	public static int getThreadAlive() {
+  public static int getThreadAlive() {
 
-		return alive.get();
-	}
-
+    return alive.get();
+  }
 }

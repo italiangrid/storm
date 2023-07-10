@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.filesystem;
 
@@ -8,12 +7,10 @@ import static java.lang.Integer.parseInt;
 import static java.lang.System.getProperty;
 import static java.util.Objects.isNull;
 
+import it.grid.storm.griduser.LocalUser;
 import java.util.Random;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import it.grid.storm.griduser.LocalUser;
 
 public class RandomWaitFilesystemAdapter implements FilesystemIF {
 
@@ -40,17 +37,17 @@ public class RandomWaitFilesystemAdapter implements FilesystemIF {
 
   private RandomWaitFilesystemAdapter(FilesystemIF delegate) {
 
-    LOG.warn("RandomWaitFilesystemAdapter is ENABLED ({} property is defined)",
-        RANDOM_SLEEP_ENABLED);
+    LOG.warn(
+        "RandomWaitFilesystemAdapter is ENABLED ({} property is defined)", RANDOM_SLEEP_ENABLED);
 
-    LOG.warn("This adapter introduces synthentic sleep time on each fs call!! Not advisable "
-        + "in production");
+    LOG.warn(
+        "This adapter introduces synthentic sleep time on each fs call!! Not advisable "
+            + "in production");
 
     this.delegate = delegate;
     maxWaitTime = parseInt(getProperty(MAX_WAIT_TIME_MSEC, "1000"));
     minWaitTime = parseInt(getProperty(MIN_WAIT_TIME_MSEC, "10"));
   }
-
 
   public static FilesystemIF maybeWrapFilesystem(FilesystemIF delegate) {
     if (!isNull(getProperty(RANDOM_SLEEP_ENABLED))) {
@@ -70,7 +67,6 @@ public class RandomWaitFilesystemAdapter implements FilesystemIF {
       Thread.currentThread().interrupt();
     }
   }
-
 
   @Override
   public long getSize(String file) {
@@ -143,14 +139,14 @@ public class RandomWaitFilesystemAdapter implements FilesystemIF {
     return delegate.getUserPermission(u, fileOrDirectory);
   }
 
-  public FilesystemPermission grantGroupPermission(LocalUser u, String fileOrDirectory,
-      FilesystemPermission permission) {
+  public FilesystemPermission grantGroupPermission(
+      LocalUser u, String fileOrDirectory, FilesystemPermission permission) {
     sleepSomeTime();
     return delegate.grantGroupPermission(u, fileOrDirectory, permission);
   }
 
-  public FilesystemPermission grantUserPermission(LocalUser u, String fileOrDirectory,
-      FilesystemPermission permission) {
+  public FilesystemPermission grantUserPermission(
+      LocalUser u, String fileOrDirectory, FilesystemPermission permission) {
     sleepSomeTime();
     return delegate.grantUserPermission(u, fileOrDirectory, permission);
   }
@@ -165,28 +161,27 @@ public class RandomWaitFilesystemAdapter implements FilesystemIF {
     return delegate.removeUserPermission(u, fileOrDirectory);
   }
 
-  public FilesystemPermission revokeGroupPermission(LocalUser u, String fileOrDirectory,
-      FilesystemPermission permission) {
+  public FilesystemPermission revokeGroupPermission(
+      LocalUser u, String fileOrDirectory, FilesystemPermission permission) {
     sleepSomeTime();
     return delegate.revokeGroupPermission(u, fileOrDirectory, permission);
   }
 
-  public FilesystemPermission revokeUserPermission(LocalUser u, String fileOrDirectory,
-      FilesystemPermission permission) {
+  public FilesystemPermission revokeUserPermission(
+      LocalUser u, String fileOrDirectory, FilesystemPermission permission) {
     sleepSomeTime();
     return delegate.revokeUserPermission(u, fileOrDirectory, permission);
   }
 
-  public FilesystemPermission setGroupPermission(LocalUser u, String fileOrDirectory,
-      FilesystemPermission permission) {
+  public FilesystemPermission setGroupPermission(
+      LocalUser u, String fileOrDirectory, FilesystemPermission permission) {
     sleepSomeTime();
     return delegate.setGroupPermission(u, fileOrDirectory, permission);
   }
 
-  public FilesystemPermission setUserPermission(LocalUser u, String fileOrDirectory,
-      FilesystemPermission permission) {
+  public FilesystemPermission setUserPermission(
+      LocalUser u, String fileOrDirectory, FilesystemPermission permission) {
     sleepSomeTime();
     return delegate.setUserPermission(u, fileOrDirectory, permission);
   }
-
 }

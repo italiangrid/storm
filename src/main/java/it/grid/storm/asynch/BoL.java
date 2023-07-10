@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.asynch;
 
@@ -33,7 +32,6 @@ import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +80,7 @@ import org.slf4j.LoggerFactory;
  * to manipulate the ACLs, StoRM was not configured for the underlying FileSystem, or there was an
  * unexpected error; in the first case the status changes to SRM_INVALID_PATH, while in all other
  * ones it changes to SRM_FAILURE; corresponding messages get logged.
- * 
+ *
  * @author CNAF
  * @date Aug 2009
  * @version 1.0
@@ -128,7 +126,7 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see it.grid.storm.asynch.SuspendedChunk#completeRequest(it.grid.storm.tape.
    * recalltable.model.RecallTaskStatus)
    */
@@ -153,21 +151,24 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
         return true;
       }
     } catch (FSException e) {
-      log.error("Unable to determine if file {} is on disk. FSException: {}",
-          bupLocalFile.getAbsolutePath(), e.getMessage(), e);
+      log.error(
+          "Unable to determine if file {} is on disk. FSException: {}",
+          bupLocalFile.getAbsolutePath(),
+          e.getMessage(),
+          e);
       requestData.changeStatusSRM_FAILURE("Unable to determine if file is on disk");
       return false;
     }
 
-    log.error("File {} not found on the disk, but it was reported to be "
-        + "successfully recalled from tape", bupLocalFile.getAbsolutePath());
+    log.error(
+        "File {} not found on the disk, but it was reported to be "
+            + "successfully recalled from tape",
+        bupLocalFile.getAbsolutePath());
     requestData.changeStatusSRM_FAILURE("Error recalling file from tape");
     return false;
   }
 
-  /**
-   * Method that handles a chunk. It is invoked by the scheduler to carry out the task.
-   */
+  /** Method that handles a chunk. It is invoked by the scheduler to carry out the task. */
   public void doIt() {
 
     TSURL surl = requestData.getSURL();
@@ -184,7 +185,6 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
           "Requested file is" + " busy (in an incompatible state with BOL)");
       printOutcome(dn, surl, requestData.getStatus());
       return;
-
     }
 
     StoRI fileStoRI = null;
@@ -193,22 +193,36 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
     } catch (IllegalArgumentException e) {
       log.error(
           "Unable to build a stori for surl '{}' and user '{}'. " + "IllegalArgumentException: {}",
-          surl, dn, e.getMessage(), e);
+          surl,
+          dn,
+          e.getMessage(),
+          e);
       requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
       failure = true;
     } catch (UnapprochableSurlException e) {
-      log.info("Unable to build a stori for surl '{}' and user '{}'. "
-          + "UnapprochableSurlException: {}", surl, dn, e.getMessage());
+      log.info(
+          "Unable to build a stori for surl '{}' and user '{}'. "
+              + "UnapprochableSurlException: {}",
+          surl,
+          dn,
+          e.getMessage());
       requestData.changeStatusSRM_AUTHORIZATION_FAILURE(e.getMessage());
       failure = true;
     } catch (NamespaceException e) {
-      log.error("Unable to build a stori for surl '{}' and user '{}'. " + "NamespaceException: {}",
-          surl, dn, e.getMessage(), e);
+      log.error(
+          "Unable to build a stori for surl '{}' and user '{}'. " + "NamespaceException: {}",
+          surl,
+          dn,
+          e.getMessage(),
+          e);
       requestData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
       failure = true;
     } catch (InvalidSURLException e) {
-      log.info("Unable to build a stori for surl '{}' and user '{}'. " + "InvalidSURLException: {}",
-          surl, dn, e.getMessage());
+      log.info(
+          "Unable to build a stori for surl '{}' and user '{}'. " + "InvalidSURLException: {}",
+          surl,
+          dn,
+          e.getMessage());
       requestData.changeStatusSRM_INVALID_PATH(e.getMessage());
       failure = true;
     } finally {
@@ -273,9 +287,7 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
     bupLocalFile = localFile;
   }
 
-  /**
-   * Manager of the IsPermit state: the user may indeed read the specified SURL
-   */
+  /** Manager of the IsPermit state: the user may indeed read the specified SURL */
   private void manageIsPermit(StoRI fileStoRI) {
 
     LocalFile localFile = fileStoRI.getLocalFile();
@@ -301,10 +313,10 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 
       // Compute the Expiration Time in seconds
       // Add the deferred start time to the expiration date
-      long expDate = (System.currentTimeMillis() / 1000
-          + (requestData.getLifeTime().value() + requestData.getDeferredStartTime()));
+      long expDate =
+          (System.currentTimeMillis() / 1000
+              + (requestData.getLifeTime().value() + requestData.getDeferredStartTime()));
       StormEA.setPinned(localFile.getAbsolutePath(), expDate);
-
 
       requestData.setFileSize(TSizeInBytes.make(localFile.length(), SizeUnit.BYTES));
 
@@ -336,7 +348,9 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
           "ATTENTION in BoLChunk! BoLChunk received a SecurityException "
               + "from Java SecurityManager; StoRM cannot check-existence or "
               + "check-if-directory for: {}; exception: {}",
-          localFile.toString(), e.getMessage(), e);
+          localFile.toString(),
+          e.getMessage(),
+          e);
       return;
 
     } catch (Exception e) {
@@ -357,7 +371,10 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 
   private void printOutcome(String dn, TSURL surl, TReturnStatus status) {
 
-    log.info("Finished handling BoL chunk for user DN: {}; for SURL: {}; " + "result is: {}", dn,
-        surl, status);
+    log.info(
+        "Finished handling BoL chunk for user DN: {}; for SURL: {}; " + "result is: {}",
+        dn,
+        surl,
+        status);
   }
 }

@@ -1,25 +1,22 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.info.remote.resources;
 
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
+import it.grid.storm.info.SpaceInfoManager;
+import it.grid.storm.info.model.SpaceStatusSummary;
+import it.grid.storm.info.remote.Constants;
+import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import it.grid.storm.info.SpaceInfoManager;
-import it.grid.storm.info.model.SpaceStatusSummary;
-import it.grid.storm.info.remote.Constants;
-import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
 
 @Path("/" + Constants.RESOURCE)
 public class SpaceStatusResource {
@@ -48,9 +45,10 @@ public class SpaceStatusResource {
       log.info(
           "Unable to load requested space status summary from database. IllegalArgumentException: "
               + e.getMessage());
-      throw new WebApplicationException(Response.status(NOT_FOUND)
-        .entity("Unable to load requested space status info from database")
-        .build());
+      throw new WebApplicationException(
+          Response.status(NOT_FOUND)
+              .entity("Unable to load requested space status info from database")
+              .build());
     }
     result = saSum.getJsonFormat();
     return result;

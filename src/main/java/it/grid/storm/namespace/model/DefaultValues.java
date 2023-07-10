@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.namespace.model;
 
@@ -14,318 +13,273 @@ import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceType;
-
 import org.slf4j.Logger;
 
 /**
- * <p>
  * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2006
- * </p>
- * 
- * <p>
- * Company: INFN-CNAF and ICTP/eGrid project
- * </p>
- * 
+ *
+ * <p>Description:
+ *
+ * <p>Copyright: Copyright (c) 2006
+ *
+ * <p>Company: INFN-CNAF and ICTP/eGrid project
+ *
  * @author Riccardo Zappi
  * @version 1.0
  */
 public class DefaultValues implements DefaultValuesInterface {
 
-	private Logger log = NamespaceDirector.getLogger();
-	private SpaceDefault spaceDefault;
-	private FileDefault fileDefault;
+  private Logger log = NamespaceDirector.getLogger();
+  private SpaceDefault spaceDefault;
+  private FileDefault fileDefault;
 
-	public DefaultValues(SpaceDefault spaceDefault, FileDefault fileDefault) {
+  public DefaultValues(SpaceDefault spaceDefault, FileDefault fileDefault) {
 
-		this.spaceDefault = spaceDefault;
-		this.fileDefault = fileDefault;
-	}
+    this.spaceDefault = spaceDefault;
+    this.fileDefault = fileDefault;
+  }
 
-	public DefaultValues() {
+  public DefaultValues() {
 
-		try {
-			this.spaceDefault = new SpaceDefault();
-		} catch (NamespaceException ex) {
-			log.error("Something was wrong building default Space Default Values");
-		}
-		try {
-			this.fileDefault = new FileDefault();
-		} catch (NamespaceException ex1) {
-			log.error("Something was wrong building default File Default Values");
-		}
-	}
+    try {
+      this.spaceDefault = new SpaceDefault();
+    } catch (NamespaceException ex) {
+      log.error("Something was wrong building default Space Default Values");
+    }
+    try {
+      this.fileDefault = new FileDefault();
+    } catch (NamespaceException ex1) {
+      log.error("Something was wrong building default File Default Values");
+    }
+  }
 
-	public void setSpaceDefaults(String type, long lifetime, long guarsize,
-		long totalsize) throws NamespaceException {
+  public void setSpaceDefaults(String type, long lifetime, long guarsize, long totalsize)
+      throws NamespaceException {
 
-		this.spaceDefault = new SpaceDefault(type, lifetime, guarsize, totalsize);
-	}
+    this.spaceDefault = new SpaceDefault(type, lifetime, guarsize, totalsize);
+  }
 
-	public void setFileDefaults(String type, long lifetime)
-		throws NamespaceException {
+  public void setFileDefaults(String type, long lifetime) throws NamespaceException {
 
-		this.fileDefault = new FileDefault(type, lifetime);
-	}
+    this.fileDefault = new FileDefault(type, lifetime);
+  }
 
-	public TLifeTimeInSeconds getDefaultSpaceLifetime() {
+  public TLifeTimeInSeconds getDefaultSpaceLifetime() {
 
-		return spaceDefault.lifetime;
-	}
+    return spaceDefault.lifetime;
+  }
 
-	public TSpaceType getDefaultSpaceType() {
+  public TSpaceType getDefaultSpaceType() {
 
-		return spaceDefault.type;
-	}
+    return spaceDefault.type;
+  }
 
-	public TSizeInBytes getDefaultGuaranteedSpaceSize() {
+  public TSizeInBytes getDefaultGuaranteedSpaceSize() {
 
-		return spaceDefault.guarsize;
-	}
+    return spaceDefault.guarsize;
+  }
 
-	public TSizeInBytes getDefaultTotalSpaceSize() {
+  public TSizeInBytes getDefaultTotalSpaceSize() {
 
-		return spaceDefault.totalsize;
-	}
+    return spaceDefault.totalsize;
+  }
 
-	public TLifeTimeInSeconds getDefaultFileLifeTime() {
+  public TLifeTimeInSeconds getDefaultFileLifeTime() {
 
-		return fileDefault.lifetime;
-	}
+    return fileDefault.lifetime;
+  }
 
-	public TFileStorageType getDefaultFileType() {
+  public TFileStorageType getDefaultFileType() {
 
-		return fileDefault.type;
-	}
+    return fileDefault.type;
+  }
 
-	@Override
-	public String toString() {
+  @Override
+  public String toString() {
 
-		StringBuilder sb = new StringBuilder();
-		String sep = System.getProperty("line.separator");
-		sb.append("   DEF. Space Lifetime       : "
-			+ this.getDefaultSpaceLifetime() + sep);
-		sb.append("   DEF. Space Guar. size     : "
-			+ this.getDefaultGuaranteedSpaceSize() + sep);
-		sb.append("   DEF. Space Tot. size      : "
-			+ this.getDefaultTotalSpaceSize() + sep);
-		sb.append("   DEF. Space Type           : " + this.getDefaultSpaceType()
-			+ sep);
-		sb.append("   DEF. File Lifetime        : " + this.getDefaultFileLifeTime()
-			+ sep);
-		sb.append("   DEF. File Type            : " + this.getDefaultFileType()
-			+ sep);
-		return sb.toString();
-	}
+    StringBuilder sb = new StringBuilder();
+    String sep = System.getProperty("line.separator");
+    sb.append("   DEF. Space Lifetime       : " + this.getDefaultSpaceLifetime() + sep);
+    sb.append("   DEF. Space Guar. size     : " + this.getDefaultGuaranteedSpaceSize() + sep);
+    sb.append("   DEF. Space Tot. size      : " + this.getDefaultTotalSpaceSize() + sep);
+    sb.append("   DEF. Space Type           : " + this.getDefaultSpaceType() + sep);
+    sb.append("   DEF. File Lifetime        : " + this.getDefaultFileLifeTime() + sep);
+    sb.append("   DEF. File Type            : " + this.getDefaultFileType() + sep);
+    return sb.toString();
+  }
 
-	/**************************************************************************
-	 * INNER CLASS
-	 **************************************************************************/
+  /**
+   * ************************************************************************ INNER CLASS
+   * ************************************************************************
+   */
 
-	/**
-	 * 
-	 * <p>
-	 * Title:
-	 * </p>
-	 * 
-	 * <p>
-	 * Description:
-	 * </p>
-	 * 
-	 * <p>
-	 * Copyright: Copyright (c) 2006
-	 * </p>
-	 * 
-	 * <p>
-	 * Company: INFN-CNAF and ICTP/eGrid project
-	 * </p>
-	 * 
-	 * @author Riccardo Zappi
-	 * @version 1.0
-	 */
-	public class SpaceDefault {
+  /**
+   * Title:
+   *
+   * <p>Description:
+   *
+   * <p>Copyright: Copyright (c) 2006
+   *
+   * <p>Company: INFN-CNAF and ICTP/eGrid project
+   *
+   * @author Riccardo Zappi
+   * @version 1.0
+   */
+  public class SpaceDefault {
 
-		private TSpaceType type = null;
-		private TLifeTimeInSeconds lifetime;
-		private TSizeInBytes guarsize;
-		private TSizeInBytes totalsize;
+    private TSpaceType type = null;
+    private TLifeTimeInSeconds lifetime;
+    private TSizeInBytes guarsize;
+    private TSizeInBytes totalsize;
 
-		public SpaceDefault() throws NamespaceException {
+    public SpaceDefault() throws NamespaceException {
 
-			// Build space type
-			this.type = TSpaceType.getTSpaceType(DefaultValues.DEFAULT_SPACE_TYPE);
-			// Build lifetime
-			try {
-				this.lifetime = TLifeTimeInSeconds.make(DefaultValues.DEFAULT_SPACE_LT,
-					TimeUnit.SECONDS);
-			} catch (IllegalArgumentException ex) {
-				log.error(" Default Space Lifetime was wrong ");
-				throw new NamespaceException(
-					"Space Lifetime invalid argument in Namespace configuration.", ex);
-			}
-			// Build of Guaranteed Space Size
-			try {
-				this.guarsize = TSizeInBytes.make(
-					DefaultValues.DEFAULT_SPACE_GUAR_SIZE, SizeUnit.BYTES);
-			} catch (InvalidTSizeAttributesException ex1) {
-				log.error(" Default  Guaranteed Space Size was wrong ");
-				throw new NamespaceException(
-					" Guaranteed Space Size invalid argument in Namespace configuration.",
-					ex1);
-			}
+      // Build space type
+      this.type = TSpaceType.getTSpaceType(DefaultValues.DEFAULT_SPACE_TYPE);
+      // Build lifetime
+      try {
+        this.lifetime = TLifeTimeInSeconds.make(DefaultValues.DEFAULT_SPACE_LT, TimeUnit.SECONDS);
+      } catch (IllegalArgumentException ex) {
+        log.error(" Default Space Lifetime was wrong ");
+        throw new NamespaceException(
+            "Space Lifetime invalid argument in Namespace configuration.", ex);
+      }
+      // Build of Guaranteed Space Size
+      try {
+        this.guarsize = TSizeInBytes.make(DefaultValues.DEFAULT_SPACE_GUAR_SIZE, SizeUnit.BYTES);
+      } catch (InvalidTSizeAttributesException ex1) {
+        log.error(" Default  Guaranteed Space Size was wrong ");
+        throw new NamespaceException(
+            " Guaranteed Space Size invalid argument in Namespace configuration.", ex1);
+      }
 
-			// Build of Total Space Size
-			try {
-				this.totalsize = TSizeInBytes.make(
-					DefaultValues.DEFAULT_SPACE_TOT_SIZE, SizeUnit.BYTES);
-			} catch (InvalidTSizeAttributesException ex2) {
-				log.error(" Default Total Space Size was wrong ");
-				throw new NamespaceException(
-					"Total Space Size invalid argument in Namespace configuration.", ex2);
-			}
-		}
+      // Build of Total Space Size
+      try {
+        this.totalsize = TSizeInBytes.make(DefaultValues.DEFAULT_SPACE_TOT_SIZE, SizeUnit.BYTES);
+      } catch (InvalidTSizeAttributesException ex2) {
+        log.error(" Default Total Space Size was wrong ");
+        throw new NamespaceException(
+            "Total Space Size invalid argument in Namespace configuration.", ex2);
+      }
+    }
 
-		public SpaceDefault(String type, long lifetime, long guarsize,
-			long totalsize) throws NamespaceException {
+    public SpaceDefault(String type, long lifetime, long guarsize, long totalsize)
+        throws NamespaceException {
 
-			// Build space type
-			this.type = TSpaceType.getTSpaceType(type);
+      // Build space type
+      this.type = TSpaceType.getTSpaceType(type);
 
-			// Build lifetime
-			try {
-				this.lifetime = TLifeTimeInSeconds.make(lifetime, TimeUnit.SECONDS);
-			} catch (IllegalArgumentException ex) {
-				log.error(" Default Space Lifetime was wrong ");
-				throw new NamespaceException(
-					"Space Lifetime invalid argument in Namespace configuration.", ex);
-			}
+      // Build lifetime
+      try {
+        this.lifetime = TLifeTimeInSeconds.make(lifetime, TimeUnit.SECONDS);
+      } catch (IllegalArgumentException ex) {
+        log.error(" Default Space Lifetime was wrong ");
+        throw new NamespaceException(
+            "Space Lifetime invalid argument in Namespace configuration.", ex);
+      }
 
-			// Checking of size
-			if (guarsize > totalsize) {
-				log
-					.error(" Default Space Guaranteed Size is greater of Space Total Size !");
-				throw new NamespaceException(
-					"Space size (Guar and Total) are invalid in Namespace configuration.");
-			}
+      // Checking of size
+      if (guarsize > totalsize) {
+        log.error(" Default Space Guaranteed Size is greater of Space Total Size !");
+        throw new NamespaceException(
+            "Space size (Guar and Total) are invalid in Namespace configuration.");
+      }
 
-			// Build of Guaranteed Space Size
-			try {
-				this.guarsize = TSizeInBytes.make(guarsize, SizeUnit.BYTES);
-			} catch (InvalidTSizeAttributesException ex1) {
-				log.error(" Default  Guaranteed Space Size was wrong ");
-				throw new NamespaceException(
-					" Guaranteed Space Size invalid argument in Namespace configuration.",
-					ex1);
-			}
+      // Build of Guaranteed Space Size
+      try {
+        this.guarsize = TSizeInBytes.make(guarsize, SizeUnit.BYTES);
+      } catch (InvalidTSizeAttributesException ex1) {
+        log.error(" Default  Guaranteed Space Size was wrong ");
+        throw new NamespaceException(
+            " Guaranteed Space Size invalid argument in Namespace configuration.", ex1);
+      }
 
-			// Build of Total Space Size
-			try {
-				this.totalsize = TSizeInBytes.make(totalsize, SizeUnit.BYTES);
-			} catch (InvalidTSizeAttributesException ex2) {
-				log.error(" Default Total Space Size was wrong ");
-				throw new NamespaceException(
-					"Total Space Size invalid argument in Namespace configuration.", ex2);
-			}
-		}
+      // Build of Total Space Size
+      try {
+        this.totalsize = TSizeInBytes.make(totalsize, SizeUnit.BYTES);
+      } catch (InvalidTSizeAttributesException ex2) {
+        log.error(" Default Total Space Size was wrong ");
+        throw new NamespaceException(
+            "Total Space Size invalid argument in Namespace configuration.", ex2);
+      }
+    }
 
-		public TSpaceType getSpaceType() {
+    public TSpaceType getSpaceType() {
 
-			return type;
-		}
+      return type;
+    }
 
-		public TLifeTimeInSeconds getLifetime() {
+    public TLifeTimeInSeconds getLifetime() {
 
-			return lifetime;
-		}
+      return lifetime;
+    }
 
-		public TSizeInBytes guarsize() {
+    public TSizeInBytes guarsize() {
 
-			return guarsize;
-		}
+      return guarsize;
+    }
 
-		public TSizeInBytes totalsize() {
+    public TSizeInBytes totalsize() {
 
-			return totalsize;
-		}
+      return totalsize;
+    }
+  }
 
-	}
+  /**
+   * Title:
+   *
+   * <p>Description:
+   *
+   * <p>Copyright: Copyright (c) 2006
+   *
+   * <p>Company: INFN-CNAF and ICTP/eGrid project
+   *
+   * @author Riccardo Zappi
+   * @version 1.0
+   */
+  public class FileDefault {
 
-	/**
-	 * 
-	 * <p>
-	 * Title:
-	 * </p>
-	 * 
-	 * <p>
-	 * Description:
-	 * </p>
-	 * 
-	 * <p>
-	 * Copyright: Copyright (c) 2006
-	 * </p>
-	 * 
-	 * <p>
-	 * Company: INFN-CNAF and ICTP/eGrid project
-	 * </p>
-	 * 
-	 * @author Riccardo Zappi
-	 * @version 1.0
-	 */
-	public class FileDefault {
+    private TFileStorageType type = null;
+    private TLifeTimeInSeconds lifetime;
 
-		private TFileStorageType type = null;
-		private TLifeTimeInSeconds lifetime;
+    public FileDefault() throws NamespaceException {
 
-		public FileDefault() throws NamespaceException {
+      // Build space type
+      this.type = TFileStorageType.getTFileStorageType(DefaultValues.DEFAULT_FILE_TYPE);
 
-			// Build space type
-			this.type = TFileStorageType
-				.getTFileStorageType(DefaultValues.DEFAULT_FILE_TYPE);
+      // Build lifetime
+      try {
+        this.lifetime = TLifeTimeInSeconds.make(DefaultValues.DEFAULT_FILE_LT, TimeUnit.SECONDS);
+      } catch (IllegalArgumentException ex) {
+        log.error(" Default Space Lifetime was wrong ");
+        throw new NamespaceException(
+            "Space Lifetime invalid argument in Namespace configuration.", ex);
+      }
+    }
 
-			// Build lifetime
-			try {
-				this.lifetime = TLifeTimeInSeconds.make(DefaultValues.DEFAULT_FILE_LT,
-					TimeUnit.SECONDS);
-			} catch (IllegalArgumentException ex) {
-				log.error(" Default Space Lifetime was wrong ");
-				throw new NamespaceException(
-					"Space Lifetime invalid argument in Namespace configuration.", ex);
-			}
+    public FileDefault(String type, long lifetime) throws NamespaceException {
 
-		}
+      // Build space type
+      this.type = TFileStorageType.getTFileStorageType(type);
 
-		public FileDefault(String type, long lifetime) throws NamespaceException {
+      // Build lifetime
+      try {
+        this.lifetime = TLifeTimeInSeconds.make(lifetime, TimeUnit.SECONDS);
+      } catch (IllegalArgumentException ex) {
+        log.error(" Default Space Lifetime was wrong ");
+        throw new NamespaceException(
+            "Space Lifetime invalid argument in Namespace configuration.", ex);
+      }
+    }
 
-			// Build space type
-			this.type = TFileStorageType.getTFileStorageType(type);
+    public TFileStorageType getFileStorageType() {
 
-			// Build lifetime
-			try {
-				this.lifetime = TLifeTimeInSeconds.make(lifetime, TimeUnit.SECONDS);
-			} catch (IllegalArgumentException ex) {
-				log.error(" Default Space Lifetime was wrong ");
-				throw new NamespaceException(
-					"Space Lifetime invalid argument in Namespace configuration.", ex);
-			}
-		}
+      return type;
+    }
 
-		public TFileStorageType getFileStorageType() {
+    public TLifeTimeInSeconds getLifetime() {
 
-			return type;
-		}
-
-		public TLifeTimeInSeconds getLifetime() {
-
-			return lifetime;
-		}
-
-	}
-
+      return lifetime;
+    }
+  }
 }

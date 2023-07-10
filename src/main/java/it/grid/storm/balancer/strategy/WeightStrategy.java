@@ -1,17 +1,13 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.balancer.strategy;
 
+import com.google.common.collect.Lists;
+import it.grid.storm.balancer.Node;
 import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
-
-import it.grid.storm.balancer.Node;
 
 public class WeightStrategy extends RoundRobinStrategy {
 

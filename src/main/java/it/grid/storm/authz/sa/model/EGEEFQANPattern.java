@@ -1,16 +1,13 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.authz.sa.model;
 
+import it.grid.storm.authz.sa.AuthzDBReaderException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import it.grid.storm.authz.sa.AuthzDBReaderException;
 
 public class EGEEFQANPattern extends FQANPattern {
 
@@ -18,17 +15,14 @@ public class EGEEFQANPattern extends FQANPattern {
 
   // To verify the Regular Expression visit the site
   // "http://www.fileformat.info/tool/regex.htm"
-  static private Pattern fqanWildcardPattern =
+  private static Pattern fqanWildcardPattern =
       Pattern.compile("/[\\w-\\.]+(((/[\\w-\\.]+)*)(/\\u002A)?)(/Role=(([\\w-\\.]+)|(\\u002A)))?");
 
   private String fqanRE = null;
   private String voName = null;
   private final boolean checkValidity;
 
-  /**
-   * CONSTRUCTOR
-   */
-
+  /** CONSTRUCTOR */
   public EGEEFQANPattern(String fqanRE) throws AuthzDBReaderException {
 
     this(fqanRE, true);
@@ -45,18 +39,16 @@ public class EGEEFQANPattern extends FQANPattern {
 
   /**
    * PRIVATE SETTER /VO[/group[/subgroup(s)]][/Role=role]
-   * 
-   * - voName = VO - groupPattern = '/group[/subgroup(s)]' - rolePattern = 'role'
-   * 
-   **/
-
+   *
+   * <p>- voName = VO - groupPattern = '/group[/subgroup(s)]' - rolePattern = 'role'
+   */
   private void generatePattern() throws AuthzDBReaderException {
 
     /**
      * --------- CAPABILITY is not more permitted --------- //Remove capability if present int
      * capIndex = fqanRE.indexOf("/Capability="); if (capIndex>0) { fqanRE = fqanRE.substring(0,
      * capIndex); }
-     **/
+     */
 
     // Retrieve Role String if present
     String role = null;
@@ -92,9 +84,7 @@ public class EGEEFQANPattern extends FQANPattern {
     log.debug("RolePattern = {}", rolePatternString);
   }
 
-  /**
-   * validateMR
-   */
+  /** validateMR */
   @Override
   public boolean isValidPattern() throws AuthzDBReaderException {
 
@@ -109,5 +99,4 @@ public class EGEEFQANPattern extends FQANPattern {
     }
     return true;
   }
-
 }

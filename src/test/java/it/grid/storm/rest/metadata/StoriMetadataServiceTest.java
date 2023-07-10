@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.rest.metadata;
 
@@ -15,15 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
-
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Lists;
-
 import it.grid.storm.ea.ExtendedAttributes;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FSException;
@@ -39,6 +30,11 @@ import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
 import it.grid.storm.rest.metadata.service.ResourceService;
 import it.grid.storm.rest.metadata.service.StoriMetadataService;
 import it.grid.storm.srm.types.TDirOption;
+import java.io.IOException;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StoriMetadataServiceTest {
 
@@ -57,7 +53,8 @@ public class StoriMetadataServiceTest {
 
   private StoriMetadataService service;
 
-  private void init(boolean dirExists, boolean fileExists, boolean isMigrated, boolean isRecalled) throws IOException, FSException, ResourceNotFoundException, NamespaceException {
+  private void init(boolean dirExists, boolean fileExists, boolean isMigrated, boolean isRecalled)
+      throws IOException, FSException, ResourceNotFoundException, NamespaceException {
 
     initStormEA(isMigrated, isRecalled);
 
@@ -99,19 +96,23 @@ public class StoriMetadataServiceTest {
     service = new StoriMetadataService(resourceService);
   }
 
-  private void initAsFileOnline() throws IOException, FSException, ResourceNotFoundException, NamespaceException {
+  private void initAsFileOnline()
+      throws IOException, FSException, ResourceNotFoundException, NamespaceException {
     init(true, true, false, false);
   }
 
-  private void initAsFileOffline() throws IOException, FSException, ResourceNotFoundException, NamespaceException {
+  private void initAsFileOffline()
+      throws IOException, FSException, ResourceNotFoundException, NamespaceException {
     init(true, true, true, false);
   }
 
-  private void initAsFileNotFound() throws IOException, FSException, ResourceNotFoundException, NamespaceException {
+  private void initAsFileNotFound()
+      throws IOException, FSException, ResourceNotFoundException, NamespaceException {
     init(true, false, false, false);
   }
 
-  private void initAsFileMigratedAndRecalled() throws IOException, FSException, ResourceNotFoundException, NamespaceException {
+  private void initAsFileMigratedAndRecalled()
+      throws IOException, FSException, ResourceNotFoundException, NamespaceException {
     init(true, true, true, true);
   }
 
@@ -133,8 +134,9 @@ public class StoriMetadataServiceTest {
   }
 
   @Test
-  public void testSuccess() throws NamespaceException, IOException, ResourceNotFoundException,
-      SecurityException, FilesystemError, FSException {
+  public void testSuccess()
+      throws NamespaceException, IOException, ResourceNotFoundException, SecurityException,
+          FilesystemError, FSException {
 
     initAsFileOnline();
     StoriMetadata metadata = service.getMetadata(FILE_STFN_PATH);
@@ -153,8 +155,9 @@ public class StoriMetadataServiceTest {
   }
 
   @Test
-  public void testSuccessDirectory() throws NamespaceException, IOException,
-      ResourceNotFoundException, SecurityException, FilesystemError, FSException {
+  public void testSuccessDirectory()
+      throws NamespaceException, IOException, ResourceNotFoundException, SecurityException,
+          FilesystemError, FSException {
 
     initAsFileOnline();
     StoriMetadata metadata = service.getMetadata(DIR_STFN_PATH);
@@ -169,7 +172,8 @@ public class StoriMetadataServiceTest {
 
   @Test
   public void testFileNotFound()
-      throws NamespaceException, IOException, SecurityException, FilesystemError, FSException, ResourceNotFoundException {
+      throws NamespaceException, IOException, SecurityException, FilesystemError, FSException,
+          ResourceNotFoundException {
 
     initAsFileNotFound();
     try {
@@ -180,8 +184,9 @@ public class StoriMetadataServiceTest {
   }
 
   @Test
-  public void testSuccessFileExistsButMigrated() throws NamespaceException, IOException,
-      ResourceNotFoundException, SecurityException, FilesystemError, FSException {
+  public void testSuccessFileExistsButMigrated()
+      throws NamespaceException, IOException, ResourceNotFoundException, SecurityException,
+          FilesystemError, FSException {
 
     initAsFileOffline();
     StoriMetadata metadata = service.getMetadata(FILE_STFN_PATH);
@@ -193,8 +198,9 @@ public class StoriMetadataServiceTest {
   }
 
   @Test
-  public void testSuccessFileMigratedAndRecalled() throws NamespaceException, IOException,
-      ResourceNotFoundException, SecurityException, FilesystemError, FSException {
+  public void testSuccessFileMigratedAndRecalled()
+      throws NamespaceException, IOException, ResourceNotFoundException, SecurityException,
+          FilesystemError, FSException {
 
     initAsFileMigratedAndRecalled();
     StoriMetadata metadata = service.getMetadata(FILE_STFN_PATH);

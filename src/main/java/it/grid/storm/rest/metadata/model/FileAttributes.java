@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.rest.metadata.model;
 
@@ -22,7 +21,7 @@ public class FileAttributes {
 
   /**
    * Constructor with parameters.
-   * 
+   *
    * @param pinned Is file pinned.
    * @param migrated Is file migrated to tape.
    * @param premigrated Is file only on disk and needs to be migrated to tape.
@@ -32,10 +31,14 @@ public class FileAttributes {
    * @param tsmRecT The recall tasks queued
    */
   @JsonCreator
-  public FileAttributes(@JsonProperty("pinned") Boolean pinned,
-      @JsonProperty("migrated") Boolean migrated, @JsonProperty("premigrated") Boolean premigrated,
-      @JsonProperty("checksum") String checksum, @JsonProperty("TSMRecD") Long tsmRecD,
-      @JsonProperty("TSMRecR") Integer tsmRecR, @JsonProperty("TSMRecT") String tsmRecT) {
+  public FileAttributes(
+      @JsonProperty("pinned") Boolean pinned,
+      @JsonProperty("migrated") Boolean migrated,
+      @JsonProperty("premigrated") Boolean premigrated,
+      @JsonProperty("checksum") String checksum,
+      @JsonProperty("TSMRecD") Long tsmRecD,
+      @JsonProperty("TSMRecR") Integer tsmRecR,
+      @JsonProperty("TSMRecT") String tsmRecT) {
 
     this.pinned = pinned;
     this.migrated = migrated;
@@ -76,14 +79,26 @@ public class FileAttributes {
 
   @Override
   public String toString() {
-    return "FileAttributes [pinned=" + pinned + ", migrated=" + migrated + ", premigrated="
-        + premigrated + ", checksum=" + checksum + ", tsmRecD=" + tsmRecD + ", tsmRecR=" + tsmRecR
-        + ", tsmRecT=" + tsmRecT + "]";
+    return "FileAttributes [pinned="
+        + pinned
+        + ", migrated="
+        + migrated
+        + ", premigrated="
+        + premigrated
+        + ", checksum="
+        + checksum
+        + ", tsmRecD="
+        + tsmRecD
+        + ", tsmRecR="
+        + tsmRecR
+        + ", tsmRecT="
+        + tsmRecT
+        + "]";
   }
 
-	/**
+  /**
    * Constructor through the builder.
-   * 
+   *
    * @param builder The @FileAttributes.Builder instance.
    */
   public FileAttributes(Builder builder) {

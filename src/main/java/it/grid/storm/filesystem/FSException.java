@@ -1,29 +1,27 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.filesystem;
 
 public class FSException extends Exception {
 
-	public FSException() {
+  public FSException() {
 
-		super();
-	}
+    super();
+  }
 
-	public FSException(String message) {
+  public FSException(String message) {
 
-		super(message);
-	}
+    super(message);
+  }
 
-	public FSException(String message, Throwable cause) {
+  public FSException(String message, Throwable cause) {
 
-		super(message, cause);
-	}
+    super(message, cause);
+  }
 
-	public FSException(Throwable cause) {
+  public FSException(Throwable cause) {
 
-		super(cause);
-	}
-
+    super(cause);
+  }
 }

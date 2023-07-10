@@ -1,144 +1,127 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.common.types;
 
 /**
  * This class represents the possible transfer protocols of StoRM.
- * 
+ *
  * @author EGRID ICTP - CNAF Bologna
  * @date March 23rd, 2005
  * @version 2.0
  */
 public class TransferProtocol {
 
-	private String protocol;
+  private String protocol;
 
-	/**
-	 * Static attribute that indicates EMPTY TransferProtocol
-	 */
-	public static TransferProtocol EMPTY = new TransferProtocol("empty") {
+  /** Static attribute that indicates EMPTY TransferProtocol */
+  public static TransferProtocol EMPTY =
+      new TransferProtocol("empty") {
 
-		public int hashCode() {
+        public int hashCode() {
 
-			return 0;
-		}
-	};
+          return 0;
+        }
+      };
 
-	/**
-	 * Static attribute that indicates FILE TransferProtocol.
-	 */
-	public static TransferProtocol FILE = new TransferProtocol("file") {
+  /** Static attribute that indicates FILE TransferProtocol. */
+  public static TransferProtocol FILE =
+      new TransferProtocol("file") {
 
-		public int hashCode() {
+        public int hashCode() {
 
-			return 1;
-		}
-	};
+          return 1;
+        }
+      };
 
-	/**
-	 * Static attribute that indicates GSIFTP TransferProtocol.
-	 */
-	public static TransferProtocol GSIFTP = new TransferProtocol("gsiftp") {
+  /** Static attribute that indicates GSIFTP TransferProtocol. */
+  public static TransferProtocol GSIFTP =
+      new TransferProtocol("gsiftp") {
 
-		public int hashCode() {
+        public int hashCode() {
 
-			return 2;
-		}
-	};
+          return 2;
+        }
+      };
 
-	/**
-	 * Static attribute that indicates RFIO TransferProtocol.
-	 */
-	public static TransferProtocol RFIO = new TransferProtocol("rfio") {
+  /** Static attribute that indicates RFIO TransferProtocol. */
+  public static TransferProtocol RFIO =
+      new TransferProtocol("rfio") {
 
-		public int hashCode() {
+        public int hashCode() {
 
-			return 3;
-		}
-	};
+          return 3;
+        }
+      };
 
-	/**
-	 * Static attribute that indicates ROOT TransferProtocol.
-	 */
-	public static TransferProtocol ROOT = new TransferProtocol("root") {
+  /** Static attribute that indicates ROOT TransferProtocol. */
+  public static TransferProtocol ROOT =
+      new TransferProtocol("root") {
 
-		public int hashCode() {
+        public int hashCode() {
 
-			return 4;
-		}
-	};
-	
-	/**
-	 * Static attribute that indicates XROOT TransferProtocol.
-	 */
-	public static TransferProtocol XROOT = new TransferProtocol("xroot") {
+          return 4;
+        }
+      };
 
-		public int hashCode() {
+  /** Static attribute that indicates XROOT TransferProtocol. */
+  public static TransferProtocol XROOT =
+      new TransferProtocol("xroot") {
 
-			return 8;
-		}
-	};
+        public int hashCode() {
 
-	/**
-	 * Static attribute that indicates HTTP TransferProtocol.
-	 */
-	public static TransferProtocol HTTP = new TransferProtocol("http") {
+          return 8;
+        }
+      };
 
-		public int hashCode() {
+  /** Static attribute that indicates HTTP TransferProtocol. */
+  public static TransferProtocol HTTP =
+      new TransferProtocol("http") {
 
-			return 5;
-		}
-	};
+        public int hashCode() {
 
-	/**
-	 * Static attribute that indicates HTTPS TransferProtocol.
-	 */
-	public static TransferProtocol HTTPS = new TransferProtocol("https") {
+          return 5;
+        }
+      };
 
-		public int hashCode() {
+  /** Static attribute that indicates HTTPS TransferProtocol. */
+  public static TransferProtocol HTTPS =
+      new TransferProtocol("https") {
 
-			return 6;
-		}
-	};
+        public int hashCode() {
 
-	private TransferProtocol(String protocol) {
+          return 6;
+        }
+      };
 
-		this.protocol = protocol;
-	}
+  private TransferProtocol(String protocol) {
 
-	public String getValue() {
+    this.protocol = protocol;
+  }
 
-		return protocol;
-	}
+  public String getValue() {
 
-	public String toString() {
+    return protocol;
+  }
 
-		return protocol;
-	}
+  public String toString() {
 
-	/**
-	 * Facility method to obtain a TransferProtocol object given its String
-	 * representation. Any white spaces are removed. In case no match is found, an
-	 * EMPTY TransferProtocol is returned.
-	 */
-	public static TransferProtocol getTransferProtocol(String protocol) {
+    return protocol;
+  }
 
-		if (protocol.toLowerCase().replaceAll(" ", "").equals(FILE.toString()))
-			return FILE;
-		if (protocol.toLowerCase().replaceAll(" ", "").equals(GSIFTP.toString()))
-			return GSIFTP;
-		if (protocol.toLowerCase().replaceAll(" ", "").equals(RFIO.toString()))
-			return RFIO;
-		if (protocol.toLowerCase().replaceAll(" ", "").equals(ROOT.toString()))
-			return ROOT;
-		if (protocol.toLowerCase().replaceAll(" ", "").equals(XROOT.toString()))
-			return XROOT;
-		if (protocol.toLowerCase().replaceAll(" ", "").equals(HTTP.toString()))
-			return HTTP;
-		if (protocol.toLowerCase().replaceAll(" ", "").equals(HTTPS.toString()))
-			return HTTPS;
-		return EMPTY;
-	}
+  /**
+   * Facility method to obtain a TransferProtocol object given its String representation. Any white
+   * spaces are removed. In case no match is found, an EMPTY TransferProtocol is returned.
+   */
+  public static TransferProtocol getTransferProtocol(String protocol) {
+
+    if (protocol.toLowerCase().replaceAll(" ", "").equals(FILE.toString())) return FILE;
+    if (protocol.toLowerCase().replaceAll(" ", "").equals(GSIFTP.toString())) return GSIFTP;
+    if (protocol.toLowerCase().replaceAll(" ", "").equals(RFIO.toString())) return RFIO;
+    if (protocol.toLowerCase().replaceAll(" ", "").equals(ROOT.toString())) return ROOT;
+    if (protocol.toLowerCase().replaceAll(" ", "").equals(XROOT.toString())) return XROOT;
+    if (protocol.toLowerCase().replaceAll(" ", "").equals(HTTP.toString())) return HTTP;
+    if (protocol.toLowerCase().replaceAll(" ", "").equals(HTTPS.toString())) return HTTPS;
+    return EMPTY;
+  }
 }

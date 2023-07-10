@@ -1,18 +1,10 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.namespace.model;
 
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-
 import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.balancer.Node;
 import it.grid.storm.balancer.node.FTPNode;
@@ -20,6 +12,10 @@ import it.grid.storm.balancer.node.HttpNode;
 import it.grid.storm.balancer.node.HttpsNode;
 import it.grid.storm.balancer.strategy.BalancingStrategyFactory;
 import it.grid.storm.namespace.NamespaceException;
+import java.util.List;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Capability {
 
@@ -41,10 +37,7 @@ public class Capability {
 
   private DefaultACL defaultACL;
 
-  /**
-   * Constructor
-   * 
-   */
+  /** Constructor */
   public Capability(ACLMode aclMode) throws NamespaceException {
 
     setACLMode(aclMode);
@@ -63,10 +56,10 @@ public class Capability {
     this(ACLMode.UNDEF);
   }
 
-  /*****************************************************************************
-   * BUILDING METHODs
-   ****************************************************************************/
-
+  /**
+   * *************************************************************************** BUILDING METHODs
+   * **************************************************************************
+   */
   public void setACLMode(ACLMode aclMode) throws NamespaceException {
 
     this.aclMode = aclMode;
@@ -74,7 +67,7 @@ public class Capability {
 
   /**
    * addProtocol
-   * 
+   *
    * @param prot Protocol
    */
   public void addTransportProtocolByScheme(Protocol protocol, TransportProtocol trasfProt) {
@@ -121,9 +114,10 @@ public class Capability {
     protocolPoolsByScheme.put(protocol, protPool);
 
     // Building Balancer and put it into Map of Balancers
-    if (Protocol.GSIFTP.equals(protocol) || Protocol.HTTP.equals(protocol)
+    if (Protocol.GSIFTP.equals(protocol)
+        || Protocol.HTTP.equals(protocol)
         || Protocol.HTTPS.equals(protocol)) {
-      
+
       List<Node> nodeList = Lists.newLinkedList();
       Node node = null;
       boolean weighedPool = protPool.getBalanceStrategy().requireWeight();
@@ -154,11 +148,13 @@ public class Capability {
             BalancingStrategyFactory.getBalancingStrategy(protPool.getBalanceStrategy(), nodeList);
         balancerByScheme.put(protocol, balancingStrategy);
       } catch (IllegalArgumentException e) {
-        log.error("Unable to get {} balacing strategy for nodes {}",
-            protPool.getBalanceStrategy().toString(), nodeList.toString());
+        log.error(
+            "Unable to get {} balacing strategy for nodes {}",
+            protPool.getBalanceStrategy().toString(),
+            nodeList.toString());
         throw new NamespaceException("Unable to create a balancing schema from the protocol pool");
       }
-      
+
     } else {
       log.error("The current version manage only GSIFTP.");
     }
@@ -193,13 +189,14 @@ public class Capability {
     throw new Exception("Unsupported protocol, no node type available: " + protocol);
   }
 
-  /*****************************************************************************
-   * READ METHODs
-   ****************************************************************************/
+  /**
+   * *************************************************************************** READ METHODs
+   * **************************************************************************
+   */
 
   /**
    * getACLMode
-   * 
+   *
    * @return String
    */
   public ACLMode getACLMode() {
@@ -217,16 +214,14 @@ public class Capability {
     return this.defaultACL;
   }
 
-  /*****************************************************************************
-   * BUSINESS METHODs
-   ****************************************************************************/
-
+  /**
+   * *************************************************************************** BUSINESS METHODs
+   * **************************************************************************
+   */
   public boolean isAllowedProtocol(String protocolScheme) {
 
     boolean result = false;
-    /**
-     * @todo IMPLEMENT THIS!
-     */
+    /** @todo IMPLEMENT THIS! */
     return result;
   }
 
@@ -253,10 +248,10 @@ public class Capability {
     return sb.toString();
   }
 
-  /******************************************
-   * VERSION 1.4 *
-   *******************************************/
-
+  /**
+   * **************************************** VERSION 1.4 *
+   * *****************************************
+   */
   public ProtocolPool getPoolByScheme(Protocol protocol) {
 
     ProtocolPool poll = null;
@@ -278,11 +273,12 @@ public class Capability {
   public List<TransportProtocol> getManagedProtocolByScheme(Protocol protocol) {
 
     List<TransportProtocol> result = Lists.newArrayList();
-    transpProtocolsList.forEach(tp -> {
-      if (tp.getProtocol().equals(protocol)) {
-        result.add(tp);
-      }
-    });
+    transpProtocolsList.forEach(
+        tp -> {
+          if (tp.getProtocol().equals(protocol)) {
+            result.add(tp);
+          }
+        });
     return result;
   }
 
@@ -303,5 +299,4 @@ public class Capability {
     }
     return null;
   }
-
 }

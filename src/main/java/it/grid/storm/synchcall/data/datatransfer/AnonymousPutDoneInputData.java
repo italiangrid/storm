@@ -1,19 +1,18 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.data.datatransfer;
 
 /*
- * 
+ *
  * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). 2006-2010.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -25,48 +24,49 @@ import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.synchcall.data.AbstractInputData;
 
-public class AnonymousPutDoneInputData extends AbstractInputData implements
-	ManageFileTransferRequestFilesInputData {
+public class AnonymousPutDoneInputData extends AbstractInputData
+    implements ManageFileTransferRequestFilesInputData {
 
-	private final TRequestToken reqToken;
-	private final ArrayOfSURLs arrayOfSURLs;
+  private final TRequestToken reqToken;
+  private final ArrayOfSURLs arrayOfSURLs;
 
-	public AnonymousPutDoneInputData(TRequestToken reqToken,
-		ArrayOfSURLs surlArray) throws IllegalArgumentException {
+  public AnonymousPutDoneInputData(TRequestToken reqToken, ArrayOfSURLs surlArray)
+      throws IllegalArgumentException {
 
-		if (surlArray == null || reqToken == null) {
-			throw new IllegalArgumentException(
-				"Unable to create the object, invalid arguments: reqToken=" + reqToken
-					+ " surlArray=" + surlArray);
-		}
-		this.reqToken = reqToken;
-		this.arrayOfSURLs = surlArray;
-	}
+    if (surlArray == null || reqToken == null) {
+      throw new IllegalArgumentException(
+          "Unable to create the object, invalid arguments: reqToken="
+              + reqToken
+              + " surlArray="
+              + surlArray);
+    }
+    this.reqToken = reqToken;
+    this.arrayOfSURLs = surlArray;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * it.grid.storm.synchcall.data.datatransfer.PutDoneInputData#getRequestToken
-	 * ()
-	 */
-	@Override
-	public TRequestToken getRequestToken() {
+  /*
+   * (non-Javadoc)
+   *
+   * @see
+   * it.grid.storm.synchcall.data.datatransfer.PutDoneInputData#getRequestToken
+   * ()
+   */
+  @Override
+  public TRequestToken getRequestToken() {
 
-		return reqToken;
-	}
+    return reqToken;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * it.grid.storm.synchcall.data.datatransfer.PutDoneInputData#getArrayOfSURLs
-	 * ()
-	 */
-	@Override
-	public ArrayOfSURLs getArrayOfSURLs() {
+  /*
+   * (non-Javadoc)
+   *
+   * @see
+   * it.grid.storm.synchcall.data.datatransfer.PutDoneInputData#getArrayOfSURLs
+   * ()
+   */
+  @Override
+  public ArrayOfSURLs getArrayOfSURLs() {
 
-		return arrayOfSURLs;
-	}
-
+    return arrayOfSURLs;
+  }
 }

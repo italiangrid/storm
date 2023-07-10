@@ -1,12 +1,10 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.authz.sa.model;
 
 import it.grid.storm.griduser.FQAN;
 import it.grid.storm.griduser.SubjectAttribute;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,7 +18,7 @@ public abstract class FQANPattern implements SubjectPattern {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see it.grid.storm.authz.sa.model.SubjectPattern#match(it.grid.storm.griduser .FQAN)
    */
   public boolean match(SubjectAttribute sa) {
@@ -46,5 +44,4 @@ public abstract class FQANPattern implements SubjectPattern {
     result.append(" FQAN.RolePatternMatchinRule = " + rolePatternString + sep);
     return result.toString();
   }
-
 }

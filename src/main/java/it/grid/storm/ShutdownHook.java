@@ -1,13 +1,11 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm;
 
+import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import it.grid.storm.space.gpfsquota.GPFSQuotaManager;
 
 public class ShutdownHook extends Thread {
 

@@ -1,13 +1,11 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 /**
- * This class represents the SpaceReservationOutputData associated with the SRM
- * request, that is it contains info about: UserID, spaceType, SizeDesired,
- * SizeGuaranteed,ecc. Number of files progressing, Number of files finished,
- * and whether the request is currently suspended.
- * 
+ * This class represents the SpaceReservationOutputData associated with the SRM request, that is it
+ * contains info about: UserID, spaceType, SizeDesired, SizeGuaranteed,ecc. Number of files
+ * progressing, Number of files finished, and whether the request is currently suspended.
+ *
  * @author Magnoni Luca
  * @author Cnaf -INFN Bologna
  * @date
@@ -15,127 +13,112 @@
  */
 package it.grid.storm.synchcall.data.space;
 
-import java.io.Serializable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import it.grid.storm.srm.types.*;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.exception.InvalidReserveSpaceOutputDataAttributesException;
+import java.io.Serializable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ReserveSpaceOutputData implements Serializable, OutputData {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -9112229304313364826L;
-	
-	private static final Logger log = LoggerFactory.getLogger(ReserveSpaceOutputData.class);
-	
-	private TSizeInBytes spaceTotal = null;
-	private TSizeInBytes spaceGuaranteed = null;
-	private TLifeTimeInSeconds spaceLifetime = null;
-	private TSpaceToken spaceToken = null;
-	private TReturnStatus status = null;
-	private TRetentionPolicyInfo retentionPolicyInfo = null;
+  /** */
+  private static final long serialVersionUID = -9112229304313364826L;
 
-	public ReserveSpaceOutputData(TReturnStatus status) {
+  private static final Logger log = LoggerFactory.getLogger(ReserveSpaceOutputData.class);
 
-		this.status = status;
-	}
+  private TSizeInBytes spaceTotal = null;
+  private TSizeInBytes spaceGuaranteed = null;
+  private TLifeTimeInSeconds spaceLifetime = null;
+  private TSpaceToken spaceToken = null;
+  private TReturnStatus status = null;
+  private TRetentionPolicyInfo retentionPolicyInfo = null;
 
-	public ReserveSpaceOutputData(TSizeInBytes spaceTotal,
-		TSizeInBytes spaceGuaranteed, TLifeTimeInSeconds spaceLifetime,
-		TSpaceToken spaceToken, TReturnStatus status)
-		throws InvalidReserveSpaceOutputDataAttributesException {
+  public ReserveSpaceOutputData(TReturnStatus status) {
 
-		boolean ok = status != null;
+    this.status = status;
+  }
 
-		if (!ok) {
-			throw new InvalidReserveSpaceOutputDataAttributesException(spaceTotal,
-				spaceToken, status);
-		}
+  public ReserveSpaceOutputData(
+      TSizeInBytes spaceTotal,
+      TSizeInBytes spaceGuaranteed,
+      TLifeTimeInSeconds spaceLifetime,
+      TSpaceToken spaceToken,
+      TReturnStatus status)
+      throws InvalidReserveSpaceOutputDataAttributesException {
 
-		this.spaceTotal = spaceTotal;
-		this.spaceGuaranteed = spaceGuaranteed;
-		this.spaceLifetime = spaceLifetime;
-		this.spaceToken = spaceToken;
-		this.status = status;
-	}
+    boolean ok = status != null;
 
-	/**
-	 * Method that returns the number of files in the SRM request that are
-	 * currently in progress.
-	 */
-	public TSpaceToken getSpaceToken() {
+    if (!ok) {
+      throw new InvalidReserveSpaceOutputDataAttributesException(spaceTotal, spaceToken, status);
+    }
 
-		return spaceToken;
-	}
+    this.spaceTotal = spaceTotal;
+    this.spaceGuaranteed = spaceGuaranteed;
+    this.spaceLifetime = spaceLifetime;
+    this.spaceToken = spaceToken;
+    this.status = status;
+  }
 
-	/**
-	 * Method that returns the number of files in the SRM request that are
-	 * currently finished.
-	 */
-	public TSizeInBytes getGuaranteedSize() {
+  /** Method that returns the number of files in the SRM request that are currently in progress. */
+  public TSpaceToken getSpaceToken() {
 
-		return spaceGuaranteed;
-	}
+    return spaceToken;
+  }
 
-	public TSizeInBytes getTotalSize() {
+  /** Method that returns the number of files in the SRM request that are currently finished. */
+  public TSizeInBytes getGuaranteedSize() {
 
-		return spaceTotal;
-	}
+    return spaceGuaranteed;
+  }
 
-	public TLifeTimeInSeconds getLifeTimeInSeconds() {
+  public TSizeInBytes getTotalSize() {
 
-		return spaceLifetime;
-	}
+    return spaceTotal;
+  }
 
-	/**
-	 * Method that return TReturnStatus status.
-	 */
-	public TReturnStatus getStatus() {
+  public TLifeTimeInSeconds getLifeTimeInSeconds() {
 
-		return status;
-	}
+    return spaceLifetime;
+  }
 
-	/**
-	 * Method that returns TRetentionPolicyInfo.
-	 */
-	public TRetentionPolicyInfo getRetentionPolicyInfo() {
+  /** Method that return TReturnStatus status. */
+  public TReturnStatus getStatus() {
 
-		return retentionPolicyInfo;
-	}
+    return status;
+  }
 
-	public void setRetentionPolicyInfo(TRetentionPolicyInfo retentionPolicyInfo) {
+  /** Method that returns TRetentionPolicyInfo. */
+  public TRetentionPolicyInfo getRetentionPolicyInfo() {
 
-		this.retentionPolicyInfo = retentionPolicyInfo;
-	}
+    return retentionPolicyInfo;
+  }
 
-	public void setStatus(TReturnStatus status) {
+  public void setRetentionPolicyInfo(TRetentionPolicyInfo retentionPolicyInfo) {
 
-		this.status = status;
-	}
+    this.retentionPolicyInfo = retentionPolicyInfo;
+  }
 
-	/**
-	 * Print
-	 */
-	public void print() {
+  public void setStatus(TReturnStatus status) {
 
-		log.info("****SRM_SR_OutputData******");
-		log.info("TSizeInBytesTotal: " + spaceTotal);
-		log.info("TSizeInBytesGuar: " + spaceGuaranteed);
-		log.info("LifeTimeInSeconds: " + spaceLifetime);
-		log.info("TSpaceToken: " + spaceToken);
-		log.info("TReturnStatus: " + status);
+    this.status = status;
+  }
 
-	}
+  /** Print */
+  public void print() {
 
-	// @Override
-	public boolean isSuccess() {
+    log.info("****SRM_SR_OutputData******");
+    log.info("TSizeInBytesTotal: " + spaceTotal);
+    log.info("TSizeInBytesGuar: " + spaceGuaranteed);
+    log.info("LifeTimeInSeconds: " + spaceLifetime);
+    log.info("TSpaceToken: " + spaceToken);
+    log.info("TReturnStatus: " + status);
+  }
 
-		// TODO Auto-generated method stub
-		return true;
-	}
+  // @Override
+  public boolean isSuccess() {
+
+    // TODO Auto-generated method stub
+    return true;
+  }
 }

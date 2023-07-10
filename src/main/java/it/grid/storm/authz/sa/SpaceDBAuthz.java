@@ -1,24 +1,17 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
-/**
- * 
- */
+/** */
 package it.grid.storm.authz.sa;
-
-import java.io.File;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.GridUserInterface;
+import java.io.File;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * @author zappi
- */
+/** @author zappi */
 public class SpaceDBAuthz extends SpaceAuthz {
 
   private static final Logger log = LoggerFactory.getLogger(SpaceDBAuthz.class);
@@ -29,13 +22,9 @@ public class SpaceDBAuthz extends SpaceAuthz {
   private static String configurationPATH;
   private String dbFileName;
 
-  public SpaceDBAuthz() {
+  public SpaceDBAuthz() {}
 
-  }
-
-  /**
-   * @return
-   */
+  /** @return */
   public static SpaceDBAuthz makeEmpty() {
 
     SpaceDBAuthz result = new SpaceDBAuthz();
@@ -53,17 +42,13 @@ public class SpaceDBAuthz extends SpaceAuthz {
     }
   }
 
-  /**
-   * @param string
-   */
+  /** @param string */
   void setSpaceAuthzDBID(String id) {
 
     spaceAuthzDBID = id;
   }
 
-  /**
-   * 
-   */
+  /** */
   @Override
   public boolean authorize(GridUserInterface guser, SRMSpaceRequest srmSpaceOp) {
 
@@ -76,14 +61,9 @@ public class SpaceDBAuthz extends SpaceAuthz {
     return false;
   }
 
+  /** ******************************************************************** BUILDINGs METHODS */
 
-  /**********************************************************************
-   * BUILDINGs METHODS
-   */
-
-  /**
-   * Check the existence of the AuthzDB file
-   */
+  /** Check the existence of the AuthzDB file */
   private boolean existsAuthzDBFile(String dbFileName) {
 
     String fileName = configurationPATH + File.separator + dbFileName;
@@ -96,7 +76,7 @@ public class SpaceDBAuthz extends SpaceAuthz {
 
   /**
    * Return the AuthzDB FileName
-   * 
+   *
    * @return
    */
   String getAuthzDBFileName() {
@@ -109,12 +89,9 @@ public class SpaceDBAuthz extends SpaceAuthz {
     return spaceAuthzDBID;
   }
 
-  /**
-   * 
-   */
+  /** */
   public void refresh() {
 
     // empty
   }
-
 }

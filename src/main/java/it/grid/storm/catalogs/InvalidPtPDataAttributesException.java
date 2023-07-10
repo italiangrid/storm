@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.catalogs;
 
@@ -14,112 +13,157 @@ import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TTURL;
 
-/**
- * @author Michele Dibenedetto
- */
-public class InvalidPtPDataAttributesException extends
-	InvalidFileTransferDataAttributesException {
+/** @author Michele Dibenedetto */
+public class InvalidPtPDataAttributesException extends InvalidFileTransferDataAttributesException {
 
-	/**
-     * 
-     */
-	private static final long serialVersionUID = 1051060981188652979L;
-	protected boolean nullSpaceToken;
-	protected boolean nullPinLifetime;
-	protected boolean nullFileLifetime;
-	protected boolean nullFileStorageType;
-	protected boolean nullKnownSizeOfThisFile;
-	protected boolean nullOverwriteOption;
+  /** */
+  private static final long serialVersionUID = 1051060981188652979L;
 
-	public InvalidPtPDataAttributesException(TSURL toSURL,
-		TLifeTimeInSeconds fileLifetime, TLifeTimeInSeconds pinLifetime,
-		TFileStorageType fileStorageType, TSpaceToken spaceToken,
-		TSizeInBytes knownSizeOfThisFile, TURLPrefix transferProtocols,
-		TOverwriteMode overwriteOption, TReturnStatus status, TTURL transferURL) {
+  protected boolean nullSpaceToken;
+  protected boolean nullPinLifetime;
+  protected boolean nullFileLifetime;
+  protected boolean nullFileStorageType;
+  protected boolean nullKnownSizeOfThisFile;
+  protected boolean nullOverwriteOption;
 
-		super(toSURL, transferProtocols, status, transferURL);
-		init(spaceToken, fileLifetime, pinLifetime, fileStorageType,
-			knownSizeOfThisFile, overwriteOption);
-	}
+  public InvalidPtPDataAttributesException(
+      TSURL toSURL,
+      TLifeTimeInSeconds fileLifetime,
+      TLifeTimeInSeconds pinLifetime,
+      TFileStorageType fileStorageType,
+      TSpaceToken spaceToken,
+      TSizeInBytes knownSizeOfThisFile,
+      TURLPrefix transferProtocols,
+      TOverwriteMode overwriteOption,
+      TReturnStatus status,
+      TTURL transferURL) {
 
-	public InvalidPtPDataAttributesException(TSURL toSURL,
-		TLifeTimeInSeconds fileLifetime, TLifeTimeInSeconds pinLifetime,
-		TFileStorageType fileStorageType, TSpaceToken spaceToken,
-		TSizeInBytes knownSizeOfThisFile, TURLPrefix transferProtocols,
-		TOverwriteMode overwriteOption, TReturnStatus status, TTURL transferURL,
-		String message) {
+    super(toSURL, transferProtocols, status, transferURL);
+    init(
+        spaceToken,
+        fileLifetime,
+        pinLifetime,
+        fileStorageType,
+        knownSizeOfThisFile,
+        overwriteOption);
+  }
 
-		super(toSURL, transferProtocols, status, transferURL, message);
-		init(spaceToken, fileLifetime, pinLifetime, fileStorageType,
-			knownSizeOfThisFile, overwriteOption);
-	}
+  public InvalidPtPDataAttributesException(
+      TSURL toSURL,
+      TLifeTimeInSeconds fileLifetime,
+      TLifeTimeInSeconds pinLifetime,
+      TFileStorageType fileStorageType,
+      TSpaceToken spaceToken,
+      TSizeInBytes knownSizeOfThisFile,
+      TURLPrefix transferProtocols,
+      TOverwriteMode overwriteOption,
+      TReturnStatus status,
+      TTURL transferURL,
+      String message) {
 
-	public InvalidPtPDataAttributesException(TSURL toSURL,
-		TLifeTimeInSeconds fileLifetime, TLifeTimeInSeconds pinLifetime,
-		TFileStorageType fileStorageType, TSpaceToken spaceToken,
-		TSizeInBytes knownSizeOfThisFile, TURLPrefix transferProtocols,
-		TOverwriteMode overwriteOption, TReturnStatus status, TTURL transferURL,
-		Throwable cause) {
+    super(toSURL, transferProtocols, status, transferURL, message);
+    init(
+        spaceToken,
+        fileLifetime,
+        pinLifetime,
+        fileStorageType,
+        knownSizeOfThisFile,
+        overwriteOption);
+  }
 
-		super(toSURL, transferProtocols, status, transferURL, cause);
-		init(spaceToken, fileLifetime, pinLifetime, fileStorageType,
-			knownSizeOfThisFile, overwriteOption);
-	}
+  public InvalidPtPDataAttributesException(
+      TSURL toSURL,
+      TLifeTimeInSeconds fileLifetime,
+      TLifeTimeInSeconds pinLifetime,
+      TFileStorageType fileStorageType,
+      TSpaceToken spaceToken,
+      TSizeInBytes knownSizeOfThisFile,
+      TURLPrefix transferProtocols,
+      TOverwriteMode overwriteOption,
+      TReturnStatus status,
+      TTURL transferURL,
+      Throwable cause) {
 
-	public InvalidPtPDataAttributesException(TSURL toSURL,
-		TLifeTimeInSeconds fileLifetime, TLifeTimeInSeconds pinLifetime,
-		TFileStorageType fileStorageType, TSpaceToken spaceToken,
-		TSizeInBytes knownSizeOfThisFile, TURLPrefix transferProtocols,
-		TOverwriteMode overwriteOption, TReturnStatus status, TTURL transferURL,
-		String message, Throwable cause) {
+    super(toSURL, transferProtocols, status, transferURL, cause);
+    init(
+        spaceToken,
+        fileLifetime,
+        pinLifetime,
+        fileStorageType,
+        knownSizeOfThisFile,
+        overwriteOption);
+  }
 
-		super(toSURL, transferProtocols, status, transferURL, message, cause);
-		init(spaceToken, fileLifetime, pinLifetime, fileStorageType,
-			knownSizeOfThisFile, overwriteOption);
-	}
+  public InvalidPtPDataAttributesException(
+      TSURL toSURL,
+      TLifeTimeInSeconds fileLifetime,
+      TLifeTimeInSeconds pinLifetime,
+      TFileStorageType fileStorageType,
+      TSpaceToken spaceToken,
+      TSizeInBytes knownSizeOfThisFile,
+      TURLPrefix transferProtocols,
+      TOverwriteMode overwriteOption,
+      TReturnStatus status,
+      TTURL transferURL,
+      String message,
+      Throwable cause) {
 
-	private void init(TSpaceToken spaceToken, TLifeTimeInSeconds fileLifetime,
-		TLifeTimeInSeconds pinLifetime, TFileStorageType fileStorageType,
-		TSizeInBytes knownSizeOfThisFile, TOverwriteMode overwriteOption) {
+    super(toSURL, transferProtocols, status, transferURL, message, cause);
+    init(
+        spaceToken,
+        fileLifetime,
+        pinLifetime,
+        fileStorageType,
+        knownSizeOfThisFile,
+        overwriteOption);
+  }
 
-		nullSpaceToken = spaceToken == null;
-		nullPinLifetime = pinLifetime == null;
-		nullFileLifetime = fileLifetime == null;
-		nullFileStorageType = fileStorageType == null;
-		nullKnownSizeOfThisFile = knownSizeOfThisFile == null;
-		nullOverwriteOption = overwriteOption == null;
-	}
+  private void init(
+      TSpaceToken spaceToken,
+      TLifeTimeInSeconds fileLifetime,
+      TLifeTimeInSeconds pinLifetime,
+      TFileStorageType fileStorageType,
+      TSizeInBytes knownSizeOfThisFile,
+      TOverwriteMode overwriteOption) {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
+    nullSpaceToken = spaceToken == null;
+    nullPinLifetime = pinLifetime == null;
+    nullFileLifetime = fileLifetime == null;
+    nullFileStorageType = fileStorageType == null;
+    nullKnownSizeOfThisFile = knownSizeOfThisFile == null;
+    nullOverwriteOption = overwriteOption == null;
+  }
 
-		StringBuilder builder = new StringBuilder();
-		builder.append("InvalidPtPDataAttributesException [nullSpaceToken=");
-		builder.append(nullSpaceToken);
-		builder.append(", nullPinLifetime=");
-		builder.append(nullPinLifetime);
-		builder.append(", nullFileLifetime=");
-		builder.append(nullFileLifetime);
-		builder.append(", nullFileStorageType=");
-		builder.append(nullFileStorageType);
-		builder.append(", nullKnownSizeOfThisFile=");
-		builder.append(nullKnownSizeOfThisFile);
-		builder.append(", nullOverwriteOption=");
-		builder.append(nullOverwriteOption);
-		builder.append(", nullSURL=");
-		builder.append(nullSURL);
-		builder.append(", nullTransferProtocols=");
-		builder.append(nullTransferProtocols);
-		builder.append(", nullStatus=");
-		builder.append(nullStatus);
-		builder.append(", nullTransferURL=");
-		builder.append(nullTransferURL);
-		builder.append("]");
-		return builder.toString();
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+
+    StringBuilder builder = new StringBuilder();
+    builder.append("InvalidPtPDataAttributesException [nullSpaceToken=");
+    builder.append(nullSpaceToken);
+    builder.append(", nullPinLifetime=");
+    builder.append(nullPinLifetime);
+    builder.append(", nullFileLifetime=");
+    builder.append(nullFileLifetime);
+    builder.append(", nullFileStorageType=");
+    builder.append(nullFileStorageType);
+    builder.append(", nullKnownSizeOfThisFile=");
+    builder.append(nullKnownSizeOfThisFile);
+    builder.append(", nullOverwriteOption=");
+    builder.append(nullOverwriteOption);
+    builder.append(", nullSURL=");
+    builder.append(nullSURL);
+    builder.append(", nullTransferProtocols=");
+    builder.append(nullTransferProtocols);
+    builder.append(", nullStatus=");
+    builder.append(nullStatus);
+    builder.append(", nullTransferURL=");
+    builder.append(nullTransferURL);
+    builder.append("]");
+    return builder.toString();
+  }
 }

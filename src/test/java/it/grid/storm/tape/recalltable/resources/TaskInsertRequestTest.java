@@ -1,20 +1,17 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.tape.recalltable.resources;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.junit.Test;
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.junit.Test;
 
 public class TaskInsertRequestTest {
 
@@ -36,12 +33,10 @@ public class TaskInsertRequestTest {
     JSONObject j = getTaskInsertRequestAsJsonObject();
     TaskInsertRequest request = mapper.readValue(j.toString().getBytes(), TaskInsertRequest.class);
     assertEquals(request.getStfn(), j.getString("stfn"));
-    assertEquals(Integer.valueOf(request.getRetryAttempts()),
-        Integer.valueOf(j.getInt("retryAttempts")));
+    assertEquals(
+        Integer.valueOf(request.getRetryAttempts()), Integer.valueOf(j.getInt("retryAttempts")));
     assertEquals(request.getVoName(), j.getString("voName"));
     assertEquals(request.getPinLifetime(), Integer.valueOf(j.getInt("pinLifetime")));
     assertEquals(request.getUserId(), j.getString("userId"));
-
   }
-
 }

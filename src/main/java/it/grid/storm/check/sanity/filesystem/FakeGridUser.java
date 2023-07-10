@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.check.sanity.filesystem;
 
@@ -11,22 +10,16 @@ import it.grid.storm.griduser.LocalUser;
 
 public class FakeGridUser implements GridUserInterface {
 
-  /**
-   * 
-   */
+  /** */
   private DistinguishedName dn;
 
-  /**
-   * @param dn
-   */
+  /** @param dn */
   public FakeGridUser(String dn) {
 
     this.setDN(dn);
   }
 
-  /**
-   * @param dnString
-   */
+  /** @param dnString */
   private void setDN(String dnString) {
 
     this.dn = new DistinguishedName(dnString);

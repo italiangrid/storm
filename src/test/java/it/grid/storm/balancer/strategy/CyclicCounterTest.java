@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.balancer.strategy;
 
@@ -24,5 +23,4 @@ public class CyclicCounterTest {
   public void errorOnInit() {
     new CyclicCounter(-4);
   }
-
 }

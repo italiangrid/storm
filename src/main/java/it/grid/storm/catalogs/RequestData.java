@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.catalogs;
 
@@ -10,9 +9,9 @@ import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.synchcall.data.InputData;
 
 /**
- * Class that represents a generic chunk. It provides only one method which is
- * the primary key associated ot the chunk in persistence.
- * 
+ * Class that represents a generic chunk. It provides only one method which is the primary key
+ * associated ot the chunk in persistence.
+ *
  * @author EGRID - ICTP Trieste
  * @version 1.0
  * @date September, 2006

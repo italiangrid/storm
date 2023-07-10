@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.catalogs;
 
@@ -10,320 +9,301 @@ import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TStatusCode;
-
 import java.sql.Timestamp;
 import java.util.List;
 
 /**
- * Class that represents a row in the Persistence Layer: this is all raw data
- * referring to the PtPChunkData proper, that is, String and primitive types.
- * 
- * Each field is initialized with default values as per SRM 2.2 specification:
- * protocolList GSIFTP fileStorageType VOLATILE overwriteMode NEVER status
- * SRM_REQUEST_QUEUED
- * 
- * All other fields are 0 if int, or a white space if String.
- * 
+ * Class that represents a row in the Persistence Layer: this is all raw data referring to the
+ * PtPChunkData proper, that is, String and primitive types.
+ *
+ * <p>Each field is initialized with default values as per SRM 2.2 specification: protocolList
+ * GSIFTP fileStorageType VOLATILE overwriteMode NEVER status SRM_REQUEST_QUEUED
+ *
+ * <p>All other fields are 0 if int, or a white space if String.
+ *
  * @author EGRID ICTP
  * @version 2.0
  * @date June 2005
  */
 public class PtPChunkDataTO {
 
-	private static final String FQAN_SEPARATOR = "#";
-	/* Database table request_Get fields BEGIN */
-	private long primaryKey = -1; // ID primary key of status_Put record in DB
-	private String toSURL = " ";
-	private long expectedFileSize = 0;
-	private String normalizedStFN = null;
-	private Integer surlUniqueID = null;
-	/* Database table request_Get fields END */
+  private static final String FQAN_SEPARATOR = "#";
+  /* Database table request_Get fields BEGIN */
+  private long primaryKey = -1; // ID primary key of status_Put record in DB
+  private String toSURL = " ";
+  private long expectedFileSize = 0;
+  private String normalizedStFN = null;
+  private Integer surlUniqueID = null;
+  /* Database table request_Get fields END */
 
-	private String requestToken = " ";
-	private int pinLifetime = -1;
-	private int fileLifetime = -1;
-	private String fileStorageType = null; // initialised in constructor
-	private String spaceToken = " ";
-	private List<String> protocolList = null; // initialised in constructor
-	private String overwriteOption = null; // initialised in constructor
-	private int status; // initialised in constructor
-	private String errString = " ";
-	private String turl = " ";
-	private Timestamp timeStamp = null;
+  private String requestToken = " ";
+  private int pinLifetime = -1;
+  private int fileLifetime = -1;
+  private String fileStorageType = null; // initialised in constructor
+  private String spaceToken = " ";
+  private List<String> protocolList = null; // initialised in constructor
+  private String overwriteOption = null; // initialised in constructor
+  private int status; // initialised in constructor
+  private String errString = " ";
+  private String turl = " ";
+  private Timestamp timeStamp = null;
 
-	private String clientDN = null;
-	private String vomsAttributes = null;
+  private String clientDN = null;
+  private String vomsAttributes = null;
 
+  public PtPChunkDataTO() {
 
-	public PtPChunkDataTO() {
+    this.fileStorageType =
+        FileStorageTypeConverter.getInstance()
+            .toDB(
+                TFileStorageType.getTFileStorageType(
+                    Configuration.getInstance().getDefaultFileStorageType()));
+    TURLPrefix protocolPreferences = new TURLPrefix();
+    protocolPreferences.addProtocol(Protocol.GSIFTP);
+    this.protocolList = TransferProtocolListConverter.toDB(protocolPreferences);
+    this.overwriteOption = OverwriteModeConverter.getInstance().toDB(TOverwriteMode.NEVER);
+    this.status = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED);
+  }
 
-		this.fileStorageType = FileStorageTypeConverter.getInstance().toDB(
-			TFileStorageType.getTFileStorageType(Configuration.getInstance()
-				.getDefaultFileStorageType()));
-		TURLPrefix protocolPreferences = new TURLPrefix();
-		protocolPreferences.addProtocol(Protocol.GSIFTP);
-		this.protocolList = TransferProtocolListConverter.toDB(protocolPreferences);
-		this.overwriteOption = OverwriteModeConverter.getInstance().toDB(
-			TOverwriteMode.NEVER);
-		this.status = StatusCodeConverter.getInstance().toDB(
-			TStatusCode.SRM_REQUEST_QUEUED);
-	}
+  public long primaryKey() {
 
-	public long primaryKey() {
+    return primaryKey;
+  }
 
-		return primaryKey;
-	}
+  public void setPrimaryKey(long n) {
 
-	public void setPrimaryKey(long n) {
+    primaryKey = n;
+  }
 
-		primaryKey = n;
-	}
+  public String requestToken() {
 
-	public String requestToken() {
+    return requestToken;
+  }
 
-		return requestToken;
-	}
+  public void setRequestToken(String s) {
 
-	public void setRequestToken(String s) {
+    requestToken = s;
+  }
 
-		requestToken = s;
-	}
+  public Timestamp timeStamp() {
 
-	public Timestamp timeStamp() {
+    return timeStamp;
+  }
 
-		return timeStamp;
-	}
+  public void setTimeStamp(Timestamp timeStamp) {
 
-	public void setTimeStamp(Timestamp timeStamp) {
+    this.timeStamp = timeStamp;
+  }
 
-		this.timeStamp = timeStamp;
-	}
+  public String toSURL() {
 
-	public String toSURL() {
+    return toSURL;
+  }
 
-		return toSURL;
-	}
+  public void setToSURL(String s) {
 
-	public void setToSURL(String s) {
+    toSURL = s;
+  }
 
-		toSURL = s;
-	}
+  /** @return the normalizedStFN */
+  public String normalizedStFN() {
 
-	/**
-	 * @return the normalizedStFN
-	 */
-	public String normalizedStFN() {
+    return normalizedStFN;
+  }
 
-		return normalizedStFN;
-	}
+  /** @param normalizedStFN the normalizedStFN to set */
+  public void setNormalizedStFN(String normalizedStFN) {
 
-	/**
-	 * @param normalizedStFN
-	 *          the normalizedStFN to set
-	 */
-	public void setNormalizedStFN(String normalizedStFN) {
+    this.normalizedStFN = normalizedStFN;
+  }
 
-		this.normalizedStFN = normalizedStFN;
-	}
+  /** @return the surlUniqueID */
+  public Integer surlUniqueID() {
 
-	/**
-	 * @return the surlUniqueID
-	 */
-	public Integer surlUniqueID() {
+    return surlUniqueID;
+  }
 
-		return surlUniqueID;
-	}
+  /** @param surlUniqueID the surlUniqueID to set */
+  public void setSurlUniqueID(Integer surlUniqueID) {
 
-	/**
-	 * @param surlUniqueID
-	 *          the surlUniqueID to set
-	 */
-	public void setSurlUniqueID(Integer surlUniqueID) {
+    this.surlUniqueID = surlUniqueID;
+  }
 
-		this.surlUniqueID = surlUniqueID;
-	}
+  public int pinLifetime() {
 
-	public int pinLifetime() {
+    return pinLifetime;
+  }
 
-		return pinLifetime;
-	}
+  public void setPinLifetime(int n) {
 
-	public void setPinLifetime(int n) {
+    pinLifetime = n;
+  }
 
-		pinLifetime = n;
-	}
+  public int fileLifetime() {
 
-	public int fileLifetime() {
+    return fileLifetime;
+  }
 
-		return fileLifetime;
-	}
+  public void setFileLifetime(int n) {
 
-	public void setFileLifetime(int n) {
+    fileLifetime = n;
+  }
 
-		fileLifetime = n;
-	}
+  public String fileStorageType() {
 
-	public String fileStorageType() {
+    return fileStorageType;
+  }
 
-		return fileStorageType;
-	}
+  /**
+   * Method that sets the FileStorageType: if it is null nothing gets set. The deafult value is
+   * Permanent.
+   */
+  public void setFileStorageType(String s) {
 
-	/**
-	 * Method that sets the FileStorageType: if it is null nothing gets set. The
-	 * deafult value is Permanent.
-	 */
-	public void setFileStorageType(String s) {
+    if (s != null) fileStorageType = s;
+  }
 
-		if (s != null)
-			fileStorageType = s;
-	}
+  public String spaceToken() {
 
-	public String spaceToken() {
+    return spaceToken;
+  }
 
-		return spaceToken;
-	}
+  public void setSpaceToken(String s) {
 
-	public void setSpaceToken(String s) {
+    spaceToken = s;
+  }
 
-		spaceToken = s;
-	}
+  public long expectedFileSize() {
 
-	public long expectedFileSize() {
+    return expectedFileSize;
+  }
 
-		return expectedFileSize;
-	}
+  public void setExpectedFileSize(long l) {
 
-	public void setExpectedFileSize(long l) {
+    expectedFileSize = l;
+  }
 
-		expectedFileSize = l;
-	}
+  public List<String> protocolList() {
 
-	public List<String> protocolList() {
+    return protocolList;
+  }
 
-		return protocolList;
-	}
+  public void setProtocolList(List<String> l) {
 
-	public void setProtocolList(List<String> l) {
+    if ((l != null) && (!l.isEmpty())) protocolList = l;
+  }
 
-		if ((l != null) && (!l.isEmpty()))
-			protocolList = l;
-	}
+  public String overwriteOption() {
 
-	public String overwriteOption() {
+    return overwriteOption;
+  }
 
-		return overwriteOption;
-	}
+  /**
+   * Method that sets the OverwriteMode: if it is null nothing gets set. The deafult value is Never.
+   */
+  public void setOverwriteOption(String s) {
 
-	/**
-	 * Method that sets the OverwriteMode: if it is null nothing gets set. The
-	 * deafult value is Never.
-	 */
-	public void setOverwriteOption(String s) {
+    if (s != null) overwriteOption = s;
+  }
 
-		if (s != null)
-			overwriteOption = s;
-	}
+  public int status() {
 
-	public int status() {
+    return status;
+  }
 
-		return status;
-	}
+  public void setStatus(int n) {
 
-	public void setStatus(int n) {
+    status = n;
+  }
 
-		status = n;
-	}
+  public String errString() {
 
-	public String errString() {
+    return errString;
+  }
 
-		return errString;
-	}
+  public void setErrString(String s) {
 
-	public void setErrString(String s) {
+    errString = s;
+  }
 
-		errString = s;
-	}
+  public String transferURL() {
 
-	public String transferURL() {
+    return turl;
+  }
 
-		return turl;
-	}
+  public void setTransferURL(String s) {
 
-	public void setTransferURL(String s) {
+    turl = s;
+  }
 
-		turl = s;
-	}
+  public String clientDN() {
 
-	public String clientDN() {
+    return clientDN;
+  }
 
-		return clientDN;
-	}
+  public void setClientDN(String s) {
 
-	public void setClientDN(String s) {
+    clientDN = s;
+  }
 
-		clientDN = s;
-	}
+  public String vomsAttributes() {
 
-	public String vomsAttributes() {
+    return vomsAttributes;
+  }
 
-		return vomsAttributes;
-	}
+  public void setVomsAttributes(String s) {
 
-	public void setVomsAttributes(String s) {
+    vomsAttributes = s;
+  }
 
-		vomsAttributes = s;
-	}
+  public void setVomsAttributes(String[] fqaNsAsString) {
 
-	public void setVomsAttributes(String[] fqaNsAsString) {
+    vomsAttributes = "";
+    for (int i = 0; i < fqaNsAsString.length; i++) {
+      vomsAttributes += fqaNsAsString[i];
+      if (i < fqaNsAsString.length - 1) {
+        vomsAttributes += FQAN_SEPARATOR;
+      }
+    }
+  }
 
-		vomsAttributes = "";
-		for (int i = 0; i < fqaNsAsString.length; i++) {
-			vomsAttributes += fqaNsAsString[i];
-			if (i < fqaNsAsString.length - 1) {
-				vomsAttributes += FQAN_SEPARATOR;
-			}
-		}
+  public String[] vomsAttributesArray() {
 
-	}
+    return vomsAttributes.split(FQAN_SEPARATOR);
+  }
 
-	public String[] vomsAttributesArray() {
+  public String toString() {
 
-		return vomsAttributes.split(FQAN_SEPARATOR);
-	}
-
-	public String toString() {
-
-		StringBuilder sb = new StringBuilder();
-		sb.append(primaryKey);
-		sb.append(" ");
-		sb.append(requestToken);
-		sb.append(" ");
-		sb.append(toSURL);
-		sb.append(" ");
-		sb.append(normalizedStFN);
-		sb.append(" ");
-		sb.append(surlUniqueID);
-		sb.append(" ");
-		sb.append(pinLifetime);
-		sb.append(" ");
-		sb.append(fileLifetime);
-		sb.append(" ");
-		sb.append(fileStorageType);
-		sb.append(" ");
-		sb.append(spaceToken);
-		sb.append(" ");
-		sb.append(expectedFileSize);
-		sb.append(" ");
-		sb.append(protocolList);
-		sb.append(" ");
-		sb.append(overwriteOption);
-		sb.append(" ");
-		sb.append(status);
-		sb.append(" ");
-		sb.append(errString);
-		sb.append(" ");
-		sb.append(turl);
-		return sb.toString();
-	}
-
+    StringBuilder sb = new StringBuilder();
+    sb.append(primaryKey);
+    sb.append(" ");
+    sb.append(requestToken);
+    sb.append(" ");
+    sb.append(toSURL);
+    sb.append(" ");
+    sb.append(normalizedStFN);
+    sb.append(" ");
+    sb.append(surlUniqueID);
+    sb.append(" ");
+    sb.append(pinLifetime);
+    sb.append(" ");
+    sb.append(fileLifetime);
+    sb.append(" ");
+    sb.append(fileStorageType);
+    sb.append(" ");
+    sb.append(spaceToken);
+    sb.append(" ");
+    sb.append(expectedFileSize);
+    sb.append(" ");
+    sb.append(protocolList);
+    sb.append(" ");
+    sb.append(overwriteOption);
+    sb.append(" ");
+    sb.append(status);
+    sb.append(" ");
+    sb.append(errString);
+    sb.append(" ");
+    sb.append(turl);
+    return sb.toString();
+  }
 }

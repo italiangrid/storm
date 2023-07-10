@@ -1,25 +1,20 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.authz.path.model;
 
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.namespace.naming.NamespaceUtil;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Collections;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @author zappi
- */
+/** @author zappi */
 public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
 
   public static PathAuthzEvaluationAlgorithm getInstance() {
@@ -30,9 +25,7 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
     return instance;
   }
 
-  private PathAuthzAlgBestMatch() {
-
-  }
+  private PathAuthzAlgBestMatch() {}
 
   private static final Logger log = LoggerFactory.getLogger(PathAuthzAlgBestMatch.class);
 
@@ -42,12 +35,10 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
     return "< Best Match Path Authorization Algorithm >";
   }
 
-  /**
-   * 
-   */
+  /** */
   @Override
-  public AuthzDecision evaluate(String subject, StFN fileName, SRMFileRequest pathOperation,
-      List<PathACE> acl) {
+  public AuthzDecision evaluate(
+      String subject, StFN fileName, SRMFileRequest pathOperation, List<PathACE> acl) {
 
     AuthzDecision result = AuthzDecision.INDETERMINATE;
 
@@ -105,11 +96,10 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
       result = AuthzDecision.PERMIT;
     }
     return result;
-
   }
 
-  public AuthzDecision evaluate(String subject, StFN fileName, PathOperation op,
-      List<PathACE> acl) {
+  public AuthzDecision evaluate(
+      String subject, StFN fileName, PathOperation op, List<PathACE> acl) {
 
     // Retrieve the list of compatible ACE
     List<PathACE> compACE = getCompatibleACE(subject, acl);
@@ -139,8 +129,8 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
   }
 
   @Override
-  public AuthzDecision evaluateAnonymous(StFN fileName, PathOperation pathOperation,
-      LinkedList<PathACE> authzDB) {
+  public AuthzDecision evaluateAnonymous(
+      StFN fileName, PathOperation pathOperation, LinkedList<PathACE> authzDB) {
 
     if ((authzDB == null) || (authzDB.isEmpty())) {
       return AuthzDecision.NOT_APPLICABLE;
@@ -150,8 +140,8 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
     List<OrderedACE> orderedACEs = getOrderedACEs(fileName, authzDB);
     log.debug("There are '{}' ACEs regarding file '{}'", orderedACEs.size(), fileName);
 
-    log.trace("<Best-Match> Operation that needs anonymous authorization " + "is: {}",
-        pathOperation);
+    log.trace(
+        "<Best-Match> Operation that needs anonymous authorization " + "is: {}", pathOperation);
 
     for (OrderedACE oAce : orderedACEs) {
       if (oAce.ace.isAllGroupsACE()
@@ -169,8 +159,8 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
   }
 
   @Override
-  public AuthzDecision evaluateAnonymous(StFN fileName, SRMFileRequest pathOperation,
-      LinkedList<PathACE> authzDB) {
+  public AuthzDecision evaluateAnonymous(
+      StFN fileName, SRMFileRequest pathOperation, LinkedList<PathACE> authzDB) {
 
     if ((authzDB == null) || (authzDB.isEmpty())) {
       return AuthzDecision.NOT_APPLICABLE;
@@ -180,8 +170,8 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
     List<OrderedACE> orderedACEs = getOrderedACEs(fileName, authzDB);
     log.debug("There are '' ACEs regarding file '{}'", orderedACEs.size(), fileName);
 
-    log.trace("<Best-Match> Operation that needs anonymous authorization " + "is: {}",
-        pathOperation);
+    log.trace(
+        "<Best-Match> Operation that needs anonymous authorization " + "is: {}", pathOperation);
     PathAccessMask requestedOps = pathOperation.getSRMPathAccessMask();
     ArrayList<PathOperation> ops = new ArrayList<PathOperation>(requestedOps.getPathOperations());
     HashMap<PathOperation, AuthzDecision> decision = new HashMap<PathOperation, AuthzDecision>();
@@ -220,12 +210,16 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
     if ((acl != null) && (!(acl.isEmpty()))) {
       for (PathACE pathACE : acl) {
         if (pathACE.subjectMatch(subjectGroup)) {
-          log.trace("<BestMatch>-compatibleACE: ACE:'{}' match with " + "subject='{}'", pathACE,
+          log.trace(
+              "<BestMatch>-compatibleACE: ACE:'{}' match with " + "subject='{}'",
+              pathACE,
               subjectGroup);
           compatibleACE.add(pathACE);
         } else {
-          log.trace("<BestMatch>-compatibleACE: ACE:'{}' DOESN'T match with " + "subject='{}'",
-              pathACE, subjectGroup);
+          log.trace(
+              "<BestMatch>-compatibleACE: ACE:'{}' DOESN'T match with " + "subject='{}'",
+              pathACE,
+              subjectGroup);
         }
       }
     } else {
@@ -248,16 +242,13 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
       StFN aceStFN = pathAce.getStorageFileName();
       distance = NamespaceUtil.computeDistanceFromPath(aceStFN.getValue(), fileName.getValue());
       bestACEs.add(new OrderedACE(pathAce, distance));
-
     } // End of cycle
-      // Sort the BestACE in base of distance
+    // Sort the BestACE in base of distance
     Collections.sort(bestACEs);
     return bestACEs;
   }
 
-  /**
-   * @author ritz
-   */
+  /** @author ritz */
   private class OrderedACE implements Comparable<OrderedACE> {
 
     private final PathACE ace;
@@ -302,6 +293,5 @@ public class PathAuthzAlgBestMatch extends PathAuthzEvaluationAlgorithm {
 
       return "[" + ace.toString() + "]  distance:" + distance;
     }
-
   }
 }

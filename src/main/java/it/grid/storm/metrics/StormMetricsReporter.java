@@ -1,14 +1,7 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.metrics;
-
-import java.util.SortedMap;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
@@ -19,26 +12,41 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.Timer;
-
 import it.grid.storm.common.OperationType;
 import it.grid.storm.filesystem.MetricsFilesystemAdapter.FilesystemMetric;
+import java.util.SortedMap;
+import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StormMetricsReporter extends ScheduledReporter {
 
   public static final String METRICS_LOGGER_NAME = StormMetricsReporter.class.getName();
 
-  protected static final String[] REPORTED_TIMERS = {"synch", OperationType.AF.getOpName(),
-      OperationType.AR.getOpName(), OperationType.EFL.getOpName(), OperationType.GSM.getOpName(),
-      OperationType.GST.getOpName(), OperationType.LS.getOpName(), OperationType.MKD.getOpName(),
-      OperationType.MV.getOpName(), OperationType.PD.getOpName(), OperationType.PNG.getOpName(),
-      OperationType.RF.getOpName(), OperationType.RM.getOpName(), OperationType.RMD.getOpName(),
-      FilesystemMetric.FILE_ACL_OP.getOpName(), FilesystemMetric.FILE_ATTRIBUTE_OP.getOpName(),
-      "ea"};
+  protected static final String[] REPORTED_TIMERS = {
+    "synch",
+    OperationType.AF.getOpName(),
+    OperationType.AR.getOpName(),
+    OperationType.EFL.getOpName(),
+    OperationType.GSM.getOpName(),
+    OperationType.GST.getOpName(),
+    OperationType.LS.getOpName(),
+    OperationType.MKD.getOpName(),
+    OperationType.MV.getOpName(),
+    OperationType.PD.getOpName(),
+    OperationType.PNG.getOpName(),
+    OperationType.RF.getOpName(),
+    OperationType.RM.getOpName(),
+    OperationType.RMD.getOpName(),
+    FilesystemMetric.FILE_ACL_OP.getOpName(),
+    FilesystemMetric.FILE_ATTRIBUTE_OP.getOpName(),
+    "ea"
+  };
 
   private static final Logger LOG = LoggerFactory.getLogger(METRICS_LOGGER_NAME);
 
-  private StormMetricsReporter(MetricRegistry registry, MetricFilter filter, TimeUnit rateUnit,
-      TimeUnit durationUnit) {
+  private StormMetricsReporter(
+      MetricRegistry registry, MetricFilter filter, TimeUnit rateUnit, TimeUnit durationUnit) {
 
     super(registry, "storm", filter, rateUnit, durationUnit);
   }
@@ -87,17 +95,23 @@ public class StormMetricsReporter extends ScheduledReporter {
     }
   }
 
-  public StormMetricsReporter(MetricRegistry registry, String name, MetricFilter filter,
-      TimeUnit rateUnit, TimeUnit durationUnit) {
+  public StormMetricsReporter(
+      MetricRegistry registry,
+      String name,
+      MetricFilter filter,
+      TimeUnit rateUnit,
+      TimeUnit durationUnit) {
 
     super(registry, name, filter, rateUnit, durationUnit);
-
   }
 
   @SuppressWarnings({"rawtypes"})
   @Override
-  public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters,
-      SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters,
+  public void report(
+      SortedMap<String, Gauge> gauges,
+      SortedMap<String, Counter> counters,
+      SortedMap<String, Histogram> histograms,
+      SortedMap<String, Meter> meters,
       SortedMap<String, Timer> timers) {
 
     for (String metricName : REPORTED_TIMERS) {
@@ -122,11 +136,18 @@ public class StormMetricsReporter extends ScheduledReporter {
 
     LOG.info(
         "{} [(count={}, m1_rate={}, m5_rate={}, m15_rate={}) (max={}, min={}, mean={}, p95={}, p99={})] duration_units={}, rate_units={}",
-        name, timer.getCount(), convertRate(timer.getOneMinuteRate()),
-        convertRate(timer.getFiveMinuteRate()), convertRate(timer.getFifteenMinuteRate()),
-        convertDuration(snapshot.getMax()), convertDuration(snapshot.getMin()),
-        convertDuration(snapshot.getMean()), convertDuration(snapshot.get95thPercentile()),
-        convertDuration(snapshot.get99thPercentile()), getDurationUnit(), getRateUnit());
+        name,
+        timer.getCount(),
+        convertRate(timer.getOneMinuteRate()),
+        convertRate(timer.getFiveMinuteRate()),
+        convertRate(timer.getFifteenMinuteRate()),
+        convertDuration(snapshot.getMax()),
+        convertDuration(snapshot.getMin()),
+        convertDuration(snapshot.getMean()),
+        convertDuration(snapshot.get95thPercentile()),
+        convertDuration(snapshot.get99thPercentile()),
+        getDurationUnit(),
+        getRateUnit());
   }
 
   @SuppressWarnings({"rawtypes"})
@@ -138,8 +159,14 @@ public class StormMetricsReporter extends ScheduledReporter {
     int jobs = getIntValue(gauges.get(tpName + ".jobs"));
     double utilizationMax = round2dec(getDoubleValue(gauges.get(tpName + ".utilization-max")));
 
-    LOG.info("{} [active-threads={}, idle-threads={}, jobs={}, utilization-max={}, percent-idle={}]",
-        tpName, activeThreads, idleThreads, jobs, utilizationMax, percentIdle);
+    LOG.info(
+        "{} [active-threads={}, idle-threads={}, jobs={}, utilization-max={}, percent-idle={}]",
+        tpName,
+        activeThreads,
+        idleThreads,
+        jobs,
+        utilizationMax,
+        percentIdle);
   }
 
   private void reportJettyHandlerMetrics(String handlerName, SortedMap<String, Meter> meters) {
@@ -150,16 +177,19 @@ public class StormMetricsReporter extends ScheduledReporter {
     reportMetric(handlerName + ".5xx-responses", meters.get(handlerName + ".5xx-responses"));
     reportMetric(handlerName + ".requests", meters.get(handlerName + ".requests"));
     reportMetric(handlerName + ".expires", meters.get(handlerName + ".expires"));
-
   }
 
   private void reportMetric(String name, Meter meter) {
 
     LOG.info(
         "{} [(count={}, m1_rate={}, m5_rate={}, m15_rate={}, mean_rate={})] rate_units={}",
-        name, meter.getCount(), convertRate(meter.getOneMinuteRate()),
-        convertRate(meter.getFiveMinuteRate()), convertRate(meter.getFifteenMinuteRate()),
-        convertRate(meter.getMeanRate()), getRateUnit());
+        name,
+        meter.getCount(),
+        convertRate(meter.getOneMinuteRate()),
+        convertRate(meter.getFiveMinuteRate()),
+        convertRate(meter.getFifteenMinuteRate()),
+        convertRate(meter.getMeanRate()),
+        getRateUnit());
   }
 
   @Override

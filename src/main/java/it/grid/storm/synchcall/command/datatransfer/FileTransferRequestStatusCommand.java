@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.command.datatransfer;
 
@@ -9,7 +8,6 @@ import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
-import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
@@ -24,28 +22,23 @@ import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferFilesInputDat
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferOutputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestInputData;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class FileTransferRequestStatusCommand extends
-  DataTransferCommand implements Command {
+public abstract class FileTransferRequestStatusCommand extends DataTransferCommand
+    implements Command {
 
   protected abstract String getSrmCommand();
 
   protected abstract TRequestType getRequestType();
 
-  private static final Logger log = LoggerFactory
-    .getLogger(FileTransferRequestStatusCommand.class);
+  private static final Logger log = LoggerFactory.getLogger(FileTransferRequestStatusCommand.class);
 
-  public FileTransferRequestStatusCommand() {
-
-  };
+  public FileTransferRequestStatusCommand() {};
 
   public TRequestToken getTokenFromInputData(InputData inputData) {
 
@@ -55,21 +48,20 @@ public abstract class FileTransferRequestStatusCommand extends
   public boolean inputDataHasSURLArray(InputData inputData) {
 
     return (inputData instanceof ManageFileTransferRequestFilesInputData)
-      || (inputData instanceof ManageFileTransferFilesInputData);
+        || (inputData instanceof ManageFileTransferFilesInputData);
   }
 
   public boolean validInputData(InputData inputData) {
 
     return (inputData instanceof ManageFileTransferRequestFilesInputData)
-      || (inputData instanceof ManageFileTransferFilesInputData)
-      || (inputData instanceof ManageFileTransferRequestInputData);
+        || (inputData instanceof ManageFileTransferFilesInputData)
+        || (inputData instanceof ManageFileTransferRequestInputData);
   }
 
   public List<TSURL> getSURLListFromInputData(InputData inputData) {
 
     if (inputDataHasSURLArray(inputData)) {
-      return ((ManageFileTransferFilesInputData) inputData).getArrayOfSURLs()
-        .getArrayList();
+      return ((ManageFileTransferFilesInputData) inputData).getArrayOfSURLs().getArrayList();
     }
     return null;
   }
@@ -77,16 +69,15 @@ public abstract class FileTransferRequestStatusCommand extends
   private List<String> toStringList(List<TSURL> surls) {
 
     List<String> ls = new ArrayList<String>();
-    for (TSURL s : surls)
-      ls.add(s.getSURLString());
+    for (TSURL s : surls) ls.add(s.getSURLString());
     return ls;
   }
 
   protected ManageFileTransferOutputData handleExpiredRequestToken(InputData id) {
 
-    ManageFileTransferOutputData outputData = new ManageFileTransferOutputData(
-      CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
-        "Expired request token"));
+    ManageFileTransferOutputData outputData =
+        new ManageFileTransferOutputData(
+            CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Expired request token"));
 
     printRequestOutcome(outputData.getReturnStatus(), id);
 
@@ -95,9 +86,9 @@ public abstract class FileTransferRequestStatusCommand extends
 
   protected ManageFileTransferOutputData handleInvalidRequestToken(InputData id) {
 
-    ManageFileTransferOutputData outputData = new ManageFileTransferOutputData(
-      CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
-        "Invalid request token"));
+    ManageFileTransferOutputData outputData =
+        new ManageFileTransferOutputData(
+            CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token"));
 
     printRequestOutcome(outputData.getReturnStatus(), id);
     return outputData;
@@ -117,14 +108,14 @@ public abstract class FileTransferRequestStatusCommand extends
     return (token.hasExpirationDate() && token.isExpired());
   }
 
-  protected ManageFileTransferOutputData handleInternalError(InputData id,
-    Throwable t) {
+  protected ManageFileTransferOutputData handleInternalError(InputData id, Throwable t) {
 
     log.warn(t.getMessage(), t);
 
-    ManageFileTransferOutputData outputData = new ManageFileTransferOutputData(
-      CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
-        "Internal error: " + t.getMessage()));
+    ManageFileTransferOutputData outputData =
+        new ManageFileTransferOutputData(
+            CommandHelper.buildStatus(
+                TStatusCode.SRM_FAILURE, "Internal error: " + t.getMessage()));
 
     printRequestOutcome(outputData.getReturnStatus(), id);
 
@@ -133,14 +124,13 @@ public abstract class FileTransferRequestStatusCommand extends
 
   @Override
   public ManageFileTransferOutputData execute(InputData inputData)
-    throws IllegalArgumentException, CommandException {
+      throws IllegalArgumentException, CommandException {
 
     log.debug(getSrmCommand() + "Started.");
 
     if (!validInputData(inputData)) {
       throw new IllegalArgumentException(
-        "Unable to execute the task. Wrong input argument type: "
-          + inputData.getClass());
+          "Unable to execute the task. Wrong input argument type: " + inputData.getClass());
     }
 
     Map<TSURL, TReturnStatus> surlStatuses = null;
@@ -156,8 +146,11 @@ public abstract class FileTransferRequestStatusCommand extends
 
     try {
 
-      surlStatuses = checker.getSURLStatuses(getUserFromInputData(inputData),
-        getTokenFromInputData(inputData), getSURLListFromInputData(inputData));
+      surlStatuses =
+          checker.getSURLStatuses(
+              getUserFromInputData(inputData),
+              getTokenFromInputData(inputData),
+              getSURLListFromInputData(inputData));
 
     } catch (IllegalArgumentException e) {
       return handleInternalError(inputData, e);
@@ -171,21 +164,22 @@ public abstract class FileTransferRequestStatusCommand extends
       log.info("No SURLs found in the DB. Request failed");
       TReturnStatus returnStatus;
       if (inputData instanceof ManageFileTransferRequestFilesInputData) {
-        returnStatus = CommandHelper.buildStatus(
-          TStatusCode.SRM_INVALID_REQUEST,
-          "Invalid request token, no match with provided surls");
+        returnStatus =
+            CommandHelper.buildStatus(
+                TStatusCode.SRM_INVALID_REQUEST,
+                "Invalid request token, no match with provided surls");
       } else {
         if (inputData instanceof ManageFileTransferRequestInputData) {
-          returnStatus = CommandHelper.buildStatus(
-            TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
+          returnStatus =
+              CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST, "Invalid request token");
         } else {
           if (inputData instanceof ManageFileTransferFilesInputData) {
-            returnStatus = CommandHelper.buildStatus(
-              TStatusCode.SRM_INVALID_REQUEST,
-              "None of the specified SURLs was found");
+            returnStatus =
+                CommandHelper.buildStatus(
+                    TStatusCode.SRM_INVALID_REQUEST, "None of the specified SURLs was found");
           } else {
-            throw new IllegalStateException("Unexpected InputData received: "
-              + inputData.getClass());
+            throw new IllegalStateException(
+                "Unexpected InputData received: " + inputData.getClass());
           }
         }
       }
@@ -195,13 +189,14 @@ public abstract class FileTransferRequestStatusCommand extends
       return new ManageFileTransferOutputData(returnStatus);
     }
 
-    ArrayOfTSURLReturnStatus surlReturnStatuses = encodeSURLReturnStatuses(
-      surlStatuses, getSURLListFromInputData(inputData));
+    ArrayOfTSURLReturnStatus surlReturnStatuses =
+        encodeSURLReturnStatuses(surlStatuses, getSURLListFromInputData(inputData));
 
     TReturnStatus requestStatus;
     if (inputData instanceof ManageFileTransferRequestInputData) {
-      RequestSummaryData data = RequestSummaryCatalog.getInstance().find(
-        ((ManageFileTransferRequestInputData) inputData).getRequestToken());
+      RequestSummaryData data =
+          RequestSummaryCatalog.getInstance()
+              .find(((ManageFileTransferRequestInputData) inputData).getRequestToken());
       if (data != null) {
         requestStatus = data.getStatus();
       } else {
@@ -215,44 +210,37 @@ public abstract class FileTransferRequestStatusCommand extends
     return new ManageFileTransferOutputData(requestStatus, surlReturnStatuses);
   }
 
-  private ManageFileTransferOutputData handleAuthzError(InputData inputData,
-    AuthzException e) {
+  private ManageFileTransferOutputData handleAuthzError(InputData inputData, AuthzException e) {
 
     log.warn(e.getMessage(), e);
 
-    ManageFileTransferOutputData outputData = new ManageFileTransferOutputData(
-      CommandHelper.buildStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
-        e.getMessage()));
+    ManageFileTransferOutputData outputData =
+        new ManageFileTransferOutputData(
+            CommandHelper.buildStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage()));
 
     printRequestOutcome(outputData.getReturnStatus(), inputData);
 
     return outputData;
-
   }
 
   protected abstract TReturnStatus computeRequestStatus(
-    ArrayOfTSURLReturnStatus arrayOfFileStatuses);
+      ArrayOfTSURLReturnStatus arrayOfFileStatuses);
 
-  protected ArrayOfTSURLReturnStatus encodeSURLReturnStatuses(
-    Map<TSURL, TReturnStatus> statuses) {
+  protected ArrayOfTSURLReturnStatus encodeSURLReturnStatuses(Map<TSURL, TReturnStatus> statuses) {
 
-    ArrayOfTSURLReturnStatus retStatuses = new ArrayOfTSURLReturnStatus(
-      statuses.size());
+    ArrayOfTSURLReturnStatus retStatuses = new ArrayOfTSURLReturnStatus(statuses.size());
 
     for (Entry<TSURL, TReturnStatus> rs : statuses.entrySet()) {
-      retStatuses.addTSurlReturnStatus(CommandHelper.buildStatus(rs.getKey(),
-        rs.getValue()));
+      retStatuses.addTSurlReturnStatus(CommandHelper.buildStatus(rs.getKey(), rs.getValue()));
     }
 
     return retStatuses;
-
   }
 
   protected ArrayOfTSURLReturnStatus encodeSURLReturnStatuses(
-    Map<TSURL, TReturnStatus> statuses, List<TSURL> surls) {
+      Map<TSURL, TReturnStatus> statuses, List<TSURL> surls) {
 
-    if (surls == null || surls.isEmpty())
-      return encodeSURLReturnStatuses(statuses);
+    if (surls == null || surls.isEmpty()) return encodeSURLReturnStatuses(statuses);
 
     ArrayOfTSURLReturnStatus retStatuses = new ArrayOfTSURLReturnStatus();
 
@@ -260,8 +248,7 @@ public abstract class FileTransferRequestStatusCommand extends
       TReturnStatus status = statuses.get(s);
 
       if (status == null) {
-        status = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
-          "Invalid SURL path.");
+        status = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH, "Invalid SURL path.");
       }
 
       retStatuses.addTSurlReturnStatus(CommandHelper.buildStatus(s, status));
@@ -276,12 +263,10 @@ public abstract class FileTransferRequestStatusCommand extends
     List<TSURL> surls = getSURLListFromInputData(id);
 
     if (surls == null) {
-      CommandHelper
-        .printRequestOutcome(getSrmCommand(), log, status, id, token);
+      CommandHelper.printRequestOutcome(getSrmCommand(), log, status, id, token);
     } else {
-      CommandHelper.printRequestOutcome(getSrmCommand(), log, status, id,
-        token, toStringList(surls));
+      CommandHelper.printRequestOutcome(
+          getSrmCommand(), log, status, id, token, toStringList(surls));
     }
   }
-
 }

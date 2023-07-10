@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.authz.remote.resource;
 
@@ -15,21 +14,16 @@ package it.grid.storm.authz.remote.resource;
  * language governing permissions and limitations under the License.
  */
 
-/**
-* 
-*/
-
+/** */
+import it.grid.storm.authz.remote.Constants;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.QueryParam;
-import it.grid.storm.authz.remote.Constants;
+import javax.ws.rs.WebApplicationException;
 
-/**
- * @author Michele Dibenedetto
- */
+/** @author Michele Dibenedetto */
 @Path("/" + Constants.RESOURCE + "/" + Constants.VERSION_1_0 + "/{filePath}")
 public class AuthorizationResourceCompat_1_0 {
 
@@ -45,8 +39,10 @@ public class AuthorizationResourceCompat_1_0 {
   @GET
   @Path("/" + Constants.READ_OPERATION + "/" + Constants.VOMS_EXTENSIONS + "/" + Constants.USER)
   @Produces("text/plain")
-  public String evaluateVomsGridUserReadPermission(@PathParam("filePath") String filePath,
-      @QueryParam(Constants.DN_KEY) String DN, @QueryParam(Constants.FQANS_KEY) String FQANS)
+  public String evaluateVomsGridUserReadPermission(
+      @PathParam("filePath") String filePath,
+      @QueryParam(Constants.DN_KEY) String DN,
+      @QueryParam(Constants.FQANS_KEY) String FQANS)
       throws WebApplicationException {
 
     return resourceInstance.evaluateVomsGridUserReadPermission(filePath, DN, FQANS);
@@ -62,8 +58,10 @@ public class AuthorizationResourceCompat_1_0 {
   @GET
   @Path("/" + Constants.WRITE_OPERATION + "/" + Constants.VOMS_EXTENSIONS + "/" + Constants.USER)
   @Produces("text/plain")
-  public String evaluateVomsGridUserWritePermission(@PathParam("filePath") String filePath,
-      @QueryParam(Constants.DN_KEY) String DN, @QueryParam(Constants.FQANS_KEY) String FQANS)
+  public String evaluateVomsGridUserWritePermission(
+      @PathParam("filePath") String filePath,
+      @QueryParam(Constants.DN_KEY) String DN,
+      @QueryParam(Constants.FQANS_KEY) String FQANS)
       throws WebApplicationException {
 
     return resourceInstance.evaluateVomsGridUserWritePermission(filePath, DN, FQANS);
@@ -78,8 +76,9 @@ public class AuthorizationResourceCompat_1_0 {
   @GET
   @Path("/" + Constants.READ_OPERATION + "/" + Constants.PLAIN + "/" + Constants.USER)
   @Produces("text/plain")
-  public String evaluateGridUserReadPermission(@PathParam("filePath") String filePath,
-      @QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
+  public String evaluateGridUserReadPermission(
+      @PathParam("filePath") String filePath, @QueryParam(Constants.DN_KEY) String DN)
+      throws WebApplicationException {
 
     return resourceInstance.evaluateGridUserReadPermission(filePath, DN);
   }
@@ -93,8 +92,9 @@ public class AuthorizationResourceCompat_1_0 {
   @GET
   @Path("/" + Constants.WRITE_OPERATION + "/" + Constants.PLAIN + "/" + Constants.USER)
   @Produces("text/plain")
-  public String evaluateGridUserWritePermission(@PathParam("filePath") String filePath,
-      @QueryParam(Constants.DN_KEY) String DN) throws WebApplicationException {
+  public String evaluateGridUserWritePermission(
+      @PathParam("filePath") String filePath, @QueryParam(Constants.DN_KEY) String DN)
+      throws WebApplicationException {
 
     return resourceInstance.evaluateGridUserWritePermission(filePath, DN);
   }

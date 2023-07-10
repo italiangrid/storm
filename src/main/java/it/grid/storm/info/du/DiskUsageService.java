@@ -1,21 +1,17 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.info.du;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import it.grid.storm.namespace.model.VirtualFS;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-
-import it.grid.storm.namespace.model.VirtualFS;
 
 public class DiskUsageService {
 
@@ -32,8 +28,8 @@ public class DiskUsageService {
   private int delay;
   private int period;
 
-  private DiskUsageService(List<VirtualFS> vfss, ScheduledExecutorService executor,
-      int delay, int period) {
+  private DiskUsageService(
+      List<VirtualFS> vfss, ScheduledExecutorService executor, int delay, int period) {
 
     Preconditions.checkNotNull(vfss, "Invalid null list of Virtual FS");
     Preconditions.checkNotNull(executor, "Invalid null scheduled executor service");
@@ -80,8 +76,7 @@ public class DiskUsageService {
     return getSingleThreadScheduledService(Lists.newArrayList());
   }
 
-  public static DiskUsageService getScheduledThreadPoolService(List<VirtualFS> vfss,
-      int poolSize) {
+  public static DiskUsageService getScheduledThreadPoolService(List<VirtualFS> vfss, int poolSize) {
 
     return new DiskUsageService(vfss, Executors.newScheduledThreadPool(poolSize));
   }
@@ -114,11 +109,12 @@ public class DiskUsageService {
     }
 
     log.debug("Starting DiskUsageService ...");
-    monitoredSAs.forEach(vfs -> {
-      DiskUsageTask task = new DiskUsageTask(vfs);
-      log.debug("Schedule task {} with delay {}s and period {}s", task, delay, period);
-      executor.scheduleAtFixedRate(task, delay, period, TimeUnit.SECONDS);
-    });
+    monitoredSAs.forEach(
+        vfs -> {
+          DiskUsageTask task = new DiskUsageTask(vfs);
+          log.debug("Schedule task {} with delay {}s and period {}s", task, delay, period);
+          executor.scheduleAtFixedRate(task, delay, period, TimeUnit.SECONDS);
+        });
     log.debug("Scheduled {} tasks", monitoredSAs.size());
     running = true;
     return monitoredSAs.size();

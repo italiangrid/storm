@@ -1,175 +1,152 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.catalogs;
 
 import it.grid.storm.srm.types.TStatusCode;
 
 /**
- * Class that represents some of the fields in a row in the Persistence Layer:
- * this is all raw data referring to the ReducedCopyChunkData proper, that is
- * String and primitive types.
- * 
- * All other fields are 0 if int, or a white space if String.
- * 
+ * Class that represents some of the fields in a row in the Persistence Layer: this is all raw data
+ * referring to the ReducedCopyChunkData proper, that is String and primitive types.
+ *
+ * <p>All other fields are 0 if int, or a white space if String.
+ *
  * @author Michele Dibenedetto
  */
 public class ReducedCopyChunkDataTO {
 
-	/* Database table request_Get fields BEGIN */
-	private long primaryKey = -1; // ID primary key of record in DB
-	private String fromSURL = " ";
-	private String normalizedSourceStFN = null;
-	private Integer sourceSurlUniqueID = null;
-	private String toSURL = " ";
-	private String normalizedTargetStFN = null;
-	private Integer targetSurlUniqueID = null;
-	/* Database table request_Get fields END */
+  /* Database table request_Get fields BEGIN */
+  private long primaryKey = -1; // ID primary key of record in DB
+  private String fromSURL = " ";
+  private String normalizedSourceStFN = null;
+  private Integer sourceSurlUniqueID = null;
+  private String toSURL = " ";
+  private String normalizedTargetStFN = null;
+  private Integer targetSurlUniqueID = null;
+  /* Database table request_Get fields END */
 
-	private int status = StatusCodeConverter.getInstance().toDB(
-		TStatusCode.SRM_REQUEST_QUEUED);
-	private String errString = " ";
+  private int status = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED);
+  private String errString = " ";
 
-	public long primaryKey() {
+  public long primaryKey() {
 
-		return primaryKey;
-	}
+    return primaryKey;
+  }
 
-	public void setPrimaryKey(long n) {
+  public void setPrimaryKey(long n) {
 
-		primaryKey = n;
-	}
+    primaryKey = n;
+  }
 
-	public String fromSURL() {
+  public String fromSURL() {
 
-		return fromSURL;
-	}
+    return fromSURL;
+  }
 
-	public void setFromSURL(String s) {
+  public void setFromSURL(String s) {
 
-		fromSURL = s;
-	}
+    fromSURL = s;
+  }
 
-	/**
-	 * @return the normalizedStFN
-	 */
-	public String normalizedSourceStFN() {
+  /** @return the normalizedStFN */
+  public String normalizedSourceStFN() {
 
-		return normalizedSourceStFN;
-	}
+    return normalizedSourceStFN;
+  }
 
-	/**
-	 * @param normalizedStFN
-	 *          the normalizedStFN to set
-	 */
-	public void setNormalizedSourceStFN(String normalizedStFN) {
+  /** @param normalizedStFN the normalizedStFN to set */
+  public void setNormalizedSourceStFN(String normalizedStFN) {
 
-		this.normalizedSourceStFN = normalizedStFN;
-	}
+    this.normalizedSourceStFN = normalizedStFN;
+  }
 
-	/**
-	 * @return the surlUniqueID
-	 */
-	public Integer sourceSurlUniqueID() {
+  /** @return the surlUniqueID */
+  public Integer sourceSurlUniqueID() {
 
-		return sourceSurlUniqueID;
-	}
+    return sourceSurlUniqueID;
+  }
 
-	/**
-	 * @param surlUniqueID
-	 *          the surlUniqueID to set
-	 */
-	public void setSourceSurlUniqueID(Integer surlUniqueID) {
+  /** @param surlUniqueID the surlUniqueID to set */
+  public void setSourceSurlUniqueID(Integer surlUniqueID) {
 
-		this.sourceSurlUniqueID = surlUniqueID;
-	}
+    this.sourceSurlUniqueID = surlUniqueID;
+  }
 
-	public String toSURL() {
+  public String toSURL() {
 
-		return toSURL;
-	}
+    return toSURL;
+  }
 
-	public void setToSURL(String s) {
+  public void setToSURL(String s) {
 
-		toSURL = s;
-	}
+    toSURL = s;
+  }
 
-	/**
-	 * @return the normalizedStFN
-	 */
-	public String normalizedTargetStFN() {
+  /** @return the normalizedStFN */
+  public String normalizedTargetStFN() {
 
-		return normalizedTargetStFN;
-	}
+    return normalizedTargetStFN;
+  }
 
-	/**
-	 * @param normalizedStFN
-	 *          the normalizedStFN to set
-	 */
-	public void setNormalizedTargetStFN(String normalizedStFN) {
+  /** @param normalizedStFN the normalizedStFN to set */
+  public void setNormalizedTargetStFN(String normalizedStFN) {
 
-		this.normalizedTargetStFN = normalizedStFN;
-	}
+    this.normalizedTargetStFN = normalizedStFN;
+  }
 
-	/**
-	 * @return the surlUniqueID
-	 */
-	public Integer targetSurlUniqueID() {
+  /** @return the surlUniqueID */
+  public Integer targetSurlUniqueID() {
 
-		return targetSurlUniqueID;
-	}
+    return targetSurlUniqueID;
+  }
 
-	/**
-	 * @param surlUniqueID
-	 *          the surlUniqueID to set
-	 */
-	public void setTargetSurlUniqueID(Integer surlUniqueID) {
+  /** @param surlUniqueID the surlUniqueID to set */
+  public void setTargetSurlUniqueID(Integer surlUniqueID) {
 
-		this.targetSurlUniqueID = surlUniqueID;
-	}
+    this.targetSurlUniqueID = surlUniqueID;
+  }
 
-	public int status() {
+  public int status() {
 
-		return status;
-	}
+    return status;
+  }
 
-	public void setStatus(int n) {
+  public void setStatus(int n) {
 
-		status = n;
-	}
+    status = n;
+  }
 
-	public String errString() {
+  public String errString() {
 
-		return errString;
-	}
+    return errString;
+  }
 
-	public void setErrString(String s) {
+  public void setErrString(String s) {
 
-		errString = s;
-	}
+    errString = s;
+  }
 
-	public String toString() {
+  public String toString() {
 
-		StringBuilder sb = new StringBuilder();
-		sb.append(primaryKey);
-		sb.append(" ");
-		sb.append(fromSURL);
-		sb.append(" ");
-		sb.append(normalizedSourceStFN);
-		sb.append(" ");
-		sb.append(sourceSurlUniqueID);
-		sb.append(" ");
-		sb.append(toSURL);
-		sb.append(" ");
-		sb.append(normalizedTargetStFN);
-		sb.append(" ");
-		sb.append(targetSurlUniqueID);
-		sb.append(" ");
-		sb.append(status);
-		sb.append(" ");
-		sb.append(errString);
-		sb.append(" ");
-		return sb.toString();
-	}
+    StringBuilder sb = new StringBuilder();
+    sb.append(primaryKey);
+    sb.append(" ");
+    sb.append(fromSURL);
+    sb.append(" ");
+    sb.append(normalizedSourceStFN);
+    sb.append(" ");
+    sb.append(sourceSurlUniqueID);
+    sb.append(" ");
+    sb.append(toSURL);
+    sb.append(" ");
+    sb.append(normalizedTargetStFN);
+    sb.append(" ");
+    sb.append(targetSurlUniqueID);
+    sb.append(" ");
+    sb.append(status);
+    sb.append(" ");
+    sb.append(errString);
+    sb.append(" ");
+    return sb.toString();
+  }
 }

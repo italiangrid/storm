@@ -1,10 +1,7 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
-/**
- * 
- */
+/** */
 package it.grid.storm.authz.path.conf;
 
 import it.grid.storm.authz.AuthzDecision;
@@ -17,9 +14,7 @@ import it.grid.storm.common.types.StFN;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * @author zappi
- */
+/** @author zappi */
 public class PathAuthzDB {
 
   public static final String MOCK_ID = "mock-PathAuthzDB";
@@ -31,8 +26,8 @@ public class PathAuthzDB {
   private final PathAuthzEvaluationAlgorithm evaluationAlg;
   private final LinkedList<PathACE> authzDB = new LinkedList<PathACE>();
 
-  public PathAuthzDB(String pathAuthzDBID, PathAuthzEvaluationAlgorithm algorithm,
-      List<PathACE> aces) {
+  public PathAuthzDB(
+      String pathAuthzDBID, PathAuthzEvaluationAlgorithm algorithm, List<PathACE> aces) {
 
     this.pathAuthzDBID = pathAuthzDBID;
     this.evaluationAlg = algorithm;
@@ -46,9 +41,7 @@ public class PathAuthzDB {
     this.authzDB.addAll(aces);
   }
 
-  /**
-   * Empty constructor. Use it only if there is not
-   */
+  /** Empty constructor. Use it only if there is not */
   public PathAuthzDB() {
 
     this.pathAuthzDBID = MOCK_ID;
@@ -104,5 +97,4 @@ public class PathAuthzDB {
 
     return evaluationAlg.evaluateAnonymous(fileStFN, pathOperation, authzDB);
   }
-
 }

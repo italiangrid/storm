@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.data.exception;
 
@@ -8,17 +7,15 @@ import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 
 public class InvalidReleaseFilesOutputDataAttributeException extends Exception {
 
-	private boolean nullSurlStatus = true;
+  private boolean nullSurlStatus = true;
 
-	public InvalidReleaseFilesOutputDataAttributeException(
-		ArrayOfTSURLReturnStatus surlStatus) {
+  public InvalidReleaseFilesOutputDataAttributeException(ArrayOfTSURLReturnStatus surlStatus) {
 
-		nullSurlStatus = (surlStatus == null);
-	}
+    nullSurlStatus = (surlStatus == null);
+  }
 
-	public String toString() {
+  public String toString() {
 
-		return "nullSurlStatusArray = " + nullSurlStatus;
-	}
-
+    return "nullSurlStatusArray = " + nullSurlStatus;
+  }
 }

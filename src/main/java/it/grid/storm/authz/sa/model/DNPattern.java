@@ -1,25 +1,18 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
-/**
- * 
- */
+/** */
 package it.grid.storm.authz.sa.model;
 
 import it.grid.storm.authz.sa.AuthzDBReaderException;
 import it.grid.storm.griduser.DistinguishedName;
 import it.grid.storm.griduser.SubjectAttribute;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * @author zappi
- * 
- */
+/** @author zappi */
 public class DNPattern implements SubjectPattern {
 
   private static final String ADMIT_ALL = ".*";
@@ -44,10 +37,7 @@ public class DNPattern implements SubjectPattern {
 
   protected boolean checkValidity;
 
-  /**
-   * CONSTRUCTOR
-   */
-
+  /** CONSTRUCTOR */
   public DNPattern(String dnPatternString) throws AuthzDBReaderException {
 
     this(dnPatternString, true);
@@ -90,7 +80,6 @@ public class DNPattern implements SubjectPattern {
           if (rules[i].startsWith("DC=")) {
             domainComponentPatternString = rules[i].substring(3, rules[i].length());
           }
-
         }
       } else {
         countryPatternString = ADMIT_ALL;
@@ -100,23 +89,32 @@ public class DNPattern implements SubjectPattern {
         commonNamePatternString = ADMIT_ALL;
         domainComponentPatternString = ADMIT_ALL;
       }
-      init(countryPatternString, organizationPatternString, organizationalUnitPatternString,
-          localityPatternString, commonNamePatternString, domainComponentPatternString);
+      init(
+          countryPatternString,
+          organizationPatternString,
+          organizationalUnitPatternString,
+          localityPatternString,
+          commonNamePatternString,
+          domainComponentPatternString);
     }
   }
 
   /**
    * private method used to initialize everything
-   * 
+   *
    * @param countryPatternString String
    * @param organizationPatternString String
    * @param organizationalUnitPatternString String
    * @param localityPatternString String
    * @param commonNameString String
    */
-  protected void init(String countryPatternString, String organizationPatternString,
-      String organizationalUnitPatternString, String localityPatternString,
-      String commonNamePatternString, String domainComponentPatternString) {
+  protected void init(
+      String countryPatternString,
+      String organizationPatternString,
+      String organizationalUnitPatternString,
+      String localityPatternString,
+      String commonNamePatternString,
+      String domainComponentPatternString) {
 
     this.countryPatternString = countryPatternString;
     this.organizationPatternString = organizationPatternString;
@@ -190,12 +188,11 @@ public class DNPattern implements SubjectPattern {
       domainComponentPatternString = ADMIT_ALL;
       domainComponentPattern = Pattern.compile(ADMIT_ALL);
     }
-
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see it.grid.storm.authz.sa.model.SubjectPattern#match(it.grid.storm.griduser .FQAN)
    */
   // @Override
@@ -257,7 +254,7 @@ public class DNPattern implements SubjectPattern {
         CharSequence organizationalUnit = null;
         String nameStr = null;
         Matcher organizationalUnitMatcher = null;
-        for (Iterator<String> name = organizationalUnitNames.iterator(); name.hasNext();) {
+        for (Iterator<String> name = organizationalUnitNames.iterator(); name.hasNext(); ) {
           nameStr = name.next();
           organizationalUnit = nameStr.subSequence(0, nameStr.length());
           organizationalUnitMatcher = organizationalUnitPattern.matcher(organizationalUnit);
@@ -279,7 +276,7 @@ public class DNPattern implements SubjectPattern {
         CharSequence commonName = null;
         String commonNameStr = null;
         Matcher commonNameMatcher = null;
-        for (Iterator<String> scanCN = commonNames.iterator(); scanCN.hasNext();) {
+        for (Iterator<String> scanCN = commonNames.iterator(); scanCN.hasNext(); ) {
           commonNameStr = scanCN.next();
           commonName = commonNameStr.subSequence(0, commonNameStr.length());
           commonNameMatcher = commonNamePattern.matcher(commonName);
@@ -301,7 +298,7 @@ public class DNPattern implements SubjectPattern {
         CharSequence domainComponent = null;
         String domainComponentStr = null;
         Matcher domainComponentMatcher = null;
-        for (Iterator<String> scanDC = domainComponents.iterator(); scanDC.hasNext();) {
+        for (Iterator<String> scanDC = domainComponents.iterator(); scanDC.hasNext(); ) {
           domainComponentStr = scanDC.next();
           domainComponent = domainComponentStr.subSequence(0, domainComponentStr.length());
           domainComponentMatcher = domainComponentPattern.matcher(domainComponent);
@@ -319,8 +316,13 @@ public class DNPattern implements SubjectPattern {
 
       // Total Result
       // NOTE : At this point result should be always TRUE!
-      result = countryMatch && organizationMatch && organizationalUnitMatch && localityMatch
-          && commonNameMatch && domainComponentMatch;
+      result =
+          countryMatch
+              && organizationMatch
+              && organizationalUnitMatch
+              && localityMatch
+              && commonNameMatch
+              && domainComponentMatch;
       return result;
     }
     return result;
@@ -328,7 +330,7 @@ public class DNPattern implements SubjectPattern {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see it.grid.storm.authz.sa.model.SubjectPattern#validatePattern()
    */
   // @Override

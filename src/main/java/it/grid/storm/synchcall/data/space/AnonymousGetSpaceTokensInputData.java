@@ -1,37 +1,34 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.data.space;
 
 import it.grid.storm.synchcall.data.AbstractInputData;
 
 public class AnonymousGetSpaceTokensInputData extends AbstractInputData
-	implements GetSpaceTokensInputData {
+    implements GetSpaceTokensInputData {
 
-	private final String spaceTokenAlias;
+  private final String spaceTokenAlias;
 
-	public AnonymousGetSpaceTokensInputData(String spaceTokenAlias) {
+  public AnonymousGetSpaceTokensInputData(String spaceTokenAlias) {
 
-		if (spaceTokenAlias == null) {
-			throw new IllegalArgumentException(
-				"Unable to create the object, invalid arguments: spaceTokenAlias="
-					+ spaceTokenAlias);
-		}
-		this.spaceTokenAlias = spaceTokenAlias;
-	}
+    if (spaceTokenAlias == null) {
+      throw new IllegalArgumentException(
+          "Unable to create the object, invalid arguments: spaceTokenAlias=" + spaceTokenAlias);
+    }
+    this.spaceTokenAlias = spaceTokenAlias;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * it.grid.storm.synchcall.data.space.GetSpaceTokensInputData#getSpaceTokenAlias
-	 * ()
-	 */
-	@Override
-	public String getSpaceTokenAlias() {
+  /*
+   * (non-Javadoc)
+   *
+   * @see
+   * it.grid.storm.synchcall.data.space.GetSpaceTokensInputData#getSpaceTokenAlias
+   * ()
+   */
+  @Override
+  public String getSpaceTokenAlias() {
 
-		return spaceTokenAlias;
-	}
-
+    return spaceTokenAlias;
+  }
 }

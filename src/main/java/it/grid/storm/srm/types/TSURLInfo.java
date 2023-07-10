@@ -1,66 +1,51 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 /**
- * This class represents the TSURLInfo data associated with the SRM request,
- * that is it contains info about: TSURL , StorageSystemInfo * @author Magnoni
- * Luca
- * 
+ * This class represents the TSURLInfo data associated with the SRM request, that is it contains
+ * info about: TSURL , StorageSystemInfo * @author Magnoni Luca
+ *
  * @author Cnaf -INFN Bologna
  * @date
  * @version 1.0
  */
-
 package it.grid.storm.srm.types;
 
 public class TSURLInfo {
 
-	private TSURL surl = null;
-	private TStorageSystemInfo systemInfo = null;
+  private TSURL surl = null;
+  private TStorageSystemInfo systemInfo = null;
 
-	public TSURLInfo() {
+  public TSURLInfo() {}
 
-	}
+  public TSURLInfo(TSURL surl, TStorageSystemInfo info) throws InvalidTSURLInfoAttributeException {
 
-	public TSURLInfo(TSURL surl, TStorageSystemInfo info)
-		throws InvalidTSURLInfoAttributeException {
+    boolean ok = (!(surl == null));
+    if (!ok) throw new InvalidTSURLInfoAttributeException(surl);
+    this.surl = surl;
+    this.systemInfo = info;
+  }
 
-		boolean ok = (!(surl == null));
-		if (!ok)
-			throw new InvalidTSURLInfoAttributeException(surl);
-		this.surl = surl;
-		this.systemInfo = info;
-	}
+  /** Method that return SURL specified in SRM request. */
+  public TSURL getSurl() {
 
-	/**
-	 * Method that return SURL specified in SRM request.
-	 */
+    return surl;
+  }
 
-	public TSURL getSurl() {
+  public void setSurl(TSURL surl) {
 
-		return surl;
-	}
+    this.surl = surl;
+  }
 
-	public void setSurl(TSURL surl) {
+  /** Set StorageSystemInfo */
+  public void setInfo(TStorageSystemInfo info) {
 
-		this.surl = surl;
-	}
+    this.systemInfo = info;
+  }
 
-	/**
-	 * Set StorageSystemInfo
-	 */
-	public void setInfo(TStorageSystemInfo info) {
+  /** Get StorageSystemInfo */
+  public TStorageSystemInfo getInfo() {
 
-		this.systemInfo = info;
-	}
-
-	/**
-	 * Get StorageSystemInfo
-	 */
-	public TStorageSystemInfo getInfo() {
-
-		return this.systemInfo;
-	}
-
+    return this.systemInfo;
+  }
 }

@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.ea;
 
@@ -40,8 +39,7 @@ public class MetricsEAAdapter implements ExtendedAttributes {
     }
   }
 
-  public void setXAttr(String filename, String attributeName,
-    String attributeValue) {
+  public void setXAttr(String filename, String attributeName, String attributeValue) {
 
     final Timer.Context context = eaTimer.time();
     try {
@@ -60,5 +58,4 @@ public class MetricsEAAdapter implements ExtendedAttributes {
       context.stop();
     }
   }
-
 }

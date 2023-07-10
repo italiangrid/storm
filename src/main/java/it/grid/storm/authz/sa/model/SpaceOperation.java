@@ -1,23 +1,23 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.authz.sa.model;
 
 /**
  * RELEASE_SPACE (D) UPDATE_SPACE (U) READ_FROM_SPACE (R) WRITE_TO_SPACE (W) STAGE_TO_SPACE (S)
  * REPLICATE_FROM_SPACE(C) PURGE_FROM_SPACE (P) QUERY_SPACE (Q) MODIFY_SPACE_ACL (M)
- **/
-
+ */
 public enum SpaceOperation {
-  RELEASE_SPACE('D', "RELEASE_SPACE", "Release space"), UPDATE_SPACE('U', "UPDATE_SPACE",
-      "Update space"), READ_FROM_SPACE('R', "READ_FROM_SPACE", "Read from space"), WRITE_TO_SPACE(
-          'W', "WRITE_TO_SPACE", "Write to space"), STAGE_TO_SPACE('S', "STAGE_TO_SPACE",
-              "Stage to space"), REPLICATE_FROM_SPACE('C', "REPLICATE_FROM_SPACE",
-                  "Replicate from space"), PURGE_FROM_SPACE('P', "PURGE_FROM_SPACE",
-                      "Purge from space"), QUERY_SPACE('Q', "QUERY_SPACE",
-                          "Query space"), MODIFY_SPACE_ACL('M', "MODIFY_SPACE_ACL",
-                              "Modify space acl"), UNDEFINED('?', "UNDEFINED", "Undefined");
+  RELEASE_SPACE('D', "RELEASE_SPACE", "Release space"),
+  UPDATE_SPACE('U', "UPDATE_SPACE", "Update space"),
+  READ_FROM_SPACE('R', "READ_FROM_SPACE", "Read from space"),
+  WRITE_TO_SPACE('W', "WRITE_TO_SPACE", "Write to space"),
+  STAGE_TO_SPACE('S', "STAGE_TO_SPACE", "Stage to space"),
+  REPLICATE_FROM_SPACE('C', "REPLICATE_FROM_SPACE", "Replicate from space"),
+  PURGE_FROM_SPACE('P', "PURGE_FROM_SPACE", "Purge from space"),
+  QUERY_SPACE('Q', "QUERY_SPACE", "Query space"),
+  MODIFY_SPACE_ACL('M', "MODIFY_SPACE_ACL", "Modify space acl"),
+  UNDEFINED('?', "UNDEFINED", "Undefined");
 
   private final char operation;
   private final String operationName;
@@ -81,5 +81,4 @@ public enum SpaceOperation {
 
     return SpaceOperation.values().length - 1;
   }
-
 }

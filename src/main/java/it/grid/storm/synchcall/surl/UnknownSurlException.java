@@ -1,31 +1,26 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.surl;
 
 public class UnknownSurlException extends Exception {
 
-	/**
-     * 
-     */
-	private static final long serialVersionUID = 4930389310396856355L;
+  /** */
+  private static final long serialVersionUID = 4930389310396856355L;
 
-	public UnknownSurlException() {
-	}
+  public UnknownSurlException() {}
 
-	public UnknownSurlException(String message) {
-		super(message);
-	}
+  public UnknownSurlException(String message) {
+    super(message);
+  }
 
-	public UnknownSurlException(Throwable cause) {
+  public UnknownSurlException(Throwable cause) {
 
-		super(cause);
-	}
+    super(cause);
+  }
 
-	public UnknownSurlException(String message, Throwable cause) {
+  public UnknownSurlException(String message, Throwable cause) {
 
-		super(message, cause);
-	}
-
+    super(message, cause);
+  }
 }

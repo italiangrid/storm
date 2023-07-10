@@ -1,18 +1,15 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 /**
- * This class represents the Mv Output Data associated with the SRM request,
- * that is it contains info about: ...,ecc. * @author Magnoni Luca
- * 
+ * This class represents the Mv Output Data associated with the SRM request, that is it contains
+ * info about: ...,ecc. * @author Magnoni Luca
+ *
  * @author Cnaf -INFN Bologna
  * @date
  * @version 1.0
  */
 package it.grid.storm.synchcall.data.directory;
-
-import java.util.Vector;
 
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.synchcall.data.OutputData;
@@ -20,45 +17,35 @@ import it.grid.storm.synchcall.data.exception.InvalidMvOutputAttributeException;
 
 public class MvOutputData implements OutputData {
 
-	private TReturnStatus returnStatus = null;
+  private TReturnStatus returnStatus = null;
 
-	public MvOutputData() {
+  public MvOutputData() {}
 
-	}
+  public MvOutputData(TReturnStatus retStatus) throws InvalidMvOutputAttributeException {
 
-	public MvOutputData(TReturnStatus retStatus)
-		throws InvalidMvOutputAttributeException {
+    boolean ok = (retStatus == null);
+    if (!ok) {
+      throw new InvalidMvOutputAttributeException(retStatus);
+    }
+    this.returnStatus = retStatus;
+  }
 
-		boolean ok = (retStatus == null);
-		if (!ok) {
-			throw new InvalidMvOutputAttributeException(retStatus);
-		}
-		this.returnStatus = retStatus;
-	}
+  /** Method that return Status. */
+  public TReturnStatus getStatus() {
 
-	/**
-	 * Method that return Status.
-	 */
+    return returnStatus;
+  }
 
-	public TReturnStatus getStatus() {
+  /** Set ReturnStatus */
+  public void setStatus(TReturnStatus retStat) {
 
-		return returnStatus;
-	}
+    this.returnStatus = retStat;
+  }
 
-	/**
-	 * Set ReturnStatus
-	 * 
-	 */
-	public void setStatus(TReturnStatus retStat) {
+  // @Override
+  public boolean isSuccess() {
 
-		this.returnStatus = retStat;
-	}
-
-	// @Override
-	public boolean isSuccess() {
-
-		// TODO Auto-generated method stub
-		return true;
-	}
-
+    // TODO Auto-generated method stub
+    return true;
+  }
 }

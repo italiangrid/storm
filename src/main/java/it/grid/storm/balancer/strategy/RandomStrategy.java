@@ -1,19 +1,16 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.balancer.strategy;
 
 import static it.grid.storm.balancer.BalancingStrategyType.RANDOM;
 
+import it.grid.storm.balancer.Node;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import it.grid.storm.balancer.Node;
 
 public class RandomStrategy extends AbstractBalancingStrategy {
 

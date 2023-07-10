@@ -1,23 +1,20 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 /**
  * This class represents a TExtraInfoArray
- * 
+ *
  * @author EGRID ICTP Trieste / CNAF Bologna
  * @date March 23rd, 2005
  * @version 2.0
  */
-
 package it.grid.storm.srm.types;
 
+import com.google.common.collect.Lists;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import com.google.common.collect.Lists;
 
 public class ArrayOfSURLs implements Serializable {
 
@@ -77,8 +74,7 @@ public class ArrayOfSURLs implements Serializable {
     if (surls != null) {
       for (int i = 0; i < surls.size(); i++) {
         buf.append("'" + surls.get(i) + "'");
-        if (i + 1 < surls.size())
-          buf.append(",");
+        if (i + 1 < surls.size()) buf.append(",");
       }
 
     } else {
@@ -86,7 +82,6 @@ public class ArrayOfSURLs implements Serializable {
     }
 
     return buf.toString();
-
   }
 
   public List<String> asStringList() {

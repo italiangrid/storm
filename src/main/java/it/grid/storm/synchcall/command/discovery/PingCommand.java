@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.command.discovery;
 
@@ -18,10 +17,6 @@ import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.discovery.PingInputData;
 import it.grid.storm.synchcall.data.discovery.PingOutputData;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -29,17 +24,17 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008 Company: INFN-CNAF and
  * ICTP/EGRID project
- * 
+ *
  * @author lucamag
  * @author Alberto Forti
  * @date May 28, 2008
- * 
  */
-
 public class PingCommand extends DiscoveryCommand implements Command {
 
   public static final Logger log = LoggerFactory.getLogger(PingCommand.class);
@@ -77,14 +72,16 @@ public class PingCommand extends DiscoveryCommand implements Command {
 
     outputData.setExtraInfoArray(extraInfoArray);
 
-    log.info("srmPing: <{}> [AuthID: {}] extraInfo: {}", DataHelper.getRequestor(inputData),
-        inputData.getAuthorizationID(), extraInfoArray);
+    log.info(
+        "srmPing: <{}> [AuthID: {}] extraInfo: {}",
+        DataHelper.getRequestor(inputData),
+        inputData.getAuthorizationID(),
+        extraInfoArray);
 
     return outputData;
   }
 
   /**
-   * 
    * @param authorizationID String
    * @return String normalizedAuthID
    */
@@ -101,10 +98,7 @@ public class PingCommand extends DiscoveryCommand implements Command {
     return result;
   }
 
-  /**
-   * 
-   * @return Properties
-   */
+  /** @return Properties */
   private Properties loadProperties() {
 
     Properties properties = new Properties();
@@ -118,8 +112,8 @@ public class PingCommand extends DiscoveryCommand implements Command {
       try {
         properties.load(new FileInputStream(propertiesFile));
       } catch (IOException e) {
-        log.error("Error loading ping properties from file {}. {}", propertiesFile, e.getMessage(),
-            e);
+        log.error(
+            "Error loading ping properties from file {}. {}", propertiesFile, e.getMessage(), e);
       }
     }
 
@@ -128,13 +122,11 @@ public class PingCommand extends DiscoveryCommand implements Command {
     return properties;
   }
 
-  /****************************
-   * SPECIAL KEY MANAGEMENT
-   ****************************/
+  /** ************************** SPECIAL KEY MANAGEMENT ************************** */
 
   /**
    * Dispatcher for manage the special keys on Ping
-   * 
+   *
    * @param param
    * @return
    */
@@ -169,23 +161,25 @@ public class PingCommand extends DiscoveryCommand implements Command {
       case TEST_TAKEOVER:
         arrayResult = test_takeover(extractParam(key));
         break;
-      default: {
-        TExtraInfo extraInfo = new TExtraInfo();
-        try {
-          extraInfo = new TExtraInfo(SpecialKey.UNKNOWN.toString(),
-              SpecialKey.UNKNOWN.getDescription() + ":'" + key + "'");
-        } catch (InvalidTExtraInfoAttributeException e) {
-          log.error(e.getMessage(), e);
+      default:
+        {
+          TExtraInfo extraInfo = new TExtraInfo();
+          try {
+            extraInfo =
+                new TExtraInfo(
+                    SpecialKey.UNKNOWN.toString(),
+                    SpecialKey.UNKNOWN.getDescription() + ":'" + key + "'");
+          } catch (InvalidTExtraInfoAttributeException e) {
+            log.error(e.getMessage(), e);
+          }
+          arrayResult.addTExtraInfo(extraInfo);
+          break;
         }
-        arrayResult.addTExtraInfo(extraInfo);
-        break;
-      }
     }
     return arrayResult;
   }
 
   /**
-   * 
    * @param param
    * @return
    */
@@ -195,7 +189,7 @@ public class PingCommand extends DiscoveryCommand implements Command {
     Properties pingValues = loadProperties();
     TExtraInfo otherInfo = new TExtraInfo();
 
-    for (Enumeration<?> e = pingValues.propertyNames(); e.hasMoreElements();) {
+    for (Enumeration<?> e = pingValues.propertyNames(); e.hasMoreElements(); ) {
       String key = (String) e.nextElement();
       String value = pingValues.getProperty(key);
       try {
@@ -253,12 +247,9 @@ public class PingCommand extends DiscoveryCommand implements Command {
     return arrayResult;
   }
 
-  /**********************************
-   * UTILITY METHODS
-   **********************************/
+  /** ******************************** UTILITY METHODS ******************************** */
 
   /**
-   * 
    * @param key
    * @return
    */
@@ -287,30 +278,20 @@ public class PingCommand extends DiscoveryCommand implements Command {
     return param;
   }
 
-  /**********************************
-   * MAIN for TEST PURPOUSE
-   **********************************/
+  /** ******************************** MAIN for TEST PURPOUSE ******************************** */
+  public static void main(String arg[]) {}
 
-  public static void main(String arg[]) {
-
-  }
-
-  /**
-   * 
-   *
-   */
+  /** */
   private enum SpecialKey {
-
-    ALL("all", "return all the pair <key,value> defined in properties"), BE_OS_PLATFORM(
-        Constants.BE_OS_PLATFORM.getKey(),
-        "returns the operating system platform"), BE_OS_KERNEL_RELEASE(
-            Constants.BE_OS_KERNEL_RELEASE.getKey(),
-            "returns the operating system kernel release"), TEST_TAKEOVER("take-over",
-                "testing the take-over method"), TEST_POST_NEW_TASK("new-task",
-                    "testing the take-over method"), TEST_PUT_NEW_STATUS("new-status",
-                        "testing the take-over method"), TEST_PUT_RETRY_VALUE("retry-value",
-                            "testing the take-over method"), UNKNOWN("unknown",
-                                "Unable to manage the key");
+    ALL("all", "return all the pair <key,value> defined in properties"),
+    BE_OS_PLATFORM(Constants.BE_OS_PLATFORM.getKey(), "returns the operating system platform"),
+    BE_OS_KERNEL_RELEASE(
+        Constants.BE_OS_KERNEL_RELEASE.getKey(), "returns the operating system kernel release"),
+    TEST_TAKEOVER("take-over", "testing the take-over method"),
+    TEST_POST_NEW_TASK("new-task", "testing the take-over method"),
+    TEST_PUT_NEW_STATUS("new-status", "testing the take-over method"),
+    TEST_PUT_RETRY_VALUE("retry-value", "testing the take-over method"),
+    UNKNOWN("unknown", "Unable to manage the key");
 
     private final String operationName;
     private final String operationDescription;

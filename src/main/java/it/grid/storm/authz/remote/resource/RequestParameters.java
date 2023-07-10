@@ -1,23 +1,19 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.authz.remote.resource;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
+import it.grid.storm.authz.remote.Constants;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
-
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import it.grid.storm.authz.remote.Constants;
 
 class RequestParameters {
 
@@ -62,31 +58,42 @@ class RequestParameters {
     try {
       filePathDecoded = URLDecoder.decode(filePath, Constants.ENCODING_SCHEME);
     } catch (UnsupportedEncodingException e) {
-      log.error("Unable to decode filePath parameter. " + "UnsupportedEncodingException: {}",
-          e.getMessage(), e);
-      throw new WebApplicationException(Response.status(BAD_REQUEST)
-        .entity("Unable to decode filePath paramether, unsupported encoding \'"
-            + Constants.ENCODING_SCHEME + "\'")
-        .build());
+      log.error(
+          "Unable to decode filePath parameter. " + "UnsupportedEncodingException: {}",
+          e.getMessage(),
+          e);
+      throw new WebApplicationException(
+          Response.status(BAD_REQUEST)
+              .entity(
+                  "Unable to decode filePath paramether, unsupported encoding \'"
+                      + Constants.ENCODING_SCHEME
+                      + "\'")
+              .build());
     }
     log.debug("Decoded filePath = {}", filePathDecoded);
 
     if (filePathDecoded == null || filePathDecoded.trim().equals("")) {
-      log.error("Unable to evaluate permissions. Some parameters are missing: " + "filePath {}",
+      log.error(
+          "Unable to evaluate permissions. Some parameters are missing: " + "filePath {}",
           filePathDecoded);
-      throw new WebApplicationException(Response.status(BAD_REQUEST)
-        .entity("Unable to evaluate permissions. Some parameters are missing")
-        .build());
+      throw new WebApplicationException(
+          Response.status(BAD_REQUEST)
+              .entity("Unable to evaluate permissions. Some parameters are missing")
+              .build());
     }
     URI filePathURI;
     try {
       filePathURI = new URI(filePathDecoded);
     } catch (URISyntaxException e) {
-      log.error("Unable to evaluate permissions on path {}. " + "URISyntaxException: {}",
-          filePathDecoded, e.getMessage(), e);
-      throw new WebApplicationException(Response.status(BAD_REQUEST)
-        .entity("Unable to evaluate permissions. Invalid file path")
-        .build());
+      log.error(
+          "Unable to evaluate permissions on path {}. " + "URISyntaxException: {}",
+          filePathDecoded,
+          e.getMessage(),
+          e);
+      throw new WebApplicationException(
+          Response.status(BAD_REQUEST)
+              .entity("Unable to evaluate permissions. Invalid file path")
+              .build());
     }
     return filePathURI.normalize().toString();
   }
@@ -97,20 +104,26 @@ class RequestParameters {
     try {
       DNDecoded = URLDecoder.decode(DN, Constants.ENCODING_SCHEME);
     } catch (UnsupportedEncodingException e) {
-      log.error("Unable to decode DN parameter. " + "UnsupportedEncodingException: {}",
-          e.getMessage(), e);
-      throw new WebApplicationException(Response.status(BAD_REQUEST)
-        .entity("Unable to decode DN paramether, unsupported encoding \'"
-            + Constants.ENCODING_SCHEME + "\'")
-        .build());
+      log.error(
+          "Unable to decode DN parameter. " + "UnsupportedEncodingException: {}",
+          e.getMessage(),
+          e);
+      throw new WebApplicationException(
+          Response.status(BAD_REQUEST)
+              .entity(
+                  "Unable to decode DN paramether, unsupported encoding \'"
+                      + Constants.ENCODING_SCHEME
+                      + "\'")
+              .build());
     }
     log.debug("Decoded DN = {}", DNDecoded);
 
     if (DNDecoded == null || DNDecoded.trim().equals("")) {
       log.error("Unable to evaluate permissions. Some parameters are missing : DN {}", DNDecoded);
-      throw new WebApplicationException(Response.status(BAD_REQUEST)
-        .entity("Unable to evaluate permissions. Some parameters are missing")
-        .build());
+      throw new WebApplicationException(
+          Response.status(BAD_REQUEST)
+              .entity("Unable to evaluate permissions. Some parameters are missing")
+              .build());
     }
     return DNDecoded;
   }
@@ -121,52 +134,50 @@ class RequestParameters {
     try {
       FQANSDecoded = URLDecoder.decode(FQANS, Constants.ENCODING_SCHEME);
     } catch (UnsupportedEncodingException e) {
-      log.error("Unable to decode FQANS parameter. " + "UnsupportedEncodingException: {}",
-          e.getMessage(), e);
-      throw new WebApplicationException(Response.status(BAD_REQUEST)
-        .entity("Unable to decode FQANS paramether, unsupported encoding \'"
-            + Constants.ENCODING_SCHEME + "\'")
-        .build());
+      log.error(
+          "Unable to decode FQANS parameter. " + "UnsupportedEncodingException: {}",
+          e.getMessage(),
+          e);
+      throw new WebApplicationException(
+          Response.status(BAD_REQUEST)
+              .entity(
+                  "Unable to decode FQANS paramether, unsupported encoding \'"
+                      + Constants.ENCODING_SCHEME
+                      + "\'")
+              .build());
     }
     log.debug("Decoded FQANS = {}", FQANSDecoded);
 
     if (FQANSDecoded == null || FQANSDecoded.trim().equals("")) {
-      log.error("Unable to evaluate permissions. Some parameters are " + "missing : FQANS {}",
-          FQANS);
-      throw new WebApplicationException(Response.status(BAD_REQUEST)
-        .entity("Unable to evaluate permissions. Some parameters are missing")
-        .build());
+      log.error(
+          "Unable to evaluate permissions. Some parameters are " + "missing : FQANS {}", FQANS);
+      throw new WebApplicationException(
+          Response.status(BAD_REQUEST)
+              .entity("Unable to evaluate permissions. Some parameters are missing")
+              .build());
     }
     return FQANSDecoded;
   }
 
-  /**
-   * @return the dNDecoded
-   */
+  /** @return the dNDecoded */
   public String getDNDecoded() {
 
     return DNDecoded;
   }
 
-  /**
-   * @return the fQANSDecoded
-   */
+  /** @return the fQANSDecoded */
   public String getFQANSDecoded() {
 
     return FQANSDecoded;
   }
 
-  /**
-   * @return the filePathDecoded
-   */
+  /** @return the filePathDecoded */
   public String getFilePathDecoded() {
 
     return filePathDecoded;
   }
 
-  /**
-   * @return the hasVomsExtension
-   */
+  /** @return the hasVomsExtension */
   public boolean hasVomsExtension() {
 
     return hasVomsExtension;

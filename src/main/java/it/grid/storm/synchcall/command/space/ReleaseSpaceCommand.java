@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.command.space;
 
@@ -19,32 +18,25 @@ import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.space.IdentityReleaseSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReleaseSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReleaseSpaceOutputData;
-
 import java.io.File;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class represents the ReleaseSpaceManager Class. This class hava a
- * reseveSpace method that perform all operation nedded to satisfy a SRM space
- * release request.
- * 
+ * This class represents the ReleaseSpaceManager Class. This class hava a reseveSpace method that
+ * perform all operation nedded to satisfy a SRM space release request.
+ *
  * @author Magnoni Luca
  * @author Cnaf -INFN Bologna
  * @date
  * @version 1.0
  */
-
 public class ReleaseSpaceCommand extends SpaceCommand implements Command {
 
   private final ReservedSpaceCatalog catalog;
 
-  /**
-   * Logger
-   */
-  private static final Logger log = LoggerFactory
-    .getLogger(ReleaseSpaceCommand.class);
+  /** Logger */
+  private static final Logger log = LoggerFactory.getLogger(ReleaseSpaceCommand.class);
 
   private static final String SRM_COMMAND = "srmReleaseSpace";
 
@@ -60,20 +52,17 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
     if (indata instanceof IdentityInputData) {
       inputData = (IdentityReleaseSpaceInputData) indata;
     } else {
-      outputData.setStatus(CommandHelper.buildStatus(
-        TStatusCode.SRM_NOT_SUPPORTED, "Anonymous user can not perform"
-          + SRM_COMMAND));
-      printRequestOutcome(outputData.getStatus(),
-        (ReleaseSpaceInputData) indata);
+      outputData.setStatus(
+          CommandHelper.buildStatus(
+              TStatusCode.SRM_NOT_SUPPORTED, "Anonymous user can not perform" + SRM_COMMAND));
+      printRequestOutcome(outputData.getStatus(), (ReleaseSpaceInputData) indata);
       return outputData;
     }
     TReturnStatus returnStatus = null;
 
-    if ((inputData == null)
-      || ((inputData != null) && (inputData.getSpaceToken() == null))) {
+    if ((inputData == null) || ((inputData != null) && (inputData.getSpaceToken() == null))) {
       log.error("Empty space token.");
-      returnStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST,
-        "SpaceToken is empty.");
+      returnStatus = new TReturnStatus(TStatusCode.SRM_INVALID_REQUEST, "SpaceToken is empty.");
       outputData.setStatus(returnStatus);
       return outputData;
     }
@@ -81,12 +70,16 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
     GridUserInterface user = inputData.getUser();
     if (user == null) {
       log.debug("Null user credentials.");
-      returnStatus = new TReturnStatus(TStatusCode.SRM_AUTHENTICATION_FAILURE,
-        "Unable to get user credential");
+      returnStatus =
+          new TReturnStatus(
+              TStatusCode.SRM_AUTHENTICATION_FAILURE, "Unable to get user credential");
       outputData.setStatus(returnStatus);
 
-      log.error("srmReleaseSpace: <{}> Request for [spacetoken: {}] failed "
-        + "with: [status: {}]", user, inputData.getSpaceToken(), returnStatus);
+      log.error(
+          "srmReleaseSpace: <{}> Request for [spacetoken: {}] failed " + "with: [status: {}]",
+          user,
+          inputData.getSpaceToken(),
+          returnStatus);
 
       return outputData;
     }
@@ -100,16 +93,22 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
     try {
       data = catalog.getStorageSpace(inputData.getSpaceToken());
     } catch (Throwable e) {
-      log.error("Error fetching data for space token {}. {}",
-        inputData.getSpaceToken(), e.getMessage(), e);
+      log.error(
+          "Error fetching data for space token {}. {}",
+          inputData.getSpaceToken(),
+          e.getMessage(),
+          e);
 
       explanation = "Error building space data from row DB data.";
       statusCode = TStatusCode.SRM_INTERNAL_ERROR;
       returnStatus = new TReturnStatus(statusCode, explanation);
       outputData.setStatus(returnStatus);
 
-      log.error("srmReleaseSpace: <{}> Request for [spacetoken: {}] failed "
-        + "with: [status: {}]", user, inputData.getSpaceToken(), returnStatus);
+      log.error(
+          "srmReleaseSpace: <{}> Request for [spacetoken: {}] failed " + "with: [status: {}]",
+          user,
+          inputData.getSpaceToken(),
+          returnStatus);
 
       return outputData;
     }
@@ -120,8 +119,11 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
       returnStatus = new TReturnStatus(statusCode, explanation);
       outputData.setStatus(returnStatus);
 
-      log.error("srmReleaseSpace: <{}> Request for [spacetoken: {}] failed "
-        + "with: [status: {}]", user, inputData.getSpaceToken(), returnStatus);
+      log.error(
+          "srmReleaseSpace: <{}> Request for [spacetoken: {}] failed " + "with: [status: {}]",
+          user,
+          inputData.getSpaceToken(),
+          returnStatus);
 
       return outputData;
     }
@@ -156,30 +158,35 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
 
     if (returnStatus.isSRM_SUCCESS()) {
 
-      log.error("srmReleaseSpace: <{}> Request for [spacetoken: {}] succesfully done "
-        + "with: [status: {}]", user, inputData.getSpaceToken(), returnStatus); 
-      
+      log.error(
+          "srmReleaseSpace: <{}> Request for [spacetoken: {}] succesfully done "
+              + "with: [status: {}]",
+          user,
+          inputData.getSpaceToken(),
+          returnStatus);
+
     } else {
 
-      log.error("srmReleaseSpace: <" + user + "> Request for [spacetoken:"
-        + inputData.getSpaceToken() + "] for failed with: [status:"
-        + returnStatus + "]");
-
+      log.error(
+          "srmReleaseSpace: <"
+              + user
+              + "> Request for [spacetoken:"
+              + inputData.getSpaceToken()
+              + "] for failed with: [status:"
+              + returnStatus
+              + "]");
     }
 
     return outputData;
   }
 
   /**
-   * 
-   * @param user
-   *          GridUserInterface
-   * @param data
-   *          StorageSpaceData
+   * @param user GridUserInterface
+   * @param data StorageSpaceData
    * @return TReturnStatus
    */
-  private TReturnStatus manageAuthorizedReleaseSpace(StorageSpaceData data,
-    GridUserInterface user) {
+  private TReturnStatus manageAuthorizedReleaseSpace(
+      StorageSpaceData data, GridUserInterface user) {
 
     String spaceFileName;
     PFN pfn = data.getSpaceFileName();
@@ -192,20 +199,19 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
         if (catalog.release(user, data.getSpaceToken())) {
           return new TReturnStatus(TStatusCode.SRM_SUCCESS, "Space Released.");
         } else {
-          return new TReturnStatus(TStatusCode.SRM_INTERNAL_ERROR,
-            "Space removed, but spaceToken was not found in the DB");
+          return new TReturnStatus(
+              TStatusCode.SRM_INTERNAL_ERROR,
+              "Space removed, but spaceToken was not found in the DB");
         }
       } else {
-        return new TReturnStatus(TStatusCode.SRM_FAILURE,
-          "Space can not be removed by StoRM!");
+        return new TReturnStatus(TStatusCode.SRM_FAILURE, "Space can not be removed by StoRM!");
       }
     } else {
-			return new TReturnStatus(TStatusCode.SRM_FAILURE, "SRM Internal failure.");
+      return new TReturnStatus(TStatusCode.SRM_FAILURE, "SRM Internal failure.");
     }
   }
 
-  private void printRequestOutcome(TReturnStatus status,
-    ReleaseSpaceInputData indata) {
+  private void printRequestOutcome(TReturnStatus status, ReleaseSpaceInputData indata) {
 
     if (indata != null) {
       CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, indata);
@@ -213,5 +219,4 @@ public class ReleaseSpaceCommand extends SpaceCommand implements Command {
       CommandHelper.printRequestOutcome(SRM_COMMAND, log, status);
     }
   }
-
 }

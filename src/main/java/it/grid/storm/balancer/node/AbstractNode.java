@@ -1,19 +1,16 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.balancer.node;
 
+import it.grid.storm.balancer.Node;
+import it.grid.storm.namespace.model.Protocol;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
-
 import org.apache.commons.net.telnet.TelnetClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import it.grid.storm.balancer.Node;
-import it.grid.storm.namespace.model.Protocol;
 
 public abstract class AbstractNode implements Node {
 
@@ -108,16 +105,14 @@ public abstract class AbstractNode implements Node {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
     AbstractNode other = (AbstractNode) obj;
-    return Objects.equals(hostname, other.hostname) && id == other.id && port == other.port
-        && Objects.equals(protocol, other.protocol) && Objects.equals(weight, other.weight);
+    return Objects.equals(hostname, other.hostname)
+        && id == other.id
+        && port == other.port
+        && Objects.equals(protocol, other.protocol)
+        && Objects.equals(weight, other.weight);
   }
-
-
 }

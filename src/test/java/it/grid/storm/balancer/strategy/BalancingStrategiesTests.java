@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.balancer.strategy;
 
@@ -8,18 +7,15 @@ import static it.grid.storm.config.Configuration.CONFIG_FILE_PATH;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import com.google.common.collect.Lists;
-
 import it.grid.storm.balancer.BalancerUtils;
 import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.balancer.Node;
 import it.grid.storm.balancer.cache.ResponsivenessCache;
 import it.grid.storm.balancer.exception.BalancingStrategyException;
+import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
 
 public class BalancingStrategiesTests extends BalancerUtils {
 
@@ -78,7 +74,6 @@ public class BalancingStrategiesTests extends BalancerUtils {
     assertTrue(nodes.indexOf(rs.getNextElement()) != -1);
     assertTrue(nodes.indexOf(rs.getNextElement()) != -1);
     assertTrue(nodes.indexOf(rs.getNextElement()) != -1);
-
   }
 
   @Test
@@ -103,5 +98,4 @@ public class BalancingStrategiesTests extends BalancerUtils {
 
     assertEquals(https1, ws.getNextElement());
   }
-
 }

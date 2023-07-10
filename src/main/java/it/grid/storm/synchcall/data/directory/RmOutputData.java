@@ -1,11 +1,10 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 /**
- * This class represents the Rm Output Data associated with the SRM request,
- * that is it contains info about: ...,ecc. * @author Magnoni Luca
- * 
+ * This class represents the Rm Output Data associated with the SRM request, that is it contains
+ * info about: ...,ecc. * @author Magnoni Luca
+ *
  * @author Cnaf -INFN Bologna
  * @date
  * @version 1.0
@@ -18,62 +17,49 @@ import it.grid.storm.synchcall.data.OutputData;
 
 public class RmOutputData implements OutputData {
 
-	private TReturnStatus returnStatus = null;
-	private ArrayOfTSURLReturnStatus arrayOfFileStatus = null;
+  private TReturnStatus returnStatus = null;
+  private ArrayOfTSURLReturnStatus arrayOfFileStatus = null;
 
-	public RmOutputData(TReturnStatus retStatus, ArrayOfTSURLReturnStatus details) {
+  public RmOutputData(TReturnStatus retStatus, ArrayOfTSURLReturnStatus details) {
 
-		if (retStatus == null) {
-			throw new IllegalArgumentException("RmOutputData: return status NULL");
-		}
-		this.returnStatus = retStatus;
-		this.arrayOfFileStatus = details;
-	}
-	
-	public RmOutputData(TReturnStatus retStatus) {
+    if (retStatus == null) {
+      throw new IllegalArgumentException("RmOutputData: return status NULL");
+    }
+    this.returnStatus = retStatus;
+    this.arrayOfFileStatus = details;
+  }
 
-		this(retStatus, null);
-	}
+  public RmOutputData(TReturnStatus retStatus) {
 
-	/**
-	 * Method that return Status.
-	 */
+    this(retStatus, null);
+  }
 
-	public TReturnStatus getStatus() {
+  /** Method that return Status. */
+  public TReturnStatus getStatus() {
 
-		return returnStatus;
-	}
+    return returnStatus;
+  }
 
-	/**
-	 * Set ReturnStatus
-	 * 
-	 */
-	public void setStatus(TReturnStatus retStat) {
+  /** Set ReturnStatus */
+  public void setStatus(TReturnStatus retStat) {
 
-		this.returnStatus = retStat;
-	}
+    this.returnStatus = retStat;
+  }
 
-	/**
-	 * Method that return TSURLReturnStatus[].
-	 */
+  /** Method that return TSURLReturnStatus[]. */
+  public ArrayOfTSURLReturnStatus getSurlStatus() {
 
-	public ArrayOfTSURLReturnStatus getSurlStatus() {
+    return arrayOfFileStatus;
+  }
 
-		return arrayOfFileStatus;
-	}
+  /** Set TSURLReturnStatus */
+  public void setSurlStatus(ArrayOfTSURLReturnStatus details) {
 
-	/**
-	 * Set TSURLReturnStatus
-	 * 
-	 */
-	public void setSurlStatus(ArrayOfTSURLReturnStatus details) {
+    this.arrayOfFileStatus = details;
+  }
 
-		this.arrayOfFileStatus = details;
-	}
+  public boolean isSuccess() {
 
-	public boolean isSuccess() {
-
-		return returnStatus.isSRM_SUCCESS();
-	}
-
+    return returnStatus.isSRM_SUCCESS();
+  }
 }

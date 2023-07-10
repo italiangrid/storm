@@ -1,26 +1,27 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 /**
- * This class represents the Synchronous Call xmlrpc Server . This class hava a
- * set of Handler that manage the FE call invoking the right BackEnd manager.
- * 
+ * This class represents the Synchronous Call xmlrpc Server . This class hava a set of Handler that
+ * manage the FE call invoking the right BackEnd manager.
+ *
  * @author Magnoni Luca
  * @author Cnaf -INFN Bologna
  * @date
  * @version 1.0
  */
-
 package it.grid.storm.xmlrpc;
 
 import static it.grid.storm.metrics.StormMetricRegistry.METRIC_REGISTRY;
 
+import com.codahale.metrics.jetty8.InstrumentedHandler;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.metrics.NamedInstrumentedSelectChannelConnector;
+import it.grid.storm.metrics.NamedInstrumentedThreadPool;
+import it.grid.storm.rest.JettyThread;
 import java.util.EnumSet;
-
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
-
 import org.apache.xmlrpc.webserver.XmlRpcServlet;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.FilterHolder;
@@ -29,28 +30,15 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.jetty8.InstrumentedHandler;
-
-import it.grid.storm.config.Configuration;
-import it.grid.storm.metrics.NamedInstrumentedSelectChannelConnector;
-import it.grid.storm.metrics.NamedInstrumentedThreadPool;
-import it.grid.storm.rest.JettyThread;
-
 public final class XMLRPCHttpServer {
 
-  /**
-   * Logger
-   */
+  /** Logger */
   private static final Logger LOG = LoggerFactory.getLogger(XMLRPCHttpServer.class);
 
-  /**
-   * The Jetty server hosting the Apache XML-RPC machinery
-   */
+  /** The Jetty server hosting the Apache XML-RPC machinery */
   private final Server server;
 
-  /**
-   * True if a web server has been started
-   */
+  /** True if a web server has been started */
   private boolean running = false;
 
   public static final int DEFAULT_MAX_THREAD_NUM = 256;
@@ -66,7 +54,6 @@ public final class XMLRPCHttpServer {
 
     server = buildWebServer(port, maxThreadNum, maxQueueSize);
   };
-
 
   private void configureThreadPool(Server s, int maxThreadNum, int maxQueueSize) {
     int threadNumber = maxThreadNum;
@@ -89,14 +76,16 @@ public final class XMLRPCHttpServer {
 
     s.setThreadPool(tp);
 
-    LOG.info("Configured XMLRPC server threadpool: maxThreads={}, maxQueueSize={}", threadNumber,
+    LOG.info(
+        "Configured XMLRPC server threadpool: maxThreads={}, maxQueueSize={}",
+        threadNumber,
         queueSize);
   }
 
-
   private void configureConnector(Server server, int port) {
-    NamedInstrumentedSelectChannelConnector connector = new NamedInstrumentedSelectChannelConnector(
-        "xmlrpc-connector", port, METRIC_REGISTRY.getRegistry());
+    NamedInstrumentedSelectChannelConnector connector =
+        new NamedInstrumentedSelectChannelConnector(
+            "xmlrpc-connector", port, METRIC_REGISTRY.getRegistry());
 
     server.addConnector(connector);
   }
@@ -129,11 +118,11 @@ public final class XMLRPCHttpServer {
       servletContextHandler.addFilter(filterHolder, "/*", EnumSet.of(DispatcherType.REQUEST));
     }
 
-    InstrumentedHandler ih = new InstrumentedHandler(METRIC_REGISTRY.getRegistry(),
-        servletContextHandler, "xmlrpc-handler");
+    InstrumentedHandler ih =
+        new InstrumentedHandler(
+            METRIC_REGISTRY.getRegistry(), servletContextHandler, "xmlrpc-handler");
 
     server.setHandler(ih);
-
   }
 
   private Server buildWebServer(int port, int maxThreadNum, int maxQueueSize)
@@ -152,7 +141,7 @@ public final class XMLRPCHttpServer {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see it.grid.storm.xmlrpc.XMLRPCServerInterface#createServer()
    */
   public synchronized void start() {
@@ -168,13 +157,9 @@ public final class XMLRPCHttpServer {
 
       LOG.info("Jetty server hosting the XML-RPM machinery is running");
     }
-
   }
 
-  /**
-   * @throws Exception
-   * 
-   */
+  /** @throws Exception */
   public synchronized void stop() {
 
     LOG.info("Stopping Jetty server hosting the XML-RPC machinery");
@@ -191,13 +176,10 @@ public final class XMLRPCHttpServer {
 
         return;
       }
-
     }
 
     running = false;
 
     LOG.info("Jetty server hosting the XML-RPM machinery is not running");
-
   }
-
 }

@@ -1,20 +1,12 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.info;
 
 import static it.grid.storm.config.Configuration.DISKUSAGE_SERVICE_ENABLED;
 
-import java.io.FileNotFoundException;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.config.Configuration;
@@ -28,6 +20,10 @@ import it.grid.storm.space.init.UsedSpaceFile;
 import it.grid.storm.space.init.UsedSpaceFile.SaUsedSize;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
+import java.io.FileNotFoundException;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SpaceInfoManager {
 
@@ -72,13 +68,14 @@ public class SpaceInfoManager {
     }
 
     if (Configuration.getInstance().getDiskUsageServiceEnabled()) {
-      log.info("The remaining {} storage spaces will be initialized by DiskUsage service",
-          ssni.size());
+      log.info(
+          "The remaining {} storage spaces will be initialized by DiskUsage service", ssni.size());
     } else {
       log.warn(
           "The remaining {} storage spaces WON'T be initialized with DUs. "
               + "Please enable DiskUsage service by setting '{}' as true.",
-          ssni.size(), DISKUSAGE_SERVICE_ENABLED);
+          ssni.size(),
+          DISKUSAGE_SERVICE_ENABLED);
     }
   }
 
@@ -89,7 +86,7 @@ public class SpaceInfoManager {
 
   /**
    * @return a list of StorageSpaceData related to SA with quota enabled to be initialized. Can be
-   *         empty.
+   *     empty.
    */
   public List<StorageSpaceData> retrieveSSDtoInitializeWithQuota() {
 
@@ -144,8 +141,10 @@ public class SpaceInfoManager {
       try {
         ssd.setUsedSpaceSize(TSizeInBytes.make(usedSize.getUsedSize(), SizeUnit.BYTES));
         spaceCatalog.updateStorageSpace(ssd);
-        log.debug("StorageSpace table updated for SA: '{}' with used size = {}",
-            usedSize.getSaName(), usedSize.getUsedSize());
+        log.debug(
+            "StorageSpace table updated for SA: '{}' with used size = {}",
+            usedSize.getSaName(),
+            usedSize.getUsedSize());
       } catch (InvalidTSizeAttributesException | DataAccessException e) {
         failPersistence(usedSize.getSaName(), e.getMessage());
       }

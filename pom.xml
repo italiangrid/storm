@@ -49,6 +49,7 @@
     <plugin.assembly.version>3.3.0</plugin.assembly.version>
     <plugin.compiler.version>3.6.1</plugin.compiler.version>
     <plugin.enforcer.version>3.0.0</plugin.enforcer.version>
+    <plugin.format.version>2.9</plugin.format.version>
     <plugin.license.version>1.9.0</plugin.license.version>
     <plugin.surefire.version>2.20</plugin.surefire.version>
 
@@ -67,6 +68,29 @@
     <finalName>storm-backend-server</finalName>
 
     <plugins>
+
+      <!-- Code format plugin -->
+      <plugin>
+        <groupId>com.coveo</groupId>
+        <artifactId>fmt-maven-plugin</artifactId>
+        <version>${plugin.format.version}</version>
+        <configuration>
+          <sourceDirectory>src/main/java</sourceDirectory>
+          <testSourceDirectory>src/test/java</testSourceDirectory>
+          <verbose>false</verbose>
+          <filesNamePattern>.*\.java</filesNamePattern>
+          <skip>false</skip>
+          <skipSortingImports>false</skipSortingImports>
+          <style>google</style>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 
       <!-- Enforce maven version -->
       <plugin>

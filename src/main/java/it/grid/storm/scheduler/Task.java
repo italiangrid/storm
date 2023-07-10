@@ -1,110 +1,99 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.scheduler;
 
 /**
- * <p>
  * Title:
- * </p>
- * 
- * <p>
- * Description:
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2005
- * </p>
- * 
- * <p>
- * Company: Project 'Grid.it' for INFN-CNAF, Bologna, Italy
- * </p>
- * 
+ *
+ * <p>Description:
+ *
+ * <p>Copyright: Copyright (c) 2005
+ *
+ * <p>Company: Project 'Grid.it' for INFN-CNAF, Bologna, Italy
+ *
  * @author Zappi Riccardo <mailto://riccardo.zappi@cnaf.infn.it>
  * @version 1.0
  * @date
- * 
  */
-
 public abstract class Task implements Runnable, Comparable {
 
-	private static String UNDEF_TASKNAME = "undefined";
-	private long creationTime = System.currentTimeMillis();
-	private long enqueueTime = 0L;
-	private long startExecutionTime = 0L;
-	private long endExecutionTime = 0L;
-	private long abortingEventTime = 0L;
-	private long suspendingEventTime = 0L;
-	protected String taskName = null;
+  private static String UNDEF_TASKNAME = "undefined";
+  private long creationTime = System.currentTimeMillis();
+  private long enqueueTime = 0L;
+  private long startExecutionTime = 0L;
+  private long endExecutionTime = 0L;
+  private long abortingEventTime = 0L;
+  private long suspendingEventTime = 0L;
+  protected String taskName = null;
 
-	protected Task() {
+  protected Task() {
 
-		this(UNDEF_TASKNAME);
-	}
+    this(UNDEF_TASKNAME);
+  }
 
-	protected Task(String name) {
+  protected Task(String name) {
 
-		taskName = name;
-		if (taskName == null) {
-			taskName = UNDEF_TASKNAME;
-		}
-		creationTime = System.currentTimeMillis();
-	}
+    taskName = name;
+    if (taskName == null) {
+      taskName = UNDEF_TASKNAME;
+    }
+    creationTime = System.currentTimeMillis();
+  }
 
-	public long getStartExecutionTime() {
+  public long getStartExecutionTime() {
 
-		return this.startExecutionTime;
-	}
+    return this.startExecutionTime;
+  }
 
-	public long howlongBeforeUnqueue() {
+  public long howlongBeforeUnqueue() {
 
-		return enqueueTime - creationTime;
-	}
+    return enqueueTime - creationTime;
+  }
 
-	public long howlongInQueue() {
+  public long howlongInQueue() {
 
-		return startExecutionTime - enqueueTime;
-	}
+    return startExecutionTime - enqueueTime;
+  }
 
-	public long howlongInExecution() {
+  public long howlongInExecution() {
 
-		return endExecutionTime - startExecutionTime;
-	}
+    return endExecutionTime - startExecutionTime;
+  }
 
-	protected void enqueueEvent() {
+  protected void enqueueEvent() {
 
-		this.enqueueTime = System.currentTimeMillis();
-	}
+    this.enqueueTime = System.currentTimeMillis();
+  }
 
-	protected void abortEvent() {
+  protected void abortEvent() {
 
-		this.abortingEventTime = System.currentTimeMillis();
-	}
+    this.abortingEventTime = System.currentTimeMillis();
+  }
 
-	protected void suspendEvent() {
+  protected void suspendEvent() {
 
-		this.suspendingEventTime = System.currentTimeMillis();
-	}
+    this.suspendingEventTime = System.currentTimeMillis();
+  }
 
-	protected void runEvent() {
+  protected void runEvent() {
 
-		this.startExecutionTime = System.currentTimeMillis();
-	}
+    this.startExecutionTime = System.currentTimeMillis();
+  }
 
-	protected void endEvent() {
+  protected void endEvent() {
 
-		this.endExecutionTime = System.currentTimeMillis();
-	}
+    this.endExecutionTime = System.currentTimeMillis();
+  }
 
-	protected String getName() {
+  protected String getName() {
 
-		return taskName;
-	}
+    return taskName;
+  }
 
-	public abstract void run();
+  public abstract void run();
 
-	public abstract int compareTo(Object o);
+  public abstract int compareTo(Object o);
 
-	public abstract boolean equals(Object o);
+  public abstract boolean equals(Object o);
 }

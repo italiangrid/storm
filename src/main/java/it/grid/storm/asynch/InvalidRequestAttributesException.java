@@ -1,28 +1,20 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.asynch;
 
 import it.grid.storm.catalogs.RequestData;
 import it.grid.storm.griduser.GridUserInterface;
 
-/**
- * @author Michele Dibenedetto
- * 
- */
+/** @author Michele Dibenedetto */
 public class InvalidRequestAttributesException extends Exception {
 
   private static final long serialVersionUID = 2933131196386843154L;
 
-  /**
-   * true if GridUser is null
-   */
+  /** true if GridUser is null */
   protected final boolean nullGu;
 
-  /**
-   * true if PtPChunkData is null
-   */
+  /** true if PtPChunkData is null */
   protected final boolean nullChunkData;
 
   /**
@@ -39,7 +31,7 @@ public class InvalidRequestAttributesException extends Exception {
   public String toString() {
 
     return String.format(
-        "Invalid attributes when creating Request: " + "nullGridUser=%b, nullChunkData=%b", nullGu,
-        nullChunkData);
+        "Invalid attributes when creating Request: " + "nullGridUser=%b, nullChunkData=%b",
+        nullGu, nullChunkData);
   }
 }

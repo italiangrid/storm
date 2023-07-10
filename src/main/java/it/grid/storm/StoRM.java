@@ -1,21 +1,11 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm;
 
 import static it.grid.storm.metrics.StormMetricRegistry.METRIC_REGISTRY;
 import static java.lang.String.valueOf;
 import static java.security.Security.setProperty;
-
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import it.grid.storm.asynch.AdvancedPicker;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
@@ -39,15 +29,21 @@ import it.grid.storm.startup.BootstrapException;
 import it.grid.storm.synchcall.SimpleSynchcallDispatcher;
 import it.grid.storm.xmlrpc.StoRMXmlRpcException;
 import it.grid.storm.xmlrpc.XMLRPCHttpServer;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class represents a StoRM as a whole: it sets the configuration file which contains
  * properties necessary for other classes of StoRM, it sets up logging, as well as the advanced
  * picker.
- * 
+ *
  * @author EGRID - ICTP Trieste; INFN - CNAF Bologna @date March 28th, 2005 @version 7.0
  */
-
 public class StoRM {
 
   private static final Logger log = LoggerFactory.getLogger(StoRM.class);
@@ -86,7 +82,6 @@ public class StoRM {
     config = Configuration.getInstance();
     picker = new AdvancedPicker();
     spaceCatalog = new ReservedSpaceCatalog();
-
   }
 
   public void init() throws BootstrapException {
@@ -116,14 +111,16 @@ public class StoRM {
     configureDiskUsageService();
 
     performSanityChecks();
-
   }
 
   private void configureIPv6() {
 
-    log.debug("java.net.preferIPv6Addresses is {}", System.getProperty("java.net.preferIPv6Addresses"));
-    System.setProperty("java.net.preferIPv6Addresses", String.valueOf(config.getPreferIPv6Addresses()));
-    log.info("java.net.preferIPv6Addresses is {}", System.getProperty("java.net.preferIPv6Addresses"));
+    log.debug(
+        "java.net.preferIPv6Addresses is {}", System.getProperty("java.net.preferIPv6Addresses"));
+    System.setProperty(
+        "java.net.preferIPv6Addresses", String.valueOf(config.getPreferIPv6Addresses()));
+    log.info(
+        "java.net.preferIPv6Addresses is {}", System.getProperty("java.net.preferIPv6Addresses"));
   }
 
   private void configureLogging() {
@@ -152,13 +149,11 @@ public class StoRM {
         StormMetricsReporter.forRegistry(METRIC_REGISTRY.getRegistry()).build();
 
     metricsReporter.start(1, TimeUnit.MINUTES);
-
   }
 
   private void loadNamespaceConfiguration() {
 
     NamespaceDirector.initializeDirector();
-
   }
 
   private void loadPathAuthzDBConfiguration() throws BootstrapException {
@@ -172,14 +167,16 @@ public class StoRM {
 
     try {
 
-      xmlrpcServer = new XMLRPCHttpServer(config.getXmlRpcServerPort(), config.getXMLRPCMaxThread(),
-          config.getXMLRPCMaxQueueSize());
+      xmlrpcServer =
+          new XMLRPCHttpServer(
+              config.getXmlRpcServerPort(),
+              config.getXMLRPCMaxThread(),
+              config.getXMLRPCMaxQueueSize());
 
     } catch (StoRMXmlRpcException e) {
 
       throw new BootstrapException(e.getMessage(), e);
     }
-
   }
 
   private void performSanityChecks() throws BootstrapException {
@@ -211,7 +208,6 @@ public class StoRM {
     } else {
       log.warn("Sanity checks disabled. Unable to determine if the environment is sane");
     }
-
   }
 
   private void configureStoRMDataSource() {
@@ -219,9 +215,7 @@ public class StoRM {
     StoRMDataSource.init();
   }
 
-  /**
-   * Method used to start the picker.
-   */
+  /** Method used to start the picker. */
   public synchronized void startPicker() {
 
     if (isPickerRunning) {
@@ -232,9 +226,7 @@ public class StoRM {
     isPickerRunning = true;
   }
 
-  /**
-   * Method used to stop the picker.
-   */
+  /** Method used to stop the picker. */
   public synchronized void stopPicker() {
 
     if (!isPickerRunning) {
@@ -245,9 +237,7 @@ public class StoRM {
     isPickerRunning = false;
   }
 
-  /**
-   * @return
-   */
+  /** @return */
   public synchronized boolean pickerIsRunning() {
 
     return isPickerRunning;
@@ -255,7 +245,7 @@ public class StoRM {
 
   /**
    * Method used to start xmlrpcServer.
-   * 
+   *
    * @throws Exception
    */
   public synchronized void startXmlRpcServer() {
@@ -268,9 +258,7 @@ public class StoRM {
     isXmlrpcServerRunning = true;
   }
 
-  /**
-   * Method used to stop xmlrpcServer.
-   */
+  /** Method used to stop xmlrpcServer. */
   public synchronized void stopXmlRpcServer() {
 
     if (!isXmlrpcServerRunning) {
@@ -293,9 +281,7 @@ public class StoRM {
     restServer = new RestServer(restServicePort, maxThreads, maxQueueSize, isTokenEnabled, token);
   }
 
-  /**
-   * RESTFul Service Start-up
-   */
+  /** RESTFul Service Start-up */
   public synchronized void startRestServer() throws Exception {
 
     if (isRestServerRunning) {
@@ -307,9 +293,7 @@ public class StoRM {
     isRestServerRunning = true;
   }
 
-  /**
-   * @throws Exception
-   */
+  /** @throws Exception */
   public synchronized void stopRestServer() {
 
     if (isRestServerRunning) {
@@ -324,14 +308,14 @@ public class StoRM {
 
     } catch (Exception e) {
 
-      log.error("Unable to stop internal HTTP Server listening for RESTFul services: {}",
-          e.getMessage(), e);
+      log.error(
+          "Unable to stop internal HTTP Server listening for RESTFul services: {}",
+          e.getMessage(),
+          e);
     }
   }
 
-  /**
-   * Method use to start the space Garbage Collection Thread.
-   */
+  /** Method use to start the space Garbage Collection Thread. */
   public synchronized void startSpaceGC() {
 
     if (isSpaceGCRunning) {
@@ -348,22 +332,21 @@ public class StoRM {
     long period = config.getCleaningTimeInterval() * 1000;
 
     // Set to 1 hour
-    cleaningTask = new TimerTask() {
+    cleaningTask =
+        new TimerTask() {
 
-      @Override
-      public void run() {
+          @Override
+          public void run() {
 
-        spaceCatalog.purge();
-      }
-    };
+            spaceCatalog.purge();
+          }
+        };
     gc.scheduleAtFixedRate(cleaningTask, delay, period);
     isSpaceGCRunning = true;
     log.debug("Space Garbage Collector started.");
   }
 
-  /**
-   * 
-   */
+  /** */
   public synchronized void stopSpaceGC() {
 
     if (!isSpaceGCRunning) {
@@ -380,9 +363,7 @@ public class StoRM {
     isSpaceGCRunning = false;
   }
 
-  /**
-   * @return
-   */
+  /** @return */
   public synchronized boolean spaceGCIsRunning() {
 
     return isSpaceGCRunning;
@@ -443,10 +424,10 @@ public class StoRM {
 
     NamespaceInterface namespace = NamespaceDirector.getNamespace();
     List<VirtualFS> quotaEnabledVfs = namespace.getVFSWithQuotaEnabled();
-    List<VirtualFS> sas = namespace.getAllDefinedVFS()
-      .stream()
-      .filter(vfs -> !quotaEnabledVfs.contains(vfs))
-      .collect(Collectors.toList());
+    List<VirtualFS> sas =
+        namespace.getAllDefinedVFS().stream()
+            .filter(vfs -> !quotaEnabledVfs.contains(vfs))
+            .collect(Collectors.toList());
 
     if (config.getDiskUsageServiceTasksParallel()) {
       duService = DiskUsageService.getScheduledThreadPoolService(sas);
@@ -465,7 +446,9 @@ public class StoRM {
 
     if (isDiskUsageServiceEnabled) {
 
-      log.info("Starting DiskUsage Service (delay: {}s, period: {}s)", duService.getDelay(),
+      log.info(
+          "Starting DiskUsage Service (delay: {}s, period: {}s)",
+          duService.getDelay(),
           duService.getPeriod());
 
       duService.start();
@@ -475,7 +458,6 @@ public class StoRM {
     } else {
 
       log.info("DiskUsage Service is disabled.");
-
     }
   }
 
@@ -492,7 +474,6 @@ public class StoRM {
     } else {
 
       log.info("DiskUsage Service is not running.");
-
     }
   }
 

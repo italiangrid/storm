@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.catalogs;
 
@@ -9,14 +8,13 @@ import it.grid.storm.srm.types.TSURL;
 
 public interface ReducedChunkData {
 
-	public TSURL fromSURL();
+  public TSURL fromSURL();
 
-	public boolean isPinned();
+  public boolean isPinned();
 
-	public long primaryKey();
+  public long primaryKey();
 
-	public void setPrimaryKey(long l);
+  public void setPrimaryKey(long l);
 
-	public TReturnStatus status();
-
+  public TReturnStatus status();
 }

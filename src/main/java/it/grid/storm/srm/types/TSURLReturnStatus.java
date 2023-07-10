@@ -1,12 +1,10 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 /**
- * This class represents the TSURLReturnStatus data associated with the SRM
- * request, that is it contains info about: TSURL , StorageSystemInfo * @author
- * Magnoni Luca
- * 
+ * This class represents the TSURLReturnStatus data associated with the SRM request, that is it
+ * contains info about: TSURL , StorageSystemInfo * @author Magnoni Luca
+ *
  * @author Cnaf -INFN Bologna
  * @date
  * @version 1.0
@@ -19,134 +17,120 @@ import java.util.Map;
 
 public class TSURLReturnStatus {
 
-	private TSURL surl = null;
-	private TReturnStatus returnStatus = null;
+  private TSURL surl = null;
+  private TReturnStatus returnStatus = null;
 
-	public TSURLReturnStatus() {
+  public TSURLReturnStatus() {}
 
-	}
+  public TSURLReturnStatus(TSURL surl, TReturnStatus status) {
 
-	public TSURLReturnStatus(TSURL surl, TReturnStatus status) {
+    if (surl == null) throw new IllegalArgumentException("SURL is null");
+    this.surl = surl;
+    this.returnStatus = status;
+  }
 
-		if (surl == null)
-			throw new IllegalArgumentException("SURL is null");
-		this.surl = surl;
-		this.returnStatus = status;
-	}
+  /** Method that return SURL specified in SRM request. */
+  public TSURL getSurl() {
 
-	/**
-	 * Method that return SURL specified in SRM request.
-	 */
+    return surl;
+  }
 
-	public TSURL getSurl() {
+  public void setSurl(TSURL surl) {
 
-		return surl;
-	}
+    this.surl = surl;
+  }
 
-	public void setSurl(TSURL surl) {
+  /** Set Status */
+  public void setStatus(TReturnStatus status) {
 
-		this.surl = surl;
-	}
+    this.returnStatus = status;
+  }
 
-	/**
-	 * Set Status
-	 */
-	public void setStatus(TReturnStatus status) {
+  /** Get Status */
+  public TReturnStatus getStatus() {
 
-		this.returnStatus = status;
-	}
+    return this.returnStatus;
+  }
 
-	/**
-	 * Get Status
-	 */
-	public TReturnStatus getStatus() {
+  /*
+   * Encode function used to fill output structure for FE communication.
+   */
+  public void encode(List outputVector) {
 
-		return this.returnStatus;
-	}
+    // Creation of a single TMetaPathDetail struct
+    Map surlRetStatusParam = new HashMap();
+    // Member name "surl"
+    if (this.surl != null) this.surl.encode(surlRetStatusParam, TSURL.PNAME_SURL);
+    if (this.returnStatus != null)
+      this.returnStatus.encode(surlRetStatusParam, TReturnStatus.PNAME_STATUS);
 
-	/*
-	 * Encode function used to fill output structure for FE communication.
-	 */
-	public void encode(List outputVector) {
+    outputVector.add(surlRetStatusParam);
+  }
 
-		// Creation of a single TMetaPathDetail struct
-		Map surlRetStatusParam = new HashMap();
-		// Member name "surl"
-		if (this.surl != null)
-			this.surl.encode(surlRetStatusParam, TSURL.PNAME_SURL);
-		if (this.returnStatus != null)
-			this.returnStatus.encode(surlRetStatusParam, TReturnStatus.PNAME_STATUS);
+  /*
+   * (non-Javadoc)
+   *
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
 
-		outputVector.add(surlRetStatusParam);
+    StringBuilder builder = new StringBuilder();
+    builder.append("TSURLReturnStatus [surl=");
+    builder.append(surl);
+    builder.append(", returnStatus=");
+    builder.append(returnStatus);
+    builder.append("]");
+    return builder.toString();
+  }
 
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((returnStatus == null) ? 0 : returnStatus.hashCode());
+    result = prime * result + ((surl == null) ? 0 : surl.hashCode());
+    return result;
+  }
 
-		StringBuilder builder = new StringBuilder();
-		builder.append("TSURLReturnStatus [surl=");
-		builder.append(surl);
-		builder.append(", returnStatus=");
-		builder.append(returnStatus);
-		builder.append("]");
-		return builder.toString();
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  @Override
+  public boolean equals(Object obj) {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-			+ ((returnStatus == null) ? 0 : returnStatus.hashCode());
-		result = prime * result + ((surl == null) ? 0 : surl.hashCode());
-		return result;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		TSURLReturnStatus other = (TSURLReturnStatus) obj;
-		if (returnStatus == null) {
-			if (other.returnStatus != null) {
-				return false;
-			}
-		} else if (!returnStatus.equals(other.returnStatus)) {
-			return false;
-		}
-		if (surl == null) {
-			if (other.surl != null) {
-				return false;
-			}
-		} else if (!surl.equals(other.surl)) {
-			return false;
-		}
-		return true;
-	}
-
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    TSURLReturnStatus other = (TSURLReturnStatus) obj;
+    if (returnStatus == null) {
+      if (other.returnStatus != null) {
+        return false;
+      }
+    } else if (!returnStatus.equals(other.returnStatus)) {
+      return false;
+    }
+    if (surl == null) {
+      if (other.surl != null) {
+        return false;
+      }
+    } else if (!surl.equals(other.surl)) {
+      return false;
+    }
+    return true;
+  }
 }

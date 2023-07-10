@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.data.directory;
 
@@ -11,94 +10,76 @@ import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.exception.InvalidLSOutputAttributeException;
 
 /**
- * This class is part of the StoRM project. Copyright: Copyright (c) 2008
- * Company: INFN-CNAF and ICTP/EGRID project
- * 
- * This class represents the LS Output Data associated with the SRM request,
- * that is it contains info about: ...,ecc.
- * 
+ * This class is part of the StoRM project. Copyright: Copyright (c) 2008 Company: INFN-CNAF and
+ * ICTP/EGRID project
+ *
+ * <p>This class represents the LS Output Data associated with the SRM request, that is it contains
+ * info about: ...,ecc.
+ *
  * @author lucamag
  * @date May 28, 2008
- * 
  */
-
 public class LSOutputData implements OutputData {
 
-	private TReturnStatus returnStatus = null;
-	private TRequestToken requestToken = null;
-	private ArrayOfTMetaDataPathDetail details = null;
+  private TReturnStatus returnStatus = null;
+  private TRequestToken requestToken = null;
+  private ArrayOfTMetaDataPathDetail details = null;
 
-	public LSOutputData() {
+  public LSOutputData() {}
 
-	}
+  public LSOutputData(
+      TReturnStatus retStatus, TRequestToken token, ArrayOfTMetaDataPathDetail details)
+      throws InvalidLSOutputAttributeException {
 
-	public LSOutputData(TReturnStatus retStatus, TRequestToken token,
-		ArrayOfTMetaDataPathDetail details)
-		throws InvalidLSOutputAttributeException {
+    boolean ok = (details == null);
 
-		boolean ok = (details == null);
+    if (!ok) throw new InvalidLSOutputAttributeException(details);
 
-		if (!ok)
-			throw new InvalidLSOutputAttributeException(details);
+    this.returnStatus = retStatus;
+    this.requestToken = token;
+    this.details = details;
+  }
 
-		this.returnStatus = retStatus;
-		this.requestToken = token;
-		this.details = details;
+  /** Method that get return Status. */
+  public TReturnStatus getStatus() {
 
-	}
+    return returnStatus;
+  }
 
-	/**
-	 * Method that get return Status.
-	 */
-	public TReturnStatus getStatus() {
+  /** Set ReturnStatus */
+  public void setStatus(TReturnStatus retStat) {
 
-		return returnStatus;
-	}
+    this.returnStatus = retStat;
+  }
 
-	/**
-	 * Set ReturnStatus
-	 */
-	public void setStatus(TReturnStatus retStat) {
+  /** Method that get return Status. */
+  public TRequestToken getRequestToken() {
 
-		this.returnStatus = retStat;
-	}
+    return this.requestToken;
+  }
 
-	/**
-	 * Method that get return Status.
-	 */
-	public TRequestToken getRequestToken() {
+  /** Set TRequestToken */
+  public void setRequestToken(TRequestToken token) {
 
-		return this.requestToken;
-	}
+    this.requestToken = token;
+  }
 
-	/**
-	 * Set TRequestToken
-	 */
-	public void setRequestToken(TRequestToken token) {
+  /** Method that return ArrayOfTMetaDataPath. */
+  public ArrayOfTMetaDataPathDetail getDetails() {
 
-		this.requestToken = token;
-	}
+    return details;
+  }
 
-	/**
-	 * Method that return ArrayOfTMetaDataPath.
-	 */
-	public ArrayOfTMetaDataPathDetail getDetails() {
+  /** Set ArrayOfTMetaDataPath */
+  public void setDetails(ArrayOfTMetaDataPathDetail details) {
 
-		return details;
-	}
+    this.details = details;
+  }
 
-	/**
-	 * Set ArrayOfTMetaDataPath
-	 */
-	public void setDetails(ArrayOfTMetaDataPathDetail details) {
+  // @Override
+  public boolean isSuccess() {
 
-		this.details = details;
-	}
-
-	// @Override
-	public boolean isSuccess() {
-
-		// TODO Auto-generated method stub
-		return true;
-	}
+    // TODO Auto-generated method stub
+    return true;
+  }
 }

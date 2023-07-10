@@ -1,73 +1,69 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 /**
  * This class represents a TTSpace Token
- * 
+ *
  * @author EGRID ICTP Trieste / CNAF Bologna
  * @date March 23rd, 2005
  * @version 2.0
  */
-
 package it.grid.storm.srm.types;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import it.grid.storm.srm.types.TMetaDataSpace;
-import java.io.Serializable;
 
 public class ArrayOfTMetaDataSpace implements Serializable {
 
-	public static String PNAME_ARRAYOFSPACEDETAILS = "arrayOfSpaceDetails";
+  public static String PNAME_ARRAYOFSPACEDETAILS = "arrayOfSpaceDetails";
 
-	ArrayList<TMetaDataSpace> metaDataList;
+  ArrayList<TMetaDataSpace> metaDataList;
 
-	public ArrayOfTMetaDataSpace() {
+  public ArrayOfTMetaDataSpace() {
 
-		metaDataList = new ArrayList<TMetaDataSpace>();
-	}
+    metaDataList = new ArrayList<TMetaDataSpace>();
+  }
 
-	public TMetaDataSpace[] getArray() {
+  public TMetaDataSpace[] getArray() {
 
-		return (TMetaDataSpace[]) metaDataList
-			.toArray(new TMetaDataSpace[metaDataList.size()]);
-	}
+    return (TMetaDataSpace[]) metaDataList.toArray(new TMetaDataSpace[metaDataList.size()]);
+  }
 
-	public TMetaDataSpace getTMetaDataSpace(int i) {
+  public TMetaDataSpace getTMetaDataSpace(int i) {
 
-		return (TMetaDataSpace) metaDataList.get(i);
-	}
+    return (TMetaDataSpace) metaDataList.get(i);
+  }
 
-	public void setTMetaDataSpace(int index, TMetaDataSpace data) {
+  public void setTMetaDataSpace(int index, TMetaDataSpace data) {
 
-		metaDataList.set(index, data);
-	}
+    metaDataList.set(index, data);
+  }
 
-	public void addTMetaDataSpace(TMetaDataSpace data) {
+  public void addTMetaDataSpace(TMetaDataSpace data) {
 
-		metaDataList.add(data);
-	}
+    metaDataList.add(data);
+  }
 
-	public int size() {
+  public int size() {
 
-		return metaDataList.size();
-	}
+    return metaDataList.size();
+  }
 
-	public void encode(Map outputParam, String fieldName) {
+  public void encode(Map outputParam, String fieldName) {
 
-		ArrayList metaDataSpaceList = new ArrayList();
-		int arraySize = this.size();
+    ArrayList metaDataSpaceList = new ArrayList();
+    int arraySize = this.size();
 
-		for (int i = 0; i < arraySize; i++) {
-			Map metaDataSpace = new HashMap();
-			TMetaDataSpace metaDataElement = this.getTMetaDataSpace(i);
-			metaDataElement.encode(metaDataSpace);
+    for (int i = 0; i < arraySize; i++) {
+      Map metaDataSpace = new HashMap();
+      TMetaDataSpace metaDataElement = this.getTMetaDataSpace(i);
+      metaDataElement.encode(metaDataSpace);
 
-			metaDataSpaceList.add(metaDataSpace);
-		}
+      metaDataSpaceList.add(metaDataSpace);
+    }
 
-		outputParam.put(fieldName, metaDataSpaceList);
-	}
+    outputParam.put(fieldName, metaDataSpaceList);
+  }
 }

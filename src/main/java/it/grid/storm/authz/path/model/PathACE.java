@@ -1,28 +1,21 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
-/**
- * 
- */
+/** */
 package it.grid.storm.authz.path.model;
 
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.common.types.InvalidStFNAttributeException;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.namespace.util.userinfo.LocalGroups;
-
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @author zappi
- */
+/** @author zappi */
 public class PathACE {
 
   private static final Logger log = LoggerFactory.getLogger(PathACE.class);
@@ -33,7 +26,7 @@ public class PathACE {
   public static final String FIELD_SEP = "\\s"; // * White space character **/
   private static final boolean PERMIT_ACE = true;
   public static final String ALGORITHM = "algorithm"; // property key used to
-                                                      // define the algorithm
+  // define the algorithm
 
   public static final PathACE PERMIT_ALL = buildPermitAllPathACE();
 
@@ -48,21 +41,25 @@ public class PathACE {
 
   /**
    * Quite similar to clone
-   * 
+   *
    * @throws AuthzException
    */
   public static PathACE build(PathACE other) throws AuthzException {
 
-    PathACE result = new PathACE(other.localGroupName, other.getStorageFileName(),
-        other.getPathAccessMask(), other.isPermitAce());
+    PathACE result =
+        new PathACE(
+            other.localGroupName,
+            other.getStorageFileName(),
+            other.getPathAccessMask(),
+            other.isPermitAce());
     return result;
   }
 
   private static PathACE buildPermitAllPathACE() throws IllegalStateException {
 
     try {
-      return new PathACE(PathACE.ALL_GROUPS, StFN.makeEmpty(), PathAccessMask.DEFAULT,
-          PathACE.PERMIT_ACE);
+      return new PathACE(
+          PathACE.ALL_GROUPS, StFN.makeEmpty(), PathAccessMask.DEFAULT, PathACE.PERMIT_ACE);
     } catch (AuthzException e) {
       // never thrown
       throw new IllegalStateException("Unexpected AuthzException: " + e);
@@ -118,11 +115,15 @@ public class PathACE {
         /* Checks if the path string represents a valid URI */
         URI.create(notemptyFields.get(1));
       } catch (IllegalArgumentException uriEx) {
-        throw new AuthzException("Error (IllegalArgumentException )while parsing the StFN '"
-            + notemptyFields.get(1) + "' in Path ACE. Is not a valid URI");
+        throw new AuthzException(
+            "Error (IllegalArgumentException )while parsing the StFN '"
+                + notemptyFields.get(1)
+                + "' in Path ACE. Is not a valid URI");
       } catch (NullPointerException npe) {
-        throw new AuthzException("Error (NullPointerException )while parsing the StFN '"
-            + notemptyFields.get(1) + "' in Path ACE.");
+        throw new AuthzException(
+            "Error (NullPointerException )while parsing the StFN '"
+                + notemptyFields.get(1)
+                + "' in Path ACE.");
       }
       // Setting the StFN
       try {
@@ -184,10 +185,7 @@ public class PathACE {
     return isPermitACE;
   }
 
-  /**
-   * ## BUSINESS Methods
-   */
-
+  /** ## BUSINESS Methods */
   public boolean subjectMatch(String subjectGroup) {
 
     Matcher allGroupsMatcher = allGroupsPattern.matcher(localGroupName);
@@ -198,9 +196,7 @@ public class PathACE {
     return false;
   }
 
-  /**
-   * 
-   */
+  /** */
   @Override
   public boolean equals(Object other) {
 
@@ -231,8 +227,11 @@ public class PathACE {
   @Override
   public String toString() {
 
-    return String.format("%s %s %s %s", localGroupName == null ? "NULL" : localGroupName,
-        storageFileName, pathAccessMask, isPermitACE ? "PERMIT" : "DENY");
+    return String.format(
+        "%s %s %s %s",
+        localGroupName == null ? "NULL" : localGroupName,
+        storageFileName,
+        pathAccessMask,
+        isPermitACE ? "PERMIT" : "DENY");
   }
-
 }

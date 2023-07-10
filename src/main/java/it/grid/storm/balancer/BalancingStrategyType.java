@@ -1,20 +1,19 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.balancer;
 
 import java.util.EnumSet;
 
 public enum BalancingStrategyType {
-
   RANDOM("random", Weighted.NOWEIGHT),
   ROUNDROBIN("round-robin", Weighted.NOWEIGHT),
   WEIGHT("weight", Weighted.WEIGHTED),
   SMART_RR("smart-rr", Weighted.NOWEIGHT);
 
   private enum Weighted {
-    WEIGHTED, NOWEIGHT
+    WEIGHTED,
+    NOWEIGHT
   };
 
   private String name;

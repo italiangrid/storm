@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.command.datatransfer;
 
@@ -27,45 +26,34 @@ import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferFilesInputDat
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferOutputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.ManageFileTransferRequestInputData;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
  * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
- * <p>
- * 
- * 
- * Authors:
- * 
+ *
+ * <p>Authors:
+ *
  * @author=lucamag luca.magnoniATcnaf.infn.it
  * @author Alberto Forti
- * 
  * @date = Oct 10, 2008
- * 
  */
-
 public class ReleaseFilesCommand extends DataTransferCommand implements Command {
 
-  private static final Logger log = LoggerFactory
-    .getLogger(ReleaseFilesCommand.class);
+  private static final Logger log = LoggerFactory.getLogger(ReleaseFilesCommand.class);
 
   private static final String SRM_COMMAND = "srmReleaseFiles";
 
-  private static final EnumSet<TStatusCode> PINNED_OR_SUCCESS = EnumSet.of(
-    TStatusCode.SRM_SUCCESS, TStatusCode.SRM_FILE_PINNED);
+  private static final EnumSet<TStatusCode> PINNED_OR_SUCCESS =
+      EnumSet.of(TStatusCode.SRM_SUCCESS, TStatusCode.SRM_FILE_PINNED);
 
-  public ReleaseFilesCommand() {
-
-  }
+  public ReleaseFilesCommand() {}
 
   public TRequestToken getTokenFromInputData(InputData inputData) {
 
@@ -79,8 +67,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
   public List<TSURL> getSURLListFromInputData(InputData inputData) {
 
     if (inputDataHasSURLArray(inputData)) {
-      return ((ManageFileTransferFilesInputData) inputData).getArrayOfSURLs()
-        .getArrayList();
+      return ((ManageFileTransferFilesInputData) inputData).getArrayOfSURLs().getArrayList();
     }
     return null;
   }
@@ -88,53 +75,50 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
   private List<String> toStringList(List<TSURL> surls) {
 
     List<String> ls = new ArrayList<String>();
-    for (TSURL s : surls)
-      ls.add(s.getSURLString());
+    for (TSURL s : surls) ls.add(s.getSURLString());
     return ls;
   }
 
   public boolean validInputData(InputData inputData) {
 
     return (inputData instanceof ManageFileTransferRequestFilesInputData)
-      || (inputData instanceof ManageFileTransferFilesInputData)
-      || (inputData instanceof ManageFileTransferRequestInputData);
+        || (inputData instanceof ManageFileTransferFilesInputData)
+        || (inputData instanceof ManageFileTransferRequestInputData);
   }
 
   public boolean inputDataHasToken(InputData inputData) {
 
     return (inputData instanceof ManageFileTransferRequestFilesInputData)
-      || (inputData instanceof ManageFileTransferRequestInputData);
+        || (inputData instanceof ManageFileTransferRequestInputData);
   }
 
   public boolean inputDataHasSURLArray(InputData inputData) {
 
     return (inputData instanceof ManageFileTransferRequestFilesInputData)
-      || (inputData instanceof ManageFileTransferFilesInputData);
+        || (inputData instanceof ManageFileTransferFilesInputData);
   }
 
   public OutputData handleNullInputData(InputData inputData) {
 
-    log.error("ReleaseFiles: Invalid input parameters specified: inputData="
-      + inputData);
+    log.error("ReleaseFiles: Invalid input parameters specified: inputData=" + inputData);
 
-    ManageFileTransferOutputData outputData = new ManageFileTransferOutputData(
-      CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR,
-        "Empty request parametes"));
+    ManageFileTransferOutputData outputData =
+        new ManageFileTransferOutputData(
+            CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "Empty request parametes"));
 
     logRequestOutcome(outputData.getReturnStatus(), inputData);
 
     return outputData;
-
   }
 
-  public OutputData handleInvalidRequest(InputData in,
-    IllegalArgumentException e) {
+  public OutputData handleInvalidRequest(InputData in, IllegalArgumentException e) {
 
     log.warn(e.getMessage(), e);
 
-    ManageFileTransferOutputData outputData = new ManageFileTransferOutputData(
-      CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
-        "Internal error: " + e.getMessage()));
+    ManageFileTransferOutputData outputData =
+        new ManageFileTransferOutputData(
+            CommandHelper.buildStatus(
+                TStatusCode.SRM_FAILURE, "Internal error: " + e.getMessage()));
 
     logRequestOutcome(outputData.getReturnStatus(), in);
 
@@ -145,14 +129,14 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
     log.info("No SURLs found in the DB. Request failed");
 
-    TReturnStatus returnStatus = CommandHelper.buildStatus(
-      TStatusCode.SRM_INVALID_REQUEST,
-      "No SURLs found matching user, input request token or list of SURLs.");
+    TReturnStatus returnStatus =
+        CommandHelper.buildStatus(
+            TStatusCode.SRM_INVALID_REQUEST,
+            "No SURLs found matching user, input request token or list of SURLs.");
 
     logRequestOutcome(returnStatus, in);
 
     return new ManageFileTransferOutputData(returnStatus);
-
   }
 
   private boolean isAnonymousRequest(InputData inputData) {
@@ -161,9 +145,8 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
   }
 
   /**
-   * Does a ReleaseFiles. Used to release pins on the previously requested
-   * "copies" (or "state") of the SURL. This function normally follows a
-   * srmPrepareToGet or srmBringOnline functions.
+   * Does a ReleaseFiles. Used to release pins on the previously requested "copies" (or "state") of
+   * the SURL. This function normally follows a srmPrepareToGet or srmBringOnline functions.
    */
   public OutputData execute(InputData inputData) {
 
@@ -172,12 +155,11 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
     if (inputData == null) {
 
       return handleNullInputData(inputData);
-
     }
 
     if (!validInputData(inputData)) {
       throw new IllegalArgumentException(
-        "Release files: invalid argument type: " + inputData.getClass());
+          "Release files: invalid argument type: " + inputData.getClass());
     }
 
     Map<TSURL, TReturnStatus> surlStatuses = null;
@@ -195,14 +177,13 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
     try {
 
       if (token == null) {
-        surlStatuses = checker.getPinnedSURLsForUser(user,
-          getSURLListFromInputData(inputData));
+        surlStatuses = checker.getPinnedSURLsForUser(user, getSURLListFromInputData(inputData));
 
       } else {
 
-        surlStatuses = checker
-          .getSURLStatuses(user, getTokenFromInputData(inputData),
-            getSURLListFromInputData(inputData));
+        surlStatuses =
+            checker.getSURLStatuses(
+                user, getTokenFromInputData(inputData), getSURLListFromInputData(inputData));
       }
 
     } catch (AuthzException e) {
@@ -210,21 +191,20 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
     } catch (IllegalArgumentException e) {
 
       return handleInvalidRequest(inputData, e);
-
     }
 
     if (surlStatuses.isEmpty()) {
       return handleNoSURLsFound(inputData);
     }
 
-    ArrayOfTSURLReturnStatus surlReturnStatuses = prepareSurlsReturnStatus(
-      surlStatuses, getSURLListFromInputData(inputData));
+    ArrayOfTSURLReturnStatus surlReturnStatuses =
+        prepareSurlsReturnStatus(surlStatuses, getSURLListFromInputData(inputData));
 
     List<TSURL> surlToRelease = extractSurlToRelease(surlReturnStatuses);
 
     if (surlToRelease.isEmpty()) {
-      TReturnStatus returnStatus = CommandHelper.buildStatus(
-        TStatusCode.SRM_FAILURE, "No files released");
+      TReturnStatus returnStatus =
+          CommandHelper.buildStatus(TStatusCode.SRM_FAILURE, "No files released");
 
       logRequestOutcome(returnStatus, inputData);
 
@@ -250,16 +230,16 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
     log.error(e.getMessage());
 
-    TReturnStatus returnStatus = CommandHelper.buildStatus(
-      TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
+    TReturnStatus returnStatus =
+        CommandHelper.buildStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE, e.getMessage());
 
     logRequestOutcome(returnStatus, inputData);
 
     return new ManageFileTransferOutputData(returnStatus);
   }
 
-  private TReturnStatus buildStatus(InputData inputData,
-    ArrayOfTSURLReturnStatus surlReturnStatuses) {
+  private TReturnStatus buildStatus(
+      InputData inputData, ArrayOfTSURLReturnStatus surlReturnStatuses) {
 
     boolean atLeastOneReleased = false;
     boolean atLeastOneFailure = false;
@@ -268,37 +248,32 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
       printSurlOutcome(returnStatus, inputData);
 
-      if (returnStatus.getStatus().getStatusCode()
-        .equals(TStatusCode.SRM_SUCCESS)) {
+      if (returnStatus.getStatus().getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
 
         atLeastOneReleased = true;
 
       } else {
 
         atLeastOneFailure = true;
-
       }
     }
 
     if (atLeastOneReleased) {
       if (atLeastOneFailure) {
-        return CommandHelper.buildStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
-          "Check files status for details");
+        return CommandHelper.buildStatus(
+            TStatusCode.SRM_PARTIAL_SUCCESS, "Check files status for details");
       } else {
-        return CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS,
-          "Files released");
+        return CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS, "Files released");
       }
     } else {
-      return CommandHelper.buildStatus(TStatusCode.SRM_FAILURE,
-        "No files released");
+      return CommandHelper.buildStatus(TStatusCode.SRM_FAILURE, "No files released");
     }
   }
 
   private ArrayOfTSURLReturnStatus prepareSurlsReturnStatus(
-    Map<TSURL, TReturnStatus> statuses, List<TSURL> surlsInRequest) {
+      Map<TSURL, TReturnStatus> statuses, List<TSURL> surlsInRequest) {
 
-    ArrayOfTSURLReturnStatus surlReturnStatuses = new ArrayOfTSURLReturnStatus(
-      statuses.size());
+    ArrayOfTSURLReturnStatus surlReturnStatuses = new ArrayOfTSURLReturnStatus(statuses.size());
 
     Collection<TSURL> surls;
 
@@ -317,12 +292,10 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
         returnStatus = prepareStatus(rs.getStatusCode());
 
       } else {
-        returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
-          "Invalid SURL");
+        returnStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH, "Invalid SURL");
       }
 
-      surlReturnStatuses.addTSurlReturnStatus(CommandHelper.buildStatus(surl,
-        returnStatus));
+      surlReturnStatuses.addTSurlReturnStatus(CommandHelper.buildStatus(surl, returnStatus));
     }
 
     return surlReturnStatuses;
@@ -334,19 +307,17 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
       return CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS, "Released");
     }
 
-    return CommandHelper.buildStatus(TStatusCode.SRM_INVALID_PATH,
-      "Not released because it is not pinned");
+    return CommandHelper.buildStatus(
+        TStatusCode.SRM_INVALID_PATH, "Not released because it is not pinned");
   }
 
-  private List<TSURL> extractSurlToRelease(
-    ArrayOfTSURLReturnStatus surlReturnStatuses) {
+  private List<TSURL> extractSurlToRelease(ArrayOfTSURLReturnStatus surlReturnStatuses) {
 
     LinkedList<TSURL> surlToRelease = new LinkedList<TSURL>();
 
     for (TSURLReturnStatus returnStatus : surlReturnStatuses.getArray()) {
 
-      if (TStatusCode.SRM_SUCCESS.equals(returnStatus.getStatus()
-        .getStatusCode())) {
+      if (TStatusCode.SRM_SUCCESS.equals(returnStatus.getStatus().getStatusCode())) {
 
         surlToRelease.add(returnStatus.getSurl());
       }
@@ -356,9 +327,8 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
   }
 
   /**
-   * Removes the Extended Attribute "pinned" from SURLs belonging to a
-   * filesystem with tape support.
-   * 
+   * Removes the Extended Attribute "pinned" from SURLs belonging to a filesystem with tape support.
+   *
    * @param surlToRelease
    */
   private void removePinneExtendedAttribute(List<TSURL> surlToRelease) {
@@ -373,9 +343,9 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
 
       } catch (Throwable e) {
 
-        log.warn(String.format(
-          "UNEXPECTED: Unable to build a stori for surl %s: %s", surl,
-          e.getMessage()));
+        log.warn(
+            String.format(
+                "UNEXPECTED: Unable to build a stori for surl %s: %s", surl, e.getMessage()));
 
         continue;
       }
@@ -387,11 +357,10 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
     }
   }
 
-  private void printSurlOutcome(TSURLReturnStatus surlStatus,
-    InputData inputData) {
+  private void printSurlOutcome(TSURLReturnStatus surlStatus, InputData inputData) {
 
-    CommandHelper.printSurlOutcome(SRM_COMMAND, log, surlStatus.getStatus(),
-      inputData, surlStatus.getSurl());
+    CommandHelper.printSurlOutcome(
+        SRM_COMMAND, log, surlStatus.getStatus(), inputData, surlStatus.getSurl());
   }
 
   protected void logRequestOutcome(TReturnStatus status, InputData id) {
@@ -402,8 +371,7 @@ public class ReleaseFilesCommand extends DataTransferCommand implements Command 
     if (surls == null) {
       CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, id, token);
     } else {
-      CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, id, token,
-        toStringList(surls));
+      CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, id, token, toStringList(surls));
     }
   }
 }

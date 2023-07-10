@@ -1,32 +1,25 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
-/**
- * 
- */
+/** */
 package it.grid.storm.authz.path.conf;
 
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.authz.path.model.PathACE;
 import it.grid.storm.authz.path.model.PathAuthzEvaluationAlgorithm;
 import it.grid.storm.config.Configuration;
-
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
-import java.io.FileNotFoundException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @author zappi
- */
+/** @author zappi */
 public class PathAuthzDBReader {
 
   private static final Logger log = LoggerFactory.getLogger(PathAuthzDBReader.class);
@@ -35,7 +28,10 @@ public class PathAuthzDBReader {
   private PathAuthzDB pathAuthzDB;
 
   private static enum LineType {
-    COMMENT, ALGORITHM_NAME, PATH_ACE, OTHER
+    COMMENT,
+    ALGORITHM_NAME,
+    PATH_ACE,
+    OTHER
   }
 
   public PathAuthzDBReader(String filename) throws Exception {
@@ -72,12 +68,11 @@ public class PathAuthzDBReader {
     return pathAuthzDB;
   }
 
-  /**************************
-   * Private BUILDERs helper
-   * 
-   * @param authzDBFilename
-   **************************/
-
+  /**
+   * ************************ Private BUILDERs helper
+   *
+   * @param authzDBFilename ************************
+   */
   private PathAuthzDB loadPathAuthzDB(String authzDBFilename) throws Exception {
 
     if (existsAuthzDBFile(authzDBFilename)) {
@@ -102,10 +97,16 @@ public class PathAuthzDBReader {
     try {
       reader = new BufferedReader(new FileReader(authzDBFilename));
     } catch (FileNotFoundException e) {
-      log.error("Unable to get a FIleReader on '{}'. FileNotFoundException: ", authzDBFilename,
-          e.getMessage(), e);
-      throw new Exception("No file available at path \'" + authzDBFilename
-          + "\' . FileNotFoundException: " + e.getMessage());
+      log.error(
+          "Unable to get a FIleReader on '{}'. FileNotFoundException: ",
+          authzDBFilename,
+          e.getMessage(),
+          e);
+      throw new Exception(
+          "No file available at path \'"
+              + authzDBFilename
+              + "\' . FileNotFoundException: "
+              + e.getMessage());
     }
     try {
       String str;
@@ -120,7 +121,8 @@ public class PathAuthzDBReader {
               log.error(
                   "Attention! More than one Algorithm specified in "
                       + "configuration file: '{}', {}",
-                  parsedLine.getAlgorithmName(), algorithm.getClass());
+                  parsedLine.getAlgorithmName(),
+                  algorithm.getClass());
               throw new Exception("More than one Algorithm specified in configuration file");
             }
             try {
@@ -158,7 +160,9 @@ public class PathAuthzDBReader {
     } catch (ClassNotFoundException e) {
       log.error(
           "Unable to load the Path Authz Algorithm Class '{}'. " + "ClassNotFoundException: {}",
-          algorithmName, e.getMessage(), e);
+          algorithmName,
+          e.getMessage(),
+          e);
       throw new Exception("Unable to load a class with name \'" + algorithmName + "\'");
     }
     Class<? extends PathAuthzEvaluationAlgorithm> authzAlgClass;
@@ -168,15 +172,21 @@ public class PathAuthzDBReader {
       log.error(
           "The loaded class Class '{}' is not a "
               + "PathAuthzEvaluationAlgorithm. ClassCastException: {}",
-          algorithmName, e.getMessage(), e);
+          algorithmName,
+          e.getMessage(),
+          e);
       throw new Exception("Class \'" + algorithmName + "\' is not a PathAuthzEvaluationAlgorithm");
     }
     Method instanceMethod;
     try {
       instanceMethod = authzAlgClass.getMethod("getInstance", new Class[0]);
     } catch (NoSuchMethodException e) {
-      log.error("The loaded class Class '{}' has not a getInstance method. "
-          + "NoSuchMethodException: {}", algorithmName, e.getMessage(), e);
+      log.error(
+          "The loaded class Class '{}' has not a getInstance method. "
+              + "NoSuchMethodException: {}",
+          algorithmName,
+          e.getMessage(),
+          e);
       throw new Exception("Class \'" + algorithmName + "\' has not a getInstance method");
     } catch (SecurityException e) {
       log.error("Unable to get getInstance method. SecurityException: {}", e.getMessage(), e);
@@ -193,12 +203,12 @@ public class PathAuthzDBReader {
       log.error("Unable to call getInstance method. IllegalAccessException: {}", e.getMessage(), e);
       throw new Exception("Unable to call getInstance method");
     } catch (IllegalArgumentException e) {
-      log.error("Unable to call getInstance method. IllegalArgumentException: {}", e.getMessage(),
-          e);
+      log.error(
+          "Unable to call getInstance method. IllegalArgumentException: {}", e.getMessage(), e);
       throw new Exception("Unable to call getInstance method");
     } catch (InvocationTargetException e) {
-      log.error("Unable to call getInstance method. InvocationTargetException: {}", e.getMessage(),
-          e);
+      log.error(
+          "Unable to call getInstance method. InvocationTargetException: {}", e.getMessage(), e);
       throw new Exception("Unable to call getInstance method");
     }
 
@@ -211,7 +221,8 @@ public class PathAuthzDBReader {
       log.error(
           "The method  getInstance of class '{}' does not return a valid "
               + "Path Authz Evaluation Algorithm object but a '{}'",
-          algorithmName, authzAlgInstance.getClass());
+          algorithmName,
+          authzAlgInstance.getClass());
       throw new Exception("Unable to get a valid instance of PathAuthzEvaluationAlgorithm");
     }
   }
@@ -252,17 +263,13 @@ public class PathAuthzDBReader {
             log.error(" - explanation: {}", e.getMessage());
             result = new ParseLineResults(LineType.OTHER);
           }
-
         }
       }
     }
     return result;
   }
 
-  /***********************************************
-   * UTILITY Methods
-   */
-
+  /** ********************************************* UTILITY Methods */
   private boolean existsAuthzDBFile(String fileName) {
 
     File file = new File(fileName);
@@ -288,9 +295,7 @@ public class PathAuthzDBReader {
     private String algorithmName = null;
     private PathACE pathAce = null;
 
-    /**
-     * @param
-     */
+    /** @param */
     public ParseLineResults(LineType type) {
 
       this.type = type;

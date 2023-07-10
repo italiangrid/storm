@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.asynch;
 
@@ -11,7 +10,6 @@ import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.scheduler.PersistentRequestChunk;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +58,7 @@ import org.slf4j.LoggerFactory;
  * to manipulate the ACLs, StoRM was not configured for the underlying FileSystem, or there was an
  * unexpected error; in the first case the status changes to SRM_INVALID_PATH, while in all other
  * ones it changes to SRM_FAILURE; corresponding messages get logged.
- * 
+ *
  * @author CNAF
  * @date Aug 2009
  * @version 1.0
@@ -69,9 +67,7 @@ public class BoLPersistentChunk extends BoL implements PersistentRequestChunk {
 
   private static Logger log = LoggerFactory.getLogger(BoLPersistentChunk.class);
 
-  /**
-   * RequestSummaryData containing all the statistics for the originating srmBringOnLineRequest
-   */
+  /** RequestSummaryData containing all the statistics for the originating srmBringOnLineRequest */
   private RequestSummaryData rsd = null;
   /** manager for global status computation */
   private GlobalStatusManager gsm = null;
@@ -80,8 +76,11 @@ public class BoLPersistentChunk extends BoL implements PersistentRequestChunk {
    * Constructor requiring the GridUser, the RequestSummaryData and the BoLChunkData about this
    * chunk. If the supplied attributes are null, an InvalidBoLChunkAttributesException is thrown.
    */
-  public BoLPersistentChunk(GridUserInterface gu, RequestSummaryData rsd,
-      BoLPersistentChunkData chunkData, GlobalStatusManager gsm)
+  public BoLPersistentChunk(
+      GridUserInterface gu,
+      RequestSummaryData rsd,
+      BoLPersistentChunkData chunkData,
+      GlobalStatusManager gsm)
       throws InvalidRequestAttributesException, InvalidPersistentRequestAttributesException {
 
     super(gu, chunkData);
@@ -99,11 +98,15 @@ public class BoLPersistentChunk extends BoL implements PersistentRequestChunk {
     persistStatus();
     if (requestSuccessfull) {
       gsm.successfulChunk((BoLPersistentChunkData) requestData);
-      log.info("Completed BoL request ({}), file successfully recalled from tape: {}",
-          rsd.requestToken(), requestData.getSURL().toString());
+      log.info(
+          "Completed BoL request ({}), file successfully recalled from tape: {}",
+          rsd.requestToken(),
+          requestData.getSURL().toString());
     } else {
       gsm.failedChunk((BoLPersistentChunkData) requestData);
-      log.error("BoL request ({}), file not recalled from tape: {}", requestData.getRequestToken(),
+      log.error(
+          "BoL request ({}), file not recalled from tape: {}",
+          requestData.getRequestToken(),
           requestData.getSURL().toString());
     }
     return requestSuccessfull;
@@ -116,8 +119,8 @@ public class BoLPersistentChunk extends BoL implements PersistentRequestChunk {
   @Override
   public String getName() {
 
-    return String.format("BoLChunk of request %s for SURL %s", rsd.requestToken(),
-        requestData.getSURL());
+    return String.format(
+        "BoLChunk of request %s for SURL %s", rsd.requestToken(), requestData.getSURL());
   }
 
   public String getRequestToken() {

@@ -1,256 +1,243 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.catalogs;
 
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.srm.types.TStatusCode;
-
 import java.sql.Timestamp;
 import java.util.List;
 
 /**
- * Class that represents a row in the Persistence Layer: this is all raw data
- * referring to the BoLChunkData proper, that is, String and primitive types.
- * 
- * Each field is initialized with default values as per SRM 2.2 specification:
- * protocolList GSIFTP dirOption false status SRM_REQUEST_QUEUED
- * 
- * All other fields are 0 if int, or a white space if String.
- * 
+ * Class that represents a row in the Persistence Layer: this is all raw data referring to the
+ * BoLChunkData proper, that is, String and primitive types.
+ *
+ * <p>Each field is initialized with default values as per SRM 2.2 specification: protocolList
+ * GSIFTP dirOption false status SRM_REQUEST_QUEUED
+ *
+ * <p>All other fields are 0 if int, or a white space if String.
+ *
  * @author CNAF
  * @version 1.0
  * @date Aug 2009
  */
 public class BoLChunkDataTO {
 
-	/* Database table request_Bol fields BEGIN */
-	private long primaryKey = -1; // ID primary key of record in DB
-	private String fromSURL = " ";
-	private boolean dirOption; // initialised in constructor
-	private String normalizedStFN = null;
-	private Integer surlUniqueID = null;
-	/* Database table request_Get fields END */
+  /* Database table request_Bol fields BEGIN */
+  private long primaryKey = -1; // ID primary key of record in DB
+  private String fromSURL = " ";
+  private boolean dirOption; // initialised in constructor
+  private String normalizedStFN = null;
+  private Integer surlUniqueID = null;
+  /* Database table request_Get fields END */
 
-	private String requestToken = " ";
-	private int lifetime = 0;
-	private boolean allLevelRecursive; // initialised in constructor
-	private int numLevel; // initialised in constructor
-	private List<String> protocolList = null; // initialised in constructor
-	private long filesize = 0;
-	private int status; // initialised in constructor
-	private String errString = " ";
-	private int deferredStartTime = -1;
-	private Timestamp timeStamp = null;
+  private String requestToken = " ";
+  private int lifetime = 0;
+  private boolean allLevelRecursive; // initialised in constructor
+  private int numLevel; // initialised in constructor
+  private List<String> protocolList = null; // initialised in constructor
+  private long filesize = 0;
+  private int status; // initialised in constructor
+  private String errString = " ";
+  private int deferredStartTime = -1;
+  private Timestamp timeStamp = null;
 
-	public BoLChunkDataTO() {
+  public BoLChunkDataTO() {
 
-		TURLPrefix protocolPreferences = new TURLPrefix();
-		protocolPreferences.addProtocol(Protocol.GSIFTP);
-		this.protocolList = TransferProtocolListConverter.toDB(protocolPreferences);
-		this.status = StatusCodeConverter.getInstance().toDB(
-			TStatusCode.SRM_REQUEST_QUEUED);
-		this.dirOption = false;
-		this.allLevelRecursive = false;
-		this.numLevel = 0;
-	}
+    TURLPrefix protocolPreferences = new TURLPrefix();
+    protocolPreferences.addProtocol(Protocol.GSIFTP);
+    this.protocolList = TransferProtocolListConverter.toDB(protocolPreferences);
+    this.status = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED);
+    this.dirOption = false;
+    this.allLevelRecursive = false;
+    this.numLevel = 0;
+  }
 
-	public boolean getAllLevelRecursive() {
+  public boolean getAllLevelRecursive() {
 
-		return allLevelRecursive;
-	}
+    return allLevelRecursive;
+  }
 
-	public int getDeferredStartTime() {
+  public int getDeferredStartTime() {
 
-		return deferredStartTime;
-	}
+    return deferredStartTime;
+  }
 
-	public boolean getDirOption() {
+  public boolean getDirOption() {
 
-		return dirOption;
-	}
+    return dirOption;
+  }
 
-	public String getErrString() {
+  public String getErrString() {
 
-		return errString;
-	}
+    return errString;
+  }
 
-	public long getFileSize() {
+  public long getFileSize() {
 
-		return filesize;
-	}
+    return filesize;
+  }
 
-	public String getFromSURL() {
+  public String getFromSURL() {
 
-		return fromSURL;
-	}
+    return fromSURL;
+  }
 
-	public int getLifeTime() {
+  public int getLifeTime() {
 
-		return lifetime;
-	}
+    return lifetime;
+  }
 
-	public int getNumLevel() {
+  public int getNumLevel() {
 
-		return numLevel;
-	}
+    return numLevel;
+  }
 
-	public long getPrimaryKey() {
+  public long getPrimaryKey() {
 
-		return primaryKey;
-	}
+    return primaryKey;
+  }
 
-	public List<String> getProtocolList() {
+  public List<String> getProtocolList() {
 
-		return protocolList;
-	}
+    return protocolList;
+  }
 
-	public String getRequestToken() {
+  public String getRequestToken() {
 
-		return requestToken;
-	}
+    return requestToken;
+  }
 
-	public Timestamp getTimeStamp() {
+  public Timestamp getTimeStamp() {
 
-		return timeStamp;
-	}
+    return timeStamp;
+  }
 
-	public int getStatus() {
+  public int getStatus() {
 
-		return status;
-	}
+    return status;
+  }
 
-	public void setAllLevelRecursive(boolean b) {
+  public void setAllLevelRecursive(boolean b) {
 
-		allLevelRecursive = b;
-	}
+    allLevelRecursive = b;
+  }
 
-	public void setDeferredStartTime(int deferredStartTime) {
+  public void setDeferredStartTime(int deferredStartTime) {
 
-		this.deferredStartTime = deferredStartTime;
-	}
+    this.deferredStartTime = deferredStartTime;
+  }
 
-	public void setDirOption(boolean b) {
+  public void setDirOption(boolean b) {
 
-		dirOption = b;
-	}
+    dirOption = b;
+  }
 
-	public void setErrString(String s) {
+  public void setErrString(String s) {
 
-		errString = s;
-	}
+    errString = s;
+  }
 
-	public void setFileSize(long n) {
+  public void setFileSize(long n) {
 
-		filesize = n;
-	}
+    filesize = n;
+  }
 
-	public void setFromSURL(String s) {
+  public void setFromSURL(String s) {
 
-		fromSURL = s;
-	}
+    fromSURL = s;
+  }
 
-	public void setLifeTime(int n) {
+  public void setLifeTime(int n) {
 
-		lifetime = n;
-	}
+    lifetime = n;
+  }
 
-	public void setNumLevel(int n) {
+  public void setNumLevel(int n) {
 
-		numLevel = n;
-	}
+    numLevel = n;
+  }
 
-	public void setPrimaryKey(long n) {
+  public void setPrimaryKey(long n) {
 
-		primaryKey = n;
-	}
+    primaryKey = n;
+  }
 
-	public void setProtocolList(List<String> l) {
+  public void setProtocolList(List<String> l) {
 
-		if ((l != null) && (!l.isEmpty())) {
-			protocolList = l;
-		}
-	}
+    if ((l != null) && (!l.isEmpty())) {
+      protocolList = l;
+    }
+  }
 
-	public void setRequestToken(String s) {
+  public void setRequestToken(String s) {
 
-		requestToken = s;
-	}
+    requestToken = s;
+  }
 
-	public void setTimeStamp(Timestamp timeStamp) {
+  public void setTimeStamp(Timestamp timeStamp) {
 
-		this.timeStamp = timeStamp;
-	}
+    this.timeStamp = timeStamp;
+  }
 
-	public void setStatus(int n) {
+  public void setStatus(int n) {
 
-		status = n;
-	}
+    status = n;
+  }
 
-	/**
-	 * @param normalizedStFN
-	 *          the normalizedStFN to set
-	 */
-	public void setNormalizedStFN(String normalizedStFN) {
+  /** @param normalizedStFN the normalizedStFN to set */
+  public void setNormalizedStFN(String normalizedStFN) {
 
-		this.normalizedStFN = normalizedStFN;
-	}
+    this.normalizedStFN = normalizedStFN;
+  }
 
-	/**
-	 * @return the normalizedStFN
-	 */
-	public String normalizedStFN() {
+  /** @return the normalizedStFN */
+  public String normalizedStFN() {
 
-		return normalizedStFN;
-	}
+    return normalizedStFN;
+  }
 
-	/**
-	 * @param surlUniqueID
-	 *          the sURLUniqueID to set
-	 */
-	public void setSurlUniqueID(Integer surlUniqueID) {
+  /** @param surlUniqueID the sURLUniqueID to set */
+  public void setSurlUniqueID(Integer surlUniqueID) {
 
-		this.surlUniqueID = surlUniqueID;
-	}
+    this.surlUniqueID = surlUniqueID;
+  }
 
-	/**
-	 * @return the sURLUniqueID
-	 */
-	public Integer sulrUniqueID() {
+  /** @return the sURLUniqueID */
+  public Integer sulrUniqueID() {
 
-		return surlUniqueID;
-	}
+    return surlUniqueID;
+  }
 
-	public String toString() {
+  public String toString() {
 
-		StringBuilder sb = new StringBuilder();
-		sb.append(primaryKey);
-		sb.append(" ");
-		sb.append(requestToken);
-		sb.append(" ");
-		sb.append(fromSURL);
-		sb.append(" ");
-		sb.append(normalizedStFN);
-		sb.append(" ");
-		sb.append(surlUniqueID);
-		sb.append(" ");
-		sb.append(lifetime);
-		sb.append(" ");
-		sb.append(dirOption);
-		sb.append(" ");
-		sb.append(allLevelRecursive);
-		sb.append(" ");
-		sb.append(numLevel);
-		sb.append(" ");
-		sb.append(protocolList);
-		sb.append(" ");
-		sb.append(filesize);
-		sb.append(" ");
-		sb.append(status);
-		sb.append(" ");
-		sb.append(errString);
-		return sb.toString();
-	}
+    StringBuilder sb = new StringBuilder();
+    sb.append(primaryKey);
+    sb.append(" ");
+    sb.append(requestToken);
+    sb.append(" ");
+    sb.append(fromSURL);
+    sb.append(" ");
+    sb.append(normalizedStFN);
+    sb.append(" ");
+    sb.append(surlUniqueID);
+    sb.append(" ");
+    sb.append(lifetime);
+    sb.append(" ");
+    sb.append(dirOption);
+    sb.append(" ");
+    sb.append(allLevelRecursive);
+    sb.append(" ");
+    sb.append(numLevel);
+    sb.append(" ");
+    sb.append(protocolList);
+    sb.append(" ");
+    sb.append(filesize);
+    sb.append(" ");
+    sb.append(status);
+    sb.append(" ");
+    sb.append(errString);
+    return sb.toString();
+  }
 }

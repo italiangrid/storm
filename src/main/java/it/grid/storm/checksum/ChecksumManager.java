@@ -1,16 +1,13 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.checksum;
 
 import it.grid.storm.config.DefaultValue;
 import it.grid.storm.ea.ExtendedAttributesException;
 import it.grid.storm.ea.StormEA;
-
 import java.io.FileNotFoundException;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +34,9 @@ public class ChecksumManager {
   /**
    * Return the algorithm used to compute checksums as well as retrieve the value from extended
    * attributes.
-   * 
+   *
    * @return the algorithm used to compute checksums as well as retrieve the value from extended
-   *         attributes.
+   *     attributes.
    */
   public ChecksumAlgorithm getDefaultAlgorithm() {
 
@@ -52,10 +49,10 @@ public class ChecksumManager {
    * checksum is enabled. - if ENABLED then the checksum is computed by an external service and
    * stored in an extended attribute. - if NOT ENABLED return with a NULL value. This method is
    * blocking (i.e. waits for the checksum to be computed, if it is enabled).
-   * 
+   *
    * @param fileName file absolute path.
    * @return the computed checksum for the given file or <code>null</code> if some error occurred.
-   *         The error is logged.
+   *     The error is logged.
    * @throws FileNotFoundException
    */
   public String getDefaultChecksum(String fileName) throws FileNotFoundException {
@@ -74,10 +71,10 @@ public class ChecksumManager {
 
   /**
    * Checks whether the given file has a checksum stored in an extended attribute.
-   * 
+   *
    * @param fileName file absolute path.
-   * @return <code>true</code> if an extended attribute storing the checksum was found,
-   *         <code>false</code> otherwise.
+   * @return <code>true</code> if an extended attribute storing the checksum was found, <code>false
+   *     </code> otherwise.
    * @throws ExtendedAttributesException
    * @throws NotSupportedException
    * @throws FileNotFoundException
@@ -91,7 +88,9 @@ public class ChecksumManager {
     } catch (ExtendedAttributesException e) {
       log.warn(
           "Error manipulating EA for default algorithm {} on file: {} ExtendedAttributesException: {}",
-          defaultAlgorithm, fileName, e.getMessage());
+          defaultAlgorithm,
+          fileName,
+          e.getMessage());
     }
 
     return (value != null);
@@ -101,5 +100,4 @@ public class ChecksumManager {
 
     return StormEA.getChecksums(fileName);
   }
-
 }

@@ -1,19 +1,17 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.balancer.strategy;
-
-import java.util.List;
 
 import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.balancer.BalancingStrategyType;
 import it.grid.storm.balancer.Node;
+import java.util.List;
 
 public class BalancingStrategyFactory {
 
-  public static BalancingStrategy getBalancingStrategy(
-      BalancingStrategyType type, List<Node> pool) throws IllegalArgumentException {
+  public static BalancingStrategy getBalancingStrategy(BalancingStrategyType type, List<Node> pool)
+      throws IllegalArgumentException {
 
     switch (type) {
       case RANDOM:
@@ -27,5 +25,4 @@ public class BalancingStrategyFactory {
     }
     throw new IllegalArgumentException("StrategyFactory: Unknown BalancingStrategyType: " + type);
   }
-
 }

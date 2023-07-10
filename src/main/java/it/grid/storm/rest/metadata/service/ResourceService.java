@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.rest.metadata.service;
 
@@ -9,17 +8,15 @@ import static it.grid.storm.namespace.model.StoRIType.FILE;
 import static it.grid.storm.namespace.model.StoRIType.FOLDER;
 import static it.grid.storm.namespace.naming.NamespaceUtil.getWinnerRule;
 
-import java.io.File;
-import java.util.Collection;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.StoRIType;
 import it.grid.storm.namespace.model.VirtualFS;
+import java.io.File;
+import java.util.Collection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ResourceService {
 
@@ -28,8 +25,7 @@ public class ResourceService {
   protected Collection<VirtualFS> vfsList;
   protected Collection<MappingRule> rulesList;
 
-  public ResourceService(Collection<VirtualFS> vfsList,
-      Collection<MappingRule> rulesList) {
+  public ResourceService(Collection<VirtualFS> vfsList, Collection<MappingRule> rulesList) {
 
     checkNotNull(vfsList, "Invalid null list of Virtual FS");
     checkNotNull(rulesList, "Invalid null list of Mapping Rules");

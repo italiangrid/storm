@@ -1,13 +1,7 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.command.directory;
-
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
@@ -38,6 +32,9 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.RmInputData;
 import it.grid.storm.synchcall.data.directory.RmOutputData;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class RmException extends SRMCommandException {
 
@@ -49,15 +46,13 @@ class RmException extends SRMCommandException {
   }
 }
 
-
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008 Company: INFN-CNAF and
  * ICTP/EGRID project
- * 
+ *
  * @author lucamag
  * @date May 27, 2008
  */
-
 public class RmCommand implements Command {
 
   private static final String SRM_COMMAND = "srmRm";
@@ -67,7 +62,6 @@ public class RmCommand implements Command {
   public RmCommand() {
 
     namespace = NamespaceDirector.getNamespace();
-
   }
 
   private void checkInputData(InputData data) throws IllegalArgumentException {
@@ -94,7 +88,7 @@ public class RmCommand implements Command {
 
   /**
    * Method that provide SrmRm functionality.
-   * 
+   *
    * @param inputData Contains information about input data for rm request.
    * @return RmOutputData Contains output data
    */
@@ -145,7 +139,6 @@ public class RmCommand implements Command {
             returnStatus.getStatusCode().equals(TStatusCode.SRM_AUTHORIZATION_FAILURE);
         printSurlOutcome(returnStatus, data, surl);
       }
-
     }
     globalStatus = computeGlobalStatus(atLeastOneSuccess, atLeastOneFailure, allUnauthorized);
     outputData = new RmOutputData(globalStatus, arrayOfFileStatus);
@@ -173,8 +166,8 @@ public class RmCommand implements Command {
     }
 
     if (localFile.isDirectory()) {
-      return new TReturnStatus(TStatusCode.SRM_INVALID_PATH,
-          "The specified file is a directory. Not removed");
+      return new TReturnStatus(
+          TStatusCode.SRM_INVALID_PATH, "The specified file is a directory. Not removed");
     }
 
     // Get file size before it's removed
@@ -182,8 +175,8 @@ public class RmCommand implements Command {
 
     if (!localFile.delete()) {
       log.warn("srmRm: File not removed!");
-      return new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
-          "File not removed, permission denied.");
+      return new TReturnStatus(
+          TStatusCode.SRM_AUTHORIZATION_FAILURE, "File not removed, permission denied.");
     }
 
     manager.abortAllGetRequestsForSURL(null, surl, "File has been removed.");
@@ -199,11 +192,10 @@ public class RmCommand implements Command {
     }
 
     return returnStatus;
-
   }
 
-  private TReturnStatus computeGlobalStatus(boolean atLeastOneSuccess, boolean atLeastOneFailure,
-      boolean allUnauthorized) {
+  private TReturnStatus computeGlobalStatus(
+      boolean atLeastOneSuccess, boolean atLeastOneFailure, boolean allUnauthorized) {
 
     if (atLeastOneSuccess && !atLeastOneFailure) {
       return new TReturnStatus(TStatusCode.SRM_SUCCESS, "All files removed");
@@ -212,8 +204,8 @@ public class RmCommand implements Command {
       return new TReturnStatus(TStatusCode.SRM_PARTIAL_SUCCESS, "Some files were not removed");
     }
     if (allUnauthorized) {
-      return new TReturnStatus(TStatusCode.SRM_AUTHORIZATION_FAILURE,
-          "User is not authorized to remove any files");
+      return new TReturnStatus(
+          TStatusCode.SRM_AUTHORIZATION_FAILURE, "User is not authorized to remove any files");
     }
     return new TReturnStatus(TStatusCode.SRM_FAILURE, "No files removed");
   }
@@ -268,7 +260,8 @@ public class RmCommand implements Command {
     }
     if (!isSpaceAuthorized) {
       log.debug("srmRm: User not authorized to perform srmRm on SA: {}", token);
-      throw new RmException(TStatusCode.SRM_AUTHORIZATION_FAILURE,
+      throw new RmException(
+          TStatusCode.SRM_AUTHORIZATION_FAILURE,
           "User not authorized to perform srmRm request on the storage area");
     }
     AuthzDecision decision;
@@ -280,8 +273,8 @@ public class RmCommand implements Command {
     }
     if (!decision.equals(AuthzDecision.PERMIT)) {
       log.debug("srmRm: User is not authorized to delete a file");
-      throw new RmException(TStatusCode.SRM_AUTHORIZATION_FAILURE,
-          "User is not authorized to delete a file");
+      throw new RmException(
+          TStatusCode.SRM_AUTHORIZATION_FAILURE, "User is not authorized to delete a file");
     }
   }
 
@@ -294,8 +287,8 @@ public class RmCommand implements Command {
 
     if (inputData != null) {
       if (inputData.getSurlArray() != null) {
-        CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData,
-            inputData.getSurlArray().asStringList());
+        CommandHelper.printRequestOutcome(
+            SRM_COMMAND, log, status, inputData, inputData.getSurlArray().asStringList());
       } else {
         CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData);
       }
@@ -303,5 +296,4 @@ public class RmCommand implements Command {
       CommandHelper.printRequestOutcome(SRM_COMMAND, log, status);
     }
   }
-
 }

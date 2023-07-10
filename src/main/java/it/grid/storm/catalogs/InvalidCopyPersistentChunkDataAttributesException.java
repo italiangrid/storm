@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.catalogs;
 
@@ -12,94 +11,131 @@ import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSpaceToken;
 
-/**
- * @author Michele Dibenedetto
- * 
- */
-public class InvalidCopyPersistentChunkDataAttributesException extends
-	InvalidCopyDataAttributesException {
+/** @author Michele Dibenedetto */
+public class InvalidCopyPersistentChunkDataAttributesException
+    extends InvalidCopyDataAttributesException {
 
-	/**
-     * 
-     */
-	private static final long serialVersionUID = 1266996505954208061L;
-	private boolean nullRequestToken;
+  /** */
+  private static final long serialVersionUID = 1266996505954208061L;
 
-	public InvalidCopyPersistentChunkDataAttributesException(
-		TRequestToken requestToken, TSURL SURL, TSURL destinationSURL,
-		TLifeTimeInSeconds lifetime, TFileStorageType fileStorageType,
-		TSpaceToken spaceToken, TOverwriteMode overwriteOption, TReturnStatus status) {
+  private boolean nullRequestToken;
 
-		super(SURL, destinationSURL, lifetime, fileStorageType, spaceToken,
-			overwriteOption, status);
-		init(requestToken);
-	}
+  public InvalidCopyPersistentChunkDataAttributesException(
+      TRequestToken requestToken,
+      TSURL SURL,
+      TSURL destinationSURL,
+      TLifeTimeInSeconds lifetime,
+      TFileStorageType fileStorageType,
+      TSpaceToken spaceToken,
+      TOverwriteMode overwriteOption,
+      TReturnStatus status) {
 
-	public InvalidCopyPersistentChunkDataAttributesException(
-		TRequestToken requestToken, TSURL SURL, TSURL destinationSURL,
-		TLifeTimeInSeconds lifetime, TFileStorageType fileStorageType,
-		TSpaceToken spaceToken, TOverwriteMode overwriteOption,
-		TReturnStatus status, String message) {
+    super(SURL, destinationSURL, lifetime, fileStorageType, spaceToken, overwriteOption, status);
+    init(requestToken);
+  }
 
-		super(SURL, destinationSURL, lifetime, fileStorageType, spaceToken,
-			overwriteOption, status, message);
-		init(requestToken);
-	}
+  public InvalidCopyPersistentChunkDataAttributesException(
+      TRequestToken requestToken,
+      TSURL SURL,
+      TSURL destinationSURL,
+      TLifeTimeInSeconds lifetime,
+      TFileStorageType fileStorageType,
+      TSpaceToken spaceToken,
+      TOverwriteMode overwriteOption,
+      TReturnStatus status,
+      String message) {
 
-	public InvalidCopyPersistentChunkDataAttributesException(
-		TRequestToken requestToken, TSURL SURL, TSURL destinationSURL,
-		TLifeTimeInSeconds lifetime, TFileStorageType fileStorageType,
-		TSpaceToken spaceToken, TOverwriteMode overwriteOption,
-		TReturnStatus status, Throwable cause) {
+    super(
+        SURL,
+        destinationSURL,
+        lifetime,
+        fileStorageType,
+        spaceToken,
+        overwriteOption,
+        status,
+        message);
+    init(requestToken);
+  }
 
-		super(SURL, destinationSURL, lifetime, fileStorageType, spaceToken,
-			overwriteOption, status, cause);
-		init(requestToken);
-	}
+  public InvalidCopyPersistentChunkDataAttributesException(
+      TRequestToken requestToken,
+      TSURL SURL,
+      TSURL destinationSURL,
+      TLifeTimeInSeconds lifetime,
+      TFileStorageType fileStorageType,
+      TSpaceToken spaceToken,
+      TOverwriteMode overwriteOption,
+      TReturnStatus status,
+      Throwable cause) {
 
-	public InvalidCopyPersistentChunkDataAttributesException(
-		TRequestToken requestToken, TSURL SURL, TSURL destinationSURL,
-		TLifeTimeInSeconds lifetime, TFileStorageType fileStorageType,
-		TSpaceToken spaceToken, TOverwriteMode overwriteOption,
-		TReturnStatus status, String message, Throwable cause) {
+    super(
+        SURL,
+        destinationSURL,
+        lifetime,
+        fileStorageType,
+        spaceToken,
+        overwriteOption,
+        status,
+        cause);
+    init(requestToken);
+  }
 
-		super(SURL, destinationSURL, lifetime, fileStorageType, spaceToken,
-			overwriteOption, status, message, cause);
-		init(requestToken);
-	}
+  public InvalidCopyPersistentChunkDataAttributesException(
+      TRequestToken requestToken,
+      TSURL SURL,
+      TSURL destinationSURL,
+      TLifeTimeInSeconds lifetime,
+      TFileStorageType fileStorageType,
+      TSpaceToken spaceToken,
+      TOverwriteMode overwriteOption,
+      TReturnStatus status,
+      String message,
+      Throwable cause) {
 
-	private void init(TRequestToken requestToken) {
+    super(
+        SURL,
+        destinationSURL,
+        lifetime,
+        fileStorageType,
+        spaceToken,
+        overwriteOption,
+        status,
+        message,
+        cause);
+    init(requestToken);
+  }
 
-		nullRequestToken = requestToken == null;
-	}
+  private void init(TRequestToken requestToken) {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
+    nullRequestToken = requestToken == null;
+  }
 
-		StringBuilder builder = new StringBuilder();
-		builder
-			.append("InvalidCopyPersistentChunkDataAttributesException [nullRequestToken=");
-		builder.append(nullRequestToken);
-		builder.append(", nullDestinationSURL=");
-		builder.append(nullDestinationSURL);
-		builder.append(", nullLifetime=");
-		builder.append(nullLifetime);
-		builder.append(", nullFileStorageType=");
-		builder.append(nullFileStorageType);
-		builder.append(", nullSpaceToken=");
-		builder.append(nullSpaceToken);
-		builder.append(", nullOverwriteOption=");
-		builder.append(nullOverwriteOption);
-		builder.append(", nullSURL=");
-		builder.append(nullSURL);
-		builder.append(", nullStatus=");
-		builder.append(nullStatus);
-		builder.append("]");
-		return builder.toString();
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+
+    StringBuilder builder = new StringBuilder();
+    builder.append("InvalidCopyPersistentChunkDataAttributesException [nullRequestToken=");
+    builder.append(nullRequestToken);
+    builder.append(", nullDestinationSURL=");
+    builder.append(nullDestinationSURL);
+    builder.append(", nullLifetime=");
+    builder.append(nullLifetime);
+    builder.append(", nullFileStorageType=");
+    builder.append(nullFileStorageType);
+    builder.append(", nullSpaceToken=");
+    builder.append(nullSpaceToken);
+    builder.append(", nullOverwriteOption=");
+    builder.append(nullOverwriteOption);
+    builder.append(", nullSURL=");
+    builder.append(nullSURL);
+    builder.append(", nullStatus=");
+    builder.append(nullStatus);
+    builder.append("]");
+    return builder.toString();
+  }
 }

@@ -1,16 +1,10 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
-/**
- * 
- */
+/** */
 package it.grid.storm.authz.path.model;
 
-/**
- * @author zappi
- * 
- */
+/** @author zappi */
 public class PathPrincipal {
 
   public static final String prefix = "@";
@@ -53,5 +47,4 @@ public class PathPrincipal {
     result = 31 * result + (principalCategory ? 1 : 0);
     return result;
   }
-
 }

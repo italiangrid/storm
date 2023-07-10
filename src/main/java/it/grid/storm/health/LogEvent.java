@@ -1,11 +1,9 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.health;
 
 import it.grid.storm.srm.types.TSURL;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Delayed;
@@ -13,141 +11,157 @@ import java.util.concurrent.TimeUnit;
 
 public class LogEvent implements Delayed {
 
-	// Attributes to manage the Event within the BookKeeper
-	private static long THOUSAND = 1000L;
-	public final long birthTime;
-	public final long deathTime;
-	private long timeToLive = 60000L; // Expressed in MILLISEC (1 min)
+  // Attributes to manage the Event within the BookKeeper
+  private static long THOUSAND = 1000L;
+  public final long birthTime;
+  public final long deathTime;
+  private long timeToLive = 60000L; // Expressed in MILLISEC (1 min)
 
-	// Attributes of EVENT
-	private OperationType opType = null;
-	private String userDN = null;
-	private String surl = null;
-	private long startTime = -1L;
-	private String startTimeStr = null;
-	private long duration = -1L;
-	private String requestToken = null;
-	private boolean successResult = false;
+  // Attributes of EVENT
+  private OperationType opType = null;
+  private String userDN = null;
+  private String surl = null;
+  private long startTime = -1L;
+  private String startTimeStr = null;
+  private long duration = -1L;
+  private String requestToken = null;
+  private boolean successResult = false;
 
-	public LogEvent(OperationType opType, String userDN, String surl,
-		long startTime, long durationInMilliSec, String requestToken, boolean successResult) {
+  public LogEvent(
+      OperationType opType,
+      String userDN,
+      String surl,
+      long startTime,
+      long durationInMilliSec,
+      String requestToken,
+      boolean successResult) {
 
-		this.opType = opType;
-		this.userDN = userDN;
-		this.surl = surl;
-		this.startTime = startTime;
-		this.duration = durationInMilliSec;
-		this.requestToken = requestToken;
-		Date date = new Date(startTime);
-		SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss,SSS");
-		this.startTimeStr = formatter.format(date);
-		this.successResult = successResult;
+    this.opType = opType;
+    this.userDN = userDN;
+    this.surl = surl;
+    this.startTime = startTime;
+    this.duration = durationInMilliSec;
+    this.requestToken = requestToken;
+    Date date = new Date(startTime);
+    SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss,SSS");
+    this.startTimeStr = formatter.format(date);
+    this.successResult = successResult;
 
-		this.timeToLive = HealthDirector.timeToLiveLogEventInSec;
-		this.deathTime = System.currentTimeMillis()
-			+ (HealthDirector.timeToLiveLogEventInSec * LogEvent.THOUSAND);
-		this.birthTime = System.currentTimeMillis();
+    this.timeToLive = HealthDirector.timeToLiveLogEventInSec;
+    this.deathTime =
+        System.currentTimeMillis() + (HealthDirector.timeToLiveLogEventInSec * LogEvent.THOUSAND);
+    this.birthTime = System.currentTimeMillis();
+  }
 
-	}
+  public LogEvent(
+      OperationType opType,
+      String userDN,
+      long startTime,
+      long durationInMilliSec,
+      boolean successResult) {
 
-	public LogEvent(OperationType opType, String userDN, long startTime,
-		long durationInMilliSec, boolean successResult) {
+    this(
+        opType,
+        userDN,
+        TSURL.makeEmpty().toString(),
+        startTime,
+        durationInMilliSec,
+        "SYNCH",
+        successResult);
+    HealthDirector.LOGGER.debug("Event TTL (milliSec): {}", timeToLive);
+  }
 
-		this(opType, userDN, TSURL.makeEmpty().toString(), startTime, durationInMilliSec, 
-			"SYNCH", successResult);
-		HealthDirector.LOGGER.debug("Event TTL (milliSec): {}", timeToLive);
-	}
+  public LogEvent(
+      OperationType opType,
+      String userDN,
+      String surl,
+      long startTime,
+      long durationInMilliSec,
+      boolean successResult) {
 
-	public LogEvent(OperationType opType, String userDN, String surl,
-		long startTime, long durationInMilliSec, boolean successResult) {
+    this(opType, userDN, surl, startTime, durationInMilliSec, "SYNCH", successResult);
+    HealthDirector.LOGGER.debug("Event TTL (milliSec): {}", timeToLive);
+  }
 
-		this(opType, userDN, surl, startTime, durationInMilliSec, "SYNCH", successResult);
-		HealthDirector.LOGGER.debug("Event TTL (milliSec): {}", timeToLive);
-	}
+  public OperationType getOperationType() {
 
-	public OperationType getOperationType() {
+    return this.opType;
+  }
 
-		return this.opType;
-	}
+  public String getDN() {
 
-	public String getDN() {
+    return this.userDN;
+  }
 
-		return this.userDN;
-	}
+  public String getSURL() {
 
-	public String getSURL() {
+    return this.surl;
+  }
 
-		return this.surl;
-	}
+  public long getStartTime() {
 
-	public long getStartTime() {
+    return this.startTime;
+  }
 
-		return this.startTime;
-	}
+  public String getStartTimeString() {
 
-	public String getStartTimeString() {
+    return this.startTimeStr;
+  }
 
-		return this.startTimeStr;
-	}
+  /** @return duration in millisec */
+  public long getDuration() {
 
-	/**
-	 * @return duration in millisec
-	 */
-	public long getDuration() {
+    return this.duration;
+  }
 
-		return this.duration;
-	}
+  public String getRequestToken() {
 
-	public String getRequestToken() {
+    return this.requestToken;
+  }
 
-		return this.requestToken;
-	}
+  public boolean isSuccess() {
 
-	public boolean isSuccess() {
+    return this.successResult;
+  }
 
-		return this.successResult;
-	}
+  @Override
+  public String toString() {
 
-	@Override
-	public String toString() {
+    StringBuilder sb = new StringBuilder();
+    final char fieldSeparator = '\t';
+    sb.append(userDN).append(fieldSeparator);
+    sb.append(opType.toString()).append(fieldSeparator);
+    sb.append(opType.getOperationTypeCategory()).append(fieldSeparator);
+    if (this.successResult) {
+      sb.append("-OK-").append(fieldSeparator);
+    } else {
+      sb.append("#ko#").append(fieldSeparator);
+    }
+    sb.append(surl).append(fieldSeparator);
+    sb.append(startTimeStr).append(fieldSeparator);
+    sb.append(duration).append(fieldSeparator);
+    sb.append(requestToken).append(fieldSeparator);
+    return sb.toString();
+  }
 
-		StringBuilder sb = new StringBuilder();
-		final char fieldSeparator = '\t';
-		sb.append(userDN).append(fieldSeparator);
-		sb.append(opType.toString()).append(fieldSeparator);
-		sb.append(opType.getOperationTypeCategory()).append(fieldSeparator);
-		if (this.successResult) {
-			sb.append("-OK-").append(fieldSeparator);
-		} else {
-			sb.append("#ko#").append(fieldSeparator);
-		}
-		sb.append(surl).append(fieldSeparator);
-		sb.append(startTimeStr).append(fieldSeparator);
-		sb.append(duration).append(fieldSeparator);
-		sb.append(requestToken).append(fieldSeparator);
-		return sb.toString();
-	}
+  public long getDelay(TimeUnit unit) {
 
-	public long getDelay(TimeUnit unit) {
+    long result = -1;
+    result = unit.convert(deathTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+    HealthDirector.LOGGER.debug("Event TimeToLive : {} result: {}", timeToLive, result);
 
-		long result = -1;
-		result = unit.convert(deathTime - System.currentTimeMillis(),
-			TimeUnit.MILLISECONDS);
-		HealthDirector.LOGGER.debug("Event TimeToLive : {} result: {}",
-		  timeToLive, result);
+    return result;
+  }
 
-		return result;
-	}
+  public int compareTo(Delayed other) {
 
-	public int compareTo(Delayed other) {
-
-		LogEvent otherEvent = (LogEvent) other;
-		if (deathTime < otherEvent.deathTime) {
-			return -1;
-		}
-		if (deathTime > otherEvent.deathTime) {
-			return 1;
-		}
-		return 0;
-	}
+    LogEvent otherEvent = (LogEvent) other;
+    if (deathTime < otherEvent.deathTime) {
+      return -1;
+    }
+    if (deathTime > otherEvent.deathTime) {
+      return 1;
+    }
+    return 0;
+  }
 }

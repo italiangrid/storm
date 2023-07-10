@@ -1,18 +1,15 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.balancer.strategy;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-
 import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.balancer.BalancingStrategyType;
 import it.grid.storm.balancer.Node;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class AbstractBalancingStrategy implements BalancingStrategy {
 
@@ -22,8 +19,8 @@ public abstract class AbstractBalancingStrategy implements BalancingStrategy {
   public AbstractBalancingStrategy(List<Node> pool) {
 
     Preconditions.checkNotNull(pool, "Unable to build BalancingStrategy: received null node pool");
-    Preconditions.checkArgument(pool.size() > 0,
-        "Unable to build BalancingStrategy: received empty node pool");
+    Preconditions.checkArgument(
+        pool.size() > 0, "Unable to build BalancingStrategy: received empty node pool");
 
     this.nodePool = Lists.newCopyOnWriteArrayList(pool);
   }

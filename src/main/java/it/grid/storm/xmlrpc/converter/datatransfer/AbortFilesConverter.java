@@ -1,12 +1,11 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 /**
- * This class represents the Type Converter for AbortFiles function. This class
- * receives input datas from xmlrpc call and converts these datas into a StoRM
- * Type that can be used to invoke the AbortManager.
- * 
+ * This class represents the Type Converter for AbortFiles function. This class receives input datas
+ * from xmlrpc call and converts these datas into a StoRM Type that can be used to invoke the
+ * AbortManager.
+ *
  * @author Magnoni Luca
  * @author CNAF-INFN Bologna
  * @date Jan 2007
@@ -30,87 +29,76 @@ import it.grid.storm.synchcall.data.datatransfer.AbortGeneralOutputData;
 import it.grid.storm.synchcall.data.datatransfer.AnonymousAbortFilesInputData;
 import it.grid.storm.synchcall.data.datatransfer.IdentityAbortFilesInputData;
 import it.grid.storm.xmlrpc.converter.Converter;
-
 import java.util.HashMap;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AbortFilesConverter implements Converter {
 
-	private static final Logger log = LoggerFactory
-		.getLogger(AbortFilesConverter.class);
+  private static final Logger log = LoggerFactory.getLogger(AbortFilesConverter.class);
 
-	public AbortFilesConverter() {
+  public AbortFilesConverter() {}
 
-	}
+  /**
+   * This method returns a AbortFilesInputData created from the input Hashtable structure of a
+   * xmlrpc srmAbortFiles() v2.2 call.
+   *
+   * @param inputParam Hashtable containing the input data
+   * @return AbortFilesInputData
+   */
+  public InputData convertToInputData(Map inputParam) {
 
-	/**
-	 * This method returns a AbortFilesInputData created from the input Hashtable
-	 * structure of a xmlrpc srmAbortFiles() v2.2 call.
-	 * 
-	 * @param inputParam
-	 *          Hashtable containing the input data
-	 * @return AbortFilesInputData
-	 */
-	public InputData convertToInputData(Map inputParam) {
+    GridUserInterface guser = GridUserManager.decode(inputParam);
 
-		GridUserInterface guser = GridUserManager.decode(inputParam);
+    TRequestToken requestToken;
+    try {
+      requestToken = TRequestToken.decode(inputParam, TRequestToken.PNAME_REQUESTOKEN);
+      log.debug("requestToken={}", requestToken.toString());
+    } catch (InvalidTRequestTokenAttributesException e) {
+      requestToken = null;
+      log.debug("requestToken=NULL", e);
+    }
 
-		TRequestToken requestToken;
-		try {
-			requestToken = TRequestToken.decode(inputParam,
-				TRequestToken.PNAME_REQUESTOKEN);
-			log.debug("requestToken={}" , requestToken.toString());
-		} catch (InvalidTRequestTokenAttributesException e) {
-			requestToken = null;
-			log.debug("requestToken=NULL",e);
-		}
+    ArrayOfSURLs arrayOfSURLs;
+    try {
+      arrayOfSURLs = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAY_OF_SURLS);
+    } catch (InvalidArrayOfSURLsAttributeException e) {
+      log.debug("Empty surlArray!");
+      arrayOfSURLs = null;
+    }
 
-		ArrayOfSURLs arrayOfSURLs;
-		try {
-			arrayOfSURLs = ArrayOfSURLs.decode(inputParam, ArrayOfSURLs.ARRAY_OF_SURLS);
-		} catch (InvalidArrayOfSURLsAttributeException e) {
-			log.debug("Empty surlArray!");
-			arrayOfSURLs = null;
-		}
+    AbortFilesInputData inputData;
+    if (guser != null) {
+      inputData = new IdentityAbortFilesInputData(guser, requestToken, arrayOfSURLs);
+    } else {
+      inputData = new AnonymousAbortFilesInputData(requestToken, arrayOfSURLs);
+    }
+    return inputData;
+  }
 
-		AbortFilesInputData inputData;
-		if (guser != null) {
-			inputData = new IdentityAbortFilesInputData(guser, requestToken,
-				arrayOfSURLs);
-		} else {
-			inputData = new AnonymousAbortFilesInputData(requestToken, arrayOfSURLs);
-		}
-		return inputData;
-	}
+  public Map convertFromOutputData(OutputData data) {
 
-	public Map convertFromOutputData(OutputData data) {
+    log.debug("AbortFilesOutputData - Creation of XMLRPC Output Structure!");
 
-		log.debug("AbortFilesOutputData - Creation of XMLRPC Output Structure!");
+    Map outputParam = new HashMap();
+    AbortFilesOutputData outputData = AbortFilesOutputData.make((AbortGeneralOutputData) data);
 
-		Map outputParam = new HashMap();
-		AbortFilesOutputData outputData = AbortFilesOutputData
-			.make((AbortGeneralOutputData) data);
+    // (1) returnStatus
+    TReturnStatus returnStatus = outputData.getReturnStatus();
+    if (returnStatus != null) {
+      returnStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
+    }
 
-		// (1) returnStatus
-		TReturnStatus returnStatus = outputData.getReturnStatus();
-		if (returnStatus != null) {
-			returnStatus.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
-		}
+    // (2) arrayOfFileStatuses
+    ArrayOfTSURLReturnStatus arrayOfFileStatuses = outputData.getArrayOfFileStatuses();
+    if (arrayOfFileStatuses != null) {
+      arrayOfFileStatuses.encode(outputParam, ArrayOfTSURLReturnStatus.PNAME_ARRAYOFFILESTATUSES);
+    }
 
-		// (2) arrayOfFileStatuses
-		ArrayOfTSURLReturnStatus arrayOfFileStatuses = outputData
-			.getArrayOfFileStatuses();
-		if (arrayOfFileStatuses != null) {
-			arrayOfFileStatuses.encode(outputParam,
-				ArrayOfTSURLReturnStatus.PNAME_ARRAYOFFILESTATUSES);
-		}
+    log.debug("AbortFilesConverter - Sending: {}", outputParam.toString());
 
-		log.debug("AbortFilesConverter - Sending: {}" , outputParam.toString());
-
-		// Return global structure.
-		return outputParam;
-	}
+    // Return global structure.
+    return outputParam;
+  }
 }

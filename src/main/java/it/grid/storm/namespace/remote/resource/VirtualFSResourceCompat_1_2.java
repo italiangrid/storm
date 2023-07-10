@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.namespace.remote.resource;
 
@@ -8,20 +7,7 @@ import static it.grid.storm.namespace.remote.Constants.VFS_LIST_SEPARATOR;
 import static java.lang.String.join;
 import static java.lang.String.valueOf;
 
-import java.util.Iterator;
-import java.util.List;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Lists;
-
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.model.MappingRule;
@@ -29,18 +15,23 @@ import it.grid.storm.namespace.model.Protocol;
 import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.namespace.remote.Constants;
 import it.grid.storm.namespace.remote.Constants.HttpPerms;
+import java.util.Iterator;
+import java.util.List;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * @author Michele Dibenedetto
- */
+/** @author Michele Dibenedetto */
 @Path("/" + Constants.RESOURCE + "/" + Constants.VERSION_1_2)
 public class VirtualFSResourceCompat_1_2 {
 
   private static final Logger log = LoggerFactory.getLogger(VirtualFSResourceCompat_1_2.class);
 
-  /**
-   * @return
-   */
+  /** @return */
   @GET
   @Path("/" + Constants.LIST_ALL_KEY)
   @Produces("text/plain")
@@ -49,16 +40,18 @@ public class VirtualFSResourceCompat_1_2 {
     log.info("Serving VFS resource listing");
     List<VirtualFS> vfsCollection = NamespaceDirector.getNamespace().getAllDefinedVFS();
     List<String> encodedVFSs = Lists.newArrayList();
-    vfsCollection.forEach(vfs -> {
-      try {
-        encodedVFSs.add(encodeVFS(vfs));
-      } catch (NamespaceException e) {
-        log.error(
-            "Unable to encode the virtual file system. NamespaceException : {}", e.getMessage());
-        throw new WebApplicationException(
-            Response.serverError().entity("Unable to encode the virtual file system").build());
-      }
-    });
+    vfsCollection.forEach(
+        vfs -> {
+          try {
+            encodedVFSs.add(encodeVFS(vfs));
+          } catch (NamespaceException e) {
+            log.error(
+                "Unable to encode the virtual file system. NamespaceException : {}",
+                e.getMessage());
+            throw new WebApplicationException(
+                Response.serverError().entity("Unable to encode the virtual file system").build());
+          }
+        });
     return join(valueOf(VFS_LIST_SEPARATOR), encodedVFSs);
   }
 

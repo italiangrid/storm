@@ -1,298 +1,283 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.catalogs;
 
-import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.common.types.TURLPrefix;
+import it.grid.storm.namespace.model.Protocol;
+import it.grid.storm.srm.types.TStatusCode;
 import java.sql.Timestamp;
 import java.util.List;
-import it.grid.storm.namespace.model.Protocol;
 
 /**
- * Class that represents a row in the Persistence Layer: this is all raw data
- * referring to the PtGChunkData proper, that is, String and primitive types.
- * 
- * Each field is initialized with default values as per SRM 2.2 specification:
- * protocolList GSIFTP dirOption false status SRM_REQUEST_QUEUED
- * 
- * All other fields are 0 if int, or a white space if String.
- * 
+ * Class that represents a row in the Persistence Layer: this is all raw data referring to the
+ * PtGChunkData proper, that is, String and primitive types.
+ *
+ * <p>Each field is initialized with default values as per SRM 2.2 specification: protocolList
+ * GSIFTP dirOption false status SRM_REQUEST_QUEUED
+ *
+ * <p>All other fields are 0 if int, or a white space if String.
+ *
  * @author EGRID ICTP
  * @version 3.0
  * @date June 2005
  */
 public class PtGChunkDataTO {
 
-	private static final String FQAN_SEPARATOR = "#";
-	/* Database table request_Get fields BEGIN */
-	private long primaryKey = -1; // ID primary key of record in DB
-	private boolean dirOption; // initialised in constructor
-	private String fromSURL = " ";
-	private String normalizedStFN = null;
-	private Integer surlUniqueID = null;
-	/* Database table request_Get fields END */
+  private static final String FQAN_SEPARATOR = "#";
+  /* Database table request_Get fields BEGIN */
+  private long primaryKey = -1; // ID primary key of record in DB
+  private boolean dirOption; // initialised in constructor
+  private String fromSURL = " ";
+  private String normalizedStFN = null;
+  private Integer surlUniqueID = null;
+  /* Database table request_Get fields END */
 
-	private String requestToken = " ";
-	private int lifetime = 0;
-	private boolean allLevelRecursive; // initialised in constructor
-	private int numLevel; // initialised in constructor
-	private List<String> protocolList = null; // initialised in constructor
-	private long filesize = 0;
-	private int status; // initialised in constructor
-	private String errString = " ";
-	private String turl = " ";
-	private Timestamp timeStamp;
-	private String clientDN = null;
-	private String vomsAttributes = null;
+  private String requestToken = " ";
+  private int lifetime = 0;
+  private boolean allLevelRecursive; // initialised in constructor
+  private int numLevel; // initialised in constructor
+  private List<String> protocolList = null; // initialised in constructor
+  private long filesize = 0;
+  private int status; // initialised in constructor
+  private String errString = " ";
+  private String turl = " ";
+  private Timestamp timeStamp;
+  private String clientDN = null;
+  private String vomsAttributes = null;
 
-	public PtGChunkDataTO() {
+  public PtGChunkDataTO() {
 
-		TURLPrefix protocolPreferences = new TURLPrefix();
-		protocolPreferences.addProtocol(Protocol.GSIFTP);
-		this.protocolList = TransferProtocolListConverter.toDB(protocolPreferences);
-		this.status = StatusCodeConverter.getInstance().toDB(
-			TStatusCode.SRM_REQUEST_QUEUED);
-		this.dirOption = false;
-		//
-		this.allLevelRecursive = false;
-		this.numLevel = 0;
-	}
+    TURLPrefix protocolPreferences = new TURLPrefix();
+    protocolPreferences.addProtocol(Protocol.GSIFTP);
+    this.protocolList = TransferProtocolListConverter.toDB(protocolPreferences);
+    this.status = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED);
+    this.dirOption = false;
+    //
+    this.allLevelRecursive = false;
+    this.numLevel = 0;
+  }
 
-	public long primaryKey() {
+  public long primaryKey() {
 
-		return primaryKey;
-	}
+    return primaryKey;
+  }
 
-	public void setPrimaryKey(long n) {
+  public void setPrimaryKey(long n) {
 
-		primaryKey = n;
-	}
+    primaryKey = n;
+  }
 
-	public String requestToken() {
+  public String requestToken() {
 
-		return requestToken;
-	}
+    return requestToken;
+  }
 
-	public void setRequestToken(String s) {
+  public void setRequestToken(String s) {
 
-		requestToken = s;
-	}
+    requestToken = s;
+  }
 
-	public Timestamp timeStamp() {
+  public Timestamp timeStamp() {
 
-		return timeStamp;
-	}
+    return timeStamp;
+  }
 
-	public void setTimeStamp(Timestamp timeStamp) {
+  public void setTimeStamp(Timestamp timeStamp) {
 
-		this.timeStamp = timeStamp;
-	}
+    this.timeStamp = timeStamp;
+  }
 
-	public String fromSURL() {
+  public String fromSURL() {
 
-		return fromSURL;
-	}
+    return fromSURL;
+  }
 
-	public void setFromSURL(String s) {
+  public void setFromSURL(String s) {
 
-		fromSURL = s;
-	}
+    fromSURL = s;
+  }
 
-	/**
-	 * @param normalizedStFN
-	 *          the normalizedStFN to set
-	 */
-	public void setNormalizedStFN(String normalizedStFN) {
+  /** @param normalizedStFN the normalizedStFN to set */
+  public void setNormalizedStFN(String normalizedStFN) {
 
-		this.normalizedStFN = normalizedStFN;
-	}
+    this.normalizedStFN = normalizedStFN;
+  }
 
-	/**
-	 * @return the normalizedStFN
-	 */
-	public String normalizedStFN() {
+  /** @return the normalizedStFN */
+  public String normalizedStFN() {
 
-		return normalizedStFN;
-	}
+    return normalizedStFN;
+  }
 
-	/**
-	 * @param sURLUniqueID
-	 *          the sURLUniqueID to set
-	 */
-	public void setSurlUniqueID(Integer sURLUniqueID) {
+  /** @param sURLUniqueID the sURLUniqueID to set */
+  public void setSurlUniqueID(Integer sURLUniqueID) {
 
-		this.surlUniqueID = sURLUniqueID;
-	}
+    this.surlUniqueID = sURLUniqueID;
+  }
 
-	/**
-	 * @return the sURLUniqueID
-	 */
-	public Integer surlUniqueID() {
+  /** @return the sURLUniqueID */
+  public Integer surlUniqueID() {
 
-		return surlUniqueID;
-	}
+    return surlUniqueID;
+  }
 
-	public int lifeTime() {
+  public int lifeTime() {
 
-		return lifetime;
-	}
+    return lifetime;
+  }
 
-	public void setLifeTime(int n) {
+  public void setLifeTime(int n) {
 
-		lifetime = n;
-	}
+    lifetime = n;
+  }
 
-	public boolean dirOption() {
+  public boolean dirOption() {
 
-		return dirOption;
-	}
+    return dirOption;
+  }
 
-	public void setDirOption(boolean b) {
+  public void setDirOption(boolean b) {
 
-		dirOption = b;
-	}
+    dirOption = b;
+  }
 
-	public boolean allLevelRecursive() {
+  public boolean allLevelRecursive() {
 
-		return allLevelRecursive;
-	}
+    return allLevelRecursive;
+  }
 
-	public void setAllLevelRecursive(boolean b) {
+  public void setAllLevelRecursive(boolean b) {
 
-		allLevelRecursive = b;
-	}
+    allLevelRecursive = b;
+  }
 
-	public int numLevel() {
+  public int numLevel() {
 
-		return numLevel;
-	}
+    return numLevel;
+  }
 
-	public void setNumLevel(int n) {
+  public void setNumLevel(int n) {
 
-		numLevel = n;
-	}
+    numLevel = n;
+  }
 
-	public List<String> protocolList() {
+  public List<String> protocolList() {
 
-		return protocolList;
-	}
+    return protocolList;
+  }
 
-	public void setProtocolList(List<String> l) {
+  public void setProtocolList(List<String> l) {
 
-		if ((l != null) && (!l.isEmpty()))
-			protocolList = l;
-	}
+    if ((l != null) && (!l.isEmpty())) protocolList = l;
+  }
 
-	public long fileSize() {
+  public long fileSize() {
 
-		return filesize;
-	}
+    return filesize;
+  }
 
-	public void setFileSize(long n) {
+  public void setFileSize(long n) {
 
-		filesize = n;
-	}
+    filesize = n;
+  }
 
-	public int status() {
+  public int status() {
 
-		return status;
-	}
+    return status;
+  }
 
-	public void setStatus(int n) {
+  public void setStatus(int n) {
 
-		status = n;
-	}
+    status = n;
+  }
 
-	public String errString() {
+  public String errString() {
 
-		return errString;
-	}
+    return errString;
+  }
 
-	public void setErrString(String s) {
+  public void setErrString(String s) {
 
-		errString = s;
-	}
+    errString = s;
+  }
 
-	public String turl() {
+  public String turl() {
 
-		return turl;
-	}
+    return turl;
+  }
 
-	public void setTurl(String s) {
+  public void setTurl(String s) {
 
-		turl = s;
-	}
+    turl = s;
+  }
 
-	public String clientDN() {
+  public String clientDN() {
 
-		return clientDN;
-	}
+    return clientDN;
+  }
 
-	public void setClientDN(String s) {
+  public void setClientDN(String s) {
 
-		clientDN = s;
-	}
+    clientDN = s;
+  }
 
-	public String vomsAttributes() {
+  public String vomsAttributes() {
 
-		return vomsAttributes;
-	}
+    return vomsAttributes;
+  }
 
-	public void setVomsAttributes(String s) {
+  public void setVomsAttributes(String s) {
 
-		vomsAttributes = s;
-	}
+    vomsAttributes = s;
+  }
 
-	public void setVomsAttributes(String[] fqaNsAsString) {
+  public void setVomsAttributes(String[] fqaNsAsString) {
 
-		vomsAttributes = "";
-		for (int i = 0; i < fqaNsAsString.length; i++) {
-			vomsAttributes += fqaNsAsString[i];
-			if (i < fqaNsAsString.length - 1) {
-				vomsAttributes += FQAN_SEPARATOR;
-			}
-		}
+    vomsAttributes = "";
+    for (int i = 0; i < fqaNsAsString.length; i++) {
+      vomsAttributes += fqaNsAsString[i];
+      if (i < fqaNsAsString.length - 1) {
+        vomsAttributes += FQAN_SEPARATOR;
+      }
+    }
+  }
 
-	}
+  public String[] vomsAttributesArray() {
 
-	public String[] vomsAttributesArray() {
+    return vomsAttributes.split(FQAN_SEPARATOR);
+  }
 
-		return vomsAttributes.split(FQAN_SEPARATOR);
-	}
+  public String toString() {
 
-	public String toString() {
-
-		StringBuilder sb = new StringBuilder();
-		sb.append(primaryKey);
-		sb.append(" ");
-		sb.append(requestToken);
-		sb.append(" ");
-		sb.append(fromSURL);
-		sb.append(" ");
-		sb.append(normalizedStFN);
-		sb.append(" ");
-		sb.append(surlUniqueID);
-		sb.append(" ");
-		sb.append(lifetime);
-		sb.append(" ");
-		sb.append(dirOption);
-		sb.append(" ");
-		sb.append(allLevelRecursive);
-		sb.append(" ");
-		sb.append(numLevel);
-		sb.append(" ");
-		sb.append(protocolList);
-		sb.append(" ");
-		sb.append(filesize);
-		sb.append(" ");
-		sb.append(status);
-		sb.append(" ");
-		sb.append(errString);
-		sb.append(" ");
-		sb.append(turl);
-		return sb.toString();
-	}
-
+    StringBuilder sb = new StringBuilder();
+    sb.append(primaryKey);
+    sb.append(" ");
+    sb.append(requestToken);
+    sb.append(" ");
+    sb.append(fromSURL);
+    sb.append(" ");
+    sb.append(normalizedStFN);
+    sb.append(" ");
+    sb.append(surlUniqueID);
+    sb.append(" ");
+    sb.append(lifetime);
+    sb.append(" ");
+    sb.append(dirOption);
+    sb.append(" ");
+    sb.append(allLevelRecursive);
+    sb.append(" ");
+    sb.append(numLevel);
+    sb.append(" ");
+    sb.append(protocolList);
+    sb.append(" ");
+    sb.append(filesize);
+    sb.append(" ");
+    sb.append(status);
+    sb.append(" ");
+    sb.append(errString);
+    sb.append(" ");
+    sb.append(turl);
+    return sb.toString();
+  }
 }

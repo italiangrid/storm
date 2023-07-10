@@ -1,44 +1,35 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
-/**
- * 
- */
+/** */
 package it.grid.storm.health;
 
 import java.util.TimerTask;
-
 import org.slf4j.Logger;
 
-/**
- * @author zappi
- * 
- */
+/** @author zappi */
 public class PerformanceTask extends TimerTask {
 
-	private PerformanceGlance detective;
-	private Logger PERF_LOG = HealthDirector.getPerformanceLogger();
-	private long progressivNumber = 0L;
+  private PerformanceGlance detective;
+  private Logger PERF_LOG = HealthDirector.getPerformanceLogger();
+  private long progressivNumber = 0L;
 
-	protected PerformanceTask() {
+  protected PerformanceTask() {
 
-		detective = new PerformanceGlance();
-	}
+    detective = new PerformanceGlance();
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.TimerTask#run()
-	 */
-	@Override
-	public void run() {
+  /*
+   * (non-Javadoc)
+   *
+   * @see java.util.TimerTask#run()
+   */
+  @Override
+  public void run() {
 
-		progressivNumber++;
-		PerformanceStatus status = detective.haveaLook();
-		status.setPulseNumber(progressivNumber);
-		PERF_LOG.info(status.toString());
-
-	}
-
+    progressivNumber++;
+    PerformanceStatus status = detective.haveaLook();
+    status.setPulseNumber(progressivNumber);
+    PERF_LOG.info(status.toString());
+  }
 }

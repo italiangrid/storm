@@ -1,39 +1,33 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 /**
- * This class represents an Exception throws if TDirOptionData is not well
- * formed. *
- * 
+ * This class represents an Exception throws if TDirOptionData is not well formed. *
+ *
  * @author Magnoni Luca
  * @author Cnaf - INFN Bologna
  * @date
  * @version 1.0
  */
-
 package it.grid.storm.namespace;
 
 import it.grid.storm.srm.types.*;
 
 public class InvalidSURLException extends Exception {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private TSURL surl = null;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-	public InvalidSURLException(TSURL surl, String message) {
+  private TSURL surl = null;
 
-		super(message);
-		this.surl = surl;
-	}
+  public InvalidSURLException(TSURL surl, String message) {
 
-	public String toString() {
+    super(message);
+    this.surl = surl;
+  }
 
-		return String.format("InvalidSURLException for SURL='%s': %s", this.surl,
-			this.getMessage());
-	}
+  public String toString() {
 
+    return String.format("InvalidSURLException for SURL='%s': %s", this.surl, this.getMessage());
+  }
 }

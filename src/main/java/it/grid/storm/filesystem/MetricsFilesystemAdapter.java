@@ -1,12 +1,10 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.filesystem;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-
 import it.grid.storm.griduser.LocalUser;
 
 public class MetricsFilesystemAdapter implements FilesystemIF {
@@ -29,7 +27,6 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
 
       return opName;
     }
-
   }
 
   final FilesystemIF delegate;
@@ -46,18 +43,12 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
     delegate = fs;
     registry = r;
 
-    fileAttributeAccessTimer = registry
-      .timer(FilesystemMetric.FILE_ATTRIBUTE_OP.getOpName());
-    fileOnDiskTimer = registry
-      .timer(FilesystemMetric.FILE_ONDISK_OP.getOpName());
-    aclOperationTimer = registry
-      .timer(FilesystemMetric.FILE_ACL_OP.getOpName());
-    fileTruncateTimer = registry
-      .timer(FilesystemMetric.FILE_TRUNCATE_OP.getOpName());
-    fileOwnershipTimer = registry
-      .timer(FilesystemMetric.FILE_CHOWN_OP.getOpName());
-    getFreeSpaceTimer = registry
-      .timer(FilesystemMetric.GET_FREE_SPACE_OP.getOpName());
+    fileAttributeAccessTimer = registry.timer(FilesystemMetric.FILE_ATTRIBUTE_OP.getOpName());
+    fileOnDiskTimer = registry.timer(FilesystemMetric.FILE_ONDISK_OP.getOpName());
+    aclOperationTimer = registry.timer(FilesystemMetric.FILE_ACL_OP.getOpName());
+    fileTruncateTimer = registry.timer(FilesystemMetric.FILE_TRUNCATE_OP.getOpName());
+    fileOwnershipTimer = registry.timer(FilesystemMetric.FILE_CHOWN_OP.getOpName());
+    getFreeSpaceTimer = registry.timer(FilesystemMetric.GET_FREE_SPACE_OP.getOpName());
   }
 
   public long getSize(String file) {
@@ -69,7 +60,6 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
     } finally {
       context.stop();
     }
-
   }
 
   public long getLastModifiedTime(String fileOrDirectory) {
@@ -92,7 +82,6 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
     } finally {
       context.stop();
     }
-
   }
 
   public long getExactLastModifiedTime(String fileOrDirectory) {
@@ -123,7 +112,6 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
     } finally {
       context.stop();
     }
-
   }
 
   public long getFileBlockSize(String filename) {
@@ -135,7 +123,6 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
     } finally {
       context.stop();
     }
-
   }
 
   public void changeFileGroupOwnership(String filename, String groupName) {
@@ -156,11 +143,9 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
     } finally {
       context.stop();
     }
-
   }
 
-  public boolean canAccess(LocalUser u, String fileOrDirectory,
-    FilesystemPermission accessMode) {
+  public boolean canAccess(LocalUser u, String fileOrDirectory, FilesystemPermission accessMode) {
 
     final Timer.Context context = aclOperationTimer.time();
 
@@ -169,11 +154,9 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
     } finally {
       context.stop();
     }
-
   }
 
-  public FilesystemPermission getEffectiveGroupPermission(LocalUser u,
-    String fileOrDirectory) {
+  public FilesystemPermission getEffectiveGroupPermission(LocalUser u, String fileOrDirectory) {
 
     final Timer.Context context = aclOperationTimer.time();
 
@@ -182,11 +165,9 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
     } finally {
       context.stop();
     }
-
   }
 
-  public FilesystemPermission getEffectiveUserPermission(LocalUser u,
-    String fileOrDirectory) {
+  public FilesystemPermission getEffectiveUserPermission(LocalUser u, String fileOrDirectory) {
 
     final Timer.Context context = aclOperationTimer.time();
 
@@ -195,11 +176,9 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
     } finally {
       context.stop();
     }
-
   }
 
-  public FilesystemPermission getGroupPermission(LocalUser u,
-    String fileOrDirectory) {
+  public FilesystemPermission getGroupPermission(LocalUser u, String fileOrDirectory) {
 
     final Timer.Context context = aclOperationTimer.time();
 
@@ -208,11 +187,9 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
     } finally {
       context.stop();
     }
-
   }
 
-  public FilesystemPermission getUserPermission(LocalUser u,
-    String fileOrDirectory) {
+  public FilesystemPermission getUserPermission(LocalUser u, String fileOrDirectory) {
 
     final Timer.Context context = aclOperationTimer.time();
 
@@ -221,11 +198,10 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
     } finally {
       context.stop();
     }
-
   }
 
-  public FilesystemPermission grantGroupPermission(LocalUser u,
-    String fileOrDirectory, FilesystemPermission permission) {
+  public FilesystemPermission grantGroupPermission(
+      LocalUser u, String fileOrDirectory, FilesystemPermission permission) {
 
     final Timer.Context context = aclOperationTimer.time();
 
@@ -234,11 +210,10 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
     } finally {
       context.stop();
     }
-
   }
 
-  public FilesystemPermission grantUserPermission(LocalUser u,
-    String fileOrDirectory, FilesystemPermission permission) {
+  public FilesystemPermission grantUserPermission(
+      LocalUser u, String fileOrDirectory, FilesystemPermission permission) {
 
     final Timer.Context context = aclOperationTimer.time();
     try {
@@ -248,8 +223,7 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
     }
   }
 
-  public FilesystemPermission removeGroupPermission(LocalUser u,
-    String fileOrDirectory) {
+  public FilesystemPermission removeGroupPermission(LocalUser u, String fileOrDirectory) {
 
     final Timer.Context context = aclOperationTimer.time();
     try {
@@ -257,11 +231,9 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
     } finally {
       context.stop();
     }
-
   }
 
-  public FilesystemPermission removeUserPermission(LocalUser u,
-    String fileOrDirectory) {
+  public FilesystemPermission removeUserPermission(LocalUser u, String fileOrDirectory) {
 
     final Timer.Context context = aclOperationTimer.time();
     try {
@@ -269,11 +241,10 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
     } finally {
       context.stop();
     }
-
   }
 
-  public FilesystemPermission revokeGroupPermission(LocalUser u,
-    String fileOrDirectory, FilesystemPermission permission) {
+  public FilesystemPermission revokeGroupPermission(
+      LocalUser u, String fileOrDirectory, FilesystemPermission permission) {
 
     final Timer.Context context = aclOperationTimer.time();
     try {
@@ -283,8 +254,8 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
     }
   }
 
-  public FilesystemPermission revokeUserPermission(LocalUser u,
-    String fileOrDirectory, FilesystemPermission permission) {
+  public FilesystemPermission revokeUserPermission(
+      LocalUser u, String fileOrDirectory, FilesystemPermission permission) {
 
     final Timer.Context context = aclOperationTimer.time();
     try {
@@ -294,8 +265,8 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
     }
   }
 
-  public FilesystemPermission setGroupPermission(LocalUser u,
-    String fileOrDirectory, FilesystemPermission permission) {
+  public FilesystemPermission setGroupPermission(
+      LocalUser u, String fileOrDirectory, FilesystemPermission permission) {
 
     final Timer.Context context = aclOperationTimer.time();
     try {
@@ -303,11 +274,10 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
     } finally {
       context.stop();
     }
-
   }
 
-  public FilesystemPermission setUserPermission(LocalUser u,
-    String fileOrDirectory, FilesystemPermission permission) {
+  public FilesystemPermission setUserPermission(
+      LocalUser u, String fileOrDirectory, FilesystemPermission permission) {
 
     final Timer.Context context = aclOperationTimer.time();
     try {
@@ -316,5 +286,4 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
       context.stop();
     }
   }
-
 }

@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.rest.metadata;
 
@@ -10,23 +9,20 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import com.google.common.collect.Lists;
-
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.model.MappingRule;
 import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
 import it.grid.storm.rest.metadata.service.ResourceService;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 public class ResourceServiceTest {
 
@@ -54,14 +50,14 @@ public class ResourceServiceTest {
     Mockito.when(vfs.getRootPath()).thenReturn(rootPath);
     StoRI fileStori = Mockito.mock(StoRI.class);
     Mockito.when(fileStori.getAbsolutePath()).thenReturn(FILE_PATH);
-    Mockito
-      .when(vfs.createFile(Mockito.anyString(), Mockito.eq(FILE), Mockito.any(MappingRule.class)))
-      .thenReturn(fileStori);
+    Mockito.when(
+            vfs.createFile(Mockito.anyString(), Mockito.eq(FILE), Mockito.any(MappingRule.class)))
+        .thenReturn(fileStori);
     StoRI dirStori = Mockito.mock(StoRI.class);
     Mockito.when(dirStori.getAbsolutePath()).thenReturn(DIR_PATH);
-    Mockito
-      .when(vfs.createFile(Mockito.anyString(), Mockito.eq(FOLDER), Mockito.any(MappingRule.class)))
-      .thenReturn(dirStori);
+    Mockito.when(
+            vfs.createFile(Mockito.anyString(), Mockito.eq(FOLDER), Mockito.any(MappingRule.class)))
+        .thenReturn(dirStori);
     return vfs;
   }
 
@@ -105,8 +101,7 @@ public class ResourceServiceTest {
 
     VirtualFS vfs = getVirtualFS(VFS_NAME, VFS_ROOTPATH);
     MappingRule rule = getMappingRule(RULE_NAME, RULE_STFNROOT, vfs);
-    return new ResourceService(Collections.<VirtualFS>emptyList(),
-        Lists.newArrayList(rule));
+    return new ResourceService(Collections.<VirtualFS>emptyList(), Lists.newArrayList(rule));
   }
 
   @Before
@@ -197,5 +192,4 @@ public class ResourceServiceTest {
       assertTrue(e.getMessage().indexOf("Unable to map " + FILE_STFN_PATH + " to a rule") != -1);
     }
   }
-
 }

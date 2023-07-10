@@ -1,11 +1,9 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 /**
- * This class represents the AbortRequest Output Data associated with the SRM
- * request AbortRequest
- * 
+ * This class represents the AbortRequest Output Data associated with the SRM request AbortRequest
+ *
  * @author Magnoni Luca
  * @author CNAF -INFN Bologna
  * @date Dec 2006
@@ -14,61 +12,55 @@
 package it.grid.storm.synchcall.data.datatransfer;
 
 import it.grid.storm.srm.types.TReturnStatus;
-import it.grid.storm.synchcall.data.OutputData;
 
 public class AbortRequestOutputData extends AbortGeneralOutputData {
 
-	private TReturnStatus returnStatus = null;
+  private TReturnStatus returnStatus = null;
 
-	public AbortRequestOutputData() {
+  public AbortRequestOutputData() {}
 
-	}
+  public AbortRequestOutputData(TReturnStatus retStatus)
+        // throws InvalidAbortRequestOutputDataAttributeException
+      {
 
-	public AbortRequestOutputData(TReturnStatus retStatus)
-	// throws InvalidAbortRequestOutputDataAttributeException
-	{
+    boolean ok = (retStatus == null);
 
-		boolean ok = (retStatus == null);
+    if (!ok) {; // throw new InvalidAbortRequestOutputDataAttributeException(retStatus);
+    }
 
-		if (!ok) {
-			;// throw new InvalidAbortRequestOutputDataAttributeException(retStatus);
-		}
+    this.returnStatus = retStatus;
+  }
 
-		this.returnStatus = retStatus;
-	}
+  public static AbortRequestOutputData make(AbortGeneralOutputData generalOutData) {
 
-	public static AbortRequestOutputData make(
-		AbortGeneralOutputData generalOutData) {
+    // Create an output data from an AbortFiles output data.
+    // new AbortRequestOutputData(generalOutData.getReturnStatus());
+    return new AbortRequestOutputData(generalOutData.getReturnStatus());
+  }
 
-		// Create an output data from an AbortFiles output data.
-		// new AbortRequestOutputData(generalOutData.getReturnStatus());
-		return new AbortRequestOutputData(generalOutData.getReturnStatus());
-	}
+  /**
+   * Returns the returnStatus field
+   *
+   * @return TReturnStatus
+   */
+  public TReturnStatus getReturnStatus() {
 
-	/**
-	 * Returns the returnStatus field
-	 * 
-	 * @return TReturnStatus
-	 */
-	public TReturnStatus getReturnStatus() {
+    return returnStatus;
+  }
 
-		return returnStatus;
-	}
+  /**
+   * Set the returnStatus field
+   *
+   * @param returnStatus
+   */
+  public void setReturnStatus(TReturnStatus returnStatus) {
 
-	/**
-	 * Set the returnStatus field
-	 * 
-	 * @param returnStatus
-	 */
-	public void setReturnStatus(TReturnStatus returnStatus) {
+    this.returnStatus = returnStatus;
+  }
 
-		this.returnStatus = returnStatus;
-	}
+  public boolean isSuccess() {
 
-	public boolean isSuccess() {
-
-		// TODO Auto-generated method stub
-		return false;
-	}
-
+    // TODO Auto-generated method stub
+    return false;
+  }
 }

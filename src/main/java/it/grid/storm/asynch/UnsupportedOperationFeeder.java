@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.asynch;
 
@@ -12,7 +11,6 @@ public class UnsupportedOperationFeeder implements Delegable {
   public void doIt() {
 
     throw new UnsupportedOperationException();
-
   }
 
   @Override
@@ -20,5 +18,4 @@ public class UnsupportedOperationFeeder implements Delegable {
 
     return "Unsupported Operation Feeder";
   }
-
 }

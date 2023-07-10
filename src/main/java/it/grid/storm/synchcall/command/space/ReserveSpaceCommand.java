@@ -1,13 +1,7 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.command.space;
-
-import java.util.Date;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import it.grid.storm.acl.AclManager;
 import it.grid.storm.acl.AclManagerFS;
@@ -54,13 +48,15 @@ import it.grid.storm.synchcall.data.space.GetSpaceMetaDataOutputData;
 import it.grid.storm.synchcall.data.space.IdentityReserveSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReserveSpaceInputData;
 import it.grid.storm.synchcall.data.space.ReserveSpaceOutputData;
+import java.util.Date;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
   private ReservedSpaceCatalog catalog;
 
-  private static final Logger log = LoggerFactory
-    .getLogger(ReserveSpaceCommand.class);
+  private static final Logger log = LoggerFactory.getLogger(ReserveSpaceCommand.class);
 
   private NamespaceInterface namespace;
 
@@ -69,15 +65,25 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
   TStatusCode statusCode = TStatusCode.EMPTY;
   String explanation = null;
 
-  private void logRequestSuccess(GridUserInterface user, TSizeInBytes desSize,
-    TSizeInBytes guarSize, TLifeTimeInSeconds lifetime,
-    TRetentionPolicyInfo rpinfo, TReturnStatus status) {
+  private void logRequestSuccess(
+      GridUserInterface user,
+      TSizeInBytes desSize,
+      TSizeInBytes guarSize,
+      TLifeTimeInSeconds lifetime,
+      TRetentionPolicyInfo rpinfo,
+      TReturnStatus status) {
 
-    log.info("srmReservespace: <{}> Request for [desiredSizeOfTotalSpace: {},"
-      + " desiredSizeOfGuaranteedSpace: {}] with "
-      + "[desiredLifetimeOfReservedSpace: {}, retentionPolicyInfo: {}]"
-      + "succesfully done with: [status: {}]", user, desSize, guarSize,
-      lifetime, rpinfo, status);
+    log.info(
+        "srmReservespace: <{}> Request for [desiredSizeOfTotalSpace: {},"
+            + " desiredSizeOfGuaranteedSpace: {}] with "
+            + "[desiredLifetimeOfReservedSpace: {}, retentionPolicyInfo: {}]"
+            + "succesfully done with: [status: {}]",
+        user,
+        desSize,
+        guarSize,
+        lifetime,
+        rpinfo,
+        status);
   }
 
   private void logRequestFailure(TStatusCode code, String explanation) {
@@ -86,17 +92,28 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     log.error("srmReservespace: request failed with: [status: {}]", status);
   }
 
-  private void logRequestFailure(GridUserInterface user, TSizeInBytes desSize,
-    TSizeInBytes guarSize, TLifeTimeInSeconds lifetime,
-    TRetentionPolicyInfo rpinfo, TStatusCode code, String explanation) {
+  private void logRequestFailure(
+      GridUserInterface user,
+      TSizeInBytes desSize,
+      TSizeInBytes guarSize,
+      TLifeTimeInSeconds lifetime,
+      TRetentionPolicyInfo rpinfo,
+      TStatusCode code,
+      String explanation) {
 
     TReturnStatus status = new TReturnStatus(code, explanation);
 
-    log.error("srmReservespace: <{}> Request for [desiredSizeOfTotalSpace: {},"
-      + " desiredSizeOfGuaranteedSpace: {}] with "
-      + "[desiredLifetimeOfReservedSpace: {}, retentionPolicyInfo: {}]"
-      + "failed with: [status: {}]", user, desSize, guarSize, lifetime, rpinfo,
-      status);
+    log.error(
+        "srmReservespace: <{}> Request for [desiredSizeOfTotalSpace: {},"
+            + " desiredSizeOfGuaranteedSpace: {}] with "
+            + "[desiredLifetimeOfReservedSpace: {}, retentionPolicyInfo: {}]"
+            + "failed with: [status: {}]",
+        user,
+        desSize,
+        guarSize,
+        lifetime,
+        rpinfo,
+        status);
   }
 
   public ReserveSpaceCommand() {
@@ -107,9 +124,8 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
   /**
    * Method that provide space reservation for srmReserveSpace request.
-   * 
-   * @param data
-   *          Contain information about data procived in SRM request.
+   *
+   * @param data Contain information about data procived in SRM request.
    * @return SpaceResOutputData that contain all SRM return parameter.
    * @todo Implement this it.grid.storm.synchcall.space.SpaceManager method
    */
@@ -120,11 +136,10 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
       data = (IdentityReserveSpaceInputData) indata;
     } else {
       GetSpaceMetaDataOutputData outputData = new GetSpaceMetaDataOutputData();
-      outputData.setStatus(CommandHelper.buildStatus(
-        TStatusCode.SRM_NOT_SUPPORTED, "Anonymous user can not perform"
-          + SRM_COMMAND));
-      printRequestOutcome(outputData.getStatus(),
-        (ReserveSpaceInputData) indata);
+      outputData.setStatus(
+          CommandHelper.buildStatus(
+              TStatusCode.SRM_NOT_SUPPORTED, "Anonymous user can not perform" + SRM_COMMAND));
+      printRequestOutcome(outputData.getStatus(), (ReserveSpaceInputData) indata);
       return outputData;
     }
     log.debug("<SpaceReservationManager>:reserveSpace start.");
@@ -139,9 +154,14 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     } catch (Exception e) {
       log.error(e.getMessage(), e);
 
-      logRequestFailure(data.getUser(), data.getDesiredSize(),
-        data.getGuaranteedSize(), data.getSpaceLifetime(),
-        data.getRetentionPolicyInfo(), statusCode, explanation);
+      logRequestFailure(
+          data.getUser(),
+          data.getDesiredSize(),
+          data.getGuaranteedSize(),
+          data.getSpaceLifetime(),
+          data.getRetentionPolicyInfo(),
+          statusCode,
+          explanation);
 
       return manageError(statusCode, explanation);
     }
@@ -153,9 +173,14 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
       log.error(e.getMessage(), e);
 
-      logRequestFailure(data.getUser(), data.getDesiredSize(),
-        data.getGuaranteedSize(), data.getSpaceLifetime(),
-        data.getRetentionPolicyInfo(), statusCode, explanation);
+      logRequestFailure(
+          data.getUser(),
+          data.getDesiredSize(),
+          data.getGuaranteedSize(),
+          data.getSpaceLifetime(),
+          data.getRetentionPolicyInfo(),
+          statusCode,
+          explanation);
       return manageError(statusCode, explanation);
     }
 
@@ -168,43 +193,55 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
       log.error(e.getMessage(), e);
 
-      logRequestFailure(data.getUser(), data.getDesiredSize(),
-        data.getGuaranteedSize(), data.getSpaceLifetime(),
-        data.getRetentionPolicyInfo(), statusCode, explanation);
+      logRequestFailure(
+          data.getUser(),
+          data.getDesiredSize(),
+          data.getGuaranteedSize(),
+          data.getSpaceLifetime(),
+          data.getRetentionPolicyInfo(),
+          statusCode,
+          explanation);
 
       return manageError(statusCode, explanation);
     }
 
     SpaceSize spaceSize = null;
     try {
-      spaceSize = computeSpaceSize(data.getDesiredSize(),
-        data.getGuaranteedSize(), vfs);
+      spaceSize = computeSpaceSize(data.getDesiredSize(), data.getGuaranteedSize(), vfs);
     } catch (Exception e) {
 
       log.error(e.getMessage(), e);
 
-      logRequestFailure(data.getUser(), data.getDesiredSize(),
-        data.getGuaranteedSize(), data.getSpaceLifetime(),
-        data.getRetentionPolicyInfo(), statusCode, explanation);
+      logRequestFailure(
+          data.getUser(),
+          data.getDesiredSize(),
+          data.getGuaranteedSize(),
+          data.getSpaceLifetime(),
+          data.getRetentionPolicyInfo(),
+          statusCode,
+          explanation);
       return manageError(statusCode, explanation);
     }
 
     StoRI spaceStori = null;
     try {
-      spaceStori = getSpaceStoRI(vfs, relativeSpaceFN,
-        spaceSize.getDesiderataSpaceSize());
+      spaceStori = getSpaceStoRI(vfs, relativeSpaceFN, spaceSize.getDesiderataSpaceSize());
     } catch (Exception e) {
       log.error(e.getMessage(), e);
 
-      logRequestFailure(data.getUser(), data.getDesiredSize(),
-        data.getGuaranteedSize(), data.getSpaceLifetime(),
-        data.getRetentionPolicyInfo(), statusCode, explanation);
+      logRequestFailure(
+          data.getUser(),
+          data.getDesiredSize(),
+          data.getGuaranteedSize(),
+          data.getSpaceLifetime(),
+          data.getRetentionPolicyInfo(),
+          statusCode,
+          explanation);
 
       return manageError(statusCode, explanation);
     }
 
-    log
-      .debug("Reserve Space File Size: {}", spaceSize.getDesiderataSpaceSize());
+    log.debug("Reserve Space File Size: {}", spaceSize.getDesiderataSpaceSize());
 
     try {
       spaceStori.getSpace().fakeAllot();
@@ -213,9 +250,14 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
       statusCode = TStatusCode.SRM_INTERNAL_ERROR;
       explanation = "Unable to create Space File into filesystem. \n";
 
-      logRequestFailure(data.getUser(), data.getDesiredSize(),
-        data.getGuaranteedSize(), data.getSpaceLifetime(),
-        data.getRetentionPolicyInfo(), statusCode, explanation);
+      logRequestFailure(
+          data.getUser(),
+          data.getDesiredSize(),
+          data.getGuaranteedSize(),
+          data.getSpaceLifetime(),
+          data.getRetentionPolicyInfo(),
+          statusCode,
+          explanation);
 
       return manageError(statusCode, explanation);
     }
@@ -226,9 +268,14 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     } catch (Exception e) {
       log.error(e.getMessage(), e);
 
-      logRequestFailure(data.getUser(), data.getDesiredSize(),
-        data.getGuaranteedSize(), data.getSpaceLifetime(),
-        data.getRetentionPolicyInfo(), statusCode, explanation);
+      logRequestFailure(
+          data.getUser(),
+          data.getDesiredSize(),
+          data.getGuaranteedSize(),
+          data.getSpaceLifetime(),
+          data.getRetentionPolicyInfo(),
+          statusCode,
+          explanation);
 
       revertAllocation(spaceStori.getSpace());
       return manageError(statusCode, explanation);
@@ -236,15 +283,25 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
     TSpaceToken spaceToken = null;
     try {
-      spaceToken = registerIntoDB(data.getUser(), data.getSpaceTokenAlias(),
-        spaceSize.getTotalSize(), spaceSize.getDesiderataSpaceSize(),
-        data.getSpaceLifetime(), spaceStori.getPFN());
+      spaceToken =
+          registerIntoDB(
+              data.getUser(),
+              data.getSpaceTokenAlias(),
+              spaceSize.getTotalSize(),
+              spaceSize.getDesiderataSpaceSize(),
+              data.getSpaceLifetime(),
+              spaceStori.getPFN());
     } catch (Exception e) {
       log.error(e.getMessage(), e);
 
-      logRequestFailure(data.getUser(), data.getDesiredSize(),
-        data.getGuaranteedSize(), data.getSpaceLifetime(),
-        data.getRetentionPolicyInfo(), statusCode, explanation);
+      logRequestFailure(
+          data.getUser(),
+          data.getDesiredSize(),
+          data.getGuaranteedSize(),
+          data.getSpaceLifetime(),
+          data.getRetentionPolicyInfo(),
+          statusCode,
+          explanation);
 
       revertAllocation(spaceStori.getSpace());
       return manageError(statusCode, explanation);
@@ -254,16 +311,25 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     try {
       output = buildOutput(spaceSize, spaceToken, data.getSpaceLifetime());
 
-      logRequestSuccess(data.getUser(), data.getDesiredSize(),
-        data.getGuaranteedSize(), data.getSpaceLifetime(),
-        data.getRetentionPolicyInfo(), output.getStatus());
+      logRequestSuccess(
+          data.getUser(),
+          data.getDesiredSize(),
+          data.getGuaranteedSize(),
+          data.getSpaceLifetime(),
+          data.getRetentionPolicyInfo(),
+          output.getStatus());
 
     } catch (Exception e) {
       statusCode = TStatusCode.SRM_INTERNAL_ERROR;
       explanation = "Unable to build a valid output object ";
-      logRequestFailure(data.getUser(), data.getDesiredSize(),
-        data.getGuaranteedSize(), data.getSpaceLifetime(),
-        data.getRetentionPolicyInfo(), statusCode, explanation);
+      logRequestFailure(
+          data.getUser(),
+          data.getDesiredSize(),
+          data.getGuaranteedSize(),
+          data.getSpaceLifetime(),
+          data.getRetentionPolicyInfo(),
+          statusCode,
+          explanation);
       revertAllocation(spaceStori.getSpace());
       return manageError(statusCode, explanation);
     }
@@ -279,8 +345,8 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     }
   }
 
-  private StoRI getSpaceStoRI(VirtualFS vfs, String relativeSpaceFN,
-    TSizeInBytes desiderataSpaceSize) throws Exception {
+  private StoRI getSpaceStoRI(
+      VirtualFS vfs, String relativeSpaceFN, TSizeInBytes desiderataSpaceSize) throws Exception {
 
     StoRI spaceFile = null;
     try {
@@ -316,31 +382,43 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
       log.debug("Null retentionPolicyInfo.");
       statusCode = TStatusCode.SRM_INVALID_REQUEST;
       explanation = "RetentionPolicy not specified.";
-      logRequestFailure(data.getUser(), data.getDesiredSize(),
-        data.getGuaranteedSize(), data.getSpaceLifetime(),
-        data.getRetentionPolicyInfo(), statusCode, explanation);
+      logRequestFailure(
+          data.getUser(),
+          data.getDesiredSize(),
+          data.getGuaranteedSize(),
+          data.getSpaceLifetime(),
+          data.getRetentionPolicyInfo(),
+          statusCode,
+          explanation);
       return false;
     }
 
     TAccessLatency latency = data.getRetentionPolicyInfo().getAccessLatency();
-    TRetentionPolicy retentionPolicy = data.getRetentionPolicyInfo()
-      .getRetentionPolicy();
+    TRetentionPolicy retentionPolicy = data.getRetentionPolicyInfo().getRetentionPolicy();
 
-    if (!((latency == null || latency.equals(TAccessLatency.EMPTY) || latency
-      .equals(TAccessLatency.ONLINE)) && (retentionPolicy == null
-      || retentionPolicy.equals(TRetentionPolicy.EMPTY) || retentionPolicy
-        .equals(TRetentionPolicy.REPLICA)))) {
+    if (!((latency == null
+            || latency.equals(TAccessLatency.EMPTY)
+            || latency.equals(TAccessLatency.ONLINE))
+        && (retentionPolicy == null
+            || retentionPolicy.equals(TRetentionPolicy.EMPTY)
+            || retentionPolicy.equals(TRetentionPolicy.REPLICA)))) {
 
-      log.debug("Invalid retentionPolicyInfo: {}, {}", data
-        .getRetentionPolicyInfo().getAccessLatency(), data
-        .getRetentionPolicyInfo().getRetentionPolicy());
+      log.debug(
+          "Invalid retentionPolicyInfo: {}, {}",
+          data.getRetentionPolicyInfo().getAccessLatency(),
+          data.getRetentionPolicyInfo().getRetentionPolicy());
 
       statusCode = TStatusCode.SRM_NOT_SUPPORTED;
       explanation = "RetentionPolicy requested cannot be satisfied.";
 
-      logRequestFailure(data.getUser(), data.getDesiredSize(),
-        data.getGuaranteedSize(), data.getSpaceLifetime(),
-        data.getRetentionPolicyInfo(), statusCode, explanation);
+      logRequestFailure(
+          data.getUser(),
+          data.getDesiredSize(),
+          data.getGuaranteedSize(),
+          data.getSpaceLifetime(),
+          data.getRetentionPolicyInfo(),
+          statusCode,
+          explanation);
 
       return false;
     }
@@ -378,19 +456,15 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     return vfs;
   }
 
-  private void setDefaults(IdentityReserveSpaceInputData data,
-    VirtualFS vfs) {
+  private void setDefaults(IdentityReserveSpaceInputData data, VirtualFS vfs) {
 
     if (data.getRetentionPolicyInfo().getAccessLatency() == null
-      || data.getRetentionPolicyInfo().getAccessLatency()
-        .equals(TAccessLatency.EMPTY)) {
+        || data.getRetentionPolicyInfo().getAccessLatency().equals(TAccessLatency.EMPTY)) {
       data.getRetentionPolicyInfo().setAccessLatency(TAccessLatency.ONLINE);
     }
     if (data.getRetentionPolicyInfo().getRetentionPolicy() == null
-      || data.getRetentionPolicyInfo().getRetentionPolicy()
-        .equals(TRetentionPolicy.EMPTY)) {
-      data.getRetentionPolicyInfo()
-        .setRetentionPolicy(TRetentionPolicy.REPLICA);
+        || data.getRetentionPolicyInfo().getRetentionPolicy().equals(TRetentionPolicy.EMPTY)) {
+      data.getRetentionPolicyInfo().setRetentionPolicy(TRetentionPolicy.REPLICA);
     }
     if (data.getSpaceLifetime().isEmpty()) {
       log.debug("LifeTime is EMPTY. Using default value.");
@@ -398,13 +472,12 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     }
   }
 
-  private SpaceSize computeSpaceSize(TSizeInBytes totalSize,
-    TSizeInBytes guarSize, VirtualFS vfs) throws Exception {
+  private SpaceSize computeSpaceSize(TSizeInBytes totalSize, TSizeInBytes guarSize, VirtualFS vfs)
+      throws Exception {
 
     TSizeInBytes desiderataSpaceSize = TSizeInBytes.makeEmpty();
 
-    if ((!(totalSize.isEmpty()))
-      && (!((guarSize.isEmpty()) || guarSize.value() == 0))) {
+    if ((!(totalSize.isEmpty())) && (!((guarSize.isEmpty()) || guarSize.value() == 0))) {
       if (totalSize.value() < guarSize.value()) {
         log.debug("Error: totalSize < guaranteedSize");
         statusCode = TStatusCode.SRM_INVALID_REQUEST;
@@ -412,7 +485,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
         throw new Exception(explanation);
       }
     } else { // Assign default values if totalSize and guaranteedSize are
-             // not defined
+      // not defined
       if (!(totalSize.isEmpty())) {
         guarSize = vfs.getDefaultValues().getDefaultGuaranteedSpaceSize();
         if (totalSize.value() < guarSize.value()) {
@@ -448,36 +521,30 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
     TSizeInBytes freeSpace = null;
     try {
-      freeSpace = TSizeInBytes.make(vfs.getFilesystem().getFreeSpace(),
-        SizeUnit.BYTES);
+      freeSpace = TSizeInBytes.make(vfs.getFilesystem().getFreeSpace(), SizeUnit.BYTES);
     } catch (InvalidTSizeAttributesException e) {
-      log
-        .debug("Error while retrieving free Space in underlying Filesystem", e);
+      log.debug("Error while retrieving free Space in underlying Filesystem", e);
       statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-      explanation = "Error while retrieving free Space in underlying Filesystem \n"
-        + e;
+      explanation = "Error while retrieving free Space in underlying Filesystem \n" + e;
       throw new Exception(explanation);
     } catch (NamespaceException ex) {
-      log
-        .debug(
+      log.debug(
           "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver",
           ex);
       statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-      explanation = "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver \n"
-        + ex;
+      explanation =
+          "Error while retrieving free Space in underlying Filesystem. Unable to retrieve FS Driver \n"
+              + ex;
       throw new Exception(explanation);
     }
 
-    /**
-     * @todo Change here, also granted SpaceSize must be considered.
-     */
+    /** @todo Change here, also granted SpaceSize must be considered. */
     boolean lower_space = false;
     // If there is not enogh free space on storage
     if (freeSpace.value() < desiderataSpaceSize.value()) {
       if (freeSpace.value() < guarSize.value()) {
         // Not enough freespace
-        log
-          .debug("<SpaceResManager>:reserveSpace Not Enough Free Space on storage!");
+        log.debug("<SpaceResManager>:reserveSpace Not Enough Free Space on storage!");
         statusCode = TStatusCode.SRM_NO_FREE_SPACE;
         explanation = "SRM has not more free space.";
         throw new Exception(explanation);
@@ -490,21 +557,18 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     return this.new SpaceSize(desiderataSpaceSize, totalSize, lower_space);
   }
 
-  private String getRelativeSpaceFilePath(VirtualFS vfs, String spaceFN)
-    throws Exception {
+  private String getRelativeSpaceFilePath(VirtualFS vfs, String spaceFN) throws Exception {
 
     String relativeSpaceFN = null;
 
-    relativeSpaceFN = NamespaceUtil.extractRelativePath(vfs.getRootPath(),
-      spaceFN);
+    relativeSpaceFN = NamespaceUtil.extractRelativePath(vfs.getRootPath(), spaceFN);
 
     log.debug("relativeSpaceFN: {}", relativeSpaceFN);
 
     return relativeSpaceFN;
   }
 
-  private void setSpaceFilePermissions(StoRI spaceStori, GridUserInterface user)
-    throws Exception {
+  private void setSpaceFilePermissions(StoRI spaceStori, GridUserInterface user) throws Exception {
 
     FilesystemPermission fp = FilesystemPermission.ReadWrite;
 
@@ -520,8 +584,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
       throw new Exception(explanation);
     }
     if (localFile == null || localUser == null) {
-      log.error("ACL setup error. localFile={} , localUser={}", localFile,
-        localUser);
+      log.error("ACL setup error. localFile={} , localUser={}", localFile, localUser);
       statusCode = TStatusCode.SRM_INTERNAL_ERROR;
       explanation = "Unable to setting up the ACL ";
       throw new Exception(explanation);
@@ -547,23 +610,35 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     }
   }
 
-  private TSpaceToken registerIntoDB(GridUserInterface user,
-    String spaceTokenAlias, TSizeInBytes totalSize,
-    TSizeInBytes desiderataSpaceSize, TLifeTimeInSeconds lifeTime, PFN pfn)
-    throws Exception {
+  private TSpaceToken registerIntoDB(
+      GridUserInterface user,
+      String spaceTokenAlias,
+      TSizeInBytes totalSize,
+      TSizeInBytes desiderataSpaceSize,
+      TLifeTimeInSeconds lifeTime,
+      PFN pfn)
+      throws Exception {
 
     StorageSpaceData spaceData = null;
     try {
-      spaceData = new StorageSpaceData(user, TSpaceType.PERMANENT,
-        spaceTokenAlias, totalSize, desiderataSpaceSize, lifeTime, null,
-        new Date(), pfn);
+      spaceData =
+          new StorageSpaceData(
+              user,
+              TSpaceType.PERMANENT,
+              spaceTokenAlias,
+              totalSize,
+              desiderataSpaceSize,
+              lifeTime,
+              null,
+              new Date(),
+              pfn);
     } catch (InvalidSpaceDataAttributesException e) {
       log.debug("Unable to create Storage Space Data", e);
       statusCode = TStatusCode.SRM_INTERNAL_ERROR;
       explanation = "Unable to create storage space data.";
 
-      logRequestFailure(user, totalSize, desiderataSpaceSize, lifeTime, null,
-        statusCode, explanation);
+      logRequestFailure(
+          user, totalSize, desiderataSpaceSize, lifeTime, null, statusCode, explanation);
 
       throw new Exception(explanation);
     }
@@ -579,8 +654,8 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
       log.debug("Unable to register Storage Space Data into DB", e);
       statusCode = TStatusCode.SRM_INTERNAL_ERROR;
       explanation = "Unable to register Storage Space Data into DB.";
-      logRequestFailure(user, totalSize, desiderataSpaceSize, lifeTime, null,
-        statusCode, explanation);
+      logRequestFailure(
+          user, totalSize, desiderataSpaceSize, lifeTime, null, statusCode, explanation);
       throw new Exception(explanation);
     }
 
@@ -592,31 +667,36 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
       statusCode = TStatusCode.SRM_INTERNAL_ERROR;
       explanation = "Unable to create space token.";
 
-      logRequestFailure(user, totalSize, desiderataSpaceSize, lifeTime, null,
-        statusCode, explanation);
+      logRequestFailure(
+          user, totalSize, desiderataSpaceSize, lifeTime, null, statusCode, explanation);
 
       throw new Exception(explanation);
     }
     return spaceToken;
   }
 
-  private ReserveSpaceOutputData buildOutput(SpaceSize spaceSize,
-    TSpaceToken spaceToken, TLifeTimeInSeconds lifeTime) throws Exception {
+  private ReserveSpaceOutputData buildOutput(
+      SpaceSize spaceSize, TSpaceToken spaceToken, TLifeTimeInSeconds lifeTime) throws Exception {
 
     TReturnStatus status = null;
-		if (!spaceSize.isLowerSpace()) {
-			status = new TReturnStatus(TStatusCode.SRM_SUCCESS,
-				"Space Reservation done");
+    if (!spaceSize.isLowerSpace()) {
+      status = new TReturnStatus(TStatusCode.SRM_SUCCESS, "Space Reservation done");
 
-		} else {
-			status = new TReturnStatus(TStatusCode.SRM_LOWER_SPACE_GRANTED,
-				"Space Reservation done, lower space granted.");
-		}
+    } else {
+      status =
+          new TReturnStatus(
+              TStatusCode.SRM_LOWER_SPACE_GRANTED, "Space Reservation done, lower space granted.");
+    }
 
     ReserveSpaceOutputData outputData = null;
     try {
-      outputData = new ReserveSpaceOutputData(spaceSize.getTotalSize(),
-        spaceSize.getDesiderataSpaceSize(), lifeTime, spaceToken, status);
+      outputData =
+          new ReserveSpaceOutputData(
+              spaceSize.getTotalSize(),
+              spaceSize.getDesiderataSpaceSize(),
+              lifeTime,
+              spaceToken,
+              status);
     } catch (InvalidReserveSpaceOutputDataAttributesException e) {
       log.error(e.getMessage(), e);
       statusCode = TStatusCode.SRM_INTERNAL_ERROR;
@@ -632,8 +712,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     private final TSizeInBytes totalSize;
     private final boolean lowerSpace;
 
-    public SpaceSize(TSizeInBytes desiderataSpaceSize, TSizeInBytes totalSize,
-      boolean lowerSpace) {
+    public SpaceSize(TSizeInBytes desiderataSpaceSize, TSizeInBytes totalSize, boolean lowerSpace) {
 
       this.desiderataSpaceSize = desiderataSpaceSize;
       this.totalSize = totalSize;
@@ -658,10 +737,8 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
   /**
    * Method that reset an already done reservation to the original status.
-   * 
-   * @param token
-   *          TSpaceToken that contains information about data procived in SRM
-   *          request.
+   *
+   * @param token TSpaceToken that contains information about data procived in SRM request.
    * @return TReturnStatus that contains of all SRM return parameters.
    */
   public TReturnStatus resetReservation(TSpaceToken token) {
@@ -705,8 +782,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     }
 
     String relativeSpaceFN = null;
-    relativeSpaceFN = NamespaceUtil.extractRelativePath(vfs.getRootPath(),
-      spaceFN);
+    relativeSpaceFN = NamespaceUtil.extractRelativePath(vfs.getRootPath(), spaceFN);
 
     log.debug("relativeSpaceFN: {}", relativeSpaceFN);
 
@@ -719,8 +795,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
       StoRI spaceFile = null;
       try {
-        spaceFile = vfs.createSpace(relativeSpaceFN,
-          desiderataSpaceSize.value());
+        spaceFile = vfs.createSpace(relativeSpaceFN, desiderataSpaceSize.value());
       } catch (NamespaceException e) {
         log.debug(e.getMessage(), e);
         statusCode = TStatusCode.SRM_INTERNAL_ERROR;
@@ -746,8 +821,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
           LocalFile localFile = spaceFile.getLocalFile();
           LocalUser localUser = user.getLocalUser();
           if (localFile == null || localUser == null) {
-            log.error("ACL setup error. localFile={} localUser={}", localFile,
-              localUser);
+            log.error("ACL setup error. localFile={} localUser={}", localFile, localUser);
             statusCode = TStatusCode.SRM_INTERNAL_ERROR;
             explanation = "Unable to setting up the ACL ";
             return manageErrorStatus(statusCode, explanation);
@@ -773,8 +847,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
           LocalFile localFile = spaceFile.getLocalFile();
           LocalUser localUser = user.getLocalUser();
           if (localFile == null || localUser == null) {
-            log.error("ACL setup error. localFile={} localUser={}", localFile,
-              localUser);
+            log.error("ACL setup error. localFile={} localUser={}", localFile, localUser);
             statusCode = TStatusCode.SRM_INTERNAL_ERROR;
             explanation = "Unable to setting up the ACL ";
             return manageErrorStatus(statusCode, explanation);
@@ -795,7 +868,6 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
           return manageErrorStatus(statusCode, explanation);
         }
       }
-
     }
 
     sdata.setUsedSpaceSize(desiderataSpaceSize);
@@ -805,16 +877,14 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     } catch (DataAccessException e) {
       log.error(e.getMessage(), e);
       statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-      explanation = "Error persisting space token data into the DB\n"
-        + e.getMessage();
+      explanation = "Error persisting space token data into the DB\n" + e.getMessage();
       return manageErrorStatus(statusCode, explanation);
     }
 
     return manageErrorStatus(TStatusCode.SRM_SUCCESS, "Successfull creation.");
   }
 
-  public TReturnStatus updateReservation(TSpaceToken token,
-    TSizeInBytes sizeToAdd, TSURL toSurl) {
+  public TReturnStatus updateReservation(TSpaceToken token, TSizeInBytes sizeToAdd, TSURL toSurl) {
 
     String explanation = null;
     TStatusCode statusCode = TStatusCode.EMPTY;
@@ -856,8 +926,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
 
     String relativeSpaceFN = null;
 
-    relativeSpaceFN = NamespaceUtil.extractRelativePath(vfs.getRootPath(),
-      spaceFN);
+    relativeSpaceFN = NamespaceUtil.extractRelativePath(vfs.getRootPath(), spaceFN);
 
     TSizeInBytes desiderataSpaceSize = sdata.getTotalSpaceSize();
     TSizeInBytes availableSize = sdata.getAvailableSpaceSize();
@@ -866,8 +935,8 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     log.debug("Size of removed file: {}" + sizeToAdd.value());
 
     try {
-      desiderataSpaceSize = TSizeInBytes.make(
-        availableSize.value() + sizeToAdd.value(), SizeUnit.BYTES);
+      desiderataSpaceSize =
+          TSizeInBytes.make(availableSize.value() + sizeToAdd.value(), SizeUnit.BYTES);
     } catch (InvalidTSizeAttributesException e) {
       log.error(e.getMessage());
     }
@@ -910,8 +979,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
         localFile = spaceFile.getLocalFile();
         LocalUser localUser = user.getLocalUser();
         if (localFile == null || localUser == null) {
-          log.error("ACL setup error. localFile={} localUser={}", localFile,
-            localUser);
+          log.error("ACL setup error. localFile={} localUser={}", localFile, localUser);
           revertOldSpaceFileDeletion(localFile);
           statusCode = TStatusCode.SRM_INTERNAL_ERROR;
           explanation = "Unable to setting up the ACL ";
@@ -940,16 +1008,14 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
         localFile = spaceFile.getLocalFile();
         LocalUser localUser = user.getLocalUser();
         if (localFile == null || localUser == null) {
-          log.error("ACL setup error. localFile={} localUser={}", localFile,
-            localUser);
+          log.error("ACL setup error. localFile={} localUser={}", localFile, localUser);
           revertOldSpaceFileDeletion(localFile);
           statusCode = TStatusCode.SRM_INTERNAL_ERROR;
           explanation = "Unable to setting up the ACL ";
           return manageErrorStatus(statusCode, explanation);
         } else {
           try {
-            manager.grantGroupPermission(spaceFile.getLocalFile(), localUser,
-              fp);
+            manager.grantGroupPermission(spaceFile.getLocalFile(), localUser, fp);
           } catch (IllegalArgumentException e) {
             log.error(e.getMessage(), e);
             revertOldSpaceFileDeletion(localFile);
@@ -968,14 +1034,14 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     }
 
     try {
-      availableSize = TSizeInBytes.make(sdata.getAvailableSpaceSize().value()
-        + sizeToAdd.value(), SizeUnit.BYTES);
+      availableSize =
+          TSizeInBytes.make(
+              sdata.getAvailableSpaceSize().value() + sizeToAdd.value(), SizeUnit.BYTES);
     } catch (InvalidTSizeAttributesException e) {
       log.error(e.getMessage(), e);
       revertOldSpaceFileDeletion(localFile);
       statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-      explanation = "Error computing new available space size\n"
-        + e.getMessage();
+      explanation = "Error computing new available space size\n" + e.getMessage();
       return manageErrorStatus(statusCode, explanation);
     }
 
@@ -987,19 +1053,15 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
       log.error(e.getMessage(), e);
       revertOldSpaceFileDeletion(localFile);
       statusCode = TStatusCode.SRM_INTERNAL_ERROR;
-      explanation = "Error persisting space token data into the DB\n"
-        + e.getMessage();
+      explanation = "Error persisting space token data into the DB\n" + e.getMessage();
       return manageErrorStatus(statusCode, explanation);
     }
     return manageErrorStatus(TStatusCode.SRM_SUCCESS, "Successfull creation.");
   }
 
-  private void revertOldSpaceFileDeletion(LocalFile localFile) {
+  private void revertOldSpaceFileDeletion(LocalFile localFile) {}
 
-  }
-
-  private ReserveSpaceOutputData manageError(TStatusCode statusCode,
-    String explanation) {
+  private ReserveSpaceOutputData manageError(TStatusCode statusCode, String explanation) {
 
     TReturnStatus status = null;
     try {
@@ -1011,8 +1073,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     return new ReserveSpaceOutputData(status);
   }
 
-  private TReturnStatus manageErrorStatus(TStatusCode statusCode,
-    String explanation) {
+  private TReturnStatus manageErrorStatus(TStatusCode statusCode, String explanation) {
 
     TReturnStatus status = null;
     try {
@@ -1023,8 +1084,7 @@ public class ReserveSpaceCommand extends SpaceCommand implements Command {
     return status;
   }
 
-  private void printRequestOutcome(TReturnStatus status,
-    ReserveSpaceInputData data) {
+  private void printRequestOutcome(TReturnStatus status, ReserveSpaceInputData data) {
 
     if (data != null) {
       CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, data);

@@ -1,10 +1,9 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 /**
  * Class that represents the TStorageSystemInfo.
- * 
+ *
  * @author: CNAF Bologna
  * @version: 1.0
  * @date: May 2005
@@ -15,37 +14,37 @@ import java.io.Serializable;
 
 public class TStorageSystemInfo implements Serializable {
 
-	private String info = null;
-	private boolean empty = true;
+  private String info = null;
+  private boolean empty = true;
 
-	public String toString() {
+  public String toString() {
 
-		return info;
-	}
+    return info;
+  }
 
-	public TStorageSystemInfo(String s, boolean empty) {
+  public TStorageSystemInfo(String s, boolean empty) {
 
-		this.info = s;
-		this.empty = empty;
-	}
+    this.info = s;
+    this.empty = empty;
+  }
 
-	public static TStorageSystemInfo makeEmpty() {
+  public static TStorageSystemInfo makeEmpty() {
 
-		return new TStorageSystemInfo("", true);
-	}
+    return new TStorageSystemInfo("", true);
+  }
 
-	public static TStorageSystemInfo make(String s) {
+  public static TStorageSystemInfo make(String s) {
 
-		return new TStorageSystemInfo(s, false);
-	}
+    return new TStorageSystemInfo(s, false);
+  }
 
-	public boolean isEmpty() {
+  public boolean isEmpty() {
 
-		return empty;
-	}
+    return empty;
+  }
 
-	public String getValue() {
+  public String getValue() {
 
-		return info;
-	}
+    return info;
+  }
 }

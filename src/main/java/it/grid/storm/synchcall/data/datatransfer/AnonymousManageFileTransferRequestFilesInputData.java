@@ -1,42 +1,38 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.data.datatransfer;
 
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.TRequestToken;
 
-public class AnonymousManageFileTransferRequestFilesInputData extends
-	AnonymousManageFileTransferFilesInputData implements
-	ManageFileTransferRequestFilesInputData {
+public class AnonymousManageFileTransferRequestFilesInputData
+    extends AnonymousManageFileTransferFilesInputData
+    implements ManageFileTransferRequestFilesInputData {
 
-	private final TRequestToken requestToken;
+  private final TRequestToken requestToken;
 
-	public AnonymousManageFileTransferRequestFilesInputData(
-		TRequestToken requestToken, ArrayOfSURLs arrayOfSURLs)
-		throws IllegalArgumentException {
+  public AnonymousManageFileTransferRequestFilesInputData(
+      TRequestToken requestToken, ArrayOfSURLs arrayOfSURLs) throws IllegalArgumentException {
 
-		super(arrayOfSURLs);
-		if (requestToken == null) {
-			throw new IllegalArgumentException(
-				"Unable to create the object, invalid arguments: requestToken="
-					+ requestToken);
-		}
-		this.requestToken = requestToken;
-	}
+    super(arrayOfSURLs);
+    if (requestToken == null) {
+      throw new IllegalArgumentException(
+          "Unable to create the object, invalid arguments: requestToken=" + requestToken);
+    }
+    this.requestToken = requestToken;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * it.grid.storm.synchcall.data.datatransfer.ReleaseFilesInputData#getRequestToken
-	 * ()
-	 */
-	@Override
-	public TRequestToken getRequestToken() {
+  /*
+   * (non-Javadoc)
+   *
+   * @see
+   * it.grid.storm.synchcall.data.datatransfer.ReleaseFilesInputData#getRequestToken
+   * ()
+   */
+  @Override
+  public TRequestToken getRequestToken() {
 
-		return requestToken;
-	}
-
+    return requestToken;
+  }
 }

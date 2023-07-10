@@ -1,9 +1,9 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm;
 
+import com.google.common.collect.Maps;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,11 +11,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Maps;
 
 public class Constants {
 
@@ -43,9 +40,7 @@ public class Constants {
     BE_OS_KERNEL_RELEASE = new Entry(BE_OS_KERNEL_RELEASE_KEY, map.get(BE_OS_KERNEL_RELEASE_KEY));
   }
 
-  /**
-   * 
-   */
+  /** */
   private static String getDistribution() {
 
     String distribution = NOT_AVAILABLE;
@@ -83,9 +78,7 @@ public class Constants {
     return distribution;
   }
 
-  /**
-   * 
-   */
+  /** */
   private static Map<String, String> getPlatformKernel() {
 
     Map<String, String> map = Maps.newHashMap();

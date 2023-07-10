@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.namespace;
 
@@ -8,21 +7,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static it.grid.storm.namespace.naming.NamespaceUtil.getWinnerRule;
 import static it.grid.storm.namespace.naming.NamespaceUtil.getWinnerVFS;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.SortedSet;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import it.grid.storm.common.GUID;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.filesystem.LocalFile;
@@ -43,6 +31,14 @@ import it.grid.storm.namespace.naming.SURL;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.SortedSet;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
 
 public class Namespace implements NamespaceInterface {
 
@@ -122,8 +118,7 @@ public class Namespace implements NamespaceInterface {
   }
 
   @Override
-  public List<VirtualFS> getReadableOrApproachableByAnonymousVFS()
-      throws NamespaceException {
+  public List<VirtualFS> getReadableOrApproachableByAnonymousVFS() throws NamespaceException {
 
     List<VirtualFS> rowVFS = Lists.newLinkedList();
     List<VirtualFS> allVFS = Lists.newLinkedList(getAllDefinedVFS());
@@ -144,13 +139,17 @@ public class Namespace implements NamespaceInterface {
     if (appRules.isEmpty()) {
       if (user instanceof AbstractGridUser) {
         String msg =
-            String.format("No approachable rules found for user with DN='%s' and VO = '%s'",
+            String.format(
+                "No approachable rules found for user with DN='%s' and VO = '%s'",
                 user.getDn(), ((AbstractGridUser) user).getVO());
         log.error(msg);
         throw new NamespaceException(msg);
       } else {
-        String msg = String.format("No approachable rules found for user with "
-            + "DN='%s' User certificate has not VOMS extension", user.getDn());
+        String msg =
+            String.format(
+                "No approachable rules found for user with "
+                    + "DN='%s' User certificate has not VOMS extension",
+                user.getDn());
         log.error(msg);
         throw new NamespaceException(msg);
       }
@@ -170,12 +169,11 @@ public class Namespace implements NamespaceInterface {
   }
 
   /**
-   * 
    * The resolution is based on the retrieving of the Winner Rule 1) First attempt is based on
    * StFN-Path 2) Second attempt is based on all StFN. That because is possible that SURL is
    * expressed without File Name so StFN is a directory. ( Special case is when the SFN does not
    * contain the File Name and ALL the StFN is considerable as StFN-Path. )
-   * 
+   *
    * @param surl TSURL
    * @return StoRI
    * @throws NamespaceException
@@ -237,12 +235,16 @@ public class Namespace implements NamespaceInterface {
 
     // verify if StoRI canonical path is enclosed into the winner VFS
     if (isStoRIEnclosed(stori, winnerRule.getMappedFS())) {
-      log.debug("Resource '{}' belongs to '{}'", stori.getLocalFile(),
+      log.debug(
+          "Resource '{}' belongs to '{}'",
+          stori.getLocalFile(),
           winnerRule.getMappedFS().getAliasName());
       return stori;
     }
 
-    log.debug("Resource '{}' doesn't belong to {}", stori.getLocalFile(),
+    log.debug(
+        "Resource '{}' doesn't belong to {}",
+        stori.getLocalFile(),
         winnerRule.getMappedFS().getAliasName());
 
     if (isAnonymous(user)) {
@@ -255,8 +257,8 @@ public class Namespace implements NamespaceInterface {
     VirtualFS targetVFS = getWinnerVFS(realPath, parser.getMapVFS_Root());
     if (targetVFS == null) {
       log.debug("Unable to find a valid VFS from path '{}'", realPath);
-      throw new InvalidSURLException(surl,
-          "The requested SURL is not managed by this instance of StoRM");
+      throw new InvalidSURLException(
+          surl, "The requested SURL is not managed by this instance of StoRM");
     }
     log.debug("{} belongs to {}", realPath, targetVFS.getAliasName());
 
@@ -269,7 +271,6 @@ public class Namespace implements NamespaceInterface {
 
     log.debug("{} is approachable by the user", targetVFS.getAliasName());
     return stori;
-
   }
 
   private boolean isSolvable(TSURL surl) {
@@ -356,15 +357,13 @@ public class Namespace implements NamespaceInterface {
   public VirtualFS resolveVFSbyAbsolutePath(String absolutePath, GridUserInterface user)
       throws NamespaceException {
 
-    /**
-     * @todo Check the approachable rules
-     */
+    /** @todo Check the approachable rules */
     return getWinnerVFS(absolutePath, parser.getMapVFS_Root());
   }
 
   /**
    * Method used by srmGetSpaceMetadata
-   * 
+   *
    * @param absolutePath String
    * @return VirtualFS
    * @throws NamespaceException
@@ -374,8 +373,7 @@ public class Namespace implements NamespaceInterface {
     return getWinnerVFS(absolutePath, parser.getMapVFS_Root());
   }
 
-  public VirtualFS resolveVFSbyAbsolutePath(String absolutePath)
-      throws NamespaceException {
+  public VirtualFS resolveVFSbyAbsolutePath(String absolutePath) throws NamespaceException {
 
     return getWinnerVFS(absolutePath, parser.getMapVFS_Root());
   }
@@ -391,9 +389,7 @@ public class Namespace implements NamespaceInterface {
 
   public StoRI resolveStoRIbyPFN(PFN pfn) throws NamespaceException {
 
-    /**
-     * @todo Check the approachable rules
-     */
+    /** @todo Check the approachable rules */
     VirtualFS vfs = resolveVFSbyPFN(pfn);
     String vfsRoot = vfs.getRootPath();
     String relativePath = NamespaceUtil.extractRelativePath(vfsRoot, pfn.getValue());
@@ -402,7 +398,7 @@ public class Namespace implements NamespaceInterface {
 
   /**
    * method used by GetSpaceMetaData Executor to retrieve the VFS and Quota Parameters.
-   * 
+   *
    * @param pfn PFN
    * @return VirtualFS
    * @throws NamespaceException
@@ -422,10 +418,10 @@ public class Namespace implements NamespaceInterface {
     return null;
   }
 
-  /***********************************************
-   * UTILITY METHODS
-   **********************************************/
-
+  /**
+   * ********************************************* UTILITY METHODS
+   * ********************************************
+   */
   public String makeSpaceFileURI(GridUserInterface user) throws NamespaceException {
 
     String result = null;
@@ -436,18 +432,26 @@ public class Namespace implements NamespaceInterface {
     if (appRules.isEmpty()) {
       if (user instanceof AbstractGridUser) {
 
-        log.error("No approachable rules found for user with DN='{}' " + "and VO='{}'",
-            user.getDn(), ((AbstractGridUser) user).getVO());
+        log.error(
+            "No approachable rules found for user with DN='{}' " + "and VO='{}'",
+            user.getDn(),
+            ((AbstractGridUser) user).getVO());
 
-        throw new NamespaceException("No approachable rules found for user with DN='" + user.getDn()
-            + "' and VO = '" + ((AbstractGridUser) user).getVO() + "'");
+        throw new NamespaceException(
+            "No approachable rules found for user with DN='"
+                + user.getDn()
+                + "' and VO = '"
+                + ((AbstractGridUser) user).getVO()
+                + "'");
       } else {
         log.error(
             "No approachable rules found for user with DN='{}'. " + "No VOMS extensions found.",
             user.getDn());
 
-        throw new NamespaceException("No approachable rules found for user with DN='" + user.getDn()
-            + "' User certificate has not VOMS extension");
+        throw new NamespaceException(
+            "No approachable rules found for user with DN='"
+                + user.getDn()
+                + "' User certificate has not VOMS extension");
       }
     }
     ApproachableRule firstAppRule = appRules.first();
@@ -492,15 +496,14 @@ public class Namespace implements NamespaceInterface {
 
     Preconditions.checkNotNull(fileName, "Unable to check space file name. Invalid null fileName");
 
-    if (!fileName.endsWith(SPACE_FILE_NAME_SUFFIX))
-      return false;
-    if (fileName.indexOf(SPACE_FILE_NAME_SEPARATOR) <= 0)
-      return false;
-    if (fileName.substring(fileName.indexOf(SPACE_FILE_NAME_SEPARATOR) + 1)
-      .length() <= SPACE_FILE_NAME_SUFFIX.length())
-      return false;
-    String uuidString = fileName.substring(fileName.indexOf(SPACE_FILE_NAME_SEPARATOR) + 1,
-        fileName.lastIndexOf(SPACE_FILE_NAME_SUFFIX));
+    if (!fileName.endsWith(SPACE_FILE_NAME_SUFFIX)) return false;
+    if (fileName.indexOf(SPACE_FILE_NAME_SEPARATOR) <= 0) return false;
+    if (fileName.substring(fileName.indexOf(SPACE_FILE_NAME_SEPARATOR) + 1).length()
+        <= SPACE_FILE_NAME_SUFFIX.length()) return false;
+    String uuidString =
+        fileName.substring(
+            fileName.indexOf(SPACE_FILE_NAME_SEPARATOR) + 1,
+            fileName.lastIndexOf(SPACE_FILE_NAME_SUFFIX));
     try {
       UUID.fromString(uuidString);
     } catch (Exception e) {
@@ -510,7 +513,6 @@ public class Namespace implements NamespaceInterface {
   }
 
   /**
-   * 
    * @param user GridUserInterface
    * @return SortedSet
    */
@@ -524,24 +526,25 @@ public class Namespace implements NamespaceInterface {
       Map<Object, ApproachableRule> appRulesUnorderd =
           Maps.newHashMap(parser.getApproachableRules());
       // List the entries
-      appRulesUnorderd.keySet().forEach(key -> {
-        ApproachableRule appRule = appRulesUnorderd.get(key);
-        if (matchSubject(appRule, user)) {
-          // Insert into the result (that is an ordered set)
-          appRules.add(appRule);
-        }
-      });
+      appRulesUnorderd
+          .keySet()
+          .forEach(
+              key -> {
+                ApproachableRule appRule = appRulesUnorderd.get(key);
+                if (matchSubject(appRule, user)) {
+                  // Insert into the result (that is an ordered set)
+                  appRules.add(appRule);
+                }
+              });
     }
     return appRules;
   }
 
   /**
-   * 
    * @param appRule ApproachableRule
    * @return VirtualFS
    */
-  public VirtualFS getApproachableDefaultVFS(ApproachableRule appRule)
-      throws NamespaceException {
+  public VirtualFS getApproachableDefaultVFS(ApproachableRule appRule) throws NamespaceException {
 
     VirtualFS defaultVFS = null;
     String defaultVFSName = null;
@@ -579,8 +582,7 @@ public class Namespace implements NamespaceInterface {
     return result;
   }
 
-  public VirtualFS resolveVFSbySpaceToken(TSpaceToken spaceToken)
-      throws NamespaceException {
+  public VirtualFS resolveVFSbySpaceToken(TSpaceToken spaceToken) throws NamespaceException {
 
     Optional<VirtualFS> vfs =
         getAllDefinedVFS().stream().filter(v -> spaceToken.equals(v.getSpaceToken())).findFirst();
@@ -658,7 +660,5 @@ public class Namespace implements NamespaceInterface {
       return false;
     }
     return (quota.getDefined() && quota.getEnabled());
-
   }
-
 }

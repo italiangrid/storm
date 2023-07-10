@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.concurrency;
 
@@ -8,16 +7,15 @@ import java.util.concurrent.ThreadFactory;
 
 public class NamedThreadFactory implements ThreadFactory {
 
-	private final String factoryName;
+  private final String factoryName;
 
-	public NamedThreadFactory(String name) {
+  public NamedThreadFactory(String name) {
 
-		this.factoryName = name;
-	}
+    this.factoryName = name;
+  }
 
-	public Thread newThread(Runnable r) {
+  public Thread newThread(Runnable r) {
 
-		return new NamedThread(r, factoryName);
-	}
-
+    return new NamedThread(r, factoryName);
+  }
 }

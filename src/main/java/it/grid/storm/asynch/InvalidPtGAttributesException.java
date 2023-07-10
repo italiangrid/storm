@@ -1,22 +1,17 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.asynch;
 
 import it.grid.storm.catalogs.PtGData;
 import it.grid.storm.griduser.GridUserInterface;
 
-/**
- * @author Michele Dibenedetto
- * 
- */
+/** @author Michele Dibenedetto */
 public class InvalidPtGAttributesException extends Exception {
 
-  /**
-   * 
-   */
+  /** */
   private static final long serialVersionUID = 6957632945020144458L;
+
   protected final boolean nullGu; // true if GridUser is null
   protected final boolean nullChunkData; // true if PtGChunkData is null
 
@@ -34,7 +29,7 @@ public class InvalidPtGAttributesException extends Exception {
   public String toString() {
 
     return String.format(
-        "Invalid attributes when creating PtG: " + "null-GridUser=%b, null-PtGChunkData=%b", nullGu,
-        nullChunkData);
+        "Invalid attributes when creating PtG: " + "null-GridUser=%b, null-PtGChunkData=%b",
+        nullGu, nullChunkData);
   }
 }

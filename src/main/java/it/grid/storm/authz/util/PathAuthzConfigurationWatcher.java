@@ -1,27 +1,19 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
-/**
- * 
- */
+/** */
 package it.grid.storm.authz.util;
 
 import java.io.File;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @author ritz
- */
+/** @author ritz */
 public class PathAuthzConfigurationWatcher extends ConfigurationWatcher {
 
   private static final Logger log = LoggerFactory.getLogger(PathAuthzConfigurationWatcher.class);
 
-  /**
-   * @param file
-   */
+  /** @param file */
   public PathAuthzConfigurationWatcher(File file) {
 
     super(file);
@@ -30,7 +22,7 @@ public class PathAuthzConfigurationWatcher extends ConfigurationWatcher {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see it.grid.storm.authz.util.ConfigurationWatcher#onChange()
    */
   @Override
@@ -40,5 +32,4 @@ public class PathAuthzConfigurationWatcher extends ConfigurationWatcher {
     // Force the reload of the configuration file
 
   }
-
 }

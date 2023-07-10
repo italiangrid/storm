@@ -1,30 +1,21 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.scheduler;
 
 import it.grid.storm.config.Configuration;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
- * <p>
  * Copyright: Copyright (c) 2005
- * </p>
- * 
- * <p>
- * Company: Project 'Grid.it' for INFN-CNAF, Bologna, Italy
- * </p>
- * 
+ *
+ * <p>Company: Project 'Grid.it' for INFN-CNAF, Bologna, Italy
+ *
  * @author Zappi Riccardo <mailto://riccardo.zappi@cnaf.infn.it>
  * @version 1.0
  * @date
- * 
  */
-
 public class CrusherScheduler implements Scheduler {
 
   private static final Logger log = LoggerFactory.getLogger(CrusherScheduler.class);
@@ -90,9 +81,7 @@ public class CrusherScheduler implements Scheduler {
    * @param task Delegable
    * @throws SchedulerException
    */
-  public void abort(Delegable task) throws SchedulerException {
-
-  }
+  public void abort(Delegable task) throws SchedulerException {}
 
   /**
    * @param task Delegable
@@ -102,5 +91,4 @@ public class CrusherScheduler implements Scheduler {
 
     throw new SchedulerException("CruscherScheduler", "Suspend request not implemented yet!");
   }
-
 }

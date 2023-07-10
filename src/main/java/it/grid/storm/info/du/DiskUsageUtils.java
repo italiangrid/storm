@@ -1,15 +1,12 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.info.du;
 
+import com.google.common.base.Preconditions;
+import it.grid.storm.space.DUResult;
 import java.time.Instant;
 import java.util.List;
-
-import com.google.common.base.Preconditions;
-
-import it.grid.storm.space.DUResult;
 
 public class DiskUsageUtils {
 
@@ -26,8 +23,8 @@ public class DiskUsageUtils {
     return Long.parseLong(sizeStr);
   }
 
-  public static DUResult getResult(String absPath, Instant start, Instant end,
-      List<String> output) {
+  public static DUResult getResult(
+      String absPath, Instant start, Instant end, List<String> output) {
 
     Preconditions.checkNotNull(output, "Null output received");
 
@@ -45,5 +42,4 @@ public class DiskUsageUtils {
       return DUResult.failure(absPath, start, end, "NumberFormatException on parsing du output");
     }
   }
-
 }

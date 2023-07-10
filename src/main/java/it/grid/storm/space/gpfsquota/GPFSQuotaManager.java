@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.space.gpfsquota;
 
@@ -15,7 +14,6 @@ import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.util.VirtualFSHelper;
-
 import java.util.List;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
@@ -24,7 +22,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,19 +30,17 @@ import org.slf4j.LoggerFactory;
  * that fetch quota information from gpfs fs and update the space area data on the Storm database.
  * If no quota limits are enforced for a given fileset, the total size is computed starting from the
  * free space available on the filesystem.
- * 
- * The manager must be started with the {@link #start()} method, and shutdown with the
- * {@link #shutdown()} method.
- * 
- * Quota calculation can also be triggered with the {@link #triggerComputeQuotas()} method.
- * 
- * 
- * This is a singleton.
- * 
+ *
+ * <p>The manager must be started with the {@link #start()} method, and shutdown with the {@link
+ * #shutdown()} method.
+ *
+ * <p>Quota calculation can also be triggered with the {@link #triggerComputeQuotas()} method.
+ *
+ * <p>This is a singleton.
+ *
  * @author Andrea Ceccanti <andrea.ceccanti@cnaf.infn.it>
  */
 public enum GPFSQuotaManager {
-
   INSTANCE;
 
   private static final Logger log = LoggerFactory.getLogger(GPFSQuotaManager.class);
@@ -56,62 +51,44 @@ public enum GPFSQuotaManager {
    */
   private static final long DEFAULT_RELAX_PERIOD = 15000;
 
-  /**
-   * The submitter execution service
-   */
+  /** The submitter execution service */
   private ScheduledExecutorService submitterExecutionService;
 
-  /**
-   * The quota workers execution service
-   */
+  /** The quota workers execution service */
   private ExecutorService quotaWorkersExecutionService;
 
-  /**
-   * The completion service used to block and wait for the submitted tasks.
-   */
+  /** The completion service used to block and wait for the submitted tasks. */
   private CompletionService<GPFSFilesetQuotaInfo> quotaService;
 
-
-
-  /**
-   * The list of GPFS filesystems which have quota enabled.
-   */
+  /** The list of GPFS filesystems which have quota enabled. */
   private List<VirtualFS> quotaEnabledFilesystems;
 
-  /**
-   * The last exception thrown by a GPFS quota calculation job.
-   */
+  /** The last exception thrown by a GPFS quota calculation job. */
   private Throwable lastFailure = null;
 
-  /**
-   * The time when the last quota calculation job was submitted.
-   */
+  /** The time when the last quota calculation job was submitted. */
   private long lastSubmissionTime = 0L;
 
-  /**
-   * A lock to sync access to {@link #lastSubmissionTime}
-   */
+  /** A lock to sync access to {@link #lastSubmissionTime} */
   private Object submissionTimeLock = new Object();
-
-
 
   private void configureExecutionService() {
 
     submitterExecutionService =
         Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("GPFSQuotaSubmitter"));
 
-    quotaWorkersExecutionService = Executors.newFixedThreadPool(quotaEnabledFilesystems.size(),
-        new NamedThreadFactory("GPFSQuotaWorker"));
+    quotaWorkersExecutionService =
+        Executors.newFixedThreadPool(
+            quotaEnabledFilesystems.size(), new NamedThreadFactory("GPFSQuotaWorker"));
 
-    quotaService =
-        new ExecutorCompletionService<>(quotaWorkersExecutionService);
+    quotaService = new ExecutorCompletionService<>(quotaWorkersExecutionService);
 
     long refreshPeriod = Configuration.getInstance().getGPFSQuotaRefreshPeriod();
 
     log.info("GPFSQuotaManager refresh period (in seconds): {}", refreshPeriod);
 
-    submitterExecutionService.scheduleWithFixedDelay(new QuotaJobSubmitter(), 0, refreshPeriod,
-        TimeUnit.SECONDS);
+    submitterExecutionService.scheduleWithFixedDelay(
+        new QuotaJobSubmitter(), 0, refreshPeriod, TimeUnit.SECONDS);
   }
 
   public synchronized void start() {
@@ -125,7 +102,6 @@ public enum GPFSQuotaManager {
     }
 
     configureExecutionService();
-
   }
 
   class QuotaJobSubmitter implements Runnable {
@@ -184,15 +160,14 @@ public enum GPFSQuotaManager {
         persistStorageSpaceData(ssd);
         log.debug("Persisted storage space data for quota info: {}", info);
       } catch (DataAccessException e) {
-        log.error("Storage space data for quota info {} not persisted: {}", info, e.getMessage(),
-            e);
+        log.error(
+            "Storage space data for quota info {} not persisted: {}", info, e.getMessage(), e);
       }
-
     }
 
     private void handleNoLimitsQuota(GPFSFilesetQuotaInfo info, StorageSpaceData ssd) {
-      log.debug("Quota enabled on fs rooted at {} but no limits enforced.",
-          info.getVFS().getRootPath());
+      log.debug(
+          "Quota enabled on fs rooted at {} but no limits enforced.", info.getVFS().getRootPath());
 
       try {
 
@@ -203,19 +178,24 @@ public enum GPFSQuotaManager {
         ssd.setTotalSpaceSize(freeSizeInBytes);
 
       } catch (FilesystemError e) {
-        log.error("Error computing free space on fs rooted at {}. {}", info.getVFS().getRootPath(),
-            e.getMessage(), e);
+        log.error(
+            "Error computing free space on fs rooted at {}. {}",
+            info.getVFS().getRootPath(),
+            e.getMessage(),
+            e);
 
         ssd.setTotalGuaranteedSize(null);
         ssd.setTotalSpaceSize(null);
 
       } catch (NamespaceException e) {
-        log.error("Error accessing fs driver for fs rooted at {}. {}", info.getVFS().getRootPath(),
-            e.getMessage(), e);
+        log.error(
+            "Error accessing fs driver for fs rooted at {}. {}",
+            info.getVFS().getRootPath(),
+            e.getMessage(),
+            e);
 
         ssd.setTotalGuaranteedSize(null);
         ssd.setTotalSpaceSize(null);
-
       }
     }
 
@@ -257,7 +237,6 @@ public enum GPFSQuotaManager {
     }
   }
 
-
   public synchronized Throwable getLastFailure() {
 
     return lastFailure;
@@ -271,11 +250,8 @@ public enum GPFSQuotaManager {
   public synchronized void shutdown() {
     log.info("GPFSQuotaManager shutting down...");
 
-    if (submitterExecutionService != null)
-      submitterExecutionService.shutdownNow();
+    if (submitterExecutionService != null) submitterExecutionService.shutdownNow();
 
-    if (quotaWorkersExecutionService != null)
-      quotaWorkersExecutionService.shutdownNow();
+    if (quotaWorkersExecutionService != null) quotaWorkersExecutionService.shutdownNow();
   }
-
 }

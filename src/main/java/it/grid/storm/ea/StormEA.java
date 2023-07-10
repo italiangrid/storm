@@ -1,20 +1,16 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.ea;
 
+import com.google.common.collect.Maps;
+import it.grid.storm.checksum.ChecksumAlgorithm;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Maps;
-
-import it.grid.storm.checksum.ChecksumAlgorithm;
 
 public class StormEA {
 
@@ -75,7 +71,6 @@ public class StormEA {
     }
 
     return null;
-
   }
 
   public static boolean getMigrated(String fileName) {
@@ -96,7 +91,6 @@ public class StormEA {
 
     String pinString = ea.getXAttr(fileName, EA_PINNED);
     return Long.decode(pinString);
-
   }
 
   public static String getTSMRecT(String fileName) {
@@ -140,7 +134,6 @@ public class StormEA {
     } catch (ExtendedAttributesException eae) {
       log.warn("Cannot remove pinned attribute from file: {}", fileName, eae);
     }
-
   }
 
   public static void setChecksum(String fileName, String checksum, ChecksumAlgorithm algorithm) {
@@ -156,7 +149,7 @@ public class StormEA {
 
   /**
    * Set the Extended Attribute "pinned" ({@value StormEA#EA_PINNED}) to the given value.
-   * 
+   *
    * @param fileName
    * @param expirationDateInSEC expiration time of the pin expressed as "seconds since the epoch".
    */
@@ -170,7 +163,8 @@ public class StormEA {
       log.debug(
           "The file '{}' is already Pinned and the pre-existing PinLifeTime is greater "
               + "than the new one. Nothing is changed in EA. Expiration: {}",
-          fileName, formatter.format(new Date(existingPinValueInSEC * 1000)));
+          fileName,
+          formatter.format(new Date(existingPinValueInSEC * 1000)));
       return;
     }
 
@@ -181,11 +175,17 @@ public class StormEA {
 
       if (log.isDebugEnabled()) {
         if (existingPinValueInSEC == -1) {
-          log.debug("Added the Pinned EA to '" + fileName + "' with expiration: "
-              + formatter.format(new Date(existingPinValueInSEC * 1000)));
+          log.debug(
+              "Added the Pinned EA to '"
+                  + fileName
+                  + "' with expiration: "
+                  + formatter.format(new Date(existingPinValueInSEC * 1000)));
         } else {
-          log.debug("Updated the Pinned EA to '" + fileName + "' with expiration: "
-              + formatter.format(new Date(existingPinValueInSEC * 1000)));
+          log.debug(
+              "Updated the Pinned EA to '"
+                  + fileName
+                  + "' with expiration: "
+                  + formatter.format(new Date(existingPinValueInSEC * 1000)));
         }
       }
 

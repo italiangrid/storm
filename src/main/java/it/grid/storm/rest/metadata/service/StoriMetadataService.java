@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.rest.metadata.service;
 
@@ -10,16 +9,7 @@ import static it.grid.storm.rest.metadata.model.StoriMetadata.ResourceStatus.ONL
 import static it.grid.storm.rest.metadata.model.StoriMetadata.ResourceType.FILE;
 import static it.grid.storm.rest.metadata.model.StoriMetadata.ResourceType.FOLDER;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Lists;
-
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.LocalFile;
@@ -31,6 +21,12 @@ import it.grid.storm.rest.metadata.model.FileAttributes;
 import it.grid.storm.rest.metadata.model.StoriMetadata;
 import it.grid.storm.rest.metadata.model.VirtualFsMetadata;
 import it.grid.storm.srm.types.TDirOption;
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StoriMetadataService {
 
@@ -76,17 +72,25 @@ public class StoriMetadataService {
         log.debug("{} is an empty directory", stori.getLocalFile());
       }
     } else {
-      attributes = FileAttributes.builder().pinned(StormEA.isPinned(canonicalPath))
-          .migrated(StormEA.getMigrated(canonicalPath))
-          .premigrated(StormEA.getPremigrated(canonicalPath))
-          .checksum(StormEA.getChecksum(canonicalPath, ADLER32))
-          .tsmRecD(StormEA.getTSMRecD(canonicalPath)).tsmRecR(StormEA.getTSMRecR(canonicalPath))
-          .tsmRecT(StormEA.getTSMRecT(canonicalPath)).build();
+      attributes =
+          FileAttributes.builder()
+              .pinned(StormEA.isPinned(canonicalPath))
+              .migrated(StormEA.getMigrated(canonicalPath))
+              .premigrated(StormEA.getPremigrated(canonicalPath))
+              .checksum(StormEA.getChecksum(canonicalPath, ADLER32))
+              .tsmRecD(StormEA.getTSMRecD(canonicalPath))
+              .tsmRecR(StormEA.getTSMRecR(canonicalPath))
+              .tsmRecT(StormEA.getTSMRecT(canonicalPath))
+              .build();
     }
-    return StoriMetadata.builder().absolutePath(stori.getAbsolutePath())
+    return StoriMetadata.builder()
+        .absolutePath(stori.getAbsolutePath())
         .lastModified(new Date((new File(canonicalPath)).lastModified()))
         .type(stori.getLocalFile().isDirectory() ? FOLDER : FILE)
-        .status(stori.getLocalFile().isOnDisk() ? ONLINE : NEARLINE).filesystem(vfsMeta)
-        .attributes(attributes).children(children).build();
+        .status(stori.getLocalFile().isOnDisk() ? ONLINE : NEARLINE)
+        .filesystem(vfsMeta)
+        .attributes(attributes)
+        .children(children)
+        .build();
   }
 }

@@ -1,265 +1,228 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 /**
  * This class represents TLifeTime in seconds as a long.
- * 
+ *
  * @author Ezio Corso - Magnoni Luca
  * @author EGRID ICTP Trieste / CNAF INFN Bologna
  * @date Avril, 2005
  * @version 1.0
  */
-
 package it.grid.storm.srm.types;
 
+import it.grid.storm.common.types.*;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
-import it.grid.storm.common.types.*;
-
 public class TLifeTimeInSeconds implements Serializable {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -8025723621535456819L;
-	private long time = -1;
-	private TimeUnit u = TimeUnit.EMPTY;
-	private boolean empty = true;
-	private static TLifeTimeInSeconds emptyTime = null;
-	private boolean infinite = false;
-	private static TLifeTimeInSeconds infiniteTime = null;
+  /** */
+  private static final long serialVersionUID = -8025723621535456819L;
 
-	public static String PNAME_LIFETIMEASSIGNED = "lifetimeAssigned";
-	public static String PNAME_LIFETIMELEFT = "lifetimeLeft";
-	public static String PNAME_DESIREDLIFETIMEOFRESERVEDSPACE = "desiredLifetimeOfReservedSpace";
-	public static String PNAME_LIFETIMEOFRESERVEDSPACE = "lifetimeOfReservedSpace";
-	public static String PNAME_FILELIFETIME = "fileLifetime";
-	public static String PNAME_PINLIFETIME = "pinLifetime";
+  private long time = -1;
+  private TimeUnit u = TimeUnit.EMPTY;
+  private boolean empty = true;
+  private static TLifeTimeInSeconds emptyTime = null;
+  private boolean infinite = false;
+  private static TLifeTimeInSeconds infiniteTime = null;
 
-	/**
-	 * This constructor requires a long time representing the time in TimeUnit u.
-	 */
-	private TLifeTimeInSeconds(long time, TimeUnit u, boolean empty,
-		boolean infinite) {
+  public static String PNAME_LIFETIMEASSIGNED = "lifetimeAssigned";
+  public static String PNAME_LIFETIMELEFT = "lifetimeLeft";
+  public static String PNAME_DESIREDLIFETIMEOFRESERVEDSPACE = "desiredLifetimeOfReservedSpace";
+  public static String PNAME_LIFETIMEOFRESERVEDSPACE = "lifetimeOfReservedSpace";
+  public static String PNAME_FILELIFETIME = "fileLifetime";
+  public static String PNAME_PINLIFETIME = "pinLifetime";
 
-		this.time = time;
-		this.u = u;
-		this.empty = empty;
-		this.infinite = infinite;
-	}
+  /** This constructor requires a long time representing the time in TimeUnit u. */
+  private TLifeTimeInSeconds(long time, TimeUnit u, boolean empty, boolean infinite) {
 
-	/**
-	 * Method that requires a long time representing the time in TimeUnit u; it
-	 * throws an InvalidTLifeTimeAttributeException if u is null. A negative value
-	 * for time, automatically results in an Infinite TLifeTimeInSeconds.
-	 */
-	public static TLifeTimeInSeconds make(long time, TimeUnit unit)
-		throws IllegalArgumentException {
+    this.time = time;
+    this.u = u;
+    this.empty = empty;
+    this.infinite = infinite;
+  }
 
-		if (unit == null) {
-			throw new IllegalArgumentException(
-				"Unable to create the object, illegal arguments: time=" + time
-					+ " unit=" + unit);
-		}
-		if (time < 0) {
-			return makeInfinite();
-		}
-		return new TLifeTimeInSeconds(time, unit, false, false);
-	}
+  /**
+   * Method that requires a long time representing the time in TimeUnit u; it throws an
+   * InvalidTLifeTimeAttributeException if u is null. A negative value for time, automatically
+   * results in an Infinite TLifeTimeInSeconds.
+   */
+  public static TLifeTimeInSeconds make(long time, TimeUnit unit) throws IllegalArgumentException {
 
-	/**
-	 * Method that returns an Empty TLifeTimeInSeconds.
-	 */
-	public static TLifeTimeInSeconds makeEmpty() {
+    if (unit == null) {
+      throw new IllegalArgumentException(
+          "Unable to create the object, illegal arguments: time=" + time + " unit=" + unit);
+    }
+    if (time < 0) {
+      return makeInfinite();
+    }
+    return new TLifeTimeInSeconds(time, unit, false, false);
+  }
 
-		if (emptyTime == null)
-			emptyTime = new TLifeTimeInSeconds(0, TimeUnit.EMPTY, true, false);
-		return emptyTime;
-	}
+  /** Method that returns an Empty TLifeTimeInSeconds. */
+  public static TLifeTimeInSeconds makeEmpty() {
 
-	/**
-	 * Method that returns an Infinite TLifeTimeInSeconds.
-	 */
-	public static TLifeTimeInSeconds makeInfinite() {
+    if (emptyTime == null) emptyTime = new TLifeTimeInSeconds(0, TimeUnit.EMPTY, true, false);
+    return emptyTime;
+  }
 
-		if (infiniteTime == null)
-			infiniteTime = new TLifeTimeInSeconds(-1, TimeUnit.EMPTY, false, true);
-		return infiniteTime;
-	}
+  /** Method that returns an Infinite TLifeTimeInSeconds. */
+  public static TLifeTimeInSeconds makeInfinite() {
 
-	/**
-	 * Method that returns true if this is an Empty TLifeTimeInSeconds.
-	 */
-	public boolean isEmpty() {
+    if (infiniteTime == null)
+      infiniteTime = new TLifeTimeInSeconds(-1, TimeUnit.EMPTY, false, true);
+    return infiniteTime;
+  }
 
-		return empty;
-	}
+  /** Method that returns true if this is an Empty TLifeTimeInSeconds. */
+  public boolean isEmpty() {
 
-	/**
-	 * Method that returns true if This is an Infinite TLifeTimeInSeconds.
-	 */
-	public boolean isInfinite() {
+    return empty;
+  }
 
-		return infinite;
-	}
+  /** Method that returns true if This is an Infinite TLifeTimeInSeconds. */
+  public boolean isInfinite() {
 
-	/**
-	 * Method that returns a long value for this LifeTime. It returns -1 if This
-	 * is an Empty or Infinite TLifeTimeInSeconds.
-	 */
-	public long value() {
+    return infinite;
+  }
 
-		return time;
-	}
+  /**
+   * Method that returns a long value for this LifeTime. It returns -1 if This is an Empty or
+   * Infinite TLifeTimeInSeconds.
+   */
+  public long value() {
 
-	/**
-	 * Method that returns the TimeUnit for this LifeTime. It returns
-	 * TimeUnit.EMPTY if This is an Empty or Infintie TLifeTimeInSeconds.
-	 */
-	public TimeUnit unit() {
+    return time;
+  }
 
-		return u;
-	}
+  /**
+   * Method that returns the TimeUnit for this LifeTime. It returns TimeUnit.EMPTY if This is an
+   * Empty or Infintie TLifeTimeInSeconds.
+   */
+  public TimeUnit unit() {
 
-	/**
-	 * Public static method that return this LifeTime value converted into the
-	 * specified TimeUnit. It returns -1 if a null TimeUnit is passed, or if This
-	 * is an Empty or Infinite TLifeTimeInSeconds.
-	 */
-	public double getTimeIn(TimeUnit u) {
+    return u;
+  }
 
-		if ((!empty) && (!infinite) && (u != null)) {
-			Long l_time = Long.valueOf(time);
-			double result = l_time.doubleValue()
-				* (this.u.conversionFactor() / u.conversionFactor());
-			return result;
-		} else
-			return -1;
-	}
+  /**
+   * Public static method that return this LifeTime value converted into the specified TimeUnit. It
+   * returns -1 if a null TimeUnit is passed, or if This is an Empty or Infinite TLifeTimeInSeconds.
+   */
+  public double getTimeIn(TimeUnit u) {
 
-	/**
-	 * Returns the number of seconds remaining to reach startTimeInSeconds plus
-	 * the value of this instance.
-	 * 
-	 * @param startTimeInSeconds
-	 *          The starting time in seconds.
-	 * @return Seconds remaining, zero otherwise.
-	 */
-	public TLifeTimeInSeconds timeLeft(long startTimeInSeconds) {
+    if ((!empty) && (!infinite) && (u != null)) {
+      Long l_time = Long.valueOf(time);
+      double result = l_time.doubleValue() * (this.u.conversionFactor() / u.conversionFactor());
+      return result;
+    } else return -1;
+  }
 
-		if (empty)
-			return emptyTime;
-		long secondsLeft = this.time + startTimeInSeconds;
+  /**
+   * Returns the number of seconds remaining to reach startTimeInSeconds plus the value of this
+   * instance.
+   *
+   * @param startTimeInSeconds The starting time in seconds.
+   * @return Seconds remaining, zero otherwise.
+   */
+  public TLifeTimeInSeconds timeLeft(long startTimeInSeconds) {
 
-		Date currentDate = new Date();
-		long currentTime = currentDate.getTime(); // current time in milliseconds
-		currentTime /= 1000; // current time in seconds
-		secondsLeft -= currentTime;
-		if (secondsLeft < 0)
-			secondsLeft = 0;
+    if (empty) return emptyTime;
+    long secondsLeft = this.time + startTimeInSeconds;
 
-		TLifeTimeInSeconds timeLeft = null;
-		try {
-			timeLeft = TLifeTimeInSeconds.make(secondsLeft, TimeUnit.SECONDS);
-		} catch (IllegalArgumentException e) {
-			timeLeft = TLifeTimeInSeconds.makeEmpty();
-		}
+    Date currentDate = new Date();
+    long currentTime = currentDate.getTime(); // current time in milliseconds
+    currentTime /= 1000; // current time in seconds
+    secondsLeft -= currentTime;
+    if (secondsLeft < 0) secondsLeft = 0;
 
-		return timeLeft;
-	}
+    TLifeTimeInSeconds timeLeft = null;
+    try {
+      timeLeft = TLifeTimeInSeconds.make(secondsLeft, TimeUnit.SECONDS);
+    } catch (IllegalArgumentException e) {
+      timeLeft = TLifeTimeInSeconds.makeEmpty();
+    }
 
-	/**
-	 * Returns the number of seconds remaining to reach startingDate plus the
-	 * value of this instance.
-	 * 
-	 * @param startingDate
-	 *          The starting date.
-	 * @return Seconds remaining, zero otherwise.
-	 */
-	public TLifeTimeInSeconds timeLeft(Date startingDate) {
+    return timeLeft;
+  }
 
-		if (empty || (startingDate == null))
-			return emptyTime;
-		long startTimeInSeconds = startingDate.getTime() / 1000;
-		return timeLeft(startTimeInSeconds);
-	}
+  /**
+   * Returns the number of seconds remaining to reach startingDate plus the value of this instance.
+   *
+   * @param startingDate The starting date.
+   * @return Seconds remaining, zero otherwise.
+   */
+  public TLifeTimeInSeconds timeLeft(Date startingDate) {
 
-	/**
-	 * Method that returns a TSizeInBytes object retrieving its value by the
-	 * Hashtable used for communicating with the FE
-	 */
-	public static TLifeTimeInSeconds decode(Map<?, ?> inputParam, String fieldName) {
+    if (empty || (startingDate == null)) return emptyTime;
+    long startTimeInSeconds = startingDate.getTime() / 1000;
+    return timeLeft(startTimeInSeconds);
+  }
 
-		String lifetime = (String) inputParam.get(fieldName);
+  /**
+   * Method that returns a TSizeInBytes object retrieving its value by the Hashtable used for
+   * communicating with the FE
+   */
+  public static TLifeTimeInSeconds decode(Map<?, ?> inputParam, String fieldName) {
 
-		if (lifetime == null)
-			return TLifeTimeInSeconds.makeEmpty();
-		long lifetimeLong = Long.parseLong(lifetime);
+    String lifetime = (String) inputParam.get(fieldName);
 
-		try {
-			return TLifeTimeInSeconds.make(lifetimeLong, TimeUnit.SECONDS);
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return TLifeTimeInSeconds.makeEmpty();
-		}
-	}
+    if (lifetime == null) return TLifeTimeInSeconds.makeEmpty();
+    long lifetimeLong = Long.parseLong(lifetime);
 
-	/**
-	 * Encode method, create a representation of this object into a structured
-	 * paramter used for communication to FE component.
-	 * 
-	 * @param param
-	 * @param name
-	 */
-	public void encode(Map param, String name) {
+    try {
+      return TLifeTimeInSeconds.make(lifetimeLong, TimeUnit.SECONDS);
+    } catch (IllegalArgumentException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+      return TLifeTimeInSeconds.makeEmpty();
+    }
+  }
 
-		if (empty)
-			return;
-		String lifetimeString;
-		lifetimeString = String.valueOf(this.time);
-		param.put(name, lifetimeString);
-	}
+  /**
+   * Encode method, create a representation of this object into a structured paramter used for
+   * communication to FE component.
+   *
+   * @param param
+   * @param name
+   */
+  public void encode(Map param, String name) {
 
-	public String toString() {
+    if (empty) return;
+    String lifetimeString;
+    lifetimeString = String.valueOf(this.time);
+    param.put(name, lifetimeString);
+  }
 
-		if (empty)
-			return "Empty TLifeTimeInSeconds!";
-		if (infinite)
-			return "Infinite TLifeTimeInSeconds";
-		return "" + time + " " + u;
-	}
+  public String toString() {
 
-	/**
-	 * Beware that this equality will _not_ return true for the same quantity
-	 * expressed in different units of measure!
-	 */
-	public boolean equals(Object o) {
+    if (empty) return "Empty TLifeTimeInSeconds!";
+    if (infinite) return "Infinite TLifeTimeInSeconds";
+    return "" + time + " " + u;
+  }
 
-		if (o == this)
-			return true;
-		if (!(o instanceof TLifeTimeInSeconds))
-			return false;
-		TLifeTimeInSeconds et = (TLifeTimeInSeconds) o;
-		if ((this.empty) && (et.empty))
-			return true;
-		if ((this.infinite) && (et.infinite))
-			return true;
-		return ((this.time == et.time) && (this.u == et.u) && (this.empty == et.empty));
-	}
+  /**
+   * Beware that this equality will _not_ return true for the same quantity expressed in different
+   * units of measure!
+   */
+  public boolean equals(Object o) {
 
-	public int hashCode() {
+    if (o == this) return true;
+    if (!(o instanceof TLifeTimeInSeconds)) return false;
+    TLifeTimeInSeconds et = (TLifeTimeInSeconds) o;
+    if ((this.empty) && (et.empty)) return true;
+    if ((this.infinite) && (et.infinite)) return true;
+    return ((this.time == et.time) && (this.u == et.u) && (this.empty == et.empty));
+  }
 
-		if (empty)
-			return -1;
-		if (infinite)
-			return -2;
-		int hash = 17;
-		hash = 37 * hash + Long.valueOf(time).hashCode();
-		hash = 37 * hash + u.hashCode();
-		return hash;
-	}
+  public int hashCode() {
+
+    if (empty) return -1;
+    if (infinite) return -2;
+    int hash = 17;
+    hash = 37 * hash + Long.valueOf(time).hashCode();
+    hash = 37 * hash + u.hashCode();
+    return hash;
+  }
 }

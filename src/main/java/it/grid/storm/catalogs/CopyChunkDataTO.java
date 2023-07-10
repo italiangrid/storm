@@ -1,277 +1,251 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.catalogs;
 
-import java.sql.Timestamp;
-import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TFileStorageType;
+import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TStatusCode;
+import java.sql.Timestamp;
 
 /**
- * Class that represents a row in the Persistence Layer: this is all raw data
- * referring to the CopyChunkData proper, that is, String and primitive types.
- * 
- * Each field is initialized with default values as per SRM 2.2 specification:
- * fileStorageType VOLATILE overwriteMode NEVER status SRM_REQUEST_QUEUED
- * 
- * All other fields are 0 if int, or a white space if String.
- * 
+ * Class that represents a row in the Persistence Layer: this is all raw data referring to the
+ * CopyChunkData proper, that is, String and primitive types.
+ *
+ * <p>Each field is initialized with default values as per SRM 2.2 specification: fileStorageType
+ * VOLATILE overwriteMode NEVER status SRM_REQUEST_QUEUED
+ *
+ * <p>All other fields are 0 if int, or a white space if String.
+ *
  * @author EGRID ICTP
  * @version 2.0
  * @date Semptember 2005
  */
 public class CopyChunkDataTO {
 
-	/* Database table request_Get fields BEGIN */
-	private long primaryKey = -1; // ID primary key of record in DB
-	private String fromSURL = " ";
-	private String toSURL = " ";
-	private String normalizedSourceStFN = null;
-	private Integer sourceSurlUniqueID = null;
-	private String normalizedTargetStFN = null;
-	private Integer targetSurlUniqueID = null;
-	/* Database table request_Get fields END */
+  /* Database table request_Get fields BEGIN */
+  private long primaryKey = -1; // ID primary key of record in DB
+  private String fromSURL = " ";
+  private String toSURL = " ";
+  private String normalizedSourceStFN = null;
+  private Integer sourceSurlUniqueID = null;
+  private String normalizedTargetStFN = null;
+  private Integer targetSurlUniqueID = null;
+  /* Database table request_Get fields END */
 
-	private String requestToken = " ";
-	private int lifetime = 0;
-	private String fileStorageType = null; // initialised in constructor
-	private String spaceToken = " ";
-	private String overwriteOption = null; // initialised in constructor
-	private int status; // initialised in constructor
-	private String errString = " ";
-	private Timestamp timeStamp = null;
+  private String requestToken = " ";
+  private int lifetime = 0;
+  private String fileStorageType = null; // initialised in constructor
+  private String spaceToken = " ";
+  private String overwriteOption = null; // initialised in constructor
+  private int status; // initialised in constructor
+  private String errString = " ";
+  private Timestamp timeStamp = null;
 
-	public CopyChunkDataTO() {
+  public CopyChunkDataTO() {
 
-		fileStorageType = FileStorageTypeConverter.getInstance().toDB(
-			TFileStorageType.VOLATILE);
-		overwriteOption = OverwriteModeConverter.getInstance().toDB(
-			TOverwriteMode.NEVER);
-		status = StatusCodeConverter.getInstance().toDB(
-			TStatusCode.SRM_REQUEST_QUEUED);
-	}
+    fileStorageType = FileStorageTypeConverter.getInstance().toDB(TFileStorageType.VOLATILE);
+    overwriteOption = OverwriteModeConverter.getInstance().toDB(TOverwriteMode.NEVER);
+    status = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED);
+  }
 
-	public long primaryKey() {
+  public long primaryKey() {
 
-		return primaryKey;
-	}
+    return primaryKey;
+  }
 
-	public void setPrimaryKey(long n) {
+  public void setPrimaryKey(long n) {
 
-		primaryKey = n;
-	}
+    primaryKey = n;
+  }
 
-	public String requestToken() {
+  public String requestToken() {
 
-		return requestToken;
-	}
+    return requestToken;
+  }
 
-	public void setRequestToken(String s) {
+  public void setRequestToken(String s) {
 
-		requestToken = s;
-	}
+    requestToken = s;
+  }
 
-	public Timestamp timeStamp() {
+  public Timestamp timeStamp() {
 
-		return timeStamp;
-	}
+    return timeStamp;
+  }
 
-	public void setTimeStamp(Timestamp timeStamp) {
+  public void setTimeStamp(Timestamp timeStamp) {
 
-		this.timeStamp = timeStamp;
-	}
+    this.timeStamp = timeStamp;
+  }
 
-	public String fromSURL() {
+  public String fromSURL() {
 
-		return fromSURL;
-	}
+    return fromSURL;
+  }
 
-	public void setFromSURL(String s) {
+  public void setFromSURL(String s) {
 
-		fromSURL = s;
-	}
+    fromSURL = s;
+  }
 
-	/**
-	 * @return the normalizedStFN
-	 */
-	public String normalizedSourceStFN() {
+  /** @return the normalizedStFN */
+  public String normalizedSourceStFN() {
 
-		return normalizedSourceStFN;
-	}
+    return normalizedSourceStFN;
+  }
 
-	/**
-	 * @param normalizedStFN
-	 *          the normalizedStFN to set
-	 */
-	public void setNormalizedSourceStFN(String normalizedStFN) {
+  /** @param normalizedStFN the normalizedStFN to set */
+  public void setNormalizedSourceStFN(String normalizedStFN) {
 
-		this.normalizedSourceStFN = normalizedStFN;
-	}
+    this.normalizedSourceStFN = normalizedStFN;
+  }
 
-	/**
-	 * @return the surlUniqueID
-	 */
-	public Integer sourceSurlUniqueID() {
+  /** @return the surlUniqueID */
+  public Integer sourceSurlUniqueID() {
 
-		return sourceSurlUniqueID;
-	}
+    return sourceSurlUniqueID;
+  }
 
-	/**
-	 * @param surlUniqueID
-	 *          the surlUniqueID to set
-	 */
-	public void setSourceSurlUniqueID(Integer surlUniqueID) {
+  /** @param surlUniqueID the surlUniqueID to set */
+  public void setSourceSurlUniqueID(Integer surlUniqueID) {
 
-		this.sourceSurlUniqueID = surlUniqueID;
-	}
+    this.sourceSurlUniqueID = surlUniqueID;
+  }
 
-	/**
-	 * @return the normalizedStFN
-	 */
-	public String normalizedTargetStFN() {
+  /** @return the normalizedStFN */
+  public String normalizedTargetStFN() {
 
-		return normalizedTargetStFN;
-	}
+    return normalizedTargetStFN;
+  }
 
-	/**
-	 * @param normalizedStFN
-	 *          the normalizedStFN to set
-	 */
-	public void setNormalizedTargetStFN(String normalizedStFN) {
+  /** @param normalizedStFN the normalizedStFN to set */
+  public void setNormalizedTargetStFN(String normalizedStFN) {
 
-		this.normalizedTargetStFN = normalizedStFN;
-	}
+    this.normalizedTargetStFN = normalizedStFN;
+  }
 
-	/**
-	 * @return the surlUniqueID
-	 */
-	public Integer targetSurlUniqueID() {
+  /** @return the surlUniqueID */
+  public Integer targetSurlUniqueID() {
 
-		return targetSurlUniqueID;
-	}
+    return targetSurlUniqueID;
+  }
 
-	/**
-	 * @param surlUniqueID
-	 *          the surlUniqueID to set
-	 */
-	public void setTargetSurlUniqueID(Integer surlUniqueID) {
+  /** @param surlUniqueID the surlUniqueID to set */
+  public void setTargetSurlUniqueID(Integer surlUniqueID) {
 
-		this.targetSurlUniqueID = surlUniqueID;
-	}
+    this.targetSurlUniqueID = surlUniqueID;
+  }
 
-	public String toSURL() {
+  public String toSURL() {
 
-		return toSURL;
-	}
+    return toSURL;
+  }
 
-	public void setToSURL(String s) {
+  public void setToSURL(String s) {
 
-		toSURL = s;
-	}
+    toSURL = s;
+  }
 
-	public int lifeTime() {
+  public int lifeTime() {
 
-		return lifetime;
-	}
+    return lifetime;
+  }
 
-	public void setLifeTime(int n) {
+  public void setLifeTime(int n) {
 
-		lifetime = n;
-	}
+    lifetime = n;
+  }
 
-	public String fileStorageType() {
+  public String fileStorageType() {
 
-		return fileStorageType;
-	}
+    return fileStorageType;
+  }
 
-	/**
-	 * Method used to set the FileStorageType: if s is null nothing gets set; the
-	 * internal default String is the one relative to Volatile FileStorageType.
-	 */
-	public void setFileStorageType(String s) {
+  /**
+   * Method used to set the FileStorageType: if s is null nothing gets set; the internal default
+   * String is the one relative to Volatile FileStorageType.
+   */
+  public void setFileStorageType(String s) {
 
-		if (s != null)
-			fileStorageType = s;
-	}
+    if (s != null) fileStorageType = s;
+  }
 
-	public String spaceToken() {
+  public String spaceToken() {
 
-		return spaceToken;
-	}
+    return spaceToken;
+  }
 
-	public void setSpaceToken(String s) {
+  public void setSpaceToken(String s) {
 
-		spaceToken = s;
-	}
+    spaceToken = s;
+  }
 
-	public String overwriteOption() {
+  public String overwriteOption() {
 
-		return overwriteOption;
-	}
+    return overwriteOption;
+  }
 
-	/**
-	 * Method used to set the OverwriteMode: if s is null nothing gets set; the
-	 * internal default String is the one relative to Never OverwriteMode.
-	 */
-	public void setOverwriteOption(String s) {
+  /**
+   * Method used to set the OverwriteMode: if s is null nothing gets set; the internal default
+   * String is the one relative to Never OverwriteMode.
+   */
+  public void setOverwriteOption(String s) {
 
-		if (s != null)
-			overwriteOption = s;
-	}
+    if (s != null) overwriteOption = s;
+  }
 
-	public int status() {
+  public int status() {
 
-		return status;
-	}
+    return status;
+  }
 
-	public void setStatus(int n) {
+  public void setStatus(int n) {
 
-		status = n;
-	}
+    status = n;
+  }
 
-	public String errString() {
+  public String errString() {
 
-		return errString;
-	}
+    return errString;
+  }
 
-	public void setErrString(String s) {
+  public void setErrString(String s) {
 
-		errString = s;
-	}
+    errString = s;
+  }
 
-	public String toString() {
+  public String toString() {
 
-		StringBuilder sb = new StringBuilder();
-		sb.append(primaryKey);
-		sb.append(" ");
-		sb.append(requestToken);
-		sb.append(" ");
-		sb.append(fromSURL);
-		sb.append(" ");
-		sb.append(normalizedSourceStFN);
-		sb.append(" ");
-		sb.append(sourceSurlUniqueID);
-		sb.append(" ");
-		sb.append(toSURL);
-		sb.append(" ");
-		sb.append(normalizedTargetStFN);
-		sb.append(" ");
-		sb.append(targetSurlUniqueID);
-		sb.append(" ");
-		sb.append(lifetime);
-		sb.append(" ");
-		sb.append(fileStorageType);
-		sb.append(" ");
-		sb.append(spaceToken);
-		sb.append(" ");
-		sb.append(overwriteOption);
-		sb.append(" ");
-		sb.append(status);
-		sb.append(" ");
-		sb.append(errString);
-		sb.append(" ");
-		return sb.toString();
-	}
+    StringBuilder sb = new StringBuilder();
+    sb.append(primaryKey);
+    sb.append(" ");
+    sb.append(requestToken);
+    sb.append(" ");
+    sb.append(fromSURL);
+    sb.append(" ");
+    sb.append(normalizedSourceStFN);
+    sb.append(" ");
+    sb.append(sourceSurlUniqueID);
+    sb.append(" ");
+    sb.append(toSURL);
+    sb.append(" ");
+    sb.append(normalizedTargetStFN);
+    sb.append(" ");
+    sb.append(targetSurlUniqueID);
+    sb.append(" ");
+    sb.append(lifetime);
+    sb.append(" ");
+    sb.append(fileStorageType);
+    sb.append(" ");
+    sb.append(spaceToken);
+    sb.append(" ");
+    sb.append(overwriteOption);
+    sb.append(" ");
+    sb.append(status);
+    sb.append(" ");
+    sb.append(errString);
+    sb.append(" ");
+    return sb.toString();
+  }
 }

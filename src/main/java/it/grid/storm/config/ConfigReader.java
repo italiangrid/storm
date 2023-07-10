@@ -1,13 +1,11 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.config;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Iterator;
-
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -45,15 +43,13 @@ public class ConfigReader {
 
     log.debug("Configuration properties: ");
     String key;
-    for (Iterator<?> i = properties.getKeys(); i.hasNext();) {
+    for (Iterator<?> i = properties.getKeys(); i.hasNext(); ) {
       key = (String) i.next();
       log.debug("{} = {}", key, properties.getProperty(key));
     }
   }
 
-  /**
-   * Method that returns the Apache object holding all configuration parameters!
-   */
+  /** Method that returns the Apache object holding all configuration parameters! */
   public Configuration getConfiguration() {
 
     return c;
@@ -66,12 +62,9 @@ public class ConfigReader {
    */
   public String configurationDirectory() {
 
-    if (configurationPathname.isEmpty())
-      return "";
+    if (configurationPathname.isEmpty()) return "";
     int lastSlash = this.configurationPathname.lastIndexOf(java.io.File.separator);
-    if (lastSlash == -1)
-      return ""; // no slash!
+    if (lastSlash == -1) return ""; // no slash!
     return this.configurationPathname.substring(0, lastSlash + 1);
   }
-
 }

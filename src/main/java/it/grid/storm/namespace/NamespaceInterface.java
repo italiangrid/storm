@@ -1,11 +1,7 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.namespace;
-
-import java.util.List;
-import java.util.Map;
 
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.filesystem.Space;
@@ -15,14 +11,16 @@ import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
+import java.util.List;
+import java.util.Map;
 
 public interface NamespaceInterface {
 
   /**
    * getAllDefinedVFS
-   * 
-   * @return List<VirtualFS> : Return a List of VirtualFS containing all the instances
-   *         defined within Namespace
+   *
+   * @return List<VirtualFS> : Return a List of VirtualFS containing all the instances defined
+   *     within Namespace
    * @throws NamespaceException
    */
   public List<VirtualFS> getAllDefinedVFS();
@@ -30,17 +28,17 @@ public interface NamespaceInterface {
   /**
    * getAllDefinedVFSAsDictionary
    *
-   * @return Map<String, VirtualFS> : Return a Map of all VirtualFS defined within
-   *         Namespace, indexed by their root-paths
+   * @return Map<String, VirtualFS> : Return a Map of all VirtualFS defined within Namespace,
+   *     indexed by their root-paths
    * @throws NamespaceException
    */
   public Map<String, VirtualFS> getAllDefinedVFSAsDictionary();
 
   /**
    * getVFSWithQuotaEnabled
-   * 
-   * @return Collection<VirtualFS>: Return a collection of VirtualFS with fs type GPFS and
-   *         quota enabled
+   *
+   * @return Collection<VirtualFS>: Return a collection of VirtualFS with fs type GPFS and quota
+   *     enabled
    * @throws NamespaceException
    */
   public List<VirtualFS> getVFSWithQuotaEnabled();
@@ -49,46 +47,37 @@ public interface NamespaceInterface {
    * getAllDefinedMappingRules
    *
    * @return List<MappingRule> : Return a List of mapping rules containing all the instances defined
-   *         within Namespace
+   *     within Namespace
    * @throws NamespaceException
    */
   public List<MappingRule> getAllDefinedMappingRules();
 
   /**
-   * 
-   * 
-   * 
    * @param user GridUserInterface : Represents the principal
    * @return List : Return a List of VirtualFS instances
    * @throws NamespaceException : Occur when
    */
-  public List<VirtualFS> getApproachableVFS(GridUserInterface user)
-      throws NamespaceException;
+  public List<VirtualFS> getApproachableVFS(GridUserInterface user) throws NamespaceException;
 
   /**
-   * 
    * @return List : Return a List of readable and writable by anonymous users VirtualFS instances
    * @throws NamespaceException
    */
   public List<VirtualFS> getApproachableByAnonymousVFS() throws NamespaceException;
 
   /**
-   * 
    * @return List : Return a List of readable by anonymous users VirtualFS instances
    * @throws NamespaceException
    */
   public List<VirtualFS> getReadableByAnonymousVFS() throws NamespaceException;
 
   /**
-   * 
    * @return List : Return a List of readable or writable by anonymous users VirtualFS instances
    * @throws NamespaceException
    */
-  public List<VirtualFS> getReadableOrApproachableByAnonymousVFS()
-      throws NamespaceException;
+  public List<VirtualFS> getReadableOrApproachableByAnonymousVFS() throws NamespaceException;
 
   /**
-   * 
    * @param user GridUserInterface
    * @return VirtualFS
    * @throws NamespaceException
@@ -96,7 +85,6 @@ public interface NamespaceInterface {
   public VirtualFS getDefaultVFS(GridUserInterface user) throws NamespaceException;
 
   /**
-   * 
    * @param storageResource StoRI
    * @param gridUser GridUserInterface
    * @return boolean
@@ -106,7 +94,6 @@ public interface NamespaceInterface {
       throws NamespaceException;
 
   /**
-   * 
    * @param surl TSURL
    * @param user GridUserInterface
    * @return StoRI
@@ -118,7 +105,6 @@ public interface NamespaceInterface {
       throws UnapprochableSurlException, NamespaceException, InvalidSURLException;
 
   /**
-   * 
    * @param surl TSURL
    * @return StoRI
    * @throws IllegalArgumentException
@@ -129,7 +115,6 @@ public interface NamespaceInterface {
       throws UnapprochableSurlException, NamespaceException, InvalidSURLException;
 
   /**
-   * 
    * @param absolutePath String
    * @param user GridUserInterface
    * @return StoRI
@@ -139,7 +124,6 @@ public interface NamespaceInterface {
       throws NamespaceException;
 
   /**
-   * 
    * @param absolutePath String
    * @param vfs VirtualFS
    * @return StoRI
@@ -149,7 +133,6 @@ public interface NamespaceInterface {
       throws NamespaceException;
 
   /**
-   * 
    * @param absolutePath String
    * @return StoRI
    * @throws NamespaceException
@@ -157,7 +140,6 @@ public interface NamespaceInterface {
   public StoRI resolveStoRIbyAbsolutePath(String absolutePath) throws NamespaceException;
 
   /**
-   * 
    * @param absolutePath String
    * @param user GridUserInterface
    * @return VirtualFS
@@ -167,7 +149,6 @@ public interface NamespaceInterface {
       throws NamespaceException;
 
   /**
-   * 
    * @param absolutePath String
    * @return VirtualFS
    * @throws NamespaceException
@@ -175,7 +156,6 @@ public interface NamespaceInterface {
   public VirtualFS resolveVFSbyAbsolutePath(String absolutePath) throws NamespaceException;
 
   /**
-   * 
    * @param pfn PFN
    * @return StoRI
    * @throws NamespaceException
@@ -183,7 +163,6 @@ public interface NamespaceInterface {
   public StoRI resolveStoRIbyPFN(PFN pfn) throws NamespaceException;
 
   /**
-   * 
    * @param file LocalFile
    * @return VirtualFS
    * @throws NamespaceException
@@ -192,7 +171,6 @@ public interface NamespaceInterface {
       throws NamespaceException;
 
   /**
-   * 
    * @param pfn PFN
    * @return VirtualFS
    * @throws NamespaceException
@@ -200,7 +178,6 @@ public interface NamespaceInterface {
   public VirtualFS resolveVFSbyPFN(PFN pfn) throws NamespaceException;
 
   /**
-   * 
    * @param user GridUserInterface
    * @return StoRI
    * @throws NamespaceException
@@ -211,17 +188,14 @@ public interface NamespaceInterface {
    * Method that retrieves a previously reserved Space as identified by the SpaceToken, for the
    * given new size. If null or Empty TSizeInBytes are supplied, a Space object built off deafult
    * values is returned instead.
-   * 
-   * 
+   *
    * @param totSize TSizeInBytes
    * @param token TSpaceToken
    * @return Space
    */
-
   public Space retrieveSpaceByToken(TSizeInBytes totSize, TSpaceToken token);
 
   /**
-   * 
    * @param user GridUserInterface
    * @return String
    * @throws NamespaceException
@@ -249,7 +223,5 @@ public interface NamespaceInterface {
    * @return
    * @throws NamespaceException
    */
-  public VirtualFS resolveVFSbySpaceToken(TSpaceToken spaceToken)
-      throws NamespaceException;
-
+  public VirtualFS resolveVFSbySpaceToken(TSpaceToken spaceToken) throws NamespaceException;
 }

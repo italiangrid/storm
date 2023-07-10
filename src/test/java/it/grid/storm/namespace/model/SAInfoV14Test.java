@@ -1,22 +1,18 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.namespace.model;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
-
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-
 import it.grid.storm.namespace.remote.Constants.HttpPerms;
+import java.io.IOException;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SAInfoV14Test {
 
@@ -59,7 +55,4 @@ public class SAInfoV14Test {
     assertEquals(saInfoRead.getName(), saInfo.getName());
     assertEquals(saInfoRead.getToken(), saInfo.getToken());
   }
-
-
-
 }

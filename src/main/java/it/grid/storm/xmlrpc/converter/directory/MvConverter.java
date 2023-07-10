@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.xmlrpc.converter.directory;
 
@@ -17,87 +16,75 @@ import it.grid.storm.synchcall.data.directory.MvInputData;
 import it.grid.storm.synchcall.data.directory.MvOutputData;
 import it.grid.storm.xmlrpc.converter.Converter;
 import it.grid.storm.xmlrpc.converter.ParameterDisplayHelper;
-
 import java.util.HashMap;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is part of the StoRM project. Copyright: Copyright (c) 2008
- * Company: INFN-CNAF and ICTP/EGRID project
- * 
- * This class represents the Type Converter for SrmMv function . This class have
- * get an input data from xmlrpc call anc convert it into a StoRM Type that can
- * be used to invoke the MvExecutor.
- * 
+ * This class is part of the StoRM project. Copyright: Copyright (c) 2008 Company: INFN-CNAF and
+ * ICTP/EGRID project
+ *
+ * <p>This class represents the Type Converter for SrmMv function . This class have get an input
+ * data from xmlrpc call anc convert it into a StoRM Type that can be used to invoke the MvExecutor.
+ *
  * @author lucamag
  * @date May 28, 2008
- * 
  */
-
 public class MvConverter implements Converter {
 
-	/**
-	 * Logger
-	 */
-	private static final Logger log = LoggerFactory.getLogger(MvConverter.class);
+  /** Logger */
+  private static final Logger log = LoggerFactory.getLogger(MvConverter.class);
 
-	public MvConverter() {
+  public MvConverter() {};
 
-	};
+  /**
+   * This method return a MvInputData created from input Map structure of an xmlrpc SrmMv v2.2 call.
+   */
+  public InputData convertToInputData(Map inputParam) {
 
-	/**
-	 * This method return a MvInputData created from input Map structure of an
-	 * xmlrpc SrmMv v2.2 call.
-	 */
-	public InputData convertToInputData(Map inputParam) {
+    log.debug("SrmMv: Converter :Call received :Creation of MvInputData = {}", inputParam.size());
+    log.debug(
+        "SrmMv: Converter: Input Structure toString: {}",
+        ParameterDisplayHelper.display(inputParam));
 
-		log.debug("SrmMv: Converter :Call received :Creation of MvInputData = {}"
-			, inputParam.size());
-		log.debug("SrmMv: Converter: Input Structure toString: {}"
-			, ParameterDisplayHelper.display(inputParam));
+    GridUserInterface guser = GridUserManager.decode(inputParam);
 
-		GridUserInterface guser = GridUserManager.decode(inputParam);
+    /* (2) fromSURL */
+    TSURL fromSURL = null;
+    try {
+      fromSURL = TSURL.decode(inputParam, TSURL.PNAME_FROMSURL);
+    } catch (InvalidTSURLAttributesException e1) {
+      log.debug("SrmMv: ErrorCreating surl: {}", e1.toString(), e1);
+    }
 
-		/* (2) fromSURL */
-		TSURL fromSURL = null;
-		try {
-			fromSURL = TSURL.decode(inputParam, TSURL.PNAME_FROMSURL);
-		} catch (InvalidTSURLAttributesException e1) {
-			log.debug("SrmMv: ErrorCreating surl: {}" , e1.toString(),e1);
-		}
+    /* (3) toSURL */
+    TSURL toSURL = null;
+    try {
+      toSURL = TSURL.decode(inputParam, TSURL.PNAME_TOSURL);
+    } catch (InvalidTSURLAttributesException e1) {
+      log.debug("SrmMv: ErrorCreating surl: {}", e1.toString(), e1);
+    }
 
-		/* (3) toSURL */
-		TSURL toSURL = null;
-		try {
-			toSURL = TSURL.decode(inputParam, TSURL.PNAME_TOSURL);
-		} catch (InvalidTSURLAttributesException e1) {
-			log.debug("SrmMv: ErrorCreating surl: {}" , e1.toString(),e1);
-		}
+    MvInputData inputData;
+    if (guser != null) {
+      inputData = new IdentityMvInputData(guser, fromSURL, toSURL);
+    } else {
+      inputData = new AnonymousMvInputData(fromSURL, toSURL);
+    }
+    return inputData;
+  }
 
-		MvInputData inputData;
-		if (guser != null) {
-			inputData = new IdentityMvInputData(guser, fromSURL, toSURL);
-		} else {
-			inputData = new AnonymousMvInputData(fromSURL, toSURL);
-		}
-		return inputData;
+  public Map convertFromOutputData(OutputData data) {
 
-	}
+    log.debug("SrmMv: Converter :Call received :Creation of XMLRPC Output Structure! ");
+    // Output structure to return to xmlrpc client
+    Map outputParam = new HashMap();
+    MvOutputData outputData = (MvOutputData) data;
+    TReturnStatus status = outputData.getStatus();
+    status.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
 
-	public Map convertFromOutputData(OutputData data) {
-
-		log
-			.debug("SrmMv: Converter :Call received :Creation of XMLRPC Output Structure! ");
-		// Output structure to return to xmlrpc client
-		Map outputParam = new HashMap();
-		MvOutputData outputData = (MvOutputData) data;
-		TReturnStatus status = outputData.getStatus();
-		status.encode(outputParam, TReturnStatus.PNAME_RETURNSTATUS);
-
-		// Return Output Structure
-		return outputParam;
-	}
+    // Return Output Structure
+    return outputParam;
+  }
 }

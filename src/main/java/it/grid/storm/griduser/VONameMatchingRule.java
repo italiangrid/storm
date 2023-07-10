@@ -1,70 +1,68 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.griduser;
 
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class VONameMatchingRule {
 
-	private static final String ADMIT_ALL = ".*";
+  private static final String ADMIT_ALL = ".*";
 
-	private final String voNameString;
-	private Pattern voNamePattern = null;
+  private final String voNameString;
+  private Pattern voNamePattern = null;
 
-	public VONameMatchingRule(String regularExpressionRule) {
+  public VONameMatchingRule(String regularExpressionRule) {
 
-		if ((regularExpressionRule == null) || (regularExpressionRule.equals("*"))) {
-			voNameString = ADMIT_ALL;
-		} else {
-			voNameString = regularExpressionRule;
-		}
-		initPattern();
-	}
+    if ((regularExpressionRule == null) || (regularExpressionRule.equals("*"))) {
+      voNameString = ADMIT_ALL;
+    } else {
+      voNameString = regularExpressionRule;
+    }
+    initPattern();
+  }
 
-	public static VONameMatchingRule buildMatchAllVONameMatchingRule() {
+  public static VONameMatchingRule buildMatchAllVONameMatchingRule() {
 
-		return new VONameMatchingRule(ADMIT_ALL);
-	}
+    return new VONameMatchingRule(ADMIT_ALL);
+  }
 
-	private void initPattern() {
+  private void initPattern() {
 
-		// VOName
-		if (isMatchAll(voNameString)) {
-			voNamePattern = Pattern.compile(ADMIT_ALL);
-		} else {
-			voNamePattern = Pattern.compile(voNameString);
-		}
-	}
+    // VOName
+    if (isMatchAll(voNameString)) {
+      voNamePattern = Pattern.compile(ADMIT_ALL);
+    } else {
+      voNamePattern = Pattern.compile(voNameString);
+    }
+  }
 
-	private static boolean isMatchAll(String pattern) {
-		return pattern == null || pattern.trim().equals("*")
-			|| pattern.trim().equals(".*");
-	}
+  private static boolean isMatchAll(String pattern) {
+    return pattern == null || pattern.trim().equals("*") || pattern.trim().equals(".*");
+  }
 
-	public boolean match(String voName) {
+  public boolean match(String voName) {
 
-		boolean result = false;
-		CharSequence voNameSequence = voName.subSequence(0, voName.length());
-		Matcher voNameMatcher = voNamePattern.matcher(voNameSequence);
-		result = voNameMatcher.find();
-		return result;
-	}
+    boolean result = false;
+    CharSequence voNameSequence = voName.subSequence(0, voName.length());
+    Matcher voNameMatcher = voNamePattern.matcher(voNameSequence);
+    result = voNameMatcher.find();
+    return result;
+  }
 
-	public String toString() {
+  public String toString() {
 
-		StringBuilder result = new StringBuilder();
-		result.append(" VONAME=" + voNameString);
-		return result.toString();
-	}
+    StringBuilder result = new StringBuilder();
+    result.append(" VONAME=" + voNameString);
+    return result.toString();
+  }
 
-	public boolean isMatchAll() {
-		return isMatchAll(voNameString);
-	}
-	
-	public String getVOName() {
-		return voNameString;
-	}
+  public boolean isMatchAll() {
+    return isMatchAll(voNameString);
+  }
+
+  public String getVOName() {
+    return voNameString;
+  }
 }

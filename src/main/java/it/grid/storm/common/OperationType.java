@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.common;
 
@@ -9,13 +8,11 @@ import static it.grid.storm.metrics.StormMetricRegistry.METRIC_REGISTRY;
 import com.codahale.metrics.Timer;
 
 /**
- * This class is part of the StoRM project. Copyright: Copyright (c) 2008
- * Company: INFN-CNAF and ICTP/EGRID project
- * 
+ * This class is part of the StoRM project. Copyright: Copyright (c) 2008 Company: INFN-CNAF and
+ * ICTP/EGRID project
+ *
  * @author lucamag @date May 28, 2008
- * 
  */
-
 public enum OperationType {
   UNDEF("undefined"),
   PTG("synch.ptg"),
@@ -58,5 +55,4 @@ public enum OperationType {
 
     return timer;
   }
-
 }

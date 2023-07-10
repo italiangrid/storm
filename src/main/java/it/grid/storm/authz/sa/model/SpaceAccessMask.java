@@ -1,19 +1,13 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
-/**
- * 
- */
+/** */
 package it.grid.storm.authz.sa.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author zappi
- * 
- */
+/** @author zappi */
 public class SpaceAccessMask {
 
   private List<SpaceOperation> spAccessMask;
@@ -50,5 +44,4 @@ public class SpaceAccessMask {
     }
     return spacePermissionStr;
   }
-
 }

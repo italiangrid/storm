@@ -1,24 +1,17 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 /**
- * This class represents the SpaceReservationData associated with the SRM
- * request, that is it contains info about: UserID, spaceType, SizeDesired,
- * SizeGuaranteed,ecc. and must be storef into persistence.
- * 
+ * This class represents the SpaceReservationData associated with the SRM request, that is it
+ * contains info about: UserID, spaceType, SizeDesired, SizeGuaranteed,ecc. and must be storef into
+ * persistence.
+ *
  * @author Magnoni Luca / Riccardo Zappi
  * @author Cnaf -INFN Bologna
  * @date
  * @version 1.0
  */
-
 package it.grid.storm.space;
-
-import java.util.Date;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import it.grid.storm.catalogs.InvalidSpaceDataAttributesException;
 import it.grid.storm.common.types.InvalidPFNAttributeException;
@@ -38,6 +31,9 @@ import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TSpaceType;
 import it.grid.storm.srm.types.TStorageSystemInfo;
 import it.grid.storm.srm.types.TUserID;
+import java.util.Date;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StorageSpaceData {
 
@@ -55,7 +51,7 @@ public class StorageSpaceData {
 
   private TSizeInBytes availableSpaceSize = null; // available size
   private boolean availableSpaceSizeForced = false; // available size = total -
-                                                    // busy
+  // busy
   private TSizeInBytes usedSpaceSize = null; // used size
   // For now do not consider the reserved space, a better management is needed
   // private TSizeInBytes freeSpaceSize = null; // free size = total - used -
@@ -65,19 +61,17 @@ public class StorageSpaceData {
   private TSizeInBytes unavailableSpaceSize = null;
   private TSizeInBytes reservedSpaceSize = null; // reserved size
   private TSizeInBytes busySpaceSize = null; // busy size = used + reserved +
-                                             // unavailable
+  // unavailable
   private boolean busySpaceSizeForced = false;
 
   private static final Logger log = LoggerFactory.getLogger(StorageSpaceData.class);
 
-  public StorageSpaceData() {
-
-  }
+  public StorageSpaceData() {}
 
   /**
    * Used to create a new Storage Space entity. It could be a Storage Area Space (static
    * reservation) or a Space Reservation (dynamic space reservation)
-   * 
+   *
    * @param guOwner
    * @param spaceType
    * @param spaceTokenAlias
@@ -89,13 +83,22 @@ public class StorageSpaceData {
    * @param spaceFileName
    * @throws InvalidSpaceDataAttributesException
    */
-  public StorageSpaceData(GridUserInterface guOwner, TSpaceType spaceType, String spaceTokenAlias,
-      TSizeInBytes totalDesiredSize, TSizeInBytes guaranteedSize, TLifeTimeInSeconds spaceLifetime,
-      TStorageSystemInfo storageInfo, Date date, PFN spaceFileName)
+  public StorageSpaceData(
+      GridUserInterface guOwner,
+      TSpaceType spaceType,
+      String spaceTokenAlias,
+      TSizeInBytes totalDesiredSize,
+      TSizeInBytes guaranteedSize,
+      TLifeTimeInSeconds spaceLifetime,
+      TStorageSystemInfo storageInfo,
+      Date date,
+      PFN spaceFileName)
       throws InvalidSpaceDataAttributesException {
 
-    boolean ok = (spaceType != null && ((guOwner != null) || (spaceType == TSpaceType.VOSPACE))
-        && spaceTokenAlias != null);
+    boolean ok =
+        (spaceType != null
+            && ((guOwner != null) || (spaceType == TSpaceType.VOSPACE))
+            && spaceTokenAlias != null);
     log.debug("Storage Space Data - User identity : {}", guOwner);
     log.debug("Storage Space Data - Space Type : {}", spaceType);
     log.debug("Storage Space Data - Space Token Alias : {}", spaceTokenAlias);
@@ -126,7 +129,7 @@ public class StorageSpaceData {
 
   /**
    * Constructor from Persistence Object Model
-   * 
+   *
    * @param spaceData SpaceData
    */
   public StorageSpaceData(StorageSpaceTO ssTO) {
@@ -137,14 +140,16 @@ public class StorageSpaceData {
       throw new IllegalArgumentException("Received null argument");
     } else {
       // Ownership of Storage Space
-      if (!(ssTO.getOwnerName() == null || ssTO.getVoName() == null
+      if (!(ssTO.getOwnerName() == null
+          || ssTO.getVoName() == null
           || ssTO.getVoName().equals(VO.NO_VO.getValue()))) {
         try {
           this.owner = GridUserManager.makeVOMSGridUser(ssTO.getOwnerName(), ssTO.getVoName());
         } catch (IllegalArgumentException e) {
           log.error(
               "Unexpected error on voms grid user creation. Contact StoRM Support : IllegalArgumentException {}",
-              e.getMessage(), e);
+              e.getMessage(),
+              e);
           throw e;
         }
       } else {
@@ -257,20 +262,22 @@ public class StorageSpaceData {
       }
 
       // FREE space
-      log.trace("StorageSpaceData - FREE (= available + unavailable) size : {}",
-          ssTO.getFreeSize());
+      log.trace(
+          "StorageSpaceData - FREE (= available + unavailable) size : {}", ssTO.getFreeSize());
       this.forceFreeSpaceSize(TSizeInBytes.makeEmpty());
       if (ssTO.getFreeSize() >= 0) {
         try {
 
           this.forceFreeSpaceSize(TSizeInBytes.make(ssTO.getFreeSize(), SizeUnit.BYTES));
-          log.trace("StorageSpaceData - FREE (= available + unavailable) size : {}",
+          log.trace(
+              "StorageSpaceData - FREE (= available + unavailable) size : {}",
               this.getFreeSpaceSize());
         } catch (InvalidTSizeAttributesException ex3) {
           log.error("Error while constructing FreeSpaceSize", ex3);
         }
       } else {
-        log.trace("StorageSpaceData - FREE (= available + unavailable) size : EMPTY {}",
+        log.trace(
+            "StorageSpaceData - FREE (= available + unavailable) size : EMPTY {}",
             this.getFreeSpaceSize());
       }
 
@@ -289,19 +296,21 @@ public class StorageSpaceData {
       }
 
       // BUSY space
-      log.debug("StorageSpaceData - BUSY (= used + reserved + unavailable) size: {}",
-          ssTO.getBusySize());
+      log.debug(
+          "StorageSpaceData - BUSY (= used + reserved + unavailable) size: {}", ssTO.getBusySize());
       this.forceBusySpaceSize(TSizeInBytes.makeEmpty());
       if (ssTO.getBusySize() >= 0) {
         try {
           this.forceBusySpaceSize(TSizeInBytes.make(ssTO.getBusySize(), SizeUnit.BYTES));
-          log.trace("StorageSpaceData - BUSY (= used + reserved + unavailable) size: {}",
+          log.trace(
+              "StorageSpaceData - BUSY (= used + reserved + unavailable) size: {}",
               this.getBusySpaceSize());
         } catch (InvalidTSizeAttributesException ex3) {
           log.error("Error while constructing BusySpaceSize", ex3);
         }
       } else {
-        log.trace("StorageSpaceData - BUSY (= used + reserved + unavailable) size: EMPTY {}",
+        log.trace(
+            "StorageSpaceData - BUSY (= used + reserved + unavailable) size: EMPTY {}",
             this.getBusySpaceSize());
       }
 
@@ -334,21 +343,15 @@ public class StorageSpaceData {
         log.trace("StorageSpaceData - Reserved : EMPTY {}", this.reservedSpaceSize);
       }
     }
-
   }
 
-  /**
-   * @return
-   */
+  /** @return */
   public boolean isInitialized() {
 
     return !(usedSpaceSize.isEmpty() || unavailableSpaceSize.isEmpty());
   }
 
-  /**
-   * Method that returns type of space specified in SRM request.
-   */
-
+  /** Method that returns type of space specified in SRM request. */
   public TSpaceType getSpaceType() {
 
     return spaceType;
@@ -359,10 +362,7 @@ public class StorageSpaceData {
     this.spaceType = spaceType;
   }
 
-  /**
-   * Method that returns the number of files in the SRM request that are currently in progress.
-   */
-
+  /** Method that returns the number of files in the SRM request that are currently in progress. */
   public String getSpaceTokenAlias() {
 
     return spaceTokenAlias;
@@ -429,65 +429,49 @@ public class StorageSpaceData {
     return this.creationDate;
   }
 
-  /**
-   * @return the owner
-   */
+  /** @return the owner */
   public final GridUserInterface getOwner() {
 
     return owner;
   }
 
-  /**
-   * @param owner the owner to set
-   */
+  /** @param owner the owner to set */
   public final void setOwner(GridUserInterface owner) {
 
     this.owner = owner;
   }
 
-  /**
-   * @return the spaceLifetime
-   */
+  /** @return the spaceLifetime */
   public final TLifeTimeInSeconds getSpaceLifetime() {
 
     return spaceLifetime;
   }
 
-  /**
-   * @param spaceLifetime the spaceLifetime to set
-   */
+  /** @param spaceLifetime the spaceLifetime to set */
   public final void setSpaceLifetime(TLifeTimeInSeconds spaceLifetime) {
 
     this.spaceLifetime = spaceLifetime;
   }
 
-  /**
-   * @return the storageInfo
-   */
+  /** @return the storageInfo */
   public final TStorageSystemInfo getStorageInfo() {
 
     return storageInfo;
   }
 
-  /**
-   * @param storageInfo the storageInfo to set
-   */
+  /** @param storageInfo the storageInfo to set */
   public final void setStorageInfo(TStorageSystemInfo storageInfo) {
 
     this.storageInfo = storageInfo;
   }
 
-  /**
-   * @return the spaceDesired
-   */
+  /** @return the spaceDesired */
   public final TSizeInBytes getTotalSpaceSize() {
 
     return totalSpaceSize;
   }
 
-  /**
-   * @param spaceDesired the spaceDesired to set
-   */
+  /** @param spaceDesired the spaceDesired to set */
   public final void setTotalSpaceSize(TSizeInBytes spaceDesired) {
 
     this.totalSpaceSize = spaceDesired;
@@ -496,17 +480,13 @@ public class StorageSpaceData {
     this.unforceAvailableSpaceSize();
   }
 
-  /**
-   * @return the spaceGuaranteed
-   */
+  /** @return the spaceGuaranteed */
   public final TSizeInBytes getReservedSpaceSize() {
 
     return reservedSpaceSize;
   }
 
-  /**
-   * @param spaceGuaranteed the spaceGuaranteed to set
-   */
+  /** @param spaceGuaranteed the spaceGuaranteed to set */
   public final void setReservedSpaceSize(TSizeInBytes spaceGuaranteed) {
 
     this.reservedSpaceSize = spaceGuaranteed;
@@ -514,14 +494,14 @@ public class StorageSpaceData {
     this.unforceBusySpaceSize();
   }
 
-  /**
-   * @return
-   */
+  /** @return */
   public final TSizeInBytes getFreeSpaceSize() {
 
     if (!freeSpaceSizeForced) {
       // For now do not consider the reserved space, a better management is needed
-      if (this.totalSpaceSize == null || this.totalSpaceSize.isEmpty() || this.usedSpaceSize == null
+      if (this.totalSpaceSize == null
+          || this.totalSpaceSize.isEmpty()
+          || this.usedSpaceSize == null
           || this.usedSpaceSize.isEmpty()) {
         this.freeSpaceSize = TSizeInBytes.makeEmpty();
       } else {
@@ -543,34 +523,26 @@ public class StorageSpaceData {
     return this.freeSpaceSize;
   }
 
-  /**
-   * @param freeSpaceSize
-   */
+  /** @param freeSpaceSize */
   private final void forceFreeSpaceSize(TSizeInBytes freeSpaceSize) {
 
     this.freeSpaceSizeForced = true;
     this.freeSpaceSize = freeSpaceSize;
   }
 
-  /**
-   * 
-   */
+  /** */
   private final void unforceFreeSpaceSize() {
 
     this.freeSpaceSizeForced = false;
   }
 
-  /**
-   * @return the usedSpaceSize
-   */
+  /** @return the usedSpaceSize */
   public final TSizeInBytes getUsedSpaceSize() {
 
     return usedSpaceSize;
   }
 
-  /**
-   * @param usedSpaceSize the usedSpaceSize to set
-   */
+  /** @param usedSpaceSize the usedSpaceSize to set */
   public final void setUsedSpaceSize(TSizeInBytes usedSpaceSize) {
 
     this.usedSpaceSize = usedSpaceSize;
@@ -621,20 +593,15 @@ public class StorageSpaceData {
         log.error(e.getMessage(), e);
       }
     }
-
   }
 
-  /**
-   * @return the unavailableSpaceSize
-   */
+  /** @return the unavailableSpaceSize */
   public final TSizeInBytes getUnavailableSpaceSize() {
 
     return unavailableSpaceSize;
   }
 
-  /**
-   * @param unavailableSpaceSize the unavailableSpaceSize to set
-   */
+  /** @param unavailableSpaceSize the unavailableSpaceSize to set */
   public final void setUnavailableSpaceSize(TSizeInBytes unavailableSpaceSize) {
 
     this.unavailableSpaceSize = unavailableSpaceSize;
@@ -642,20 +609,25 @@ public class StorageSpaceData {
     this.unforceBusySpaceSize();
   }
 
-  /**
-   * @return
-   */
+  /** @return */
   public final TSizeInBytes getBusySpaceSize() {
 
     if (!this.busySpaceSizeForced) {
-      if (this.usedSpaceSize == null || this.usedSpaceSize.isEmpty()
-          || this.unavailableSpaceSize == null || this.unavailableSpaceSize.isEmpty()
-          || this.reservedSpaceSize == null || this.reservedSpaceSize.isEmpty()) {
+      if (this.usedSpaceSize == null
+          || this.usedSpaceSize.isEmpty()
+          || this.unavailableSpaceSize == null
+          || this.unavailableSpaceSize.isEmpty()
+          || this.reservedSpaceSize == null
+          || this.reservedSpaceSize.isEmpty()) {
         this.busySpaceSize = TSizeInBytes.makeEmpty();
       } else {
         try {
-          this.busySpaceSize = TSizeInBytes.make(this.usedSpaceSize.value()
-              + this.unavailableSpaceSize.value() + this.reservedSpaceSize.value(), SizeUnit.BYTES);
+          this.busySpaceSize =
+              TSizeInBytes.make(
+                  this.usedSpaceSize.value()
+                      + this.unavailableSpaceSize.value()
+                      + this.reservedSpaceSize.value(),
+                  SizeUnit.BYTES);
         } catch (InvalidTSizeAttributesException e) {
           log.warn("Unable to create a valid Busy Size, used empty one");
           this.busySpaceSize = TSizeInBytes.makeEmpty();
@@ -665,22 +637,24 @@ public class StorageSpaceData {
     return this.busySpaceSize;
   }
 
-  /**
-   * @return the availableSpaceSize
-   */
+  /** @return the availableSpaceSize */
   public final TSizeInBytes getAvailableSpaceSize() {
 
     if (!this.availableSpaceSizeForced) {
-      if (this.totalSpaceSize == null || this.totalSpaceSize.isEmpty()
+      if (this.totalSpaceSize == null
+          || this.totalSpaceSize.isEmpty()
           || this.getBusySpaceSize().isEmpty()) {
         this.availableSpaceSize = TSizeInBytes.makeEmpty();
       } else {
         try {
-          this.availableSpaceSize = TSizeInBytes
-            .make(this.totalSpaceSize.value() - this.getBusySpaceSize().value(), SizeUnit.BYTES);
+          this.availableSpaceSize =
+              TSizeInBytes.make(
+                  this.totalSpaceSize.value() - this.getBusySpaceSize().value(), SizeUnit.BYTES);
         } catch (InvalidTSizeAttributesException e) {
-          log.warn("Unable to produce the TSizeInBytes object from '{}' and '{}'",
-              (this.totalSpaceSize.value() - this.getBusySpaceSize().value()), SizeUnit.BYTES);
+          log.warn(
+              "Unable to produce the TSizeInBytes object from '{}' and '{}'",
+              (this.totalSpaceSize.value() - this.getBusySpaceSize().value()),
+              SizeUnit.BYTES);
           this.availableSpaceSize = TSizeInBytes.makeEmpty();
         }
       }
@@ -688,34 +662,26 @@ public class StorageSpaceData {
     return this.availableSpaceSize;
   }
 
-  /**
-   * @param availableSpaceSize
-   */
+  /** @param availableSpaceSize */
   public final void forceAvailableSpaceSize(TSizeInBytes availableSpaceSize) {
 
     this.availableSpaceSizeForced = true;
     this.availableSpaceSize = availableSpaceSize;
   }
 
-  /**
-   * 
-   */
+  /** */
   private final void unforceAvailableSpaceSize() {
 
     this.availableSpaceSizeForced = false;
   }
 
-  /**
-   * @param totalGuaranteedSize the totalGuaranteedSize to set
-   */
+  /** @param totalGuaranteedSize the totalGuaranteedSize to set */
   public void setTotalGuaranteedSize(TSizeInBytes totalGuaranteedSize) {
 
     this.totalGuaranteedSize = totalGuaranteedSize;
   }
 
-  /**
-   * @return the totalGuaranteedSize
-   */
+  /** @return the totalGuaranteedSize */
   public TSizeInBytes getTotalGuaranteedSize() {
 
     return totalGuaranteedSize;
@@ -727,9 +693,7 @@ public class StorageSpaceData {
     this.busySpaceSize = busySpaceSize;
   }
 
-  /**
-   * 
-   */
+  /** */
   private final void unforceBusySpaceSize() {
 
     this.busySpaceSizeForced = false;
@@ -737,9 +701,7 @@ public class StorageSpaceData {
     this.unforceAvailableSpaceSize();
   }
 
-  /**
-   * @param creationDate the creationDate to set
-   */
+  /** @param creationDate the creationDate to set */
   public final void setCreationDate(Date creationDate) {
 
     this.creationDate = creationDate;
@@ -748,7 +710,7 @@ public class StorageSpaceData {
   /**
    * This method is used to verify if the Space Reservation is expired, so the lifetime is no more
    * valid.
-   * 
+   *
    * @return true if expired, false otherwise.
    */
   public boolean isExpired() {
@@ -766,7 +728,7 @@ public class StorageSpaceData {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override
@@ -847,19 +809,13 @@ public class StorageSpaceData {
   @Override
   public boolean equals(Object obj) {
 
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
     StorageSpaceData other = (StorageSpaceData) obj;
     if (spaceToken == null) {
-      if (other.spaceToken != null)
-        return false;
-    } else if (!spaceToken.equals(other.spaceToken))
-      return false;
+      if (other.spaceToken != null) return false;
+    } else if (!spaceToken.equals(other.spaceToken)) return false;
     return true;
   }
-
 }

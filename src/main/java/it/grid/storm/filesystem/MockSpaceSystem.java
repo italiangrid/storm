@@ -1,11 +1,9 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.filesystem;
 
 import java.io.IOException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +11,7 @@ import org.slf4j.LoggerFactory;
  * Class that represents a SpaceSystem that always acknowledges a successful space reservation; it
  * is meant to be used with filesystems that do not support natively space reservation operations.
  * It acts as a mock object!
- * 
+ *
  * @author EGRID - ICTP Trieste
  * @version 1.0
  * @date June 2006
@@ -21,8 +19,8 @@ import org.slf4j.LoggerFactory;
 public class MockSpaceSystem implements SpaceSystem {
 
   private String mountpoint = ""; // String representing the local mount point,
-                                  // that is the root from which This
-                                  // SpaceSystem operates!
+  // that is the root from which This
+  // SpaceSystem operates!
   private static Logger log = LoggerFactory.getLogger(MockSpaceSystem.class);
 
   public MockSpaceSystem(String mountpoint) throws SpaceSystemException {
@@ -44,8 +42,8 @@ public class MockSpaceSystem implements SpaceSystem {
       localFile.createNewFile();
     } catch (IOException e) {
       log.error(e.getMessage(), e);
-      throw new ReservationException("IO exception while creating local File named : " + pathToFile,
-          e);
+      throw new ReservationException(
+          "IO exception while creating local File named : " + pathToFile, e);
     } catch (SecurityException e) {
       log.error(e.getMessage(), e);
       throw new ReservationException(

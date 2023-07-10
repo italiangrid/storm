@@ -1,14 +1,13 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.authz.sa.model;
 
 public class AceType {
 
-  public final static AceType ALLOW = new AceType("ALLOW");
-  public final static AceType DENY = new AceType("DENY");
-  public final static AceType UNKNOWN = new AceType("UNKNOWN");
+  public static final AceType ALLOW = new AceType("ALLOW");
+  public static final AceType DENY = new AceType("DENY");
+  public static final AceType UNKNOWN = new AceType("UNKNOWN");
 
   private String aceType;
 
@@ -32,5 +31,4 @@ public class AceType {
 
     return aceType;
   }
-
 }

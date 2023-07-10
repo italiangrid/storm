@@ -1,17 +1,14 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.namespace.model;
 
+import com.google.common.collect.Lists;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.remote.Constants.HttpPerms;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import com.google.common.collect.Lists;
 
 public class SAInfo {
 
@@ -29,9 +26,7 @@ public class SAInfo {
   private List<String> approachableRules;
 
   // Must have no-argument constructor
-  public SAInfo() {
-
-  }
+  public SAInfo() {}
 
   public String getName() {
 
@@ -159,9 +154,11 @@ public class SAInfo {
     sa.setName(vfs.getAliasName());
     sa.setToken(vfs.getSpaceTokenDescription());
     List<String> vos = Lists.newArrayList();
-    vfs.getApproachableRules().forEach(ar -> {
-      vos.add(ar.getSubjectRules().getVONameMatchingRule().getVOName());
-    });
+    vfs.getApproachableRules()
+        .forEach(
+            ar -> {
+              vos.add(ar.getSubjectRules().getVONameMatchingRule().getVOName());
+            });
     sa.setVos(vos);
     sa.setRoot(vfs.getRootPath());
     sa.setStfnRoot(new ArrayList<String>());
@@ -195,11 +192,11 @@ public class SAInfo {
       }
       if (!rule.getSubjectRules().getDNMatchingRule().isMatchAll()) {
         sa.getApproachableRules()
-          .add(rule.getSubjectRules().getDNMatchingRule().toShortSlashSeparatedString());
+            .add(rule.getSubjectRules().getDNMatchingRule().toShortSlashSeparatedString());
       }
       if (!rule.getSubjectRules().getVONameMatchingRule().isMatchAll()) {
         sa.getApproachableRules()
-          .add("vo:" + rule.getSubjectRules().getVONameMatchingRule().getVOName());
+            .add("vo:" + rule.getSubjectRules().getVONameMatchingRule().getVOName());
       }
     }
     if (sa.getApproachableRules().size() == 0) {
@@ -239,5 +236,4 @@ public class SAInfo {
     builder.append("]");
     return builder.toString();
   }
-
 }

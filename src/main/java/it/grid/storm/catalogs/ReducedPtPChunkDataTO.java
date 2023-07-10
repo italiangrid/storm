@@ -1,151 +1,137 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.catalogs;
 
-import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.srm.types.TFileStorageType;
+import it.grid.storm.srm.types.TStatusCode;
 
 /**
- * Class that represents some of the fields in a row in the Persistence Layer:
- * this is all raw data referring to the ReducedPtPChunkData proper, that is
- * String and primitive types.
- * 
+ * Class that represents some of the fields in a row in the Persistence Layer: this is all raw data
+ * referring to the ReducedPtPChunkData proper, that is String and primitive types.
+ *
  * @author EGRID ICTP
  * @version 1.0
  * @date January, 2007
  */
 public class ReducedPtPChunkDataTO {
 
-	private long primaryKey = -1; // ID primary key of record in DB
-	private String toSURL = " ";
-	private String normalizedStFN = null;
-	private Integer surlUniqueID = null;
+  private long primaryKey = -1; // ID primary key of record in DB
+  private String toSURL = " ";
+  private String normalizedStFN = null;
+  private Integer surlUniqueID = null;
 
-	private int status = StatusCodeConverter.getInstance().toDB(
-		TStatusCode.SRM_REQUEST_QUEUED);
-	private String errString = " ";
-	private String fileStorageType = FileStorageTypeConverter.getInstance().toDB(
-		TFileStorageType.VOLATILE);
-	private int fileLifetime = -1;
+  private int status = StatusCodeConverter.getInstance().toDB(TStatusCode.SRM_REQUEST_QUEUED);
+  private String errString = " ";
+  private String fileStorageType =
+      FileStorageTypeConverter.getInstance().toDB(TFileStorageType.VOLATILE);
+  private int fileLifetime = -1;
 
-	public long primaryKey() {
+  public long primaryKey() {
 
-		return primaryKey;
-	}
+    return primaryKey;
+  }
 
-	public void setPrimaryKey(long n) {
+  public void setPrimaryKey(long n) {
 
-		primaryKey = n;
-	}
+    primaryKey = n;
+  }
 
-	public String toSURL() {
+  public String toSURL() {
 
-		return toSURL;
-	}
+    return toSURL;
+  }
 
-	public void setToSURL(String s) {
+  public void setToSURL(String s) {
 
-		toSURL = s;
-	}
+    toSURL = s;
+  }
 
-	/**
-	 * @param normalizedStFN
-	 *          the normalizedStFN to set
-	 */
-	public void setNormalizedStFN(String normalizedStFN) {
+  /** @param normalizedStFN the normalizedStFN to set */
+  public void setNormalizedStFN(String normalizedStFN) {
 
-		this.normalizedStFN = normalizedStFN;
-	}
+    this.normalizedStFN = normalizedStFN;
+  }
 
-	/**
-	 * @return the normalizedStFN
-	 */
-	public String normalizedStFN() {
+  /** @return the normalizedStFN */
+  public String normalizedStFN() {
 
-		return normalizedStFN;
-	}
+    return normalizedStFN;
+  }
 
-	/**
-	 * @param surlUniqueID
-	 *          the sURLUniqueID to set
-	 */
-	public void setSurlUniqueID(Integer surlUniqueID) {
+  /** @param surlUniqueID the sURLUniqueID to set */
+  public void setSurlUniqueID(Integer surlUniqueID) {
 
-		this.surlUniqueID = surlUniqueID;
-	}
+    this.surlUniqueID = surlUniqueID;
+  }
 
-	/**
-	 * @return the sURLUniqueID
-	 */
-	public Integer surlUniqueID() {
+  /** @return the sURLUniqueID */
+  public Integer surlUniqueID() {
 
-		return surlUniqueID;
-	}
+    return surlUniqueID;
+  }
 
-	public int status() {
+  public int status() {
 
-		return status;
-	}
+    return status;
+  }
 
-	public void setStatus(int n) {
+  public void setStatus(int n) {
 
-		status = n;
-	}
+    status = n;
+  }
 
-	public String errString() {
+  public String errString() {
 
-		return errString;
-	}
+    return errString;
+  }
 
-	public void setErrString(String s) {
+  public void setErrString(String s) {
 
-		errString = s;
-	}
+    errString = s;
+  }
 
-	public String fileStorageType() {
+  public String fileStorageType() {
 
-		return fileStorageType;
-	}
+    return fileStorageType;
+  }
 
-	/**
-	 * Method that sets the FileStorageType: if it is null nothing gets set. The
-	 * deafult value is Volatile.
-	 */
-	public void setFileStorageType(String s) {
+  /**
+   * Method that sets the FileStorageType: if it is null nothing gets set. The deafult value is
+   * Volatile.
+   */
+  public void setFileStorageType(String s) {
 
-		if (s != null)
-			fileStorageType = s;
-	}
+    if (s != null) fileStorageType = s;
+  }
 
-	public int fileLifetime() {
+  public int fileLifetime() {
 
-		return fileLifetime;
-	}
+    return fileLifetime;
+  }
 
-	public void setFileLifetime(int n) {
+  public void setFileLifetime(int n) {
 
-		fileLifetime = n;
-	}
+    fileLifetime = n;
+  }
 
-	public String toString() {
+  public String toString() {
 
-		StringBuilder sb = new StringBuilder();
-		sb.append(primaryKey);
-		sb.append(" ");
-		sb.append(toSURL);
-		sb.append(" ");
-		sb.append(normalizedStFN);
-		sb.append(" ");
-		sb.append(surlUniqueID);
-		sb.append(" ");
-		sb.append(status);
-		sb.append(" ");
-		sb.append(errString);
-		sb.append(" ");
-		sb.append(fileStorageType);
-		sb.append(" ");
-		return sb.toString();
-	}
+    StringBuilder sb = new StringBuilder();
+    sb.append(primaryKey);
+    sb.append(" ");
+    sb.append(toSURL);
+    sb.append(" ");
+    sb.append(normalizedStFN);
+    sb.append(" ");
+    sb.append(surlUniqueID);
+    sb.append(" ");
+    sb.append(status);
+    sb.append(" ");
+    sb.append(errString);
+    sb.append(" ");
+    sb.append(fileStorageType);
+    sb.append(" ");
+    return sb.toString();
+  }
 }

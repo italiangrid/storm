@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.asynch;
 
@@ -13,17 +12,15 @@ import it.grid.storm.scheduler.SchedulerStatus;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TRequestType;
 import it.grid.storm.srm.types.TSURL;
-
 import java.util.Collection;
 import java.util.Timer;
 import java.util.TimerTask;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * This class is in charge of periodically polling the DB for newly added requests.
- * 
+ *
  * @author EGRID ICTP Trieste
  * @version 1.0
  * @date October 2006
@@ -67,25 +64,23 @@ public class AdvancedPicker {
       retrievingTask.cancel();
       retriever.cancel();
     }
-
   }
 
-  /**
-   * Method used to command This AdvancedPicker to start periodic reading of data from the DB.
-   */
+  /** Method used to command This AdvancedPicker to start periodic reading of data from the DB. */
   public void startIt() {
 
     log.debug("ADVANCED PICKER: started");
 
     retriever = new Timer();
 
-    retrievingTask = new TimerTask() {
+    retrievingTask =
+        new TimerTask() {
 
-      @Override
-      public void run() {
-        retrieve();
-      }
-    }; // retrieving task
+          @Override
+          public void run() {
+            retrieve();
+          }
+        }; // retrieving task
 
     retriever.scheduleAtFixedRate(retrievingTask, delay, period);
   }
@@ -95,24 +90,23 @@ public class AdvancedPicker {
    * fetching the TRequestToken, VomsGridUser and TRequestType; the global status of each request
    * then changes to SRM_SUCCESS, appropriate Feeders get created and forwarded to the crusher
    * scheduler.
-   * 
-   * There could be internal errors that get handled as follows:
-   * 
-   * (1) If the request type is not supported, the request is dropped and the global status transits
-   * to SRM_NOT_SUPPORTED; however each chunk data status remains in SRM_REQUEST_QUEUED because it
-   * is impossible to know where in the DB tables to update the chunk status!
-   * 
-   * (2) If the request type is supported, but the corresponding Feeder cannot be created, then the
-   * global status transits to SRM_FAILURE, as well as the status of each chunk.
-   * 
-   * (3) If the Scheduler throws any exception, then the global status transits to SRM_FAILURE, as
-   * well as that of each chunk. Under anomalous circumstances it could be that it is not possible
-   * to update the status of each chunk, in which case the chunk status remains SRM_REQUEST_QUEUED.
-   * This last case is particularly pernicious, so a FATAL log is signalled: it means the code was
-   * not updated!
+   *
+   * <p>There could be internal errors that get handled as follows:
+   *
+   * <p>(1) If the request type is not supported, the request is dropped and the global status
+   * transits to SRM_NOT_SUPPORTED; however each chunk data status remains in SRM_REQUEST_QUEUED
+   * because it is impossible to know where in the DB tables to update the chunk status!
+   *
+   * <p>(2) If the request type is supported, but the corresponding Feeder cannot be created, then
+   * the global status transits to SRM_FAILURE, as well as the status of each chunk.
+   *
+   * <p>(3) If the Scheduler throws any exception, then the global status transits to SRM_FAILURE,
+   * as well as that of each chunk. Under anomalous circumstances it could be that it is not
+   * possible to update the status of each chunk, in which case the chunk status remains
+   * SRM_REQUEST_QUEUED. This last case is particularly pernicious, so a FATAL log is signalled: it
+   * means the code was not updated!
    */
   public void retrieve() {
-
 
     int crusherCapacity = -1;
 
@@ -139,7 +133,6 @@ public class AdvancedPicker {
     } else {
 
       log.info("ADVANCED PICKER: dispatching {} requests.", requests.size());
-
     }
 
     TRequestType rtype = null;
@@ -159,7 +152,7 @@ public class AdvancedPicker {
         } else {
 
           RequestSummaryCatalog.getInstance()
-            .abortChunksOfInProgressRequest(abortToken, abortSURLS);
+              .abortChunksOfInProgressRequest(abortToken, abortSURLS);
         }
 
         abortToken = null;
@@ -186,49 +179,61 @@ public class AdvancedPicker {
           } else {
 
             s.schedule(new UnsupportedOperationFeeder());
-
           }
 
         } catch (InvalidPtGFeederAttributesException e) {
 
-          log.error("ADVANCED PICKER ERROR! PtGFeeder could not be created "
-              + "because of invalid attributes: {}", e.getMessage(), e);
+          log.error(
+              "ADVANCED PICKER ERROR! PtGFeeder could not be created "
+                  + "because of invalid attributes: {}",
+              e.getMessage(),
+              e);
 
           log.error("PtG Request is being dropped: {}", rsd.requestToken());
 
           RequestSummaryCatalog.getInstance()
-            .failRequest(rsd, "Internal error does not allow request to be fed to scheduler.");
+              .failRequest(rsd, "Internal error does not allow request to be fed to scheduler.");
 
         } catch (InvalidPtPFeederAttributesException e) {
 
-          log.error("ADVANCED PICKER ERROR! PtPFeeder could not be created "
-              + "because of invalid attributes: {}", e.getMessage(), e);
+          log.error(
+              "ADVANCED PICKER ERROR! PtPFeeder could not be created "
+                  + "because of invalid attributes: {}",
+              e.getMessage(),
+              e);
 
           log.error("PtP Request is being dropped: {}", rsd.requestToken());
 
           RequestSummaryCatalog.getInstance()
-            .failRequest(rsd, "Internal error does not allow request to be fed to scheduler.");
+              .failRequest(rsd, "Internal error does not allow request to be fed to scheduler.");
 
         } catch (InvalidBoLFeederAttributesException e) {
 
-          log.error("ADVANCED PICKER ERROR! BoLFeeder could not be created "
-              + "because of invalid attributes: {}", e.getMessage(), e);
+          log.error(
+              "ADVANCED PICKER ERROR! BoLFeeder could not be created "
+                  + "because of invalid attributes: {}",
+              e.getMessage(),
+              e);
 
           log.error("BoL Request is being dropped: {}", rsd.requestToken());
 
           RequestSummaryCatalog.getInstance()
-            .failRequest(rsd, "Internal error does not allow request to be fed to scheduler.");
+              .failRequest(rsd, "Internal error does not allow request to be fed to scheduler.");
 
         } catch (SchedulerException | UnsupportedOperationException e) {
 
-          log.error("ADVANCED PICKER ERROR! The request could not be scheduled"
-              + "because of scheduler errors: {}", e.getMessage(), e);
-          log.error("ADVANCED PICKER ERROR! Request {} of type {} dropped.", rsd.requestToken(),
+          log.error(
+              "ADVANCED PICKER ERROR! The request could not be scheduled"
+                  + "because of scheduler errors: {}",
+              e.getMessage(),
+              e);
+          log.error(
+              "ADVANCED PICKER ERROR! Request {} of type {} dropped.",
+              rsd.requestToken(),
               rsd.requestType());
 
           RequestSummaryCatalog.getInstance()
-            .failRequest(rsd, "Internal scheduler has problems accepting request feed.");
-
+              .failRequest(rsd, "Internal scheduler has problems accepting request feed.");
         }
       }
     }
@@ -246,11 +251,11 @@ public class AdvancedPicker {
   /**
    * Method used to remove the request identified by the supplied TRequestToken, from the internal
    * queue of Requests that must be scheduled.
-   * 
-   * If a null TRequestToken is supplied, or some other abort request has been issued, then FALSE is
-   * returned; otherwise TRUE is returned.
+   *
+   * <p>If a null TRequestToken is supplied, or some other abort request has been issued, then FALSE
+   * is returned; otherwise TRUE is returned.
    */
-  synchronized public boolean abortRequest(TRequestToken rt) {
+  public synchronized boolean abortRequest(TRequestToken rt) {
 
     if (abort) {
 
@@ -272,11 +277,11 @@ public class AdvancedPicker {
    * Method used to remove chunks of the request identified by the supplied TRequestToken, with
    * surls given by the collection c. Chunks in the DB get their status changed and so will not be
    * considered for processing.
-   * 
-   * If a null TRequestToken or Collection is supplied, or some other abort request has been issued,
-   * then FALSE is returned; otherwise TRUE is returned.
+   *
+   * <p>If a null TRequestToken or Collection is supplied, or some other abort request has been
+   * issued, then FALSE is returned; otherwise TRUE is returned.
    */
-  synchronized public boolean abortChunksOfRequest(TRequestToken rt, Collection<TSURL> c) {
+  public synchronized boolean abortChunksOfRequest(TRequestToken rt, Collection<TSURL> c) {
 
     if (abort) {
 
@@ -294,5 +299,4 @@ public class AdvancedPicker {
 
     return true;
   }
-
 }

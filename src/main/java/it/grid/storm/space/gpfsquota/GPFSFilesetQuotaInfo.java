@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.space.gpfsquota;
 
@@ -10,23 +9,23 @@ import it.grid.storm.srm.types.TSizeInBytes;
 
 public interface GPFSFilesetQuotaInfo {
 
-	public String getFilesetName();
+  public String getFilesetName();
 
-	public long getBlockUsage();
+  public long getBlockUsage();
 
-	public TSizeInBytes getBlockUsageAsTSize();
+  public TSizeInBytes getBlockUsageAsTSize();
 
-	public long getBlockHardLimit();
+  public long getBlockHardLimit();
 
-	public TSizeInBytes getBlockHardLimitAsTSize();
+  public TSizeInBytes getBlockHardLimitAsTSize();
 
-	public long getBlockSoftLimit();
+  public long getBlockSoftLimit();
 
-	public TSizeInBytes getBlockSoftLimitAsTSize();
+  public TSizeInBytes getBlockSoftLimitAsTSize();
 
-	public boolean isQuotaEnabled();
+  public boolean isQuotaEnabled();
 
-	public VirtualFS getVFS();
+  public VirtualFS getVFS();
 
-	public SizeUnit getSizeUnit();
+  public SizeUnit getSizeUnit();
 }

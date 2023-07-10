@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.data.datatransfer;
 
@@ -13,95 +12,92 @@ import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 
-/**
- * @author Michele Dibenedetto
- * 
- */
-public class AnonymousPrepareToPutInputData extends
-	AnonymousFileTransferInputData implements PrepareToPutInputData {
+/** @author Michele Dibenedetto */
+public class AnonymousPrepareToPutInputData extends AnonymousFileTransferInputData
+    implements PrepareToPutInputData {
 
-	private TOverwriteMode overwriteMode = OverwriteModeConverter.getInstance()
-		.toSTORM(Configuration.getInstance().getDefaultOverwriteMode());
-	private TSizeInBytes fileSize = TSizeInBytes.makeEmpty();
-	private TLifeTimeInSeconds desiredFileLifetime;
+  private TOverwriteMode overwriteMode =
+      OverwriteModeConverter.getInstance()
+          .toSTORM(Configuration.getInstance().getDefaultOverwriteMode());
+  private TSizeInBytes fileSize = TSizeInBytes.makeEmpty();
+  private TLifeTimeInSeconds desiredFileLifetime;
 
-	/**
-	 * @param user
-	 * @param surl
-	 * @param transferProtocols
-	 * @throws IllegalArgumentException
-	 * @throws IllegalStateException
-	 */
-	public AnonymousPrepareToPutInputData(TSURL surl, TURLPrefix transferProtocols)
-		throws IllegalArgumentException, IllegalStateException {
+  /**
+   * @param user
+   * @param surl
+   * @param transferProtocols
+   * @throws IllegalArgumentException
+   * @throws IllegalStateException
+   */
+  public AnonymousPrepareToPutInputData(TSURL surl, TURLPrefix transferProtocols)
+      throws IllegalArgumentException, IllegalStateException {
 
-		super(surl, transferProtocols);
-		this.desiredFileLifetime = TLifeTimeInSeconds.make(Configuration
-			.getInstance().getFileLifetimeDefault(), TimeUnit.SECONDS);
+    super(surl, transferProtocols);
+    this.desiredFileLifetime =
+        TLifeTimeInSeconds.make(
+            Configuration.getInstance().getFileLifetimeDefault(), TimeUnit.SECONDS);
+  }
 
-	}
+  public AnonymousPrepareToPutInputData(
+      TSURL surl, TURLPrefix transferProtocols, TLifeTimeInSeconds desiredFileLifetime)
+      throws IllegalArgumentException, IllegalStateException {
 
-	public AnonymousPrepareToPutInputData(TSURL surl,
-		TURLPrefix transferProtocols, TLifeTimeInSeconds desiredFileLifetime)
-		throws IllegalArgumentException, IllegalStateException {
+    this(surl, transferProtocols);
+    this.desiredFileLifetime = desiredFileLifetime;
+  }
 
-		this(surl, transferProtocols);
-		this.desiredFileLifetime = desiredFileLifetime;
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see it.grid.storm.synchcall.data.datatransfer.PrepareToPutInputData#
+   * getOverwriteMode()
+   */
+  @Override
+  public TOverwriteMode getOverwriteMode() {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see it.grid.storm.synchcall.data.datatransfer.PrepareToPutInputData#
-	 * getOverwriteMode()
-	 */
-	@Override
-	public TOverwriteMode getOverwriteMode() {
+    return overwriteMode;
+  }
 
-		return overwriteMode;
-	}
+  @Override
+  public void setOverwriteMode(TOverwriteMode overwriteMode) {
 
-	@Override
-	public void setOverwriteMode(TOverwriteMode overwriteMode) {
+    this.overwriteMode = overwriteMode;
+  }
 
-		this.overwriteMode = overwriteMode;
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see
+   * it.grid.storm.synchcall.data.datatransfer.PrepareToPutInputData#getFileSize
+   * ()
+   */
+  @Override
+  public TSizeInBytes getFileSize() {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * it.grid.storm.synchcall.data.datatransfer.PrepareToPutInputData#getFileSize
-	 * ()
-	 */
-	@Override
-	public TSizeInBytes getFileSize() {
+    return fileSize;
+  }
 
-		return fileSize;
-	}
+  @Override
+  public void setFileSize(TSizeInBytes fileSize) {
 
-	@Override
-	public void setFileSize(TSizeInBytes fileSize) {
+    this.fileSize = fileSize;
+  }
 
-		this.fileSize = fileSize;
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see it.grid.storm.synchcall.data.datatransfer.PrepareToPutInputData#
+   * getDesiredFileLifetime()
+   */
+  @Override
+  public TLifeTimeInSeconds getDesiredFileLifetime() {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see it.grid.storm.synchcall.data.datatransfer.PrepareToPutInputData#
-	 * getDesiredFileLifetime()
-	 */
-	@Override
-	public TLifeTimeInSeconds getDesiredFileLifetime() {
+    return desiredFileLifetime;
+  }
 
-		return desiredFileLifetime;
-	}
+  @Override
+  public void setDesiredFileLifetime(TLifeTimeInSeconds desiredFileLifetime) {
 
-	@Override
-	public void setDesiredFileLifetime(TLifeTimeInSeconds desiredFileLifetime) {
-
-		this.desiredFileLifetime = desiredFileLifetime;
-	}
-
+    this.desiredFileLifetime = desiredFileLifetime;
+  }
 }

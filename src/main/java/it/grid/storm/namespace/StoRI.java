@@ -1,12 +1,7 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.namespace;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.StFN;
@@ -23,71 +18,70 @@ import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TTURL;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public interface StoRI {
 
-	public void setStoRIType(StoRIType type);
+  public void setStoRIType(StoRIType type);
 
-	public TTURL getTURL(TURLPrefix prefixOfAcceptedTransferProtocols)
-		throws IllegalArgumentException, InvalidGetTURLProtocolException,
-		TURLBuildingException;
+  public TTURL getTURL(TURLPrefix prefixOfAcceptedTransferProtocols)
+      throws IllegalArgumentException, InvalidGetTURLProtocolException, TURLBuildingException;
 
-	public TSURL getSURL();
+  public TSURL getSURL();
 
-	public PFN getPFN();
+  public PFN getPFN();
 
-	public StFN getStFN();
-	
-	public StFN getStFNFromMappingRule();
+  public StFN getStFN();
 
-	public String getRelativePath();
+  public StFN getStFNFromMappingRule();
 
-	public String getRelativeStFN();
+  public String getRelativePath();
 
-	public TLifeTimeInSeconds getFileLifeTime();
+  public String getRelativeStFN();
 
-	public Date getFileStartTime();
+  public TLifeTimeInSeconds getFileLifeTime();
 
-	public StoRIType getStoRIType();
+  public Date getFileStartTime();
 
-	public Space getSpace();
+  public StoRIType getStoRIType();
 
-	public void setSpace(Space space);
+  public Space getSpace();
 
-	public LocalFile getLocalFile();
+  public void setSpace(Space space);
 
-	public VirtualFS getVirtualFileSystem();
+  public LocalFile getLocalFile();
 
-	public String getStFNRoot();
+  public VirtualFS getVirtualFileSystem();
 
-	public String getStFNPath();
+  public String getStFNRoot();
 
-	public String getFilename();
+  public String getStFNPath();
 
-	public void setStFNRoot(String stfnRoot);
+  public String getFilename();
 
-	public void setMappingRule(MappingRule winnerRule);
+  public void setStFNRoot(String stfnRoot);
 
-	public MappingRule getMappingRule();
+  public void setMappingRule(MappingRule winnerRule);
 
-	public ArrayList<StoRI> getChildren(TDirOption dirOption)
-		throws InvalidDescendantsEmptyRequestException,
-		InvalidDescendantsPathRequestException,
-		InvalidDescendantsFileRequestException;
+  public MappingRule getMappingRule();
 
-	public String getAbsolutePath();
+  public ArrayList<StoRI> getChildren(TDirOption dirOption)
+      throws InvalidDescendantsEmptyRequestException, InvalidDescendantsPathRequestException,
+          InvalidDescendantsFileRequestException;
 
-	public boolean hasJustInTimeACLs();
+  public String getAbsolutePath();
 
-	public List<StoRI> getParents();
+  public boolean hasJustInTimeACLs();
 
-	public void allotSpaceForFile(TSizeInBytes totSize)
-		throws ReservationException;
+  public List<StoRI> getParents();
 
-	public void allotSpaceByToken(TSpaceToken token) throws ReservationException,
-		ExpiredSpaceTokenException;
+  public void allotSpaceForFile(TSizeInBytes totSize) throws ReservationException;
 
-	public void allotSpaceByToken(TSpaceToken token, TSizeInBytes totSize)
-		throws ReservationException, ExpiredSpaceTokenException;
+  public void allotSpaceByToken(TSpaceToken token)
+      throws ReservationException, ExpiredSpaceTokenException;
 
+  public void allotSpaceByToken(TSpaceToken token, TSizeInBytes totSize)
+      throws ReservationException, ExpiredSpaceTokenException;
 }

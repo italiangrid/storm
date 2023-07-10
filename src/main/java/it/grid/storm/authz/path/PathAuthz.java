@@ -1,10 +1,7 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
-/**
- * 
- */
+/** */
 package it.grid.storm.authz.path;
 
 import it.grid.storm.authz.AuthzDecision;
@@ -17,13 +14,10 @@ import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.util.userinfo.LocalGroups;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @author zappi
- */
+/** @author zappi */
 public class PathAuthz implements PathAuthzInterface {
 
   private static final Logger log = LoggerFactory.getLogger(PathAuthz.class);
@@ -34,14 +28,14 @@ public class PathAuthz implements PathAuthzInterface {
     this.pathAuthzDB = pathAuthzDB;
   }
 
-  public AuthzDecision authorize(GridUserInterface guser, SRMFileRequest pathOperation,
-      StoRI stori) {
+  public AuthzDecision authorize(
+      GridUserInterface guser, SRMFileRequest pathOperation, StoRI stori) {
 
     return authorize(guser, pathOperation, stori.getStFN());
   }
 
-  public AuthzDecision authorize(GridUserInterface guser, SRMFileRequest pathOperation,
-      StFN fileStFN) {
+  public AuthzDecision authorize(
+      GridUserInterface guser, SRMFileRequest pathOperation, StFN fileStFN) {
 
     String groupName = null;
     try {
@@ -50,13 +44,17 @@ public class PathAuthz implements PathAuthzInterface {
       log.error("Unable to retrieve the local group for '{}'", guser, e);
       return AuthzDecision.INDETERMINATE;
     }
-    log.debug("<PathAuthz> Compute authorization for groupName:'{}', "
-        + "filename:'{}', pathOperation:'{}'", groupName, fileStFN, pathOperation);
+    log.debug(
+        "<PathAuthz> Compute authorization for groupName:'{}', "
+            + "filename:'{}', pathOperation:'{}'",
+        groupName,
+        fileStFN,
+        pathOperation);
     return pathAuthzDB.evaluate(groupName, fileStFN, pathOperation);
   }
 
-  public AuthzDecision authorize(GridUserInterface guser, PathOperation pathOperation,
-      StFN fileStFN) {
+  public AuthzDecision authorize(
+      GridUserInterface guser, PathOperation pathOperation, StFN fileStFN) {
 
     String groupName = null;
     try {
@@ -65,30 +63,40 @@ public class PathAuthz implements PathAuthzInterface {
       log.error("Unable to retrieve the local group for '{}'", guser, e);
       return AuthzDecision.INDETERMINATE;
     }
-    log.debug("<PathAuthz> Compute authorization for groupName:'{}', "
-        + "filename:'{}', pathOperation:'{}'", groupName, fileStFN, pathOperation);
+    log.debug(
+        "<PathAuthz> Compute authorization for groupName:'{}', "
+            + "filename:'{}', pathOperation:'{}'",
+        groupName,
+        fileStFN,
+        pathOperation);
     return pathAuthzDB.evaluate(groupName, fileStFN, pathOperation);
   }
 
   @Override
   public AuthzDecision authorizeAnonymous(PathOperation pathOperation, StFN fileStFN) {
 
-    log.debug("<PathAuthz> Compute authorization for anonymous user on "
-        + "filename:'{}', pathOperation:'{}'", fileStFN, pathOperation);
+    log.debug(
+        "<PathAuthz> Compute authorization for anonymous user on "
+            + "filename:'{}', pathOperation:'{}'",
+        fileStFN,
+        pathOperation);
     return pathAuthzDB.evaluateAnonymous(fileStFN, pathOperation);
   }
 
   @Override
   public AuthzDecision authorizeAnonymous(SRMFileRequest srmPathOp, StFN fileStFN) {
 
-    log.debug("<PathAuthz> Compute authorization for anonymous user on "
-        + "filename:'{}', SRMFileRequest:'{}'", fileStFN, srmPathOp);
+    log.debug(
+        "<PathAuthz> Compute authorization for anonymous user on "
+            + "filename:'{}', SRMFileRequest:'{}'",
+        fileStFN,
+        srmPathOp);
     return pathAuthzDB.evaluateAnonymous(fileStFN, srmPathOp);
   }
 
   @Override
-  public AuthzDecision authorizeAnonymous(SRMFileRequest pathOperation, StoRI storiSource,
-      StoRI storiDest) {
+  public AuthzDecision authorizeAnonymous(
+      SRMFileRequest pathOperation, StoRI storiSource, StoRI storiDest) {
 
     AuthzDecision result = AuthzDecision.INDETERMINATE;
 
@@ -153,8 +161,8 @@ public class PathAuthz implements PathAuthzInterface {
     return result;
   }
 
-  public AuthzDecision authorize(GridUserInterface guser, SRMFileRequest pathOperation,
-      StoRI storiSource, StoRI storiDest) {
+  public AuthzDecision authorize(
+      GridUserInterface guser, SRMFileRequest pathOperation, StoRI storiSource, StoRI storiDest) {
 
     AuthzDecision result = AuthzDecision.INDETERMINATE;
 
@@ -228,5 +236,4 @@ public class PathAuthz implements PathAuthzInterface {
     }
     return result;
   }
-
 }

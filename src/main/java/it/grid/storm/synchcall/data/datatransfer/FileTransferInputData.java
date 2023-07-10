@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.data.datatransfer;
 
@@ -12,34 +11,21 @@ import it.grid.storm.synchcall.data.InputData;
 
 public interface FileTransferInputData extends InputData {
 
-	/**
-	 * @return the surl
-	 */
-	public TSURL getSurl();
+  /** @return the surl */
+  public TSURL getSurl();
 
-	/**
-	 * @return the transferProtocols
-	 */
-	public TURLPrefix getTransferProtocols();
+  /** @return the transferProtocols */
+  public TURLPrefix getTransferProtocols();
 
-	/**
-	 * @return the targetSpaceToken
-	 */
-	public TSpaceToken getTargetSpaceToken();
+  /** @return the targetSpaceToken */
+  public TSpaceToken getTargetSpaceToken();
 
-	/**
-	 * @param targetSpaceToken
-	 */
-	public void setTargetSpaceToken(TSpaceToken targetSpaceToken);
+  /** @param targetSpaceToken */
+  public void setTargetSpaceToken(TSpaceToken targetSpaceToken);
 
-	/**
-	 * @return
-	 */
-	public TLifeTimeInSeconds getDesiredPinLifetime();
+  /** @return */
+  public TLifeTimeInSeconds getDesiredPinLifetime();
 
-	/**
-	 * @param desiredPinLifetime
-	 */
-	public void setDesiredPinLifetime(TLifeTimeInSeconds desiredPinLifetime);
-
+  /** @param desiredPinLifetime */
+  public void setDesiredPinLifetime(TLifeTimeInSeconds desiredPinLifetime);
 }

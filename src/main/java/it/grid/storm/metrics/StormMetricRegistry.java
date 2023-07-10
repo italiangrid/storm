@@ -1,18 +1,12 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.metrics;
 
 import com.codahale.metrics.MetricRegistry;
 
-/**
- * Singleton wrapper for the dropwizard metrics registry.
- * 
- *
- */
+/** Singleton wrapper for the dropwizard metrics registry. */
 public enum StormMetricRegistry {
-
   METRIC_REGISTRY;
 
   private StormMetricRegistry() {
@@ -25,5 +19,4 @@ public enum StormMetricRegistry {
 
     return registry;
   }
-
 }

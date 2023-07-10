@@ -1,11 +1,9 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 /**
- * This class represents the AbortFiles Output Data associated with the SRM
- * request AbortFiles
- * 
+ * This class represents the AbortFiles Output Data associated with the SRM request AbortFiles
+ *
  * @author Magnoni Luca
  * @author Cnaf -INFN Bologna
  * @date
@@ -17,82 +15,77 @@ import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.exception.InvalidAbortFilesOutputDataAttributeException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AbortGeneralOutputData implements OutputData {
 
-	private static final Logger log = LoggerFactory
-		.getLogger(AbortGeneralOutputData.class);
-	private TReturnStatus returnStatus = null;
-	private ArrayOfTSURLReturnStatus arrayOfFileStatus = null;
+  private static final Logger log = LoggerFactory.getLogger(AbortGeneralOutputData.class);
+  private TReturnStatus returnStatus = null;
+  private ArrayOfTSURLReturnStatus arrayOfFileStatus = null;
 
-	public AbortGeneralOutputData() {
+  public AbortGeneralOutputData() {
 
-		this.returnStatus = null;
-		this.arrayOfFileStatus = null;
-	}
+    this.returnStatus = null;
+    this.arrayOfFileStatus = null;
+  }
 
-	public AbortGeneralOutputData(TReturnStatus retStatus,
-		ArrayOfTSURLReturnStatus arrayOfFileStatus)
-		throws InvalidAbortFilesOutputDataAttributeException {
+  public AbortGeneralOutputData(TReturnStatus retStatus, ArrayOfTSURLReturnStatus arrayOfFileStatus)
+      throws InvalidAbortFilesOutputDataAttributeException {
 
-		boolean ok = (arrayOfFileStatus == null);
+    boolean ok = (arrayOfFileStatus == null);
 
-		if (!ok) {
-			throw new InvalidAbortFilesOutputDataAttributeException(arrayOfFileStatus);
-		}
+    if (!ok) {
+      throw new InvalidAbortFilesOutputDataAttributeException(arrayOfFileStatus);
+    }
 
-		this.returnStatus = retStatus;
-		this.arrayOfFileStatus = arrayOfFileStatus;
-	}
+    this.returnStatus = retStatus;
+    this.arrayOfFileStatus = arrayOfFileStatus;
+  }
 
-	/**
-	 * Returns the returnStatus field
-	 * 
-	 * @return TReturnStatus
-	 */
-	public TReturnStatus getReturnStatus() {
+  /**
+   * Returns the returnStatus field
+   *
+   * @return TReturnStatus
+   */
+  public TReturnStatus getReturnStatus() {
 
-		return returnStatus;
-	}
+    return returnStatus;
+  }
 
-	/**
-	 * Set the returnStatus field
-	 * 
-	 * @param returnStatus
-	 */
-	public void setReturnStatus(TReturnStatus returnStatus) {
+  /**
+   * Set the returnStatus field
+   *
+   * @param returnStatus
+   */
+  public void setReturnStatus(TReturnStatus returnStatus) {
 
-		this.returnStatus = returnStatus;
-	}
+    this.returnStatus = returnStatus;
+  }
 
-	/**
-	 * Returns the arrayOfFileStatuses field
-	 * 
-	 * @return TSURLReturnStatus
-	 */
-	public ArrayOfTSURLReturnStatus getArrayOfFileStatuses() {
+  /**
+   * Returns the arrayOfFileStatuses field
+   *
+   * @return TSURLReturnStatus
+   */
+  public ArrayOfTSURLReturnStatus getArrayOfFileStatuses() {
 
-		return arrayOfFileStatus;
-	}
+    return arrayOfFileStatus;
+  }
 
-	/**
-	 * Set the arrayOfFileStatuses field
-	 * 
-	 * @param arrayOfFileStatuses
-	 */
-	public void setArrayOfFileStatuses(
-		ArrayOfTSURLReturnStatus arrayOfFileStatuses) {
+  /**
+   * Set the arrayOfFileStatuses field
+   *
+   * @param arrayOfFileStatuses
+   */
+  public void setArrayOfFileStatuses(ArrayOfTSURLReturnStatus arrayOfFileStatuses) {
 
-		this.arrayOfFileStatus = arrayOfFileStatuses;
-	}
+    this.arrayOfFileStatus = arrayOfFileStatuses;
+  }
 
-	public boolean isSuccess() {
+  public boolean isSuccess() {
 
-		// TODO Auto-generated method stub
-		return true;
-	}
-
+    // TODO Auto-generated method stub
+    return true;
+  }
 }

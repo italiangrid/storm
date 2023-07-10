@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.asynch;
 
@@ -23,9 +22,7 @@ import it.grid.storm.srm.types.InvalidTDirOptionAttributesException;
 import it.grid.storm.srm.types.TDirOption;
 import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.synchcall.data.DataHelper;
-
 import java.util.Collection;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,18 +30,18 @@ import org.slf4j.LoggerFactory;
  * This class represents a PrepareToGet Feeder: the Feeder that will handle the srmPrepareToGet
  * statements. It chops a multifile request, and for each part it checks whether the dir option is
  * set and expands the directory as necessary.
- * 
- * If the request contains nothing to process, an error message gets logged, the number of queued
+ *
+ * <p>If the request contains nothing to process, an error message gets logged, the number of queued
  * requests is decreased, and the number of finished requests is increased.
- * 
- * If the single part of the request has dirOption NOT set, then the number of queued requests is
+ *
+ * <p>If the single part of the request has dirOption NOT set, then the number of queued requests is
  * decreased, the number of progressing requests is increased, the status of that chunk is changed
  * to SRM_REQUEST_INPROGRESS; the chunk is given to the scheduler for handling. In case the
  * scheduler cannot accept the chunk for any reason, a messagge with the requestToken and the chunk
  * s data is logged, status of the chunk passes to SRM_ABORTED, and at the end the counters are such
  * that the queued-requests is decreased while the finished-requests is increased.
- * 
- * If the single part of the request DOES have a dirOption set, then it is considered as an
+ *
+ * <p>If the single part of the request DOES have a dirOption set, then it is considered as an
  * expansion job and it gets handled now! So the number of queued requests is decreased and that for
  * progressing ones is increased, while the status is set to SRM_REQUEST_INPROGRESS. Each newly
  * expanded file gets handled as though it were part of the multifile request WITHOUT the dirOption
@@ -52,26 +49,27 @@ import org.slf4j.LoggerFactory;
  * persistence system is created, and the total number of files in this request is updated. Finally
  * the status of this expansion request is set to SRM_DONE, the number of progressing requests is
  * decreased and the number of finished requests is increased.
- * 
- * At the beginning of the expansion stage, some anomalous situations are considered and handled as
- * follows:
- * 
- * (0) In case of internal errors, they get logged and the expansion request gets failed: the status
- * changes to SRM_FAILURE, number of progressing is decreased, number of finished is increased.
- * 
- * (1) The expanded directory is empty: the request is set to SRM_SUCCESS with an explanatory String
- * saying so. The number of progressing is decreased, and the number of finished is increased.
- * 
- * (2) The directory does not exist: status set to SRM_INVALID_PATH; number of progressing is
+ *
+ * <p>At the beginning of the expansion stage, some anomalous situations are considered and handled
+ * as follows:
+ *
+ * <p>(0) In case of internal errors, they get logged and the expansion request gets failed: the
+ * status changes to SRM_FAILURE, number of progressing is decreased, number of finished is
+ * increased.
+ *
+ * <p>(1) The expanded directory is empty: the request is set to SRM_SUCCESS with an explanatory
+ * String saying so. The number of progressing is decreased, and the number of finished is
+ * increased.
+ *
+ * <p>(2) The directory does not exist: status set to SRM_INVALID_PATH; number of progressing is
  * decresed; number of finished is increased.
- * 
- * (3) Attempting to expand a file: status set to SRM_INVALID_PATH; number of progressing is
+ *
+ * <p>(3) Attempting to expand a file: status set to SRM_INVALID_PATH; number of progressing is
  * decreased; number of finished is increased.
- * 
- * (4) No rights to directory: status set to SRM_AUTHORIZATION_FAILURE; number of progressing is
+ *
+ * <p>(4) No rights to directory: status set to SRM_AUTHORIZATION_FAILURE; number of progressing is
  * decreased; number of finished is increased.
- * 
- * 
+ *
  * @author EGRID - ICTP Trieste
  * @date March 21st, 2005
  * @version 4.0
@@ -87,7 +85,7 @@ public final class PtGFeeder implements Delegable {
   /**
    * Public constructor requiring the RequestSummaryData to which this PtGFeeder refers, as well as
    * the GridUser. If null objects are supplied, an InvalidPtGFeederAttributesException is thrown.
-   * 
+   *
    * @param rsd
    * @throws InvalidPtGFeederAttributesException
    */
@@ -105,7 +103,8 @@ public final class PtGFeeder implements Delegable {
     } catch (InvalidOverallRequestAttributeException e) {
       log.error(
           "ATTENTION in PtGFeeder! Programming bug when creating " + "GlobalStatusManager! {}",
-          e.getMessage(), e);
+          e.getMessage(),
+          e);
       throw new InvalidPtGFeederAttributesException(rsd, null, null);
     }
   }
@@ -121,19 +120,18 @@ public final class PtGFeeder implements Delegable {
     Collection<PtGPersistentChunkData> chunks =
         PtGChunkCatalog.getInstance().lookup(rsd.requestToken());
     if (chunks.isEmpty()) {
-      log.warn("ATTENTION in PtGFeeder! This SRM PtG request contained nothing " + "to process! {}",
+      log.warn(
+          "ATTENTION in PtGFeeder! This SRM PtG request contained nothing " + "to process! {}",
           rsd.requestToken());
       RequestSummaryCatalog.getInstance()
-        .failRequest(rsd, "This SRM Get request contained nothing to process!");
+          .failRequest(rsd, "This SRM Get request contained nothing to process!");
     } else {
       manageChunks(chunks);
       log.debug("PtGFeeder: finished pre-processing {}", rsd.requestToken());
     }
   }
 
-  /**
-   * Private method that handles the Collection of chunks associated with the srm command!
-   */
+  /** Private method that handles the Collection of chunks associated with the srm command! */
   private void manageChunks(Collection<PtGPersistentChunkData> chunks) {
 
     log.debug("PtGFeeder - number of chunks in request: {}", chunks.size());
@@ -155,8 +153,9 @@ public final class PtGFeeder implements Delegable {
         /*
          * fromSURL does _not_ correspond to this installation of StoRM: fail chunk!
          */
-        log.warn("PtGFeeder: srmPtG contract violation! fromSURL does not"
-            + "correspond to this machine!");
+        log.warn(
+            "PtGFeeder: srmPtG contract violation! fromSURL does not"
+                + "correspond to this machine!");
         log.warn("Request: {}", rsd.requestToken());
         log.warn("Chunk: {}", chunkData);
 
@@ -177,21 +176,21 @@ public final class PtGFeeder implements Delegable {
 
   /**
    * Private method that handles the case of dirOption NOT set!
-   * 
+   *
    * @param auxChunkData
    */
   private void manageNotDirectory(PtGPersistentChunkData auxChunkData) {
 
     log.debug("PtGFeeder - scheduling... ");
     /* change status of this chunk to being processed! */
-    auxChunkData
-      .changeStatusSRM_REQUEST_INPROGRESS("srmPrepareToGet " + "chunk is being processed!");
+    auxChunkData.changeStatusSRM_REQUEST_INPROGRESS(
+        "srmPrepareToGet " + "chunk is being processed!");
     PtGChunkCatalog.getInstance().update(auxChunkData);
     try {
       /* hand it to scheduler! */
       SchedulerFacade.getInstance()
-        .chunkScheduler()
-        .schedule(new PtGPersistentChunk(rsd, auxChunkData, gsm));
+          .chunkScheduler()
+          .schedule(new PtGPersistentChunk(rsd, auxChunkData, gsm));
       log.debug("PtGFeeder - chunk scheduled.");
     } catch (InvalidPersistentRequestAttributesException e) {
       log.error("UNEXPECTED ERROR in PtGFeeder! Chunk could not be created!");
@@ -232,7 +231,7 @@ public final class PtGFeeder implements Delegable {
 
   /**
    * Private method that handles the case of a PtGChunkData having dirOption set!
-   * 
+   *
    * @param chunkData
    */
   private void manageIsDirectory(PtGPersistentChunkData chunkData) {
@@ -254,20 +253,32 @@ public final class PtGFeeder implements Delegable {
     } catch (IllegalArgumentException e) {
       log.error(
           "Unable to build a stori for surl {} for user {}. " + "IllegalArgumentException: {}",
-          surl, user, e.getMessage(), e);
+          surl,
+          user,
+          e.getMessage(),
+          e);
       chunkData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
     } catch (UnapprochableSurlException e) {
       log.info(
           "Unable to build a stori for surl {} for user {}. " + "UnapprochableSurlException: {}",
-          surl, user, e.getMessage());
+          surl,
+          user,
+          e.getMessage());
       chunkData.changeStatusSRM_AUTHORIZATION_FAILURE(e.getMessage());
     } catch (NamespaceException e) {
-      log.error("Unable to build a stori for surl {} for user {}. " + "NamespaceException: {}",
-          surl, user, e.getMessage(), e);
+      log.error(
+          "Unable to build a stori for surl {} for user {}. " + "NamespaceException: {}",
+          surl,
+          user,
+          e.getMessage(),
+          e);
       chunkData.changeStatusSRM_INTERNAL_ERROR(e.getMessage());
     } catch (InvalidSURLException e) {
-      log.info("Unable to build a stori for surl {} for user {}. " + "InvalidSURLException: {}",
-          surl, user, e.getMessage());
+      log.info(
+          "Unable to build a stori for surl {} for user {}. " + "InvalidSURLException: {}",
+          surl,
+          user,
+          e.getMessage());
       chunkData.changeStatusSRM_INVALID_PATH(e.getMessage());
     } finally {
       if (stori == null) {
@@ -292,16 +303,18 @@ public final class PtGFeeder implements Delegable {
        * The expanded directory was empty, anyway a request on a Directory is considered done
        * whether there is somethig to expand or not!
        */
-      chunkData.changeStatusSRM_FILE_PINNED("BEWARE! srmPrepareToGet with "
-          + "dirOption set: it referred to a directory that was empty!");
+      chunkData.changeStatusSRM_FILE_PINNED(
+          "BEWARE! srmPrepareToGet with "
+              + "dirOption set: it referred to a directory that was empty!");
       PtGChunkCatalog.getInstance().update(chunkData);
       gsm.successfulChunk(chunkData);
       return;
 
     } catch (InvalidDescendantsPathRequestException e) {
 
-      log.debug("ATTENTION in PtGFeeder! PtGFeeder received request"
-          + " to expand non-existing directory.");
+      log.debug(
+          "ATTENTION in PtGFeeder! PtGFeeder received request"
+              + " to expand non-existing directory.");
       // Attempting to expand non existent directory!
       chunkData.changeStatusSRM_INVALID_PATH(
           "srmPrepareToGet with dirOption " + "set: it referred to a non-existent directory!");
@@ -318,7 +331,6 @@ public final class PtGFeeder implements Delegable {
       PtGChunkCatalog.getInstance().update(chunkData);
       gsm.failedChunk(chunkData);
       return;
-
     }
 
     log.debug("PtGFeeder - Number of children in parent: {}", storiChildren.size());
@@ -334,7 +346,10 @@ public final class PtGFeeder implements Delegable {
       log.error(
           "UNEXPECTED ERROR in PtGFeeder! Could not create TDirOption "
               + "specifying non-expansion!\n{}\nRequest: {}\nChunk: {}",
-          e.getMessage(), rsd.requestToken(), chunkData, e);
+          e.getMessage(),
+          rsd.requestToken(),
+          chunkData,
+          e);
 
       chunkData.changeStatusSRM_FAILURE(
           "srmPrepareToGet with dirOption set:" + " expansion failure due to internal error!");
@@ -346,10 +361,17 @@ public final class PtGFeeder implements Delegable {
     PtGPersistentChunkData childData;
     for (StoRI storiChild : storiChildren) {
       try {
-        childData = new PtGPersistentChunkData(chunkData.getUser(), chunkData.getRequestToken(),
-            storiChild.getSURL(), chunkData.getPinLifeTime(), notDir,
-            chunkData.getTransferProtocols(), chunkData.getFileSize(), chunkData.getStatus(),
-            chunkData.getTransferURL());
+        childData =
+            new PtGPersistentChunkData(
+                chunkData.getUser(),
+                chunkData.getRequestToken(),
+                storiChild.getSURL(),
+                chunkData.getPinLifeTime(),
+                notDir,
+                chunkData.getTransferProtocols(),
+                chunkData.getFileSize(),
+                chunkData.getStatus(),
+                chunkData.getTransferURL());
         /* fill in new db row and set the PrimaryKey of ChildData! */
         PtGChunkCatalog.getInstance().addChild(childData);
         log.debug("PtGFeeder - added child data: {}", childData);
@@ -362,7 +384,8 @@ public final class PtGFeeder implements Delegable {
         log.error(
             "ERROR in PtGFeeder! While expanding recursive request,"
                 + " it was not possible to create a new PtGPersistentChunkData! {}",
-            e.getMessage(), e);
+            e.getMessage(),
+            e);
       }
     }
     log.debug("PtGFeeder - expansion completed.");

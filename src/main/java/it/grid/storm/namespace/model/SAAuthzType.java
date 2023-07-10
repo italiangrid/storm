@@ -1,69 +1,68 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.namespace.model;
 
 public class SAAuthzType {
 
-	private int authzTypeIndex = -1;
-	private String authzTypeName = "UNKNOWN";
+  private int authzTypeIndex = -1;
+  private String authzTypeName = "UNKNOWN";
 
-	public final static SAAuthzType FIXED = new SAAuthzType(1, "FIXED");
-	public final static SAAuthzType AUTHZDB = new SAAuthzType(2, "AUTHZDB");
-	public final static SAAuthzType UNKNOWN = new SAAuthzType(-1, "UNKNOWN");
+  public static final SAAuthzType FIXED = new SAAuthzType(1, "FIXED");
+  public static final SAAuthzType AUTHZDB = new SAAuthzType(2, "AUTHZDB");
+  public static final SAAuthzType UNKNOWN = new SAAuthzType(-1, "UNKNOWN");
 
-	private SAAuthzType(int authzTypeIndex, String authzTypeName) {
+  private SAAuthzType(int authzTypeIndex, String authzTypeName) {
 
-		this.authzTypeIndex = authzTypeIndex;
-		this.authzTypeName = authzTypeName;
-	}
+    this.authzTypeIndex = authzTypeIndex;
+    this.authzTypeName = authzTypeName;
+  }
 
-	public String getSAAuthzTypeName() {
+  public String getSAAuthzTypeName() {
 
-		return this.authzTypeName;
-	}
+    return this.authzTypeName;
+  }
 
-	public static SAAuthzType getSAType(String saType) {
+  public static SAAuthzType getSAType(String saType) {
 
-		if (saType.toLowerCase().replaceAll(" ", "")
-			.equals(FIXED.getSAAuthzTypeName().toLowerCase())) {
-			return FIXED;
-		}
-		if (saType.toLowerCase().replaceAll(" ", "")
-			.equals(AUTHZDB.getSAAuthzTypeName().toLowerCase())) {
-			return AUTHZDB;
-		}
-		return UNKNOWN;
-	}
+    if (saType.toLowerCase().replaceAll(" ", "").equals(FIXED.getSAAuthzTypeName().toLowerCase())) {
+      return FIXED;
+    }
+    if (saType
+        .toLowerCase()
+        .replaceAll(" ", "")
+        .equals(AUTHZDB.getSAAuthzTypeName().toLowerCase())) {
+      return AUTHZDB;
+    }
+    return UNKNOWN;
+  }
 
-	public int getSAAuthzTypeIndex() {
+  public int getSAAuthzTypeIndex() {
 
-		return authzTypeIndex;
-	}
+    return authzTypeIndex;
+  }
 
-	public int hashCode() {
+  public int hashCode() {
 
-		return authzTypeIndex;
-	}
+    return authzTypeIndex;
+  }
 
-	public boolean equals(Object o) {
+  public boolean equals(Object o) {
 
-		boolean result = false;
-		if (o instanceof SAAuthzType) {
-			SAAuthzType other = (SAAuthzType) o;
-			if (other.getSAAuthzTypeIndex() == this.authzTypeIndex) {
-				result = true;
-			}
-		}
-		return result;
-	}
+    boolean result = false;
+    if (o instanceof SAAuthzType) {
+      SAAuthzType other = (SAAuthzType) o;
+      if (other.getSAAuthzTypeIndex() == this.authzTypeIndex) {
+        result = true;
+      }
+    }
+    return result;
+  }
 
-	public String toString() {
+  public String toString() {
 
-		StringBuilder buf = new StringBuilder();
-		buf.append(this.getSAAuthzTypeName());
-		return buf.toString();
-	}
-
+    StringBuilder buf = new StringBuilder();
+    buf.append(this.getSAAuthzTypeName());
+    return buf.toString();
+  }
 }

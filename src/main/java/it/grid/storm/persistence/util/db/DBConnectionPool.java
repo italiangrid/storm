@@ -1,15 +1,12 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.persistence.util.db;
 
 import it.grid.storm.persistence.DataSourceConnectionFactory;
 import it.grid.storm.persistence.exceptions.PersistenceException;
-
 import java.sql.Connection;
 import java.sql.SQLException;
-
 import org.apache.commons.dbcp2.cpdsadapter.DriverAdapterCPDS;
 import org.apache.commons.dbcp2.datasources.SharedPoolDataSource;
 import org.slf4j.Logger;
@@ -17,146 +14,137 @@ import org.slf4j.LoggerFactory;
 
 public class DBConnectionPool implements DataSourceConnectionFactory {
 
-	private static final Logger log = LoggerFactory
-		.getLogger(DBConnectionPool.class);
-	private DataBaseStrategy db;
-	private static SharedPoolDataSource sharedDatasource;
-	private static DBConnectionPool instance = new DBConnectionPool();
-	private static long handle = -1;
+  private static final Logger log = LoggerFactory.getLogger(DBConnectionPool.class);
+  private DataBaseStrategy db;
+  private static SharedPoolDataSource sharedDatasource;
+  private static DBConnectionPool instance = new DBConnectionPool();
+  private static long handle = -1;
 
-	private DBConnectionPool() {
-		super();
-	}
+  private DBConnectionPool() {
+    super();
+  }
 
-	public static DBConnectionPool getPoolInstance() {
-		if (handle == -1) {
-			return null; 
-		} else {
-			return instance;
-		}
-	}
+  public static DBConnectionPool getPoolInstance() {
+    if (handle == -1) {
+      return null;
+    } else {
+      return instance;
+    }
+  }
 
-	public static void initPool(DataBaseStrategy db, int maxActive, int maxWait)
-		throws PersistenceException {
-		instance.init(db, maxActive, maxWait);
-	}
-	
-	
-	private void handleSQLException(SQLException e) throws PersistenceException{
-	  
-		  log.error("SQL Error: {}, SQLState: {}, VendorError: {}.",
-		    e.getMessage(),
-		    e.getSQLState(),
-		    e.getErrorCode(),
-		    e);
+  public static void initPool(DataBaseStrategy db, int maxActive, int maxWait)
+      throws PersistenceException {
+    instance.init(db, maxActive, maxWait);
+  }
 
-			throw new PersistenceException(e);
-	  
-	}
-	public Connection borrowConnection() throws PersistenceException {
+  private void handleSQLException(SQLException e) throws PersistenceException {
 
-		Connection result = null;
-		if (handle == -1) {
-			throw new PersistenceException("Connection Pool is not initialized!");
-		}
-		try {
-			result = sharedDatasource.getConnection();
-		} catch (SQLException e) {
-		  handleSQLException(e);
-		}
-		return result;
-	}
+    log.error(
+        "SQL Error: {}, SQLState: {}, VendorError: {}.",
+        e.getMessage(),
+        e.getSQLState(),
+        e.getErrorCode(),
+        e);
 
-	public void giveBackConnection(Connection con) throws PersistenceException {
+    throw new PersistenceException(e);
+  }
 
-		if (con != null) {
-			try {
-				shutdown(con);
-			} catch (SQLException e) {
-			  handleSQLException(e);
-			}
-		} else {
-			throw new PersistenceException("Closing NON-Existing connection");
-		}
-	}
+  public Connection borrowConnection() throws PersistenceException {
 
-	public String getPoolInfo() throws PersistenceException {
+    Connection result = null;
+    if (handle == -1) {
+      throw new PersistenceException("Connection Pool is not initialized!");
+    }
+    try {
+      result = sharedDatasource.getConnection();
+    } catch (SQLException e) {
+      handleSQLException(e);
+    }
+    return result;
+  }
 
-		String result = "";
-		if (handle == -1) {
-			throw new PersistenceException("Connection Pool is not initialized!");
-		}
-		if (sharedDatasource.getValidationQuery() != null) {
-			result += "Validation query = " + sharedDatasource.getValidationQuery()
-				+ "\n";
-		}
-		if (sharedDatasource.getDescription() != null) {
-			result += "Description = " + sharedDatasource.getDescription() + "\n";
-		}
-		result += "Nr Connection Active = " + sharedDatasource.getNumActive()
-			+ "\n";
-		result += "Nr Connection Idle = " + sharedDatasource.getNumIdle() + "\n";
-		result += "Nr Max Active Connection = " + sharedDatasource.getMaxTotal()
-			+ "\n";
+  public void giveBackConnection(Connection con) throws PersistenceException {
 
-		return result;
-	}
+    if (con != null) {
+      try {
+        shutdown(con);
+      } catch (SQLException e) {
+        handleSQLException(e);
+      }
+    } else {
+      throw new PersistenceException("Closing NON-Existing connection");
+    }
+  }
 
-	private void init(DataBaseStrategy db, int maxActive, int maxWait) {
+  public String getPoolInfo() throws PersistenceException {
 
-		instance.setDatabaseStrategy(db);
-		DriverAdapterCPDS connectionPoolDatasource = new DriverAdapterCPDS();
-		try {
-			connectionPoolDatasource.setDriver(db.getDriverName());
-		} catch (Exception ex) {
-			log.error("Exception while getting driver: {}", ex.getMessage(), ex);
-		}
+    String result = "";
+    if (handle == -1) {
+      throw new PersistenceException("Connection Pool is not initialized!");
+    }
+    if (sharedDatasource.getValidationQuery() != null) {
+      result += "Validation query = " + sharedDatasource.getValidationQuery() + "\n";
+    }
+    if (sharedDatasource.getDescription() != null) {
+      result += "Description = " + sharedDatasource.getDescription() + "\n";
+    }
+    result += "Nr Connection Active = " + sharedDatasource.getNumActive() + "\n";
+    result += "Nr Connection Idle = " + sharedDatasource.getNumIdle() + "\n";
+    result += "Nr Max Active Connection = " + sharedDatasource.getMaxTotal() + "\n";
 
-		String connectionString = db.getConnectionString();
-		connectionPoolDatasource.setUrl(connectionString);
-		log.debug("Database connection string: {}", connectionString);
-		connectionPoolDatasource.setUser(db.getDbUsr());
-		connectionPoolDatasource.setPassword(db.getDbPwd());
+    return result;
+  }
 
-		sharedDatasource = new SharedPoolDataSource();
-		sharedDatasource.setConnectionPoolDataSource(connectionPoolDatasource);
+  private void init(DataBaseStrategy db, int maxActive, int maxWait) {
 
-		sharedDatasource.setMaxTotal(maxActive);
-		sharedDatasource.setDefaultMaxWaitMillis(maxWait);
-		sharedDatasource.setValidationQuery("SELECT 1");
-		sharedDatasource.setDefaultTestOnBorrow(true);
+    instance.setDatabaseStrategy(db);
+    DriverAdapterCPDS connectionPoolDatasource = new DriverAdapterCPDS();
+    try {
+      connectionPoolDatasource.setDriver(db.getDriverName());
+    } catch (Exception ex) {
+      log.error("Exception while getting driver: {}", ex.getMessage(), ex);
+    }
 
-		handle = System.currentTimeMillis();
-	}
+    String connectionString = db.getConnectionString();
+    connectionPoolDatasource.setUrl(connectionString);
+    log.debug("Database connection string: {}", connectionString);
+    connectionPoolDatasource.setUser(db.getDbUsr());
+    connectionPoolDatasource.setPassword(db.getDbPwd());
 
-	/**
-	 * 
-	 * @throws SQLException
-	 */
-	private void shutdown(Connection conn) throws SQLException {
+    sharedDatasource = new SharedPoolDataSource();
+    sharedDatasource.setConnectionPoolDataSource(connectionPoolDatasource);
 
-		conn.close();
-		conn = null;
-	}
-	
-	public static void printInfo(DBConnectionPool pool) {
+    sharedDatasource.setMaxTotal(maxActive);
+    sharedDatasource.setDefaultMaxWaitMillis(maxWait);
+    sharedDatasource.setValidationQuery("SELECT 1");
+    sharedDatasource.setDefaultTestOnBorrow(true);
 
-		try {
-			log.info("DATABASE POOL INFO: {}" , pool.getPoolInfo());
-		} catch (PersistenceException ex2) {
-			log.error(ex2.getMessage(),ex2);
-		}
+    handle = System.currentTimeMillis();
+  }
 
-	}
+  /** @throws SQLException */
+  private void shutdown(Connection conn) throws SQLException {
 
-	public DataBaseStrategy getDatabaseStrategy() {
+    conn.close();
+    conn = null;
+  }
 
-		return db;
-	}
+  public static void printInfo(DBConnectionPool pool) {
 
-	private void setDatabaseStrategy(DataBaseStrategy db) {
+    try {
+      log.info("DATABASE POOL INFO: {}", pool.getPoolInfo());
+    } catch (PersistenceException ex2) {
+      log.error(ex2.getMessage(), ex2);
+    }
+  }
 
-		this.db = db;
-	}
+  public DataBaseStrategy getDatabaseStrategy() {
 
+    return db;
+  }
+
+  private void setDatabaseStrategy(DataBaseStrategy db) {
+
+    this.db = db;
+  }
 }

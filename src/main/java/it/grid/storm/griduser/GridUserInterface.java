@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 /*
  * (c)2004 INFN / ICTP-eGrid This file can be distributed and/or modified under
@@ -12,25 +11,17 @@ package it.grid.storm.griduser;
 
 /**
  * Common Interface for GridUser.
- * 
+ *
  * @author Magnoni Luca
  */
-
 public interface GridUserInterface {
 
-	/**
-	 * Return the Local User where the GridUser is mapped.
-	 */
-	public LocalUser getLocalUser() throws CannotMapUserException;
+  /** Return the Local User where the GridUser is mapped. */
+  public LocalUser getLocalUser() throws CannotMapUserException;
 
-	/**
-	 * Get GridUser Domain Name. Used for metadada purpose.
-	 */
-	public String getDn();
+  /** Get GridUser Domain Name. Used for metadada purpose. */
+  public String getDn();
 
-	/**
-	 * Get GridUser Domain Name. Used for metadada pouprose.
-	 */
-	public DistinguishedName getDistinguishedName();
-
+  /** Get GridUser Domain Name. Used for metadada pouprose. */
+  public DistinguishedName getDistinguishedName();
 }

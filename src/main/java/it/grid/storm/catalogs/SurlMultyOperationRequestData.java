@@ -1,9 +1,9 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.catalogs;
 
+import com.google.common.collect.Maps;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TReturnStatus;
@@ -14,13 +14,9 @@ import it.grid.storm.synchcall.surl.ExpiredTokenException;
 import it.grid.storm.synchcall.surl.SURLStatusStore;
 import it.grid.storm.synchcall.surl.UnknownSurlException;
 import it.grid.storm.synchcall.surl.UnknownTokenException;
-
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Maps;
 
 public abstract class SurlMultyOperationRequestData extends SurlRequestData
     implements SynchMultyOperationRequestData {
@@ -50,8 +46,7 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
     stored = true;
   }
 
-  private static Map<TSURL, TReturnStatus> buildSurlStatusMap(TSURL surl,
-      TReturnStatus status) {
+  private static Map<TSURL, TReturnStatus> buildSurlStatusMap(TSURL surl, TReturnStatus status) {
 
     if (surl == null || status == null) {
       throw new IllegalArgumentException(
@@ -86,14 +81,20 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
       try {
         SURLStatusStore.INSTANCE.update(generatedRequestToken, this.SURL, status);
       } catch (UnknownTokenException e) {
-        log.warn("Received an UnknownTokenException, probably the token has "
-            + "expired, unable to update its status in the store: {}", e.getMessage());
+        log.warn(
+            "Received an UnknownTokenException, probably the token has "
+                + "expired, unable to update its status in the store: {}",
+            e.getMessage());
       } catch (ExpiredTokenException e) {
-        log.warn("Received an ExpiredTokenException. The token is expired, "
-            + "unable to update its status in the store: {}", e.getMessage());
+        log.warn(
+            "Received an ExpiredTokenException. The token is expired, "
+                + "unable to update its status in the store: {}",
+            e.getMessage());
       } catch (UnknownSurlException e) {
-        log.warn("Received an UnknownSurlException, probably the token has "
-            + "expired, unable to update its status in the store: {}", e.getMessage());
+        log.warn(
+            "Received an UnknownSurlException, probably the token has "
+                + "expired, unable to update its status in the store: {}",
+            e.getMessage());
       }
     }
   }
@@ -107,14 +108,20 @@ public abstract class SurlMultyOperationRequestData extends SurlRequestData
         SURLStatusStore.INSTANCE.update(generatedRequestToken, this.SURL, super.getStatus());
       } catch (UnknownTokenException e) {
         // Never thrown
-        log.warn("Received an UnknownTokenException, probably the token has "
-            + "expired, unable to update its status in the store: {}", e.getMessage());
+        log.warn(
+            "Received an UnknownTokenException, probably the token has "
+                + "expired, unable to update its status in the store: {}",
+            e.getMessage());
       } catch (ExpiredTokenException e) {
-        log.warn("Received an ExpiredTokenException. The token is expired, "
-            + "unable to update its status in the store: {}", e.getMessage());
+        log.warn(
+            "Received an ExpiredTokenException. The token is expired, "
+                + "unable to update its status in the store: {}",
+            e.getMessage());
       } catch (UnknownSurlException e) {
-        log.warn("Received an UnknownSurlException, probably the token has "
-            + "expired, unable to update its status in the store: {}", e.getMessage());
+        log.warn(
+            "Received an UnknownSurlException, probably the token has "
+                + "expired, unable to update its status in the store: {}",
+            e.getMessage());
       }
     }
   }

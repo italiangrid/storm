@@ -1,17 +1,13 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
-/**
- *
- */
+/** */
 package it.grid.storm.tape.recalltable;
 
 import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.BOL;
 import static it.grid.storm.persistence.model.TapeRecallTO.RecallTaskType.PTG;
 
 import com.google.common.collect.Lists;
-
 import it.grid.storm.asynch.Suspendedable;
 import it.grid.storm.catalogs.BoLPersistentChunkData;
 import it.grid.storm.catalogs.PersistentChunkData;
@@ -22,10 +18,6 @@ import it.grid.storm.persistence.dao.TapeRecallDAO;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -34,7 +26,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TapeRecallCatalog {
 
@@ -81,7 +74,8 @@ public class TapeRecallCatalog {
     } catch (DataAccessException e) {
       log.error(
           "Unable to retrieve the number of tasks currently in progress. DataAccessException: {}",
-          e.getMessage(), e);
+          e.getMessage(),
+          e);
       throw e;
     }
     return result;
@@ -100,7 +94,8 @@ public class TapeRecallCatalog {
     } catch (DataAccessException e) {
       log.error(
           "Unable to retrieve the number of tasks currently in progress. DataAccessException: {}",
-          e.getMessage(), e);
+          e.getMessage(),
+          e);
       throw e;
     }
     return result;
@@ -117,8 +112,10 @@ public class TapeRecallCatalog {
     try {
       result = tapeRecallDAO.getNumberQueued();
     } catch (DataAccessException e) {
-      log.error("Unable to retrieve the number of tasks queued. DataAccessException: {}",
-          e.getMessage(), e);
+      log.error(
+          "Unable to retrieve the number of tasks queued. DataAccessException: {}",
+          e.getMessage(),
+          e);
       throw e;
     }
     return result;
@@ -135,15 +132,16 @@ public class TapeRecallCatalog {
     try {
       result = tapeRecallDAO.getNumberQueued(voName);
     } catch (DataAccessException e) {
-      log.error("Unable to retrieve the number of tasks queued. DataAccessException: {}",
-          e.getMessage(), e);
+      log.error(
+          "Unable to retrieve the number of tasks queued. DataAccessException: {}",
+          e.getMessage(),
+          e);
       throw e;
     }
     return result;
   }
 
   /**
-   *
    * Determines how many task rows have a queued state and their deferred start time is elapsed
    *
    * @return @throws DataAccessException
@@ -156,7 +154,8 @@ public class TapeRecallCatalog {
     } catch (DataAccessException e) {
       log.error(
           "Unable to retrieve the number of tasks ready for the take-over. DataAccessException: {}",
-          e.getMessage(), e);
+          e.getMessage(),
+          e);
       throw e;
     }
     return result;
@@ -176,15 +175,14 @@ public class TapeRecallCatalog {
     } catch (DataAccessException e) {
       log.error(
           "Unable to retrieve the number of tasks ready for the take-over. DataAccessException: {}",
-          e.getMessage(), e);
+          e.getMessage(),
+          e);
       throw e;
     }
     return result;
   }
 
-  /**
-   * @param taskId @param requestToken @return @throws DataAccessException
-   */
+  /** @param taskId @param requestToken @return @throws DataAccessException */
   public TapeRecallTO getTask(UUID taskId, String requestToken) throws DataAccessException {
 
     return tapeRecallDAO.getTask(taskId, requestToken);
@@ -194,32 +192,26 @@ public class TapeRecallCatalog {
    * Verifies that a recall task with the given taskId and request token exists on the database
    *
    * @param taskId @param requestToken @return true if the recall task exists @throws
-   *        DataAccessException
+   *     DataAccessException
    */
   public boolean existsTask(UUID taskId, String requestToken) throws DataAccessException {
 
     return tapeRecallDAO.existsTask(taskId, requestToken);
   }
 
-  /**
-   * @param groupTaskId @return @throws DataAccessException
-   */
+  /** @param groupTaskId @return @throws DataAccessException */
   public List<TapeRecallTO> getGroupTasks(UUID groupTaskId) throws DataAccessException {
 
     return tapeRecallDAO.getGroupTasks(groupTaskId);
   }
 
-  /**
-   * @param groupTaskId @return @throws DataAccessException
-   */
+  /** @param groupTaskId @return @throws DataAccessException */
   public boolean existsGroupTask(UUID groupTaskId) throws DataAccessException {
 
     return tapeRecallDAO.existsGroupTask(groupTaskId);
   }
 
-  /**
-   * @param maxSize The max number of purged requests @return the number of purged requests
-   */
+  /** @param maxSize The max number of purged requests @return the number of purged requests */
   public int purgeCatalog(long expirationTime, int maxSize) {
 
     log.debug("purging '{}' completed tasks older than '{}' seconds ...", maxSize, expirationTime);
@@ -248,9 +240,7 @@ public class TapeRecallCatalog {
     return taskList;
   }
 
-  /**
-   * @param numberOfTasks @return
-   */
+  /** @param numberOfTasks @return */
   public List<TapeRecallTO> getAllInProgressTasks(int numberOfTaks) {
 
     List<TapeRecallTO> taskList;
@@ -268,9 +258,7 @@ public class TapeRecallCatalog {
     return taskList;
   }
 
-  /**
-   * @return
-   */
+  /** @return */
   public TapeRecallTO takeoverTask() {
 
     TapeRecallTO task = null;
@@ -282,9 +270,7 @@ public class TapeRecallCatalog {
     return task;
   }
 
-  /**
-   * @param voName @return
-   */
+  /** @param voName @return */
   public TapeRecallTO takeoverTask(String voName) {
 
     TapeRecallTO task = null;
@@ -296,9 +282,7 @@ public class TapeRecallCatalog {
     return task;
   }
 
-  /**
-   * @param numberOfTaks @param voName @return
-   */
+  /** @param numberOfTaks @param voName @return */
   public List<TapeRecallTO> takeoverTasks(int numberOfTaks, String voName) {
 
     List<TapeRecallTO> taskList = Lists.newArrayList();
@@ -314,7 +298,7 @@ public class TapeRecallCatalog {
    * Method used by PtGChunk and BoLChunk to request the recall of a file
    *
    * @param chunk @param voName @param absoluteFileName @return the id of the recall task in charge
-   *        of recall the file @throws DataAccessException
+   *     of recall the file @throws DataAccessException
    */
   public UUID insertTask(Suspendedable chunk, String voName, String absoluteFileName)
       throws DataAccessException {
@@ -352,21 +336,24 @@ public class TapeRecallCatalog {
      * setting the status and the group id to the one of the found row
      */
     UUID groupTaskId =
-        tapeRecallDAO.insertCloneTask(task, new int[] {TapeRecallStatus.QUEUED.getStatusId(),
-            TapeRecallStatus.IN_PROGRESS.getStatusId()}, newGroupTaskId);
+        tapeRecallDAO.insertCloneTask(
+            task,
+            new int[] {
+              TapeRecallStatus.QUEUED.getStatusId(), TapeRecallStatus.IN_PROGRESS.getStatusId()
+            },
+            newGroupTaskId);
 
     if (newGroupTaskId != groupTaskId) {
       log.debug(
           "Task with taskId {} of request with token {} has benn added to an existent group: {}",
-          task.getTaskId(), task.getRequestToken().getValue(), groupTaskId);
+          task.getTaskId(),
+          task.getRequestToken().getValue(),
+          groupTaskId);
     }
     return groupTaskId;
   }
 
-  /**
-   *
-   * @param chunkData @return @throws DataAccessException
-   */
+  /** @param chunkData @return @throws DataAccessException */
   private TapeRecallTO getTaskFromChunk(RequestData chunkData) throws DataAccessException {
 
     TapeRecallTO task = new TapeRecallTO();
@@ -408,9 +395,11 @@ public class TapeRecallCatalog {
       throws DataAccessException {
 
     synchronized (this) {
-
       if (!tapeRecallDAO.setGroupTaskStatus(groupTaskId, status.getStatusId(), timestamp)) {
-        log.debug("Updating to status {} at {} didn't affect groupTask {}", status, timestamp,
+        log.debug(
+            "Updating to status {} at {} didn't affect groupTask {}",
+            status,
+            timestamp,
             groupTaskId);
         return false;
       }
@@ -426,11 +415,9 @@ public class TapeRecallCatalog {
     }
   }
 
-  /**
-   * @param taskId @param recallTaskStatus @throws IllegalArgumentException
-   */
-  private void updateChuncksStatus(Collection<Suspendedable> chunkBucket,
-      TapeRecallStatus recallTaskStatus) {
+  /** @param taskId @param recallTaskStatus @throws IllegalArgumentException */
+  private void updateChuncksStatus(
+      Collection<Suspendedable> chunkBucket, TapeRecallStatus recallTaskStatus) {
 
     if (chunkBucket == null || chunkBucket.isEmpty() || recallTaskStatus == null) {
       log.error("Unable to perform the final status update. Provided invalid arguments");
@@ -441,5 +428,4 @@ public class TapeRecallCatalog {
       chunk.completeRequest(recallTaskStatus);
     }
   }
-
 }

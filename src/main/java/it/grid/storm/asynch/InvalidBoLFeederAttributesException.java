@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.asynch;
 
@@ -10,7 +9,7 @@ import it.grid.storm.griduser.GridUserInterface;
 /**
  * Class that represents an Exception thrown when a BoLFeeder could not be created because the
  * supplied RequestSummayData or GridUser or GlobalStatusManager were null.
- * 
+ *
  * @author CNAF
  * @version 1.0
  * @date Aug, 2009
@@ -27,8 +26,8 @@ public class InvalidBoLFeederAttributesException extends Exception {
    * Public constructor that requires the RequestSummaryData and the GridUser that caused the
    * exception to be thrown.
    */
-  public InvalidBoLFeederAttributesException(RequestSummaryData rsd, GridUserInterface gu,
-      GlobalStatusManager gsm) {
+  public InvalidBoLFeederAttributesException(
+      RequestSummaryData rsd, GridUserInterface gu, GlobalStatusManager gsm) {
 
     nullRequestSummaryData = (rsd == null);
     nullGridUser = (gu == null);

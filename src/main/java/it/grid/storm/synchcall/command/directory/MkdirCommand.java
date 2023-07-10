@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.command.directory;
 
@@ -18,11 +17,7 @@ import static it.grid.storm.synchcall.command.directory.MkdirException.srmIntern
 import static it.grid.storm.synchcall.command.directory.MkdirException.srmInvalidPath;
 import static java.lang.String.format;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Lists;
-
 import it.grid.storm.acl.AclManager;
 import it.grid.storm.acl.AclManagerFS;
 import it.grid.storm.authz.AuthzDecision;
@@ -58,6 +53,8 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.MkdirInputData;
 import it.grid.storm.synchcall.data.directory.MkdirOutputData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class MkdirException extends SRMCommandException {
 
@@ -89,15 +86,13 @@ class MkdirException extends SRMCommandException {
   }
 }
 
-
 /**
  * This class is part of the StoRM project. Copyright: Copyright (c) 2008 Company: INFN-CNAF and
  * ICTP/EGRID project
- * 
+ *
  * @author lucamag
  * @date May 27, 2008
  */
-
 public class MkdirCommand extends DirectoryCommand implements Command {
 
   public static final Logger log = LoggerFactory.getLogger(MkdirCommand.class);
@@ -117,7 +112,7 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 
   /**
    * Method that provide SrmMkdir functionality.
-   * 
+   *
    * @param inputData Contains information about input data for Mkdir request.
    * @return MkdirOutputData Contains output data
    */
@@ -140,8 +135,8 @@ public class MkdirCommand extends DirectoryCommand implements Command {
       GridUserInterface user = getUser(data);
       StoRI stori = resolveStoRI(surl, user);
       checkUserAuthorization(stori, user);
-      log.debug("srmMkdir authorized for {} for directory = {}", userToString(user),
-          stori.getPFN());
+      log.debug(
+          "srmMkdir authorized for {} for directory = {}", userToString(user), stori.getPFN());
       returnStatus = createFolder(stori.getLocalFile());
       if (returnStatus.isSRM_SUCCESS()) {
         log.debug("srmMkdir: updating used space info ...");
@@ -163,7 +158,8 @@ public class MkdirCommand extends DirectoryCommand implements Command {
     log.debug("srmMkdir: Parent directory is {}.", parent);
     if (parent != null) {
       if (!parent.exists()) {
-        return new TReturnStatus(SRM_INVALID_PATH,
+        return new TReturnStatus(
+            SRM_INVALID_PATH,
             "Parent directory does not exists. Recursive directory creation Not Allowed");
       }
       log.debug("srmMkdir: Parent directory {} exists.", parent);
@@ -295,8 +291,9 @@ public class MkdirCommand extends DirectoryCommand implements Command {
     }
   }
 
-  private void setAcl(GridUserInterface user, LocalFile file, boolean hasJiTACL,
-      FilesystemPermission permission) throws CannotMapUserException {
+  private void setAcl(
+      GridUserInterface user, LocalFile file, boolean hasJiTACL, FilesystemPermission permission)
+      throws CannotMapUserException {
 
     /*
      * Add Acces Control List (ACL) in directory created. ACL allow user to read-write-list the new
@@ -329,7 +326,9 @@ public class MkdirCommand extends DirectoryCommand implements Command {
       return;
     }
     for (ACLEntry ace : dacl.getACL()) {
-      log.debug("Adding DefaultACL for the gid: {} with permission: {}", ace.getGroupID(),
+      log.debug(
+          "Adding DefaultACL for the gid: {} with permission: {}",
+          ace.getGroupID(),
           ace.getFilePermissionString());
 
       LocalUser user = new LocalUser(ace.getGroupID(), ace.getGroupID());
@@ -347,7 +346,11 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 
     if (inputData != null) {
       if (inputData.getSurl() != null) {
-        CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData,
+        CommandHelper.printRequestOutcome(
+            SRM_COMMAND,
+            log,
+            status,
+            inputData,
             Lists.newArrayList(inputData.getSurl().toString()));
       } else {
         CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData);

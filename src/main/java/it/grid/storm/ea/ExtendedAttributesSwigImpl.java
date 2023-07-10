@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.ea;
 
@@ -8,63 +7,55 @@ import it.grid.storm.filesystem.swig.storm_xattrs;
 
 public class ExtendedAttributesSwigImpl implements ExtendedAttributes {
 
-	public ExtendedAttributesSwigImpl() {
+  public ExtendedAttributesSwigImpl() {}
 
-	}
+  @Override
+  public String getXAttr(String fileName, String attributeName) {
 
-	@Override
-	public String getXAttr(String fileName, String attributeName) {
+    try {
 
-		try {
+      return storm_xattrs.get_xattr_value(fileName, attributeName);
 
-			return storm_xattrs.get_xattr_value(fileName, attributeName);
+    } catch (RuntimeException e) {
+      throw new ExtendedAttributesException(e);
+    }
+  }
 
-		} catch (RuntimeException e) {
-			throw new ExtendedAttributesException(e);
-		}
+  @Override
+  public void setXAttr(String filename, String attributeName, String attributeValue)
+      throws ExtendedAttributesException {
 
-	}
+    try {
+      if (attributeValue == null) storm_xattrs.set_xattr(filename, attributeName);
+      else storm_xattrs.set_xattr(filename, attributeName, attributeValue);
 
-	@Override
-	public void setXAttr(String filename, String attributeName,
-		String attributeValue) throws ExtendedAttributesException {
+    } catch (RuntimeException e) {
+      throw new ExtendedAttributesException(e);
+    }
+  }
 
-		try {
-			if (attributeValue == null)
-				storm_xattrs.set_xattr(filename, attributeName);
-			else
-				storm_xattrs.set_xattr(filename, attributeName, attributeValue);
+  @Override
+  public void rmXAttr(String filename, String attributeName) throws ExtendedAttributesException {
 
-		} catch (RuntimeException e) {
-			throw new ExtendedAttributesException(e);
-		}
+    try {
 
-	}
+      storm_xattrs.remove_xattr(filename, attributeName);
 
-	@Override
-	public void rmXAttr(String filename, String attributeName)
-		throws ExtendedAttributesException {
+    } catch (RuntimeException e) {
+      throw new ExtendedAttributesException(e);
+    }
+  }
 
-		try {
+  @Override
+  public boolean hasXAttr(String fileName, String attributeName)
+      throws ExtendedAttributesException {
 
-			storm_xattrs.remove_xattr(filename, attributeName);
+    try {
 
-		} catch (RuntimeException e) {
-			throw new ExtendedAttributesException(e);
-		}
-	}
+      return storm_xattrs.xattr_is_set(fileName, attributeName);
 
-	@Override
-	public boolean hasXAttr(String fileName, String attributeName)
-		throws ExtendedAttributesException {
-
-		try {
-
-			return storm_xattrs.xattr_is_set(fileName, attributeName);
-
-		} catch (RuntimeException e) {
-			throw new ExtendedAttributesException(e);
-		}
-	}
-
+    } catch (RuntimeException e) {
+      throw new ExtendedAttributesException(e);
+    }
+  }
 }

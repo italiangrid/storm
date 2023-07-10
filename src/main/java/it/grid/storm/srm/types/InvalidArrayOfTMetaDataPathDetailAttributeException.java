@@ -1,30 +1,23 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.srm.types;
 
 /**
- * This class represents an Exception thrown when the constructor for SpaceToken
- * is invoked with a null String.
- * 
+ * This class represents an Exception thrown when the constructor for SpaceToken is invoked with a
+ * null String.
  */
+public class InvalidArrayOfTMetaDataPathDetailAttributeException extends Exception {
 
-import it.grid.storm.srm.types.TMetaDataPathDetail;
+  private boolean nullArray;
 
-public class InvalidArrayOfTMetaDataPathDetailAttributeException extends
-	Exception {
+  public InvalidArrayOfTMetaDataPathDetailAttributeException(TMetaDataPathDetail[] metaDataArray) {
 
-	private boolean nullArray;
+    nullArray = metaDataArray == null;
+  }
 
-	public InvalidArrayOfTMetaDataPathDetailAttributeException(
-		TMetaDataPathDetail[] metaDataArray) {
+  public String toString() {
 
-		nullArray = metaDataArray == null;
-	}
-
-	public String toString() {
-
-		return "Invalid TMetaDataPathDetail[]: nullArray = " + nullArray;
-	}
+    return "Invalid TMetaDataPathDetail[]: nullArray = " + nullArray;
+  }
 }

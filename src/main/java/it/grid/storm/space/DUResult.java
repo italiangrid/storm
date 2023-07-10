@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.space;
 
@@ -15,7 +14,6 @@ public class DUResult {
   private final Instant end;
   private final ExitStatus status;
   private final String detail;
-  
 
   /**
    * @param size
@@ -24,8 +22,13 @@ public class DUResult {
    * @param durationTime
    * @param cmdResult
    */
-  private DUResult(long sizeInBytes, String absRootPath, Instant start, Instant end,
-      ExitStatus status, String detail) {
+  private DUResult(
+      long sizeInBytes,
+      String absRootPath,
+      Instant start,
+      Instant end,
+      ExitStatus status,
+      String detail) {
 
     this.sizeInBytes = sizeInBytes;
     this.absRootPath = absRootPath;
@@ -35,41 +38,31 @@ public class DUResult {
     this.detail = detail;
   }
 
-  /**
-   * @return the size
-   */
+  /** @return the size */
   public final long getSizeInBytes() {
 
     return sizeInBytes;
   }
 
-  /**
-   * @return the absRootPath
-   */
+  /** @return the absRootPath */
   public final String getAbsRootPath() {
 
     return absRootPath;
   }
 
-  /**
-   * @return the start @Instant
-   */
+  /** @return the start @Instant */
   public final Instant getStart() {
 
     return start;
   }
 
-  /**
-   * @return the end @Instant
-   */
+  /** @return the end @Instant */
   public final Instant getEnd() {
 
     return end;
   }
 
-  /**
-   * @return the end @Instant
-   */
+  /** @return the end @Instant */
   public final long getDurationInMillis() {
 
     return Duration.between(start, end).toMillis();
@@ -80,17 +73,13 @@ public class DUResult {
     return ExitStatus.SUCCESS.equals(status);
   }
 
-  /**
-   * @return the exit status
-   */
+  /** @return the exit status */
   public final ExitStatus getStatus() {
 
     return status;
   }
 
-  /**
-   * @return the exit status detailed message
-   */
+  /** @return the exit status detailed message */
   public final String getDetail() {
 
     return detail;
@@ -120,11 +109,18 @@ public class DUResult {
     return get(absRootPath, start, end, sizeInBytes, ExitStatus.SUCCESS, "");
   }
 
-  public static DUResult failure(String absRootPath, Instant start, Instant end, String errorMessage) {
+  public static DUResult failure(
+      String absRootPath, Instant start, Instant end, String errorMessage) {
     return get(absRootPath, start, end, -1, ExitStatus.FAILURE, errorMessage);
   }
 
-  public static DUResult get(String absRootPath, Instant start, Instant end, long sizeInBytes, ExitStatus status, String statusMessage) {
+  public static DUResult get(
+      String absRootPath,
+      Instant start,
+      Instant end,
+      long sizeInBytes,
+      ExitStatus status,
+      String statusMessage) {
     return new DUResult(sizeInBytes, absRootPath, start, end, status, statusMessage);
   }
 }

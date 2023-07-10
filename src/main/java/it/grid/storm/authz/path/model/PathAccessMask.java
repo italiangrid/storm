@@ -1,27 +1,25 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.authz.path.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author zappi
- */
+/** @author zappi */
 @SuppressWarnings("serial")
 public class PathAccessMask {
 
   private final List<PathOperation> pathAccessMask;
 
-  private static List<PathOperation> operations = new ArrayList<PathOperation>() {
+  private static List<PathOperation> operations =
+      new ArrayList<PathOperation>() {
 
-    {
-      add(PathOperation.READ_FILE);
-      add(PathOperation.LIST_DIRECTORY);
-    }
-  };
+        {
+          add(PathOperation.READ_FILE);
+          add(PathOperation.LIST_DIRECTORY);
+        }
+      };
 
   public static final PathAccessMask DEFAULT = new PathAccessMask(operations);
 

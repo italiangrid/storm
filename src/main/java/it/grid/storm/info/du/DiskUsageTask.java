@@ -1,17 +1,9 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.info.du;
 
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Preconditions;
-
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.namespace.model.VirtualFS;
@@ -20,6 +12,10 @@ import it.grid.storm.space.DUResult;
 import it.grid.storm.space.StorageSpaceData;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DiskUsageTask implements Runnable {
 
@@ -47,8 +43,11 @@ public class DiskUsageTask implements Runnable {
       log.debug("du-result: {}", result);
       updateUsedSpaceOnPersistence(spaceToken, result);
       long seconds = TimeUnit.MILLISECONDS.toSeconds(result.getDurationInMillis());
-      log.info("DiskUsageTask for {} successfully ended in {}s with used-size = {} bytes",
-          spaceToken, seconds, result.getSizeInBytes());
+      log.info(
+          "DiskUsageTask for {} successfully ended in {}s with used-size = {} bytes",
+          spaceToken,
+          seconds,
+          result.getSizeInBytes());
 
     } catch (IOException e) {
 
@@ -72,7 +71,9 @@ public class DiskUsageTask implements Runnable {
 
       ssd.setUsedSpaceSize(TSizeInBytes.make(duResult.getSizeInBytes(), SizeUnit.BYTES));
       spaceCatalog.updateStorageSpace(ssd);
-      log.debug("StorageSpace table updated for SA: '{}' with used size = {}", spaceToken,
+      log.debug(
+          "StorageSpace table updated for SA: '{}' with used size = {}",
+          spaceToken,
           duResult.getSizeInBytes());
 
     } catch (InvalidTSizeAttributesException | DataAccessException e) {
@@ -95,5 +96,4 @@ public class DiskUsageTask implements Runnable {
     builder.append("]");
     return builder.toString();
   }
-
 }

@@ -1,19 +1,17 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.balancer;
-
-import org.mockito.Mockito;
 
 import it.grid.storm.balancer.node.FTPNode;
 import it.grid.storm.balancer.node.HttpNode;
 import it.grid.storm.balancer.node.HttpsNode;
+import org.mockito.Mockito;
 
 public class BalancerUtils {
 
-  protected Node getNode(Class<? extends Node> c, int id, String hostname, int port,
-      boolean isResponsive) {
+  protected Node getNode(
+      Class<? extends Node> c, int id, String hostname, int port, boolean isResponsive) {
 
     Node n = Mockito.mock(c);
     Mockito.when(n.getHostname()).thenReturn(hostname);
@@ -23,8 +21,13 @@ public class BalancerUtils {
     return n;
   }
 
-  protected Node getNode(Class<? extends Node> c, int id, String hostname, int port,
-      boolean isResponsive, int weight) {
+  protected Node getNode(
+      Class<? extends Node> c,
+      int id,
+      String hostname,
+      int port,
+      boolean isResponsive,
+      int weight) {
 
     Node n = Mockito.mock(c);
     Mockito.when(n.getHostname()).thenReturn(hostname);
@@ -82,5 +85,4 @@ public class BalancerUtils {
   protected Node getUnresponsiveHttpsNode(int id, String hostname, int port, int weight) {
     return getNode(HttpsNode.class, id, hostname, port, false, weight);
   }
-
 }

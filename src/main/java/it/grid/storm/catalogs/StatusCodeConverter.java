@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.catalogs;
 
@@ -39,17 +38,15 @@ import static it.grid.storm.srm.types.TStatusCode.SRM_SPACE_LIFETIME_EXPIRED;
 import static it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS;
 import static it.grid.storm.srm.types.TStatusCode.SRM_TOO_MANY_RESULTS;
 
+import com.google.common.collect.Maps;
+import it.grid.storm.srm.types.TStatusCode;
 import java.util.Iterator;
 import java.util.Map;
-
-import com.google.common.collect.Maps;
-
-import it.grid.storm.srm.types.TStatusCode;
 
 /**
  * Package private auxiliary class used to convert between DB raw data and StoRM object model
  * representation of StatusCode.
- * 
+ *
  * @author: EGRID ICTP
  * @version: 2.0
  * @date: June 2005
@@ -99,15 +96,13 @@ public class StatusCodeConverter {
     DBtoSTORM.put(Integer.valueOf(33), SRM_CUSTOM_STATUS);
 
     Object aux;
-    for (Iterator<Integer> i = DBtoSTORM.keySet().iterator(); i.hasNext();) {
+    for (Iterator<Integer> i = DBtoSTORM.keySet().iterator(); i.hasNext(); ) {
       aux = i.next();
       STORMtoDB.put(DBtoSTORM.get(aux), aux);
     }
   }
 
-  /**
-   * Method that returns the only instance of StatusCodeConverter.
-   */
+  /** Method that returns the only instance of StatusCodeConverter. */
   public static StatusCodeConverter getInstance() {
 
     return c;
@@ -120,8 +115,7 @@ public class StatusCodeConverter {
   public int toDB(TStatusCode sc) {
 
     Integer aux = (Integer) STORMtoDB.get(sc);
-    if (aux == null)
-      return -1;
+    if (aux == null) return -1;
     return aux.intValue();
   }
 
@@ -132,8 +126,7 @@ public class StatusCodeConverter {
   public TStatusCode toSTORM(int n) {
 
     TStatusCode aux = DBtoSTORM.get(Integer.valueOf(n));
-    if (aux == null)
-      return TStatusCode.EMPTY;
+    if (aux == null) return TStatusCode.EMPTY;
     return aux;
   }
 }

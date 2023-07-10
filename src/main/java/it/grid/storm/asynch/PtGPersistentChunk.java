@@ -1,10 +1,8 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.asynch;
 
-import java.util.Arrays;
 import it.grid.storm.catalogs.PtGChunkCatalog;
 import it.grid.storm.catalogs.PtGData;
 import it.grid.storm.catalogs.PtGPersistentChunkData;
@@ -13,7 +11,7 @@ import it.grid.storm.scheduler.PersistentRequestChunk;
 import it.grid.storm.srm.types.TStatusCode;
 import it.grid.storm.synchcall.command.CommandHelper;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
-
+import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +60,7 @@ import org.slf4j.LoggerFactory;
  * to manipulate the ACLs, StoRM was not configured for the underlying FileSystem, or there was an
  * unexpected error; in the first case the status changes to SRM_INVALID_PATH, while in all other
  * ones it changes to SRM_FAILURE; corresponding messagges get logged.
- * 
+ *
  * @author EGRID - ICTP Trieste
  * @date May 3rd, 2005
  * @version 4.0
@@ -71,9 +69,7 @@ public class PtGPersistentChunk extends PtG implements PersistentRequestChunk {
 
   private static Logger log = LoggerFactory.getLogger(PtGPersistentChunk.class);
 
-  /**
-   * RequestSummaryData containing all the statistics for the originating srmPrepareToGetRequest
-   */
+  /** RequestSummaryData containing all the statistics for the originating srmPrepareToGetRequest */
   private final RequestSummaryData rsd;
 
   /**
@@ -86,16 +82,18 @@ public class PtGPersistentChunk extends PtG implements PersistentRequestChunk {
    * Constructor requiring the GridUser, the RequestSummaryData and the PtGChunkData about this
    * chunk. If the supplied attributes are null, an InvalidPtGChunkAttributesException is thrown.
    */
-  public PtGPersistentChunk(RequestSummaryData summaryData, PtGPersistentChunkData chunkData,
-      GlobalStatusManager gsm)
+  public PtGPersistentChunk(
+      RequestSummaryData summaryData, PtGPersistentChunkData chunkData, GlobalStatusManager gsm)
       throws InvalidRequestAttributesException, InvalidPersistentRequestAttributesException {
 
     super(chunkData);
 
     if (summaryData == null || gsm == null) {
       throw new IllegalArgumentException(
-          "Unable to instantiate the object, illegal arguments: summaryData=" + summaryData
-              + " chunkData=" + chunkData);
+          "Unable to instantiate the object, illegal arguments: summaryData="
+              + summaryData
+              + " chunkData="
+              + chunkData);
     }
     this.rsd = summaryData;
     this.gsm = gsm;
@@ -110,13 +108,17 @@ public class PtGPersistentChunk extends PtG implements PersistentRequestChunk {
     if (success) {
 
       gsm.successfulChunk((PtGPersistentChunkData) requestData);
-      log.info("Completed PtG request ({}), file successfully recalled from " + "tape: {}",
-          rsd.requestToken(), requestData.getSURL().toString());
+      log.info(
+          "Completed PtG request ({}), file successfully recalled from " + "tape: {}",
+          rsd.requestToken(),
+          requestData.getSURL().toString());
 
     } else {
 
       gsm.failedChunk((PtGPersistentChunkData) requestData);
-      log.error("BoL request ({}), file not recalled from tape: {}", rsd.requestToken(),
+      log.error(
+          "BoL request ({}), file not recalled from tape: {}",
+          rsd.requestToken(),
           requestData.getSURL().toString());
     }
     return success;
@@ -178,24 +180,35 @@ public class PtGPersistentChunk extends PtG implements PersistentRequestChunk {
     if (inputData != null) {
       if (inputData.getSURL() != null) {
         if (rsd.requestToken() != null) {
-          CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData,
-              rsd.requestToken(), Arrays.asList(inputData.getSURL().toString()));
+          CommandHelper.printRequestOutcome(
+              SRM_COMMAND,
+              log,
+              inputData.getStatus(),
+              inputData,
+              rsd.requestToken(),
+              Arrays.asList(inputData.getSURL().toString()));
         } else {
-          CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData,
+          CommandHelper.printRequestOutcome(
+              SRM_COMMAND,
+              log,
+              inputData.getStatus(),
+              inputData,
               Arrays.asList(inputData.getSURL().toString()));
         }
 
       } else {
         if (rsd.requestToken() != null) {
-          CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData,
-              rsd.requestToken());
+          CommandHelper.printRequestOutcome(
+              SRM_COMMAND, log, inputData.getStatus(), inputData, rsd.requestToken());
         } else {
           CommandHelper.printRequestOutcome(SRM_COMMAND, log, inputData.getStatus(), inputData);
         }
       }
 
     } else {
-      CommandHelper.printRequestOutcome(SRM_COMMAND, log,
+      CommandHelper.printRequestOutcome(
+          SRM_COMMAND,
+          log,
           CommandHelper.buildStatus(TStatusCode.SRM_INTERNAL_ERROR, "No input available"));
     }
   }

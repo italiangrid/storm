@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.authz.sa;
 
@@ -18,7 +17,6 @@ public abstract class SpaceAuthz implements SpaceAuthzInterface {
    * @todo: 3) IMPLEMENT PRINCIPAL LIST PERSISTENCE
    * @todo: 4) IMPLEMENT RECALCULATE CACHE
    */
-
   public SpaceAuthz() {
 
     super();
@@ -35,5 +33,4 @@ public abstract class SpaceAuthz implements SpaceAuthzInterface {
 
     return authzDB;
   }
-
 }

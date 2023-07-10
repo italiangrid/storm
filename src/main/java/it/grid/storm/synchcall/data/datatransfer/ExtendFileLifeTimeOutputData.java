@@ -1,10 +1,9 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 /**
  * This class represents the ExtendFileLifeTime Output Data.
- * 
+ *
  * @author Alberto Forti
  * @author CNAF-INFN Bologna
  * @date Dec 2006
@@ -18,67 +17,65 @@ import it.grid.storm.synchcall.data.OutputData;
 
 public class ExtendFileLifeTimeOutputData implements OutputData {
 
-	private TReturnStatus returnStatus = null;
-	private ArrayOfTSURLLifetimeReturnStatus arrayOfFileStatuses = null;
+  private TReturnStatus returnStatus = null;
+  private ArrayOfTSURLLifetimeReturnStatus arrayOfFileStatuses = null;
 
-	public ExtendFileLifeTimeOutputData() {
+  public ExtendFileLifeTimeOutputData() {
 
-		this.returnStatus = null;
-		this.arrayOfFileStatuses = null;
-	}
+    this.returnStatus = null;
+    this.arrayOfFileStatuses = null;
+  }
 
-	public ExtendFileLifeTimeOutputData(TReturnStatus retStatus,
-		ArrayOfTSURLLifetimeReturnStatus arrayOfFileStatuses) {
+  public ExtendFileLifeTimeOutputData(
+      TReturnStatus retStatus, ArrayOfTSURLLifetimeReturnStatus arrayOfFileStatuses) {
 
-		this.returnStatus = retStatus;
-		this.arrayOfFileStatuses = arrayOfFileStatuses;
-	}
+    this.returnStatus = retStatus;
+    this.arrayOfFileStatuses = arrayOfFileStatuses;
+  }
 
-	/**
-	 * Returns the returnStatus field.
-	 * 
-	 * @return TReturnStatus
-	 */
-	public TReturnStatus getReturnStatus() {
+  /**
+   * Returns the returnStatus field.
+   *
+   * @return TReturnStatus
+   */
+  public TReturnStatus getReturnStatus() {
 
-		return returnStatus;
-	}
+    return returnStatus;
+  }
 
-	/**
-	 * Set the returnStatus field.
-	 * 
-	 * @param returnStatus
-	 *          TReturnStatus
-	 */
-	public void setReturnStatus(TReturnStatus returnStatus) {
+  /**
+   * Set the returnStatus field.
+   *
+   * @param returnStatus TReturnStatus
+   */
+  public void setReturnStatus(TReturnStatus returnStatus) {
 
-		this.returnStatus = returnStatus;
-	}
+    this.returnStatus = returnStatus;
+  }
 
-	/**
-	 * Returns the arrayOfFileStatuses field.
-	 * 
-	 * @return ArrayOfTSURLLifetimeReturnStatus
-	 */
-	public ArrayOfTSURLLifetimeReturnStatus getArrayOfFileStatuses() {
+  /**
+   * Returns the arrayOfFileStatuses field.
+   *
+   * @return ArrayOfTSURLLifetimeReturnStatus
+   */
+  public ArrayOfTSURLLifetimeReturnStatus getArrayOfFileStatuses() {
 
-		return arrayOfFileStatuses;
-	}
+    return arrayOfFileStatuses;
+  }
 
-	/**
-	 * Set the arrayOfFileStatuses field.
-	 * 
-	 * @param arrayOfFileStatuses
-	 */
-	public void setArrayOfFileStatuses(
-		ArrayOfTSURLLifetimeReturnStatus arrayOfFileStatuses) {
+  /**
+   * Set the arrayOfFileStatuses field.
+   *
+   * @param arrayOfFileStatuses
+   */
+  public void setArrayOfFileStatuses(ArrayOfTSURLLifetimeReturnStatus arrayOfFileStatuses) {
 
-		this.arrayOfFileStatuses = arrayOfFileStatuses;
-	}
+    this.arrayOfFileStatuses = arrayOfFileStatuses;
+  }
 
-	public boolean isSuccess() {
+  public boolean isSuccess() {
 
-		// TODO Auto-generated method stub
-		return true;
-	}
+    // TODO Auto-generated method stub
+    return true;
+  }
 }

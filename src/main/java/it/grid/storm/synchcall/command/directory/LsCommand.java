@@ -1,16 +1,7 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.synchcall.command.directory;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import org.apache.commons.lang.mutable.MutableInt;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
@@ -68,16 +59,21 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.directory.LSInputData;
 import it.grid.storm.synchcall.data.directory.LSOutputData;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import org.apache.commons.lang.mutable.MutableInt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is part of the StoRM project. Copyright (c) 2008 INFN-CNAF.
- * <p>
- * Authors:
- * 
+ *
+ * <p>Authors:
+ *
  * @author lucamag luca.magnoniATcnaf.infn.it
  * @date = Dec 3, 2008
  */
-
 public class LsCommand extends DirectoryCommand implements Command {
 
   public static final Logger log = LoggerFactory.getLogger(LsCommand.class);
@@ -95,7 +91,7 @@ public class LsCommand extends DirectoryCommand implements Command {
 
   /**
    * Method that provides LS functionality.
-   * 
+   *
    * @param inputData LSInputData
    * @return LSOutputData
    */
@@ -110,11 +106,13 @@ public class LsCommand extends DirectoryCommand implements Command {
     outputData.setRequestToken(null);
     outputData.setDetails(null);
 
-    if (inputData == null || inputData.getSurlArray() == null
+    if (inputData == null
+        || inputData.getSurlArray() == null
         || inputData.getSurlArray().size() == 0) {
       log.debug("srmLs: Input parameters for srmLs request NOT found!");
-      globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
-          "Invalid input parameters specified");
+      globalStatus =
+          CommandHelper.buildStatus(
+              TStatusCode.SRM_INVALID_REQUEST, "Invalid input parameters specified");
       printRequestOutcome(globalStatus, inputData);
       outputData.setStatus(globalStatus);
       return outputData;
@@ -123,8 +121,9 @@ public class LsCommand extends DirectoryCommand implements Command {
     ArrayOfSURLs surlArray = inputData.getSurlArray();
 
     if (inputData.getStorageTypeSpecified()) {
-      globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_NOT_SUPPORTED,
-          "Filtering result by fileStorageType not supported.");
+      globalStatus =
+          CommandHelper.buildStatus(
+              TStatusCode.SRM_NOT_SUPPORTED, "Filtering result by fileStorageType not supported.");
       printRequestOutcome(globalStatus, inputData);
       outputData.setStatus(globalStatus);
       outputData.setRequestToken(null);
@@ -152,8 +151,9 @@ public class LsCommand extends DirectoryCommand implements Command {
     } else {
       numOfLevels = inputData.getNumOfLevels().intValue();
       if (numOfLevels < 0) {
-        globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
-            "Parameter 'numOfLevels' is negative");
+        globalStatus =
+            CommandHelper.buildStatus(
+                TStatusCode.SRM_INVALID_REQUEST, "Parameter 'numOfLevels' is negative");
         printRequestOutcome(globalStatus, inputData);
         outputData.setStatus(globalStatus);
         return outputData;
@@ -169,8 +169,9 @@ public class LsCommand extends DirectoryCommand implements Command {
     } else {
       count = inputData.getCount().intValue();
       if (count < 0) {
-        globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
-            "Parameter 'count' is less or equal zero");
+        globalStatus =
+            CommandHelper.buildStatus(
+                TStatusCode.SRM_INVALID_REQUEST, "Parameter 'count' is less or equal zero");
         printRequestOutcome(globalStatus, inputData);
         outputData.setStatus(globalStatus);
         return outputData;
@@ -188,8 +189,9 @@ public class LsCommand extends DirectoryCommand implements Command {
     } else {
       offset = inputData.getOffset().intValue();
       if (offset < 0) {
-        globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
-            "Parameter 'offset' is negative");
+        globalStatus =
+            CommandHelper.buildStatus(
+                TStatusCode.SRM_INVALID_REQUEST, "Parameter 'offset' is negative");
         printRequestOutcome(globalStatus, inputData);
         outputData.setStatus(globalStatus);
         return outputData;
@@ -230,8 +232,11 @@ public class LsCommand extends DirectoryCommand implements Command {
             } catch (UnapprochableSurlException e) {
               failure = true;
 
-              log.info("Unable to build a stori for surl {} for user {}. {}", surl,
-                  DataHelper.getRequestor(inputData), e.getMessage());
+              log.info(
+                  "Unable to build a stori for surl {} for user {}. {}",
+                  surl,
+                  DataHelper.getRequestor(inputData),
+                  e.getMessage());
 
               fileLevelStatusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
               fileLevelExplanation = e.getMessage();
@@ -241,8 +246,11 @@ public class LsCommand extends DirectoryCommand implements Command {
             } catch (NamespaceException e) {
               failure = true;
 
-              log.info("Unable to build a stori for surl {} for user {}. {}", surl,
-                  DataHelper.getRequestor(inputData), e.getMessage());
+              log.info(
+                  "Unable to build a stori for surl {} for user {}. {}",
+                  surl,
+                  DataHelper.getRequestor(inputData),
+                  e.getMessage());
 
               fileLevelStatusCode = TStatusCode.SRM_INTERNAL_ERROR;
               fileLevelExplanation = e.getMessage();
@@ -252,8 +260,11 @@ public class LsCommand extends DirectoryCommand implements Command {
             } catch (InvalidSURLException e) {
               failure = true;
 
-              log.info("Unable to build a stori for surl {} for user {}. {}", surl,
-                  DataHelper.getRequestor(inputData), e.getMessage());
+              log.info(
+                  "Unable to build a stori for surl {} for user {}. {}",
+                  surl,
+                  DataHelper.getRequestor(inputData),
+                  e.getMessage());
 
               fileLevelStatusCode = TStatusCode.SRM_INVALID_PATH;
               fileLevelExplanation = e.getMessage();
@@ -297,23 +308,24 @@ public class LsCommand extends DirectoryCommand implements Command {
           failure = true;
           fileLevelStatusCode = TStatusCode.SRM_INTERNAL_ERROR;
           fileLevelExplanation = e.getMessage();
-          printRequestOutcome(CommandHelper.buildStatus(fileLevelStatusCode, fileLevelExplanation),
-              inputData);
+          printRequestOutcome(
+              CommandHelper.buildStatus(fileLevelStatusCode, fileLevelExplanation), inputData);
         }
       } else {
         log.debug("srmLs: SURL not specified as input parameter!");
         failure = true;
         fileLevelStatusCode = TStatusCode.SRM_INVALID_PATH;
         fileLevelExplanation = "Invalid path";
-        printRequestOutcome(CommandHelper.buildStatus(fileLevelStatusCode, fileLevelExplanation),
-            inputData);
+        printRequestOutcome(
+            CommandHelper.buildStatus(fileLevelStatusCode, fileLevelExplanation), inputData);
       }
 
       if (!failure) {
         AuthzDecision lsAuthz;
         if (inputData instanceof IdentityInputData) {
-          lsAuthz = AuthzDirector.getPathAuthz()
-            .authorize(((IdentityInputData) inputData).getUser(), SRMFileRequest.LS, stori);
+          lsAuthz =
+              AuthzDirector.getPathAuthz()
+                  .authorize(((IdentityInputData) inputData).getUser(), SRMFileRequest.LS, stori);
         } else {
           lsAuthz =
               AuthzDirector.getPathAuthz().authorizeAnonymous(SRMFileRequest.LS, stori.getStFN());
@@ -321,23 +333,35 @@ public class LsCommand extends DirectoryCommand implements Command {
 
         if (lsAuthz.equals(AuthzDecision.PERMIT)) {
 
-          log.debug("srmLs: Ls authorized for user [{}] and PFN = [{}]",
-              DataHelper.getRequestor(inputData), stori.getPFN());
+          log.debug(
+              "srmLs: Ls authorized for user [{}] and PFN = [{}]",
+              DataHelper.getRequestor(inputData),
+              stori.getPFN());
 
-          errorCount += manageAuthorizedLS(inputData, stori, details, allLevelRecursive,
-              numOfLevels, fullDetailedList, errorCount, maxEntries, offset,
-              numberOfReturnedEntries, 0, numberOfIterations);
+          errorCount +=
+              manageAuthorizedLS(
+                  inputData,
+                  stori,
+                  details,
+                  allLevelRecursive,
+                  numOfLevels,
+                  fullDetailedList,
+                  errorCount,
+                  maxEntries,
+                  offset,
+                  numberOfReturnedEntries,
+                  0,
+                  numberOfIterations);
 
         } else {
 
           fileLevelStatusCode = TStatusCode.SRM_AUTHORIZATION_FAILURE;
           fileLevelExplanation = "User does not have valid permissions";
-          printRequestOutcome(CommandHelper.buildStatus(fileLevelStatusCode, fileLevelExplanation),
-              inputData);
+          printRequestOutcome(
+              CommandHelper.buildStatus(fileLevelStatusCode, fileLevelExplanation), inputData);
           failure = true;
         }
       }
-
 
       if (failure) {
 
@@ -356,12 +380,12 @@ public class LsCommand extends DirectoryCommand implements Command {
 
         details.addTMetaDataPathDetail(elementDetail);
       }
-
     }
 
     if (details.size() == 0) {
-      globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_INVALID_REQUEST,
-          "The offset is grater than the number of results");
+      globalStatus =
+          CommandHelper.buildStatus(
+              TStatusCode.SRM_INVALID_REQUEST, "The offset is grater than the number of results");
       printRequestOutcome(globalStatus, inputData);
       outputData.setStatus(globalStatus);
       return outputData;
@@ -369,8 +393,10 @@ public class LsCommand extends DirectoryCommand implements Command {
 
     if (numberOfReturnedEntries.intValue() >= maxEntries) {
       if (maxEntries < count) {
-        globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_TOO_MANY_RESULTS,
-            "Max returned entries is: " + DirectoryCommand.config.getLSMaxNumberOfEntry());
+        globalStatus =
+            CommandHelper.buildStatus(
+                TStatusCode.SRM_TOO_MANY_RESULTS,
+                "Max returned entries is: " + DirectoryCommand.config.getLSMaxNumberOfEntry());
         printRequestOutcome(globalStatus, inputData);
         outputData.setStatus(globalStatus);
         return outputData;
@@ -389,13 +415,15 @@ public class LsCommand extends DirectoryCommand implements Command {
     }
 
     if (errorCount == 0) {
-      globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_SUCCESS,
-          warningMessage + "All requests successfully completed");
+      globalStatus =
+          CommandHelper.buildStatus(
+              TStatusCode.SRM_SUCCESS, warningMessage + "All requests successfully completed");
       printRequestOutcome(globalStatus, inputData);
 
     } else if (errorCount < surlArray.size()) {
-      globalStatus = CommandHelper.buildStatus(TStatusCode.SRM_PARTIAL_SUCCESS,
-          warningMessage + "Check file statuses for details");
+      globalStatus =
+          CommandHelper.buildStatus(
+              TStatusCode.SRM_PARTIAL_SUCCESS, warningMessage + "Check file statuses for details");
       printRequestOutcome(globalStatus, inputData);
 
     } else {
@@ -412,8 +440,8 @@ public class LsCommand extends DirectoryCommand implements Command {
 
     if (inputData != null) {
       if (inputData.getSurlArray() != null) {
-        CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData,
-            inputData.getSurlArray().asStringList());
+        CommandHelper.printRequestOutcome(
+            SRM_COMMAND, log, status, inputData, inputData.getSurlArray().asStringList());
       } else {
         CommandHelper.printRequestOutcome(SRM_COMMAND, log, status, inputData);
       }
@@ -426,7 +454,7 @@ public class LsCommand extends DirectoryCommand implements Command {
   /**
    * Recursive function for visiting Directory an TMetaDataPath Creation. Returns the number of file
    * statuses different than SRM_SUCCESS.
-   * 
+   *
    * @param guser
    * @param stori
    * @param rootArray
@@ -442,15 +470,21 @@ public class LsCommand extends DirectoryCommand implements Command {
    * @param numberOfIterations
    * @return number of errors
    */
+  private int manageAuthorizedLS(
+      LSInputData inputData,
+      StoRI stori,
+      ArrayOfTMetaDataPathDetail rootArray,
+      boolean allLevelRecursive,
+      int numOfLevels,
+      boolean fullDetailedList,
+      int errorCount,
+      int count_maxEntries,
+      int offset,
+      MutableInt numberOfResults,
+      int currentLevel,
+      MutableInt numberOfIterations) {
 
-  private int manageAuthorizedLS(LSInputData inputData, StoRI stori,
-      ArrayOfTMetaDataPathDetail rootArray, boolean allLevelRecursive, int numOfLevels,
-      boolean fullDetailedList, int errorCount, int count_maxEntries, int offset,
-      MutableInt numberOfResults, int currentLevel, MutableInt numberOfIterations) {
-
-    /**
-     * @todo In this version the FileStorageType field is not managed even if it is specified.
-     */
+    /** @todo In this version the FileStorageType field is not managed even if it is specified. */
 
     // Check if max number of requests has been reached
     if (numberOfResults.intValue() >= count_maxEntries) {
@@ -468,12 +502,11 @@ public class LsCommand extends DirectoryCommand implements Command {
      * and return. Please note that for each level the same ArrayOfTMetaData is passed as parameter,
      * in order to collect results. this Array is referenced in the currentTMetaData element.
      */
-
     LocalFile localElement = stori.getLocalFile();
 
     // Ls of the current element
     if (localElement.exists()) { // The local element exists in the underlying
-                                 // file system
+      // file system
 
       if (localElement.isDirectory()) {
 
@@ -489,8 +522,11 @@ public class LsCommand extends DirectoryCommand implements Command {
             try {
               fullDetail(inputData, stori, currentElementDetail);
             } catch (FSException e) {
-              log.error("srmLs: unable to get full details on stori {}. {}",
-                  stori.getAbsolutePath(), e.getMessage(), e);
+              log.error(
+                  "srmLs: unable to get full details on stori {}. {}",
+                  stori.getAbsolutePath(),
+                  e.getMessage(),
+                  e);
               errorCount++;
               currentElementDetail.setStatus(
                   new TReturnStatus(TStatusCode.SRM_FAILURE, "Unable to get full details"));
@@ -524,9 +560,19 @@ public class LsCommand extends DirectoryCommand implements Command {
               break;
             }
 
-            manageAuthorizedLS(inputData, item, currentMetaDataArray, allLevelRecursive,
-                numOfLevels, fullDetailedList, errorCount, count_maxEntries, offset,
-                numberOfResults, currentLevel + 1, numberOfIterations);
+            manageAuthorizedLS(
+                inputData,
+                item,
+                currentMetaDataArray,
+                allLevelRecursive,
+                numOfLevels,
+                fullDetailedList,
+                errorCount,
+                count_maxEntries,
+                offset,
+                numberOfResults,
+                currentLevel + 1,
+                numberOfIterations);
           } // for
         }
 
@@ -540,8 +586,11 @@ public class LsCommand extends DirectoryCommand implements Command {
             try {
               fullDetail(inputData, stori, currentElementDetail);
             } catch (FSException e) {
-              log.error("srmLs: unable to get full details on stori {}. {}",
-                  stori.getAbsolutePath(), e.getMessage(), e);
+              log.error(
+                  "srmLs: unable to get full details on stori {}. {}",
+                  stori.getAbsolutePath(),
+                  e.getMessage(),
+                  e);
               errorCount++;
               currentElementDetail.setStatus(
                   new TReturnStatus(TStatusCode.SRM_FAILURE, "Unable to get full details"));
@@ -603,7 +652,7 @@ public class LsCommand extends DirectoryCommand implements Command {
 
   /**
    * Set size and status of "localElement" into "elementDetail".
-   * 
+   *
    * @param localElement LocalFile
    * @param elementDetail TMetaDataPathDetail
    */
@@ -656,7 +705,7 @@ public class LsCommand extends DirectoryCommand implements Command {
   /**
    * Returns true if the status of the SURL of the received StoRI is SRM_SPACE_AVAILABLE, false
    * otherwise. This method queries the DB, therefore pay attention to possible performance issues.
-   * 
+   *
    * @return boolean
    */
   private boolean isStoRISURLBusy(StoRI element) {
@@ -666,8 +715,9 @@ public class LsCommand extends DirectoryCommand implements Command {
     return checker.isSURLBusy(element.getSURL());
   }
 
-  private void fullDetail(LSInputData inputData, StoRI stori,
-      TMetaDataPathDetail currentElementDetail) throws FSException {
+  private void fullDetail(
+      LSInputData inputData, StoRI stori, TMetaDataPathDetail currentElementDetail)
+      throws FSException {
 
     if (inputData instanceof IdentityInputData) {
       fullDetail(stori, ((IdentityInputData) inputData).getUser(), currentElementDetail);
@@ -693,10 +743,13 @@ public class LsCommand extends DirectoryCommand implements Command {
         permission = element.getLocalFile().getGroupPermission(guser.getLocalUser());
       }
       if (permission != null) {
-        userPermission = new TUserPermission(new TUserID(guser.getLocalUser().getLocalUserName()),
-            TPermissionMode.getTPermissionMode(permission));
+        userPermission =
+            new TUserPermission(
+                new TUserID(guser.getLocalUser().getLocalUserName()),
+                TPermissionMode.getTPermissionMode(permission));
         groupPermission =
-            new TGroupPermission(new TGroupID(guser.getLocalUser().getLocalUserName()),
+            new TGroupPermission(
+                new TGroupID(guser.getLocalUser().getLocalUserName()),
                 TPermissionMode.getTPermissionMode(permission));
         otherPermission = TPermissionMode.getTPermissionMode(permission);
       }
@@ -733,7 +786,7 @@ public class LsCommand extends DirectoryCommand implements Command {
   /**
    * Set full details into "elementDetail". Information details set by the function
    * populateDetailFromFS() are not considered.
-   * 
+   *
    * @param element StoRI
    * @param localElement LocalFile
    * @param guser GridUserInterface
@@ -778,8 +831,8 @@ public class LsCommand extends DirectoryCommand implements Command {
       elementDetail.setLifeTimeAssigned(element.getFileLifeTime());
 
       if (element.getFileStartTime() != null) {
-        elementDetail
-          .setLifetimeLeft(element.getFileLifeTime().timeLeft(element.getFileStartTime()));
+        elementDetail.setLifetimeLeft(
+            element.getFileLifeTime().timeLeft(element.getFileStartTime()));
       } else {
         elementDetail.setLifetimeLeft(TLifeTimeInSeconds.makeInfinite());
       }
@@ -801,12 +854,12 @@ public class LsCommand extends DirectoryCommand implements Command {
 
   /**
    * populateDetailFromPersistence
-   * 
+   *
    * @param element StoRI
    * @param elementDetail TMetaDataPathDetail
    */
-  private void populateFileDetailsFromPersistence(StoRI element,
-      TMetaDataPathDetail elementDetail) {
+  private void populateFileDetailsFromPersistence(
+      StoRI element, TMetaDataPathDetail elementDetail) {
 
     // TFileStorageType
     boolean isVolatile = VolatileAndJiTCatalog.getInstance().exists(element.getPFN());
@@ -815,12 +868,11 @@ public class LsCommand extends DirectoryCommand implements Command {
     } else {
       elementDetail.setTFileStorageType(TFileStorageType.PERMANENT);
     }
-
   }
 
   /**
    * checkAnotherLevel
-   * 
+   *
    * @param allLevelRecursive boolean
    * @param numOfLevels int
    * @param currentLevel int
@@ -836,5 +888,4 @@ public class LsCommand extends DirectoryCommand implements Command {
     }
     return result;
   }
-
 }

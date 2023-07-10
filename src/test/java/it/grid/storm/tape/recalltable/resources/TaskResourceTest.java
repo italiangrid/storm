@@ -1,6 +1,5 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.tape.recalltable.resources;
 
@@ -16,24 +15,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-
 import it.grid.storm.griduser.VONameMatchingRule;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
@@ -47,6 +32,16 @@ import it.grid.storm.rest.metadata.service.ResourceService;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.tape.recalltable.TapeRecallCatalog;
+import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 public class TaskResourceTest {
 
@@ -78,7 +73,7 @@ public class TaskResourceTest {
     try {
       Mockito.when(catalog.insertNewTask(Mockito.any(TapeRecallTO.class))).thenReturn(groupTaskId);
       Mockito.when(catalog.getGroupTasks(groupTaskId))
-        .thenReturn(Lists.newArrayList(TapeRecallTO.createRandom(new Date(), VFS_VONAME)));
+          .thenReturn(Lists.newArrayList(TapeRecallTO.createRandom(new Date(), VFS_VONAME)));
     } catch (DataAccessException e) {
       e.printStackTrace();
     }
@@ -103,7 +98,7 @@ public class TaskResourceTest {
       throws ResourceNotFoundException, NamespaceException {
     ResourceService service = Mockito.mock(ResourceService.class);
     Mockito.when(service.getResource(Mockito.anyString()))
-      .thenThrow(new ResourceNotFoundException("Unable to map " + STFN_PATH + " to a rule"));
+        .thenThrow(new ResourceNotFoundException("Unable to map " + STFN_PATH + " to a rule"));
     return service;
   }
 
@@ -111,7 +106,7 @@ public class TaskResourceTest {
       throws ResourceNotFoundException, NamespaceException {
     ResourceService service = Mockito.mock(ResourceService.class);
     Mockito.when(service.getResource(Mockito.anyString()))
-      .thenThrow(new NamespaceException("Mocked namespace exception"));
+        .thenThrow(new NamespaceException("Mocked namespace exception"));
     return service;
   }
 
@@ -120,7 +115,7 @@ public class TaskResourceTest {
     TapeRecallCatalog catalog = Mockito.mock(TapeRecallCatalog.class);
     try {
       Mockito.when(catalog.insertNewTask(Mockito.any(TapeRecallTO.class)))
-        .thenThrow(new DataAccessException("Error on db"));
+          .thenThrow(new DataAccessException("Error on db"));
     } catch (DataAccessException e) {
       e.printStackTrace();
     }
@@ -156,7 +151,7 @@ public class TaskResourceTest {
 
   private void testGETTaskInfo(Response res)
       throws InvalidTRequestTokenAttributesException, DataAccessException, JsonParseException,
-      JsonMappingException, IOException, NamespaceException, ResourceNotFoundException {
+          JsonMappingException, IOException, NamespaceException, ResourceNotFoundException {
 
     TaskResource recallEndpoint = getTaskResource(getResourceService(STORI), RECALL_CATALOG);
 
@@ -172,7 +167,7 @@ public class TaskResourceTest {
     Mockito.when(requestToken.getValue()).thenReturn(requestTokenValue);
     task.setRequestToken(new TRequestToken(requestTokenValue, new Date()));
     Mockito.when(RECALL_CATALOG.getGroupTasks(UUID.fromString(groupTaskId)))
-      .thenReturn(Lists.newArrayList(task));
+        .thenReturn(Lists.newArrayList(task));
 
     // ask for task info
     res = recallEndpoint.getGroupTaskInfo(groupTaskId, requestTokenValue);
@@ -185,16 +180,17 @@ public class TaskResourceTest {
   @Test
   public void testPOSTSuccess()
       throws DataAccessException, NamespaceException, JsonParseException, JsonMappingException,
-      IOException, InvalidTRequestTokenAttributesException, ResourceNotFoundException {
+          IOException, InvalidTRequestTokenAttributesException, ResourceNotFoundException {
 
     TaskResource recallEndpoint = getTaskResource(getResourceService(STORI), RECALL_CATALOG);
-    TaskInsertRequest request = TaskInsertRequest.builder()
-      .stfn(STFN_PATH)
-      .retryAttempts(0)
-      .voName(VFS_VONAME)
-      .pinLifetime(1223123)
-      .userId("test")
-      .build();
+    TaskInsertRequest request =
+        TaskInsertRequest.builder()
+            .stfn(STFN_PATH)
+            .retryAttempts(0)
+            .voName(VFS_VONAME)
+            .pinLifetime(1223123)
+            .userId("test")
+            .build();
     Response res = recallEndpoint.postNewTask(request);
     assertNotNull(res.getHeaderString("Location"));
     assertEquals(res.getStatus(), CREATED.getStatusCode());
@@ -205,16 +201,17 @@ public class TaskResourceTest {
   @Test
   public void testPOSTSuccessWithNullVoName()
       throws DataAccessException, NamespaceException, JsonParseException, JsonMappingException,
-      IOException, InvalidTRequestTokenAttributesException, ResourceNotFoundException {
+          IOException, InvalidTRequestTokenAttributesException, ResourceNotFoundException {
 
     TaskResource recallEndpoint = getTaskResource(getResourceService(STORI), RECALL_CATALOG);
-    TaskInsertRequest request = TaskInsertRequest.builder()
-      .stfn(STFN_PATH)
-      .retryAttempts(0)
-      .voName(null)
-      .pinLifetime(1223123)
-      .userId("test")
-      .build();
+    TaskInsertRequest request =
+        TaskInsertRequest.builder()
+            .stfn(STFN_PATH)
+            .retryAttempts(0)
+            .voName(null)
+            .pinLifetime(1223123)
+            .userId("test")
+            .build();
     Response res = recallEndpoint.postNewTask(request);
     assertNotNull(res.getHeaderString("Location"));
     assertEquals(res.getStatus(), CREATED.getStatusCode());
@@ -228,13 +225,14 @@ public class TaskResourceTest {
 
     TaskResource recallEndpoint =
         new TaskResource(getResourceNamespaceErrorService(), RECALL_CATALOG);
-    TaskInsertRequest request = TaskInsertRequest.builder()
-      .stfn(STFN_PATH)
-      .retryAttempts(0)
-      .voName(VFS_VONAME)
-      .pinLifetime(1223123)
-      .userId("test")
-      .build();
+    TaskInsertRequest request =
+        TaskInsertRequest.builder()
+            .stfn(STFN_PATH)
+            .retryAttempts(0)
+            .voName(VFS_VONAME)
+            .pinLifetime(1223123)
+            .userId("test")
+            .build();
     try {
       recallEndpoint.postNewTask(request);
       fail();
@@ -249,13 +247,14 @@ public class TaskResourceTest {
       throws DataAccessException, NamespaceException, ResourceNotFoundException {
 
     TaskResource recallEndpoint = new TaskResource(getResourceService(STORI), RECALL_CATALOG);
-    TaskInsertRequest request = TaskInsertRequest.builder()
-      .stfn(STFN_PATH)
-      .retryAttempts(0)
-      .voName(REQUEST_WRONG_VONAME)
-      .pinLifetime(1223123)
-      .userId("test")
-      .build();
+    TaskInsertRequest request =
+        TaskInsertRequest.builder()
+            .stfn(STFN_PATH)
+            .retryAttempts(0)
+            .voName(REQUEST_WRONG_VONAME)
+            .pinLifetime(1223123)
+            .userId("test")
+            .build();
     try {
       recallEndpoint.postNewTask(request);
       fail();
@@ -286,13 +285,14 @@ public class TaskResourceTest {
 
     TaskResource recallEndpoint =
         new TaskResource(getResourceService(STORI), BROKEN_RECALL_CATALOG);
-    TaskInsertRequest request = TaskInsertRequest.builder()
-      .stfn(STFN_PATH)
-      .retryAttempts(0)
-      .voName(VFS_VONAME)
-      .pinLifetime(1223123)
-      .userId("test")
-      .build();
+    TaskInsertRequest request =
+        TaskInsertRequest.builder()
+            .stfn(STFN_PATH)
+            .retryAttempts(0)
+            .voName(VFS_VONAME)
+            .pinLifetime(1223123)
+            .userId("test")
+            .build();
     try {
       recallEndpoint.postNewTask(request);
       fail();
@@ -346,7 +346,8 @@ public class TaskResourceTest {
       fail();
     } catch (WebApplicationException e) {
       assertEquals(e.getResponse().getStatus(), BAD_REQUEST.getStatusCode());
-      assertEquals(e.getResponse().getEntity().toString(),
+      assertEquals(
+          e.getResponse().getEntity().toString(),
           "Retry attempts must be more or equal than zero.");
     }
   }
@@ -357,17 +358,19 @@ public class TaskResourceTest {
 
     TaskResource recallEndpoint =
         new TaskResource(getResourceService(STORI), BROKEN_RECALL_CATALOG);
-    TaskInsertRequest request = TaskInsertRequest.builder()
-      .stfn(STFN_PATH)
-      .userId("test")
-      .retryAttempts(Integer.valueOf(MAX_RETRY_ATTEMPTS) + 1)
-      .build();
+    TaskInsertRequest request =
+        TaskInsertRequest.builder()
+            .stfn(STFN_PATH)
+            .userId("test")
+            .retryAttempts(Integer.valueOf(MAX_RETRY_ATTEMPTS) + 1)
+            .build();
     try {
       recallEndpoint.postNewTask(request);
       fail();
     } catch (WebApplicationException e) {
       assertEquals(e.getResponse().getStatus(), BAD_REQUEST.getStatusCode());
-      assertEquals(e.getResponse().getEntity().toString(),
+      assertEquals(
+          e.getResponse().getEntity().toString(),
           "Retry attempts must be less or equal than " + MAX_RETRY_ATTEMPTS + ".");
     }
   }
@@ -383,13 +386,11 @@ public class TaskResourceTest {
   @Test
   public void testGETTasksInProgressEmpty()
       throws DataAccessException, NamespaceException, JsonParseException, JsonMappingException,
-      IOException, InvalidTRequestTokenAttributesException, ResourceNotFoundException {
+          IOException, InvalidTRequestTokenAttributesException, ResourceNotFoundException {
 
     TaskResource recallEndpoint =
         getTaskResource(getResourceService(STORI), getTapeRecallCatalogInProgressNotEmpty());
     Response res = recallEndpoint.getTasks(10);
     assertEquals(res.getStatus(), OK.getStatusCode());
   }
-
-
 }

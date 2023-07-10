@@ -1,15 +1,7 @@
 /**
- * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN). SPDX-License-Identifier: Apache-2.0
  */
 package it.grid.storm.check.sanity.filesystem;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Calendar;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import it.grid.storm.check.Check;
 import it.grid.storm.check.CheckResponse;
@@ -20,10 +12,13 @@ import it.grid.storm.ea.ExtendedAttributesException;
 import it.grid.storm.ea.ExtendedAttributesFactory;
 import it.grid.storm.namespace.NamespaceDirector;
 import it.grid.storm.namespace.model.VirtualFS;
+import java.io.File;
+import java.io.IOException;
+import java.util.Calendar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * @author Michele Dibenedetto
- */
+/** @author Michele Dibenedetto */
 public class NamespaceFSExtendedAttributeUsageCheck implements Check {
 
   private static final Logger log =
@@ -34,21 +29,15 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check {
   private static final String CHECK_DESCRIPTION =
       "This check tries to use file system extended attributes on all the file systems declared in namespace.xml";
 
-  /**
-   * The maximum number of attempts of temporary file creation
-   */
+  /** The maximum number of attempts of temporary file creation */
   private static final int MAX_FILE_CREATION_ATTEMPTS = 10;
 
   private static final String TEST_FILE_INFIX = "EA-check-file-N_";
 
-  /**
-   * An extended attribute to be used in the check
-   */
+  /** An extended attribute to be used in the check */
   private static final String CHECK_ATTRIBUTE_NAME = "user.Are.you.a.check";
 
-  /**
-   * THe value to be assigned to the extended attribute CHECK_ATTRIBUTE_NAME in the check
-   */
+  /** THe value to be assigned to the extended attribute CHECK_ATTRIBUTE_NAME in the check */
   private static final String CHECK_ATTRIBUTE_VALUE = "Yes.I.am";
 
   private final ExtendedAttributes extendedAttribute =
@@ -72,10 +61,14 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check {
       try {
         checkFile = provideCheckFile(fsRootPath, TEST_FILE_INFIX);
       } catch (GenericCheckException e) {
-        log.warn("Unable to obtain a check temporary file. " + "GenericCheckException: {}",
+        log.warn(
+            "Unable to obtain a check temporary file. " + "GenericCheckException: {}",
             e.getMessage());
-        errorMessage += "Unable to obtain a check temporary file. " + "GenericCheckException : "
-            + e.getMessage() + "; ";
+        errorMessage +=
+            "Unable to obtain a check temporary file. "
+                + "GenericCheckException : "
+                + e.getMessage()
+                + "; ";
         status = CheckStatus.INDETERMINATE;
         continue;
       }
@@ -85,17 +78,28 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check {
         log.warn(
             "Check on VFS {} to add EA on file {} failed. File System "
                 + "type = {}, root path = {}",
-            vfs.getAliasName(), checkFile.getAbsolutePath(), vfs.getFSType(), fsRootPath);
-        errorMessage += "Check on VFS " + vfs.getAliasName() + " to add EA on file "
-            + checkFile.getAbsolutePath() + " failed. File System type =" + vfs.getFSType()
-            + " , root path =" + fsRootPath + "; ";
+            vfs.getAliasName(),
+            checkFile.getAbsolutePath(),
+            vfs.getFSType(),
+            fsRootPath);
+        errorMessage +=
+            "Check on VFS "
+                + vfs.getAliasName()
+                + " to add EA on file "
+                + checkFile.getAbsolutePath()
+                + " failed. File System type ="
+                + vfs.getFSType()
+                + " , root path ="
+                + fsRootPath
+                + "; ";
       }
-      log.debug("Check response for path {} is {}", fsRootPath,
-          currentResponse ? "success" : "failure");
+      log.debug(
+          "Check response for path {} is {}", fsRootPath, currentResponse ? "success" : "failure");
       status = CheckStatus.and(status, currentResponse);
       log.debug("Partial result is {}", status.toString());
       if (!checkFile.delete()) {
-        log.warn("Unable to delete the temporary file used for the check {}",
+        log.warn(
+            "Unable to delete the temporary file used for the check {}",
             checkFile.getAbsolutePath());
       }
     }
@@ -105,7 +109,7 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check {
   /**
    * Provides a File located in rootPath with a pseudo-random name. It tries to provide the file and
    * in case of error retries for MAX_FILE_CREATION_ATTEMPTS times changing file name
-   * 
+   *
    * @param rootPath
    * @param infix
    * @return
@@ -122,8 +126,8 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check {
       if (checkFile.exists()) {
         if (checkFile.isFile()) {
           fileAvailable = true;
-          log.debug("A good check temporary file already exists at {}",
-              checkFile.getAbsolutePath());
+          log.debug(
+              "A good check temporary file already exists at {}", checkFile.getAbsolutePath());
         } else {
           log.warn(
               "Unable to create check file, it already exists but is not " + "a simple file: {}",
@@ -136,14 +140,17 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check {
             log.debug("Created check temporary file at {}", checkFile.getAbsolutePath());
           }
         } catch (IOException e) {
-          log.warn("Unable to create the check file: {}. IOException: {}",
-              checkFile.getAbsolutePath(), e.getMessage());
+          log.warn(
+              "Unable to create the check file: {}. IOException: {}",
+              checkFile.getAbsolutePath(),
+              e.getMessage());
         }
       }
       attempCount++;
     }
     if (!fileAvailable) {
-      log.warn("Unable to create check file, reached maximum iterations at " + "path: {}",
+      log.warn(
+          "Unable to create check file, reached maximum iterations at " + "path: {}",
           checkFile.getAbsolutePath());
       throw new GenericCheckException(
           "Unable to create the check file for root path '" + rootPath + "'");
@@ -154,42 +161,52 @@ public class NamespaceFSExtendedAttributeUsageCheck implements Check {
   /**
    * Tries to write CHECK_ATTRIBUTE_NAME EA on file with value CHECK_ATTRIBUTE_VALUE, retrieve its
    * value and remove it
-   * 
+   *
    * @param file
    * @return true if the write, read and remove operations succeeds and the retrieved value matches
-   *         CHECK_ATTRIBUTE_VALUE
+   *     CHECK_ATTRIBUTE_VALUE
    */
   private boolean checkEA(File file) {
 
     boolean response = false;
     log.debug("Testing extended attribute management on file {}", file.getAbsolutePath());
     try {
-      log.debug("Trying to set the extended attribute {} to value {} on file {}",
-          CHECK_ATTRIBUTE_NAME, CHECK_ATTRIBUTE_VALUE, file.getAbsolutePath());
+      log.debug(
+          "Trying to set the extended attribute {} to value {} on file {}",
+          CHECK_ATTRIBUTE_NAME,
+          CHECK_ATTRIBUTE_VALUE,
+          file.getAbsolutePath());
 
-      extendedAttribute.setXAttr(file.getAbsolutePath(), CHECK_ATTRIBUTE_NAME,
-          CHECK_ATTRIBUTE_VALUE);
+      extendedAttribute.setXAttr(
+          file.getAbsolutePath(), CHECK_ATTRIBUTE_NAME, CHECK_ATTRIBUTE_VALUE);
 
-      log.debug("Trying to get the extended attribute {} from file {}", CHECK_ATTRIBUTE_NAME,
+      log.debug(
+          "Trying to get the extended attribute {} from file {}",
+          CHECK_ATTRIBUTE_NAME,
           file.getAbsolutePath());
       String value = extendedAttribute.getXAttr(file.getAbsolutePath(), CHECK_ATTRIBUTE_NAME);
       log.debug("Returned value is '{}'", value);
-      log.debug("Trying to remove the extended attribute {} from file {}", CHECK_ATTRIBUTE_NAME,
+      log.debug(
+          "Trying to remove the extended attribute {} from file {}",
+          CHECK_ATTRIBUTE_NAME,
           file.getAbsolutePath());
       extendedAttribute.rmXAttr(file.getAbsolutePath(), CHECK_ATTRIBUTE_NAME);
       if (!CHECK_ATTRIBUTE_VALUE.equals(value)) {
-        log.warn("Undesired behaviour! The returned extended attribute "
-            + "value '{}' differs from the one setted '{}'", value, CHECK_ATTRIBUTE_VALUE);
+        log.warn(
+            "Undesired behaviour! The returned extended attribute "
+                + "value '{}' differs from the one setted '{}'",
+            value,
+            CHECK_ATTRIBUTE_VALUE);
       } else {
         response = true;
       }
     } catch (ExtendedAttributesException e) {
       log.warn(
           "Unable to manage extended attributes on file {}. " + "ExtendedAttributesException: {}",
-          file.getAbsolutePath(), e.getMessage());
+          file.getAbsolutePath(),
+          e.getMessage());
     }
     return response;
-
   }
 
   @Override
