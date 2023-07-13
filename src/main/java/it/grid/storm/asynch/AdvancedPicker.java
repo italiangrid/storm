@@ -5,8 +5,8 @@
 package it.grid.storm.asynch;
 
 import it.grid.storm.catalogs.RequestSummaryCatalog;
-import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.config.Configuration;
+import it.grid.storm.persistence.model.RequestSummaryData;
 import it.grid.storm.scheduler.CrusherScheduler;
 import it.grid.storm.scheduler.SchedulerException;
 import it.grid.storm.scheduler.SchedulerStatus;

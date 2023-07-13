@@ -5,6 +5,7 @@
 package it.grid.storm.synchcall.command.discovery;
 
 import it.grid.storm.Constants;
+import it.grid.storm.catalogs.TapeRecallCatalog;
 import it.grid.storm.config.Configuration;
 import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.srm.types.ArrayOfTExtraInfo;
@@ -17,7 +18,6 @@ import it.grid.storm.synchcall.data.InputData;
 import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.discovery.PingInputData;
 import it.grid.storm.synchcall.data.discovery.PingOutputData;
-import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,16 +29,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
-
-/**
- * This class is part of the StoRM project. Copyright: Copyright (c) 2008 Company: INFN-CNAF and
- * ICTP/EGRID project
- * 
- * @author lucamag
- * @author Alberto Forti
- * @date May 28, 2008
- * 
- */
 
 public class PingCommand extends DiscoveryCommand implements Command {
 
@@ -235,7 +225,7 @@ public class PingCommand extends DiscoveryCommand implements Command {
 
     try {
       // Retrieve the Task
-      List<TapeRecallTO> tasks = new TapeRecallCatalog().takeoverNTasksWithDoubles(numbOfTask);
+      List<TapeRecallTO> tasks = TapeRecallCatalog.getInstance().takeoverNTasksWithDoubles(numbOfTask);
 
       if (tasks != null) {
         // Build the response

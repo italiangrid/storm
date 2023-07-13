@@ -18,7 +18,6 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
-import it.grid.storm.catalogs.PtPData;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
@@ -33,7 +32,7 @@ import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.ExpiredSpaceTokenException;
 import it.grid.storm.namespace.InvalidGetTURLProtocolException;
 import it.grid.storm.namespace.InvalidSURLException;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.TURLBuildingException;
@@ -42,6 +41,7 @@ import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
 import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.persistence.exceptions.DataAccessException;
+import it.grid.storm.persistence.model.PtPData;
 import it.grid.storm.persistence.model.TransferObjectDecodingException;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
@@ -65,13 +65,13 @@ import it.grid.storm.synchcall.data.IdentityInputData;
  * multifile request. StoRM then sends the chunk to a chunk-scheduler. For an existing file: if
  * TOverwriteMode is set to Never, then the chunk fails with SRM_DUPLICATION_ERROR; if
  * TOverwriteMode is Always or WhenFilesAreDifferent, the file gets treated in the same fashion:
- * moreover the behaviour is the same as for the case of a non existing file described later on,
+ * moreover the behavior is the same as for the case of a non existing file described later on,
  * except that the only policy check made is about the presence of write rights, instead of create
- * rights, as well as erasing the file before going on with the processing - all previous data gets
- * lost! If the SURL refers to a file that does not exist, the behaviour is identical whatever the
+ * rights, as well as erasing the file before going on with the processing all previous data gets
+ * lost! If the SURL refers to a file that does not exist, the behavior is identical whatever the
  * TOverwriteMode; in particular: AuthorisationCollector is queried for File Creation policies: if
  * it is set to Deny, then the chunk is failed with SRM_AUTHORIZATION_FAILURE. If it is set to
- * Permit, the situation is decribed later on. For any other decisions, the chunk is failed with
+ * Permit, the situation is described later on. For any other decisions, the chunk is failed with
  * SRM_FAILURE: it is caused when the policy is missing so no decision can be made, or if there is a
  * problem querying the Policies, or any new state for the AuthorisationDecision is introduced but
  * the PtP logic is not updated. In case Create rights are granted, the presence of a space token
@@ -83,12 +83,12 @@ import it.grid.storm.synchcall.data.IdentityInputData;
  * supplied, the space is allocated as requested and again a special mock reserve file gets created.
  * A Write ACL is setup on the file regardless of the Security Model (AoT or JiT); if the file is
  * specified as VOLATILE, it gets pinned in the PinnedFilesCatalog; if JiT is active, the ACL will
- * live only for the given time interval. A TURL gets filled in, the status transits to
+ * live only for the given time interval. A TURL gets filled in, the status moves to
  * SRM_SPACE_AVAILABLE, and the PtPCatalog is updated. There are error situations which get handled
  * as follows: If the placeHolder file cannot be created, or the implicit reservation fails, or the
- * supplied space token does not exist, the request fails and chenages state to SRM_FAILURE. If the
+ * supplied space token does not exist, the request fails and changes state to SRM_FAILURE. If the
  * setting up of the ACL fails, the request fails too and the state changes to SRM_FAILURE.
- * Appropriate messagges get logged.
+ * Appropriate messages get logged.
  *
  * @author EGRID - ICTP Trieste
  * @date June, 2005
@@ -106,12 +106,12 @@ public class PtP implements Delegable, Chooser, Request {
   protected final PtPData requestData;
 
   /**
-   * Time that wil be used in all jit and volatile tracking.
+   * Time that will be used in all JiT and volatile tracking.
    */
   protected final Calendar start;
 
   /**
-   * boolean that indicates the state of the shunk is failure
+   * boolean that indicates the state of the chunk is failure
    */
   protected boolean failure = false;
 
@@ -176,10 +176,10 @@ public class PtP implements Delegable, Chooser, Request {
     try {
 
       if (requestData instanceof IdentityInputData) {
-        fileStoRI = NamespaceDirector.getNamespace()
+        fileStoRI = Namespace.getInstance()
           .resolveStoRIbySURL(surl, ((IdentityInputData) requestData).getUser());
       } else {
-        fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
+        fileStoRI = Namespace.getInstance().resolveStoRIbySURL(surl);
       }
 
     } catch (UnapprochableSurlException e) {
@@ -501,7 +501,7 @@ public class PtP implements Delegable, Chooser, Request {
 
     VirtualFS vfs;
     try {
-      vfs = NamespaceDirector.getNamespace().resolveVFSbyLocalFile(dir);
+      vfs = Namespace.getInstance().resolveVFSbyLocalFile(dir);
     } catch (NamespaceException e) {
       log.error("srmPtP: Error during used space update - {}", e.getMessage());
       return;
@@ -861,7 +861,7 @@ public class PtP implements Delegable, Chooser, Request {
 
     StorageSpaceData spaceData = null;
     try {
-      spaceData = new ReservedSpaceCatalog().getStorageSpace(spaceToken);
+      spaceData = ReservedSpaceCatalog.getInstance().getStorageSpace(spaceToken);
     } catch (TransferObjectDecodingException e) {
       log.error("Unable to build StorageSpaceData from StorageSpaceTO."
           + " TransferObjectDecodingException: {}", e.getMessage());

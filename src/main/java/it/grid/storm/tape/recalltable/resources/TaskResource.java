@@ -13,27 +13,6 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import it.grid.storm.config.Configuration;
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
-import it.grid.storm.namespace.StoRI;
-import it.grid.storm.persistence.exceptions.DataAccessException;
-import it.grid.storm.persistence.model.TapeRecallTO;
-import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
-import it.grid.storm.rest.metadata.service.ResourceService;
-import it.grid.storm.tape.recalltable.TapeRecallCatalog;
-import it.grid.storm.tape.recalltable.TapeRecallException;
-import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusLogic;
-import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusValidator;
-import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
-import it.grid.storm.tape.recalltable.model.TaskInsertRequestValidator;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,10 +34,27 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.Response;
 
-/**
- * @author Riccardo Zappi
- * @author Enrico Vianello
- */
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.grid.storm.catalogs.TapeRecallCatalog;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.namespace.Namespace;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.StoRI;
+import it.grid.storm.persistence.exceptions.DataAccessException;
+import it.grid.storm.persistence.model.TapeRecallTO;
+import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
+import it.grid.storm.rest.metadata.service.ResourceService;
+import it.grid.storm.tape.recalltable.TapeRecallException;
+import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusLogic;
+import it.grid.storm.tape.recalltable.model.PutTapeRecallStatusValidator;
+import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
+import it.grid.storm.tape.recalltable.model.TaskInsertRequestValidator;
+
 @Path("/recalltable/task")
 public class TaskResource {
 
@@ -73,8 +69,8 @@ public class TaskResource {
 
   public TaskResource() throws NamespaceException {
 
-    NamespaceInterface ns = NamespaceDirector.getNamespace();
-    recallCatalog = new TapeRecallCatalog();
+    Namespace ns = Namespace.getInstance();
+    recallCatalog = TapeRecallCatalog.getInstance();
     service = new ResourceService(ns.getAllDefinedVFS(), ns.getAllDefinedMappingRules());
   }
 

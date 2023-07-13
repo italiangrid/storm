@@ -34,11 +34,7 @@ import it.grid.storm.info.remote.resources.Ping;
 import it.grid.storm.info.remote.resources.SpaceStatusResource;
 import it.grid.storm.metrics.NamedInstrumentedSelectChannelConnector;
 import it.grid.storm.metrics.NamedInstrumentedThreadPool;
-import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_3;
 import it.grid.storm.namespace.remote.resource.VirtualFSResource;
-import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_0;
-import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_1;
-import it.grid.storm.namespace.remote.resource.VirtualFSResourceCompat_1_2;
 import it.grid.storm.rest.auth.RestTokenFilter;
 import it.grid.storm.rest.metadata.Metadata;
 import it.grid.storm.tape.recalltable.providers.TapeRecallTOListMessageBodyWriter;
@@ -46,12 +42,6 @@ import it.grid.storm.tape.recalltable.resources.TaskResource;
 import it.grid.storm.tape.recalltable.resources.TasksCardinality;
 import it.grid.storm.tape.recalltable.resources.TasksResource;
 
-/**
- * This class provides static methods for starting and stopping the storm-backend restful services.
- * 
- * @author zappi
- * @author valerioventuri
- */
 public class RestServer {
 
   public static final int DEFAULT_MAX_THREAD_NUM = 100;
@@ -106,10 +96,6 @@ public class RestServer {
     resourceConfig.register(AuthorizationResource.class);
     resourceConfig.register(AuthorizationResourceCompat_1_0.class);
     resourceConfig.register(VirtualFSResource.class);
-    resourceConfig.register(VirtualFSResourceCompat_1_0.class);
-    resourceConfig.register(VirtualFSResourceCompat_1_1.class);
-    resourceConfig.register(VirtualFSResourceCompat_1_2.class);
-    resourceConfig.register(VirtualFSResourceCompat_1_3.class);
     resourceConfig.register(StormEAResource.class);
     resourceConfig.register(Metadata.class);
     resourceConfig.register(Ping.class);

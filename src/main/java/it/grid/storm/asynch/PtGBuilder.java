@@ -4,13 +4,13 @@
  */
 package it.grid.storm.asynch;
 
-import it.grid.storm.catalogs.AnonymousPtGData;
-import it.grid.storm.catalogs.IdentityPtGData;
-import it.grid.storm.catalogs.InvalidFileTransferDataAttributesException;
-import it.grid.storm.catalogs.InvalidPtGDataAttributesException;
-import it.grid.storm.catalogs.InvalidSurlRequestDataAttributesException;
-import it.grid.storm.catalogs.PtGData;
 import it.grid.storm.common.types.TURLPrefix;
+import it.grid.storm.persistence.exceptions.InvalidFileTransferDataAttributesException;
+import it.grid.storm.persistence.exceptions.InvalidPtGDataAttributesException;
+import it.grid.storm.persistence.exceptions.InvalidSurlRequestDataAttributesException;
+import it.grid.storm.persistence.model.AnonymousPtGData;
+import it.grid.storm.persistence.model.IdentityPtGData;
+import it.grid.storm.persistence.model.PtGData;
 import it.grid.storm.srm.types.TDirOption;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TReturnStatus;

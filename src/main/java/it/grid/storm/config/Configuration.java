@@ -10,6 +10,7 @@ import static it.grid.storm.info.du.DiskUsageService.DEFAULT_TASKS_PARALLEL;
 import static java.lang.System.getProperty;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -55,12 +56,16 @@ public class Configuration {
   private static final String SERVICE_HOSTNAME_KEY = "storm.service.FE-public.hostname";
   private static final String SERVICE_PORT_KEY = "storm.service.port";
   private static final String LIST_OF_MACHINE_IPS_KEY = "storm.service.FE-list.IPs";
-  private static final String DB_URL_HOSTNAME = "storm.service.request-db.host";
-  private static final String DB_URL_PROPERTIES = "storm.service.request-db.properties";
+  private static final String DB_URL_HOSTNAME_KEY = "storm.service.request-db.host";
+  private static final String DB_URL_PORT_KEY = "storm.service.request-db.port";
+  private static final String DB_URL_PROPERTIES_KEY = "storm.service.request-db.properties";
   private static final String DB_USER_NAME_KEY = "storm.service.request-db.username";
   private static final String DB_PASSWORD_KEY = "storm.service.request-db.passwd";
-  private static final String DB_RECONNECT_PERIOD_KEY = "asynch.db.ReconnectPeriod";
-  private static final String DB_RECONNECT_DELAY_KEY = "asynch.db.DelayPeriod";
+  private static final String DB_POOL_SIZE_KEY = "persistence.internal-db.connection-pool.size";
+  private static final String DB_POOL_MINIDLE_KEY = "persistence.internal-db.connection-pool.minIdle";
+  private static final String DB_POOL_MAXWAITMILLIS_KEY = "persistence.internal-db.connection-pool.maxWaitMillis";
+  private static final String DB_POOL_TESTONBORROW_KEY = "persistence.internal-db.connection-pool.testOnBorrow";
+  private static final String DB_POOL_TESTWHILEIDLE_KEY = "persistence.internal-db.connection-pool.testWhileIdle";
   private static final String CLEANING_INITIAL_DELAY_KEY = "gc.pinnedfiles.cleaning.delay";
   private static final String CLEANING_TIME_INTERVAL_KEY = "gc.pinnedfiles.cleaning.interval";
   private static final String FILE_DEFAULT_SIZE_KEY = "fileSize.default";
@@ -164,17 +169,12 @@ public class Configuration {
 
   private static final String JAVA_NET_PREFERIPV6ADDRESSES = "java.net.preferIPv6Addresses";
 
-  static {
-    try {
-      instance = new Configuration();
-    } catch (ConfigurationException e) {
-      throw new ExceptionInInitializerError(e);
-    }
+  public static void init(String filePath) throws IOException, ConfigurationException {
+    instance = new Configuration(filePath);
   }
 
-  private Configuration() throws ConfigurationException {
+  private Configuration(String filePath) throws IOException, ConfigurationException {
 
-    String filePath = getProperty(CONFIG_FILE_PATH, DEFAULT_STORM_CONFIG_FILE);
     int refreshRate;
     try {
       refreshRate = Integer.valueOf(getProperty(REFRESH_RATE));
@@ -304,8 +304,8 @@ public class Configuration {
    */
   public String getStormDbURL() {
 
-    String host = getDBHostname();
-    String properties = getDBProperties();
+    String host = getDbHostname();
+    String properties = getDbProperties();
     if (properties.isEmpty()) {
       return "jdbc:mysql://" + host + "/storm_db";
     }
@@ -317,7 +317,7 @@ public class Configuration {
    * configuration medium, then the default value is returned instead. Default value = "storm"; key
    * searched in medium = "asynch.picker.db.username".
    */
-  public String getDBUserName() {
+  public String getDbUsername() {
 
     return cr.getConfiguration().getString(DB_USER_NAME_KEY, "storm");
   }
@@ -327,52 +327,70 @@ public class Configuration {
    * configuration medium, then the default value is returned instead. Default value = "storm"; key
    * searched in medium = "asynch.picker.db.passwd".
    */
-  public String getDBPassword() {
+  public String getDbPassword() {
 
     return cr.getConfiguration().getString(DB_PASSWORD_KEY, "storm");
   }
 
-  public String getDBHostname() {
+  public String getDbHostname() {
 
-    return cr.getConfiguration().getString(DB_URL_HOSTNAME, "localhost");
+    return cr.getConfiguration().getString(DB_URL_HOSTNAME_KEY, "localhost");
   }
 
   /*
    * END definition of MANDATORY PROPERTIES
    */
 
-  public String getDBProperties() {
+  public String getDbProperties() {
 
-    return cr.getConfiguration().getString(DB_URL_PROPERTIES, "serverTimezone=UTC&autoReconnect=true");
+    return cr.getConfiguration().getString(DB_URL_PROPERTIES_KEY, "serverTimezone=UTC&autoReconnect=true");
+  }
+
+  public int getDbPort() {
+
+    return cr.getConfiguration().getInt(DB_URL_PORT_KEY, 3306);
   }
 
   /**
-   * Method used by all DAOs to establish the reconnection period in _seconds_: after such period
-   * the DB connection will be closed and re-opened. Beware that after such time expires, the
-   * connection is _not_ automatically closed and reopened; rather, it acts as a flag that is
-   * considered by the main code and when the most appropriate time comes, the connection is closed
-   * and reopened. This is because of MySQL bug that does not allow a connection to remain open for
-   * an arbitrary amount of time! Else an Unexpected EOF Exception gets thrown by the JDBC driver!
-   * If no value is found in the configuration medium, then the default value is returned instead.
-   * key="asynch.db.ReconnectPeriod"; default value=18000; Keep in mind that 18000 seconds = 5
-   * hours.
+   * Sets the maximum total number of idle and borrows connections that can be active at the same
+   * time. Use a negative value for no limit.
    */
-  public long getDBReconnectPeriod() {
+  public int getDbPoolSize() {
 
-    return cr.getConfiguration().getLong(DB_RECONNECT_PERIOD_KEY, 18000);
+    return cr.getConfiguration().getInt(DB_POOL_SIZE_KEY, 50);
   }
 
   /**
-   * Method used by all DAOs to establish the reconnection delay in _seconds_: when StoRM is first
-   * launched it will wait for this amount of time before starting the timer. This is because of
-   * MySQL bug that does not allow a connection to remain open for an arbitrary amount of time! Else
-   * an Unexpected EOF Exception gets thrown by the JDBC driver! If no value is found in the
-   * configuration medium, then the default value is returned instead.
-   * key="asynch.db.ReconnectDelay"; default value=30;
+   * Sets the minimum number of idle connections in the pool.
    */
-  public long getDBReconnectDelay() {
+  public int getDbPoolMinIdle() {
 
-    return cr.getConfiguration().getLong(DB_RECONNECT_DELAY_KEY, 30);
+    return cr.getConfiguration().getInt(DB_POOL_MINIDLE_KEY, 10);
+  }
+
+  /**
+   * Sets the MaxWaitMillis property. Use -1 to make the pool wait indefinitely.
+   */
+  public int getDbPoolMaxWaitMillis() {
+
+    return cr.getConfiguration().getInt(DB_POOL_MAXWAITMILLIS_KEY, -1);
+  }
+
+  /**
+   * This property determines whether or not the pool will validate objects before they are borrowed
+   * from the pool.
+   */
+  public boolean isDbPoolTestOnBorrow() {
+
+    return cr.getConfiguration().getBoolean(DB_POOL_TESTONBORROW_KEY, true);
+  }
+
+  /**
+   * This property determines whether or not the idle object evictor will validate connections.
+   */
+  public boolean isDbPoolTestWhileIdle() {
+
+    return cr.getConfiguration().getBoolean(DB_POOL_TESTWHILEIDLE_KEY, true);
   }
 
   /**
@@ -1017,47 +1035,47 @@ public class Configuration {
   }
 
   /**
-   * getPerformanceGlancePeriod
+   * getHearthbeatPerformanceGlanceTimeInterval
    * 
    * @return int If no value is found in the configuration medium, then the default one is used
    *         instead. key="health.performance.glance.timeInterval"; default value=15 (15 sec)
    */
-  public int getPerformanceGlanceTimeInterval() {
+  public int getHearthbeatPerformanceGlanceTimeInterval() {
 
     return cr.getConfiguration().getInt(PERFORMANCE_GLANCE_TIME_INTERVAL_KEY, 15);
   }
 
   /**
-   * getPerformanceGlancePeriod
+   * getHearthbeatPerformanceGlancePeriod
    * 
    * @return int If no value is found in the configuration medium, then the default one is used
    *         instead. key="health.performance.logbook.timeInterval"; default value=15 (15 sec)
    */
-  public int getPerformanceLogbookTimeInterval() {
+  public int getHearthbeatPerformanceLogbookTimeInterval() {
 
     return cr.getConfiguration().getInt(PERFORMANCE_LOGBOOK_TIME_INTERVAL_KEY, 15);
   }
 
   /**
-   * getPerformanceMeasuring
+   * isHearthbeatPerformanceMeasuringEnabled
    * 
    * @return boolean If no value is found in the configuration medium, then the default one is used
    *         instead. key="health.performance.mesauring.enabled"; default value=false
    */
-  public boolean getPerformanceMeasuring() {
+  public boolean isHearthbeatPerformanceMeasuringEnabled() {
 
     return cr.getConfiguration().getBoolean(PERFORMANCE_MEASURING_KEY, false);
   }
 
   /**
-   * getBookKeppeingEnabled
+   * isHearthbeatBookkeepingEnabled
    * 
    * @return boolean Method used by Namespace Configuration Reloading Strategy (Peeper). If "peeper"
    *         found namespace.xml config file changed it checks if it can perform an automatic
    *         reload. If no value is found in the configuration medium, then the default one is used
    *         instead. key="health.bookkeeping.enabled"; default value=false
    */
-  public boolean getBookKeepingEnabled() {
+  public boolean isHearthbeatBookkeepingEnabled() {
 
     return cr.getConfiguration().getBoolean(BOOK_KEEPING_ENABLED_KEY, false);
   }

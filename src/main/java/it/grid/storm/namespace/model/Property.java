@@ -4,224 +4,189 @@
  */
 package it.grid.storm.namespace.model;
 
-import it.grid.storm.common.types.SizeUnit;
-import it.grid.storm.namespace.NamespaceDirector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.PropertyInterface;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.TSizeInBytes;
 
-import org.slf4j.Logger;
-
 public class Property implements PropertyInterface {
 
-	private Logger log = NamespaceDirector.getLogger();
-	private TSizeInBytes totalOnlineSize = TSizeInBytes.makeEmpty();
-	private TSizeInBytes totalNearlineSize = TSizeInBytes.makeEmpty();
-	private RetentionPolicy retentionPolicy = RetentionPolicy.UNKNOWN;
-	private ExpirationMode expirationMode = ExpirationMode.UNKNOWN;
-	private AccessLatency accessLatency = AccessLatency.UNKNOWN;
-	private boolean hasLimitedSize = false;
+  private static Logger log = LoggerFactory.getLogger(Property.class);
 
-	public static Property from(PropertyInterface other) {
+  private TSizeInBytes totalOnlineSize = TSizeInBytes.makeEmpty();
+  private TSizeInBytes totalNearlineSize = TSizeInBytes.makeEmpty();
+  private RetentionPolicy retentionPolicy = RetentionPolicy.UNKNOWN;
+  private ExpirationMode expirationMode = ExpirationMode.UNKNOWN;
+  private AccessLatency accessLatency = AccessLatency.UNKNOWN;
+  private boolean hasLimitedSize = false;
 
-		Property property = new Property();
-		property.accessLatency = other.getAccessLatency();
-		property.expirationMode = other.getExpirationMode();
-		property.hasLimitedSize = other.hasLimitedSize();
-		property.retentionPolicy = other.getRetentionPolicy();
-		property.totalNearlineSize = other.getTotalNearlineSize();
-		property.totalOnlineSize = other.getTotalOnlineSize();
-		return property;
-	}
+  public static Property from(PropertyInterface other) {
 
-	public TSizeInBytes getTotalOnlineSize() {
+    Property property = new Property();
+    property.accessLatency = other.getAccessLatency();
+    property.expirationMode = other.getExpirationMode();
+    property.hasLimitedSize = other.hasLimitedSize();
+    property.retentionPolicy = other.getRetentionPolicy();
+    property.totalNearlineSize = other.getTotalNearlineSize();
+    property.totalOnlineSize = other.getTotalOnlineSize();
+    return property;
+  }
 
-		return totalOnlineSize;
-	}
+  public TSizeInBytes getTotalOnlineSize() {
 
-	public TSizeInBytes getTotalNearlineSize() {
+    return totalOnlineSize;
+  }
 
-		return totalNearlineSize;
-	}
+  public TSizeInBytes getTotalNearlineSize() {
 
-	public RetentionPolicy getRetentionPolicy() {
+    return totalNearlineSize;
+  }
 
-		return retentionPolicy;
-	}
+  public RetentionPolicy getRetentionPolicy() {
 
-	public ExpirationMode getExpirationMode() {
+    return retentionPolicy;
+  }
 
-		return expirationMode;
-	}
+  public ExpirationMode getExpirationMode() {
 
-	public AccessLatency getAccessLatency() {
+    return expirationMode;
+  }
 
-		return accessLatency;
-	}
+  public AccessLatency getAccessLatency() {
 
-	@Override
-	public boolean hasLimitedSize() {
+    return accessLatency;
+  }
 
-		return hasLimitedSize;
-	}
+  @Override
+  public boolean hasLimitedSize() {
 
-	public void setTotalOnlineSize(String unitType, long onlineSize)
-		throws NamespaceException {
+    return hasLimitedSize;
+  }
 
-		try {
-			this.totalOnlineSize = SizeUnitType.getInBytes(unitType, onlineSize);
-		} catch (InvalidTSizeAttributesException ex1) {
-			log.error("TotalOnlineSize parameter is wrong ");
-			throw new NamespaceException(
-				"'TotalOnlineSize' invalid argument in Namespace configuration.", ex1);
-		}
-	}
+  public void setTotalOnlineSize(String unitType, long onlineSize) throws NamespaceException {
 
-	public void setTotalNearlineSize(String unitType, long nearlineSize)
-		throws NamespaceException {
+    try {
+      this.totalOnlineSize = SizeUnitType.getInBytes(unitType, onlineSize);
+    } catch (InvalidTSizeAttributesException ex1) {
+      log.error("TotalOnlineSize parameter is wrong ");
+      throw new NamespaceException("'TotalOnlineSize' invalid argument in Namespace configuration.",
+          ex1);
+    }
+  }
 
-		try {
-			this.totalNearlineSize = SizeUnitType.getInBytes(unitType, nearlineSize);
-		} catch (InvalidTSizeAttributesException ex1) {
-			log.error("TotalOnlineSize parameter is wrong ");
-			throw new NamespaceException(
-				"'TotalOnlineSize' invalid argument in Namespace configuration.", ex1);
-		}
-	}
+  public void setTotalNearlineSize(String unitType, long nearlineSize) throws NamespaceException {
 
-	public void setRetentionPolicy(String retentionPolicy)
-		throws NamespaceException {
+    try {
+      this.totalNearlineSize = SizeUnitType.getInBytes(unitType, nearlineSize);
+    } catch (InvalidTSizeAttributesException ex1) {
+      log.error("TotalOnlineSize parameter is wrong ");
+      throw new NamespaceException("'TotalOnlineSize' invalid argument in Namespace configuration.",
+          ex1);
+    }
+  }
 
-		this.retentionPolicy = RetentionPolicy.getRetentionPolicy(retentionPolicy);
-	}
+  public void setRetentionPolicy(String retentionPolicy) throws NamespaceException {
 
-	public void setAccessLatency(String accessLatency) throws NamespaceException {
+    this.retentionPolicy = RetentionPolicy.getRetentionPolicy(retentionPolicy);
+  }
 
-		this.accessLatency = AccessLatency.getAccessLatency(accessLatency);
-	}
+  public void setAccessLatency(String accessLatency) throws NamespaceException {
 
-	public void setExpirationMode(String expirationMode)
-		throws NamespaceException {
+    this.accessLatency = AccessLatency.getAccessLatency(accessLatency);
+  }
 
-		this.expirationMode = ExpirationMode.getExpirationMode(expirationMode);
-	}
+  public void setExpirationMode(String expirationMode) throws NamespaceException {
 
-	public void setLimitedSize(boolean limitedSize) throws NamespaceException {
+    this.expirationMode = ExpirationMode.getExpirationMode(expirationMode);
+  }
 
-		this.hasLimitedSize = limitedSize;
-	}
+  public void setLimitedSize(boolean limitedSize) throws NamespaceException {
 
-	/******************************************
-	 * VERSION 1.4 *
-	 *******************************************/
+    this.hasLimitedSize = limitedSize;
+  }
 
-	public boolean isOnlineSpaceLimited() {
+  /******************************************
+   * VERSION 1.4 *
+   *******************************************/
 
-		return hasLimitedSize;
-	}
+  public boolean isOnlineSpaceLimited() {
 
-	/**
-	 * 
-	 * <p>
-	 * Title:
-	 * </p>
-	 * 
-	 * <p>
-	 * Description:
-	 * </p>
-	 * 
-	 * <p>
-	 * Copyright: Copyright (c) 2007
-	 * </p>
-	 * 
-	 * <p>
-	 * Company:
-	 * </p>
-	 * 
-	 * @author not attributable
-	 * @version 1.0
-	 */
-	public static class SizeUnitType {
+    return hasLimitedSize;
+  }
 
-		private Logger log = NamespaceDirector.getLogger();
+  public static class SizeUnitType {
 
-		/**
-		 * <xs:simpleType> <xs:restriction base="xs:string"> <xs:enumeration
-		 * value="online"/> <xs:enumeration value="nearline"/> <xs:enumeration
-		 * value="offline"/> </xs:restriction> </xs:simpleType>
-		 **/
+    private static Logger log = LoggerFactory.getLogger(SizeUnitType.class);
 
-		private String sizeTypeName;
-		private int ordinal;
-		private long size;
+    private String sizeTypeName;
+    private int ordinal;
+    private long size;
 
-		public final static SizeUnitType BYTE = new SizeUnitType("Byte", 0, 1);
-		public final static SizeUnitType KB = new SizeUnitType("KB", 1, 1000);
-		public final static SizeUnitType MB = new SizeUnitType("MB", 2, 1000000);
-		public final static SizeUnitType GB = new SizeUnitType("GB", 3, 1000000000);
-		public final static SizeUnitType TB = new SizeUnitType("TB", 4,
-			1000000000000L);
-		public final static SizeUnitType UNKNOWN = new SizeUnitType("UNKNOWN", -1,
-			-1);
+    public final static SizeUnitType BYTE = new SizeUnitType("Byte", 0, 1);
+    public final static SizeUnitType KB = new SizeUnitType("KB", 1, 1000);
+    public final static SizeUnitType MB = new SizeUnitType("MB", 2, 1000000);
+    public final static SizeUnitType GB = new SizeUnitType("GB", 3, 1000000000);
+    public final static SizeUnitType TB = new SizeUnitType("TB", 4, 1000000000000L);
+    public final static SizeUnitType UNKNOWN = new SizeUnitType("UNKNOWN", -1, -1);
 
-		private SizeUnitType(String sizeTypeName, int ordinal, long size) {
+    private SizeUnitType(String sizeTypeName, int ordinal, long size) {
 
-			this.sizeTypeName = sizeTypeName;
-			this.size = size;
-			this.ordinal = ordinal;
-		}
+      this.sizeTypeName = sizeTypeName;
+      this.size = size;
+      this.ordinal = ordinal;
+    }
 
-		public String getTypeName() {
+    public String getTypeName() {
 
-			return this.sizeTypeName;
-		}
+      return this.sizeTypeName;
+    }
 
-		private static SizeUnitType makeUnitType(String unitType) {
+    private static SizeUnitType makeUnitType(String unitType) {
 
-			SizeUnitType result = SizeUnitType.UNKNOWN;
-			if (unitType.equals(SizeUnitType.BYTE.sizeTypeName)) {
-				result = SizeUnitType.BYTE;
-			}
-			if (unitType.equals(SizeUnitType.KB.sizeTypeName)) {
-				result = SizeUnitType.KB;
-			}
-			if (unitType.equals(SizeUnitType.MB.sizeTypeName)) {
-				result = SizeUnitType.MB;
-			}
-			if (unitType.equals(SizeUnitType.GB.sizeTypeName)) {
-				result = SizeUnitType.GB;
-			}
-			if (unitType.equals(SizeUnitType.TB.sizeTypeName)) {
-				result = SizeUnitType.TB;
-			}
-			return result;
-		}
+      SizeUnitType result = SizeUnitType.UNKNOWN;
+      if (unitType.equals(SizeUnitType.BYTE.sizeTypeName)) {
+        result = SizeUnitType.BYTE;
+      }
+      if (unitType.equals(SizeUnitType.KB.sizeTypeName)) {
+        result = SizeUnitType.KB;
+      }
+      if (unitType.equals(SizeUnitType.MB.sizeTypeName)) {
+        result = SizeUnitType.MB;
+      }
+      if (unitType.equals(SizeUnitType.GB.sizeTypeName)) {
+        result = SizeUnitType.GB;
+      }
+      if (unitType.equals(SizeUnitType.TB.sizeTypeName)) {
+        result = SizeUnitType.TB;
+      }
+      return result;
+    }
 
-		public static TSizeInBytes getInBytes(String unitType, long value)
-			throws InvalidTSizeAttributesException {
+    public static TSizeInBytes getInBytes(String unitType, long value)
+        throws InvalidTSizeAttributesException {
 
-			TSizeInBytes result = TSizeInBytes.makeEmpty();
-			SizeUnitType sizeUnitType = makeUnitType(unitType);
-			if (!(sizeUnitType.getTypeName().equals(SizeUnitType.UNKNOWN
-				.getTypeName()))) {
-				result = TSizeInBytes.make(value * sizeUnitType.size, SizeUnit.BYTES);
-			}
-			return result;
-		}
+      TSizeInBytes result = TSizeInBytes.makeEmpty();
+      SizeUnitType sizeUnitType = makeUnitType(unitType);
+      if (!(sizeUnitType.getTypeName().equals(SizeUnitType.UNKNOWN.getTypeName()))) {
+        result = TSizeInBytes.make(value * sizeUnitType.size);
+      }
+      return result;
+    }
 
-		public TSizeInBytes getInBytes() {
+    public TSizeInBytes getInBytes() {
 
-			TSizeInBytes result = TSizeInBytes.makeEmpty();
-			try {
-				result = TSizeInBytes.make(this.size, SizeUnit.BYTES);
-			} catch (InvalidTSizeAttributesException ex) {
-				log.error("Size '" + this.size + "'are invalid. Use empty size: '"
-					+ result + "'." + ex);
-			}
-			return result;
-		}
+      TSizeInBytes result = TSizeInBytes.makeEmpty();
+      try {
+        result = TSizeInBytes.make(this.size);
+      } catch (InvalidTSizeAttributesException ex) {
+        log.error("Size '" + this.size + "'are invalid. Use empty size: '" + result + "'." + ex);
+      }
+      return result;
+    }
 
-	}
+  }
 
 }

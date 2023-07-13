@@ -19,9 +19,8 @@ import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.InvalidSURLException;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
@@ -49,24 +48,15 @@ class RmException extends SRMCommandException {
   }
 }
 
-
-/**
- * This class is part of the StoRM project. Copyright: Copyright (c) 2008 Company: INFN-CNAF and
- * ICTP/EGRID project
- * 
- * @author lucamag
- * @date May 27, 2008
- */
-
 public class RmCommand implements Command {
 
   private static final String SRM_COMMAND = "srmRm";
   private static final Logger log = LoggerFactory.getLogger(RmCommand.class);
-  private final NamespaceInterface namespace;
+  private final Namespace namespace;
 
   public RmCommand() {
 
-    namespace = NamespaceDirector.getNamespace();
+    namespace = Namespace.getInstance();
 
   }
 
@@ -192,7 +182,7 @@ public class RmCommand implements Command {
     returnStatus = new TReturnStatus(TStatusCode.SRM_SUCCESS, "File removed");
 
     try {
-      NamespaceDirector.getNamespace().resolveVFSbyLocalFile(localFile).decreaseUsedSpace(fileSize);
+      Namespace.getInstance().resolveVFSbyLocalFile(localFile).decreaseUsedSpace(fileSize);
     } catch (NamespaceException e) {
       log.error(e.getMessage());
       returnStatus.extendExplaination("Unable to decrease used space: " + e.getMessage());

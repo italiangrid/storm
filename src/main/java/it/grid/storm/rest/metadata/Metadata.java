@@ -9,17 +9,6 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
-import it.grid.storm.namespace.NamespaceDirector;
-import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
-import it.grid.storm.rest.metadata.model.StoriMetadata;
-import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
-import it.grid.storm.rest.metadata.service.ResourceService;
-import it.grid.storm.rest.metadata.service.StoriMetadataService;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 
 import javax.ws.rs.GET;
@@ -27,6 +16,16 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import it.grid.storm.namespace.Namespace;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.rest.metadata.model.StoriMetadata;
+import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
+import it.grid.storm.rest.metadata.service.ResourceService;
+import it.grid.storm.rest.metadata.service.StoriMetadataService;
 
 @Path("/metadata")
 public class Metadata {
@@ -37,7 +36,7 @@ public class Metadata {
 
   public Metadata() throws NamespaceException {
 
-    NamespaceInterface namespace = NamespaceDirector.getNamespace();
+    Namespace namespace = Namespace.getInstance();
     metadataService = new StoriMetadataService(
         new ResourceService(namespace.getAllDefinedVFS(), namespace.getAllDefinedMappingRules()));
   }

@@ -16,7 +16,13 @@ import java.util.SortedSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.commons.configuration.ConfigurationException;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.DOMException;
+import org.xml.sax.SAXException;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -30,7 +36,10 @@ import it.grid.storm.filesystem.Space;
 import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.namespace.config.NamespaceLoader;
 import it.grid.storm.namespace.config.NamespaceParser;
+import it.grid.storm.namespace.config.xml.XMLNamespaceLoader;
+import it.grid.storm.namespace.config.xml.XMLNamespaceParser;
 import it.grid.storm.namespace.model.ApproachableRule;
 import it.grid.storm.namespace.model.Capability;
 import it.grid.storm.namespace.model.MappingRule;
@@ -44,14 +53,33 @@ import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 
-public class Namespace implements NamespaceInterface {
+public class Namespace {
+
+  private static Namespace instance = null;
+
+  private static final Logger log = LoggerFactory.getLogger(Namespace.class);
 
   private static final String SPACE_FILE_NAME_SUFFIX = ".space";
   private static final char SPACE_FILE_NAME_SEPARATOR = '_';
-  private final Logger log = NamespaceDirector.getLogger();
+
   private final NamespaceParser parser;
 
-  public Namespace(NamespaceParser parser) {
+  public static void init(String namespaceFilePath, boolean semanticCheckEnabled)
+      throws DOMException, ConfigurationException, ParserConfigurationException, SAXException,
+      IOException, NamespaceException {
+
+    log.info("Initializing Namespace from {} ...", namespaceFilePath);
+    NamespaceLoader loader = new XMLNamespaceLoader(namespaceFilePath);
+
+    instance = new Namespace(new XMLNamespaceParser(loader, semanticCheckEnabled));
+
+  }
+
+  public static Namespace getInstance() {
+    return instance;
+  }
+
+  private Namespace(NamespaceParser parser) {
 
     this.parser = parser;
   }
@@ -61,19 +89,16 @@ public class Namespace implements NamespaceInterface {
     return parser.getNamespaceVersion();
   }
 
-  @Override
   public List<VirtualFS> getAllDefinedVFS() {
 
     return parser.getVFSs().values().stream().collect(Collectors.toList());
   }
 
-  @Override
   public Map<String, VirtualFS> getAllDefinedVFSAsDictionary() {
 
     return parser.getMapVFS_Root();
   }
 
-  @Override
   public List<MappingRule> getAllDefinedMappingRules() {
 
     return parser.getMappingRules().values().stream().collect(Collectors.toList());
@@ -91,7 +116,6 @@ public class Namespace implements NamespaceInterface {
     return approachVFS;
   }
 
-  @Override
   public List<VirtualFS> getApproachableByAnonymousVFS() throws NamespaceException {
 
     List<VirtualFS> anonymousVFS = Lists.newLinkedList();
@@ -106,7 +130,6 @@ public class Namespace implements NamespaceInterface {
     return anonymousVFS;
   }
 
-  @Override
   public List<VirtualFS> getReadableByAnonymousVFS() throws NamespaceException {
 
     List<VirtualFS> readableVFS = Lists.newLinkedList();
@@ -121,9 +144,7 @@ public class Namespace implements NamespaceInterface {
     return readableVFS;
   }
 
-  @Override
-  public List<VirtualFS> getReadableOrApproachableByAnonymousVFS()
-      throws NamespaceException {
+  public List<VirtualFS> getReadableOrApproachableByAnonymousVFS() throws NamespaceException {
 
     List<VirtualFS> rowVFS = Lists.newLinkedList();
     List<VirtualFS> allVFS = Lists.newLinkedList(getAllDefinedVFS());
@@ -374,8 +395,7 @@ public class Namespace implements NamespaceInterface {
     return getWinnerVFS(absolutePath, parser.getMapVFS_Root());
   }
 
-  public VirtualFS resolveVFSbyAbsolutePath(String absolutePath)
-      throws NamespaceException {
+  public VirtualFS resolveVFSbyAbsolutePath(String absolutePath) throws NamespaceException {
 
     return getWinnerVFS(absolutePath, parser.getMapVFS_Root());
   }
@@ -540,8 +560,7 @@ public class Namespace implements NamespaceInterface {
    * @param appRule ApproachableRule
    * @return VirtualFS
    */
-  public VirtualFS getApproachableDefaultVFS(ApproachableRule appRule)
-      throws NamespaceException {
+  public VirtualFS getApproachableDefaultVFS(ApproachableRule appRule) throws NamespaceException {
 
     VirtualFS defaultVFS = null;
     String defaultVFSName = null;
@@ -579,8 +598,7 @@ public class Namespace implements NamespaceInterface {
     return result;
   }
 
-  public VirtualFS resolveVFSbySpaceToken(TSpaceToken spaceToken)
-      throws NamespaceException {
+  public VirtualFS resolveVFSbySpaceToken(TSpaceToken spaceToken) throws NamespaceException {
 
     Optional<VirtualFS> vfs =
         getAllDefinedVFS().stream().filter(v -> spaceToken.equals(v.getSpaceToken())).findFirst();

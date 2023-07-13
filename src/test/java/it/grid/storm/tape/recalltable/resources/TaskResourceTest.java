@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 
+import it.grid.storm.catalogs.TapeRecallCatalog;
 import it.grid.storm.griduser.VONameMatchingRule;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
@@ -46,7 +47,6 @@ import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
 import it.grid.storm.rest.metadata.service.ResourceService;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 
 public class TaskResourceTest {
 

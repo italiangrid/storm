@@ -37,9 +37,8 @@ import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.InvalidSURLException;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.namespace.model.ACLEntry;
@@ -104,13 +103,13 @@ public class MkdirCommand extends DirectoryCommand implements Command {
 
   private static final String SRM_COMMAND = "SrmMkdir";
 
-  private final NamespaceInterface namespace;
+  private final Namespace namespace;
   private final Configuration configuration;
   private final AclManager aclManager;
 
   public MkdirCommand() {
 
-    namespace = NamespaceDirector.getNamespace();
+    namespace = Namespace.getInstance();
     configuration = Configuration.getInstance();
     aclManager = AclManagerFS.getInstance();
   }

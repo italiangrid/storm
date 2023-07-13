@@ -4,18 +4,6 @@
  */
 package it.grid.storm.space.gpfsquota;
 
-import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.common.types.SizeUnit;
-import it.grid.storm.concurrency.NamedThreadFactory;
-import it.grid.storm.config.Configuration;
-import it.grid.storm.filesystem.FilesystemError;
-import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.model.VirtualFS;
-import it.grid.storm.persistence.exceptions.DataAccessException;
-import it.grid.storm.space.StorageSpaceData;
-import it.grid.storm.srm.types.TSizeInBytes;
-import it.grid.storm.util.VirtualFSHelper;
-
 import java.util.List;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
@@ -27,6 +15,17 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.grid.storm.catalogs.ReservedSpaceCatalog;
+import it.grid.storm.concurrency.NamedThreadFactory;
+import it.grid.storm.config.Configuration;
+import it.grid.storm.filesystem.FilesystemError;
+import it.grid.storm.namespace.NamespaceException;
+import it.grid.storm.namespace.model.VirtualFS;
+import it.grid.storm.persistence.exceptions.DataAccessException;
+import it.grid.storm.space.StorageSpaceData;
+import it.grid.storm.srm.types.TSizeInBytes;
+import it.grid.storm.util.VirtualFSHelper;
 
 /**
  * GPFSQuotaManager. Currently supports only GPFS fileset quotas. This manager starts periodic tasks
@@ -103,8 +102,7 @@ public enum GPFSQuotaManager {
     quotaWorkersExecutionService = Executors.newFixedThreadPool(quotaEnabledFilesystems.size(),
         new NamedThreadFactory("GPFSQuotaWorker"));
 
-    quotaService =
-        new ExecutorCompletionService<>(quotaWorkersExecutionService);
+    quotaService = new ExecutorCompletionService<>(quotaWorkersExecutionService);
 
     long refreshPeriod = Configuration.getInstance().getGPFSQuotaRefreshPeriod();
 
@@ -197,7 +195,7 @@ public enum GPFSQuotaManager {
       try {
 
         long freeSizeFromFS = info.getVFS().getFSDriverInstance().get_free_space();
-        TSizeInBytes freeSizeInBytes = TSizeInBytes.make(freeSizeFromFS, SizeUnit.BYTES);
+        TSizeInBytes freeSizeInBytes = TSizeInBytes.make(freeSizeFromFS);
 
         ssd.setTotalGuaranteedSize(freeSizeInBytes);
         ssd.setTotalSpaceSize(freeSizeInBytes);
@@ -221,15 +219,13 @@ public enum GPFSQuotaManager {
 
     private StorageSpaceData getStorageSpaceDataForVFS(VirtualFS vfs) {
 
-      ReservedSpaceCatalog rsc = new ReservedSpaceCatalog();
       String spaceToken = vfs.getSpaceTokenDescription();
-      return rsc.getStorageSpaceByAlias(spaceToken);
+      return ReservedSpaceCatalog.getInstance().getStorageSpaceByAlias(spaceToken);
     }
 
     private void persistStorageSpaceData(StorageSpaceData ssd) throws DataAccessException {
 
-      ReservedSpaceCatalog rsc = new ReservedSpaceCatalog();
-      rsc.updateStorageSpace(ssd);
+      ReservedSpaceCatalog.getInstance().updateStorageSpace(ssd);
     }
 
     private synchronized void setLastFailure(Throwable t) {

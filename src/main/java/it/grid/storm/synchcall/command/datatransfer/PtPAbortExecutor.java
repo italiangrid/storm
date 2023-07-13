@@ -14,7 +14,6 @@ package it.grid.storm.synchcall.command.datatransfer;
 
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.catalogs.PtPChunkCatalog;
-import it.grid.storm.catalogs.PtPPersistentChunkData;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
@@ -22,11 +21,11 @@ import it.grid.storm.config.Configuration;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.InvalidSURLException;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
+import it.grid.storm.persistence.model.PtPPersistentChunkData;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
 import it.grid.storm.srm.types.TRequestToken;
@@ -76,7 +75,7 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
   static Configuration config = Configuration.getInstance();
   private static int maxLoopTimes = PtPAbortExecutor.config.getMaxLoop();
 
-  private NamespaceInterface namespace;
+  private Namespace namespace;
 
   private final List<TStatusCode> acceptedStatuses =
       Lists.newArrayList(SRM_SPACE_AVAILABLE, SRM_REQUEST_QUEUED);
@@ -84,7 +83,7 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
   public AbortGeneralOutputData doIt(AbortInputData inputData) {
 
     // Used to delete the physical file
-    namespace = NamespaceDirector.getNamespace();
+    namespace = Namespace.getInstance();
 
     AbortGeneralOutputData outputData = new AbortGeneralOutputData();
     ArrayOfTSURLReturnStatus arrayOfTSurlRetStatus = new ArrayOfTSURLReturnStatus();
@@ -405,7 +404,7 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
       TSURL surl, TReturnStatus status, AbortInputData inputData) {
 
     boolean failure = false;
-    namespace = NamespaceDirector.getNamespace();
+    namespace = Namespace.getInstance();
 
     TSURLReturnStatus surlReturnStatus = new TSURLReturnStatus();
     surlReturnStatus.setSurl(surl);
@@ -558,7 +557,7 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
     // in the JitCatalog. In this way the next time the GarbageCollector
     // will wake up, it will remove the entry as expired.
     // The file is already removed, but the garbage collection is
-    // smart enought to manage the case.
+    // smart enough to manage the case.
 
     // Change status to aborted
     if (failure) {
@@ -574,9 +573,7 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
       surlReturnStatus
         .setStatus(new TReturnStatus(SRM_SUCCESS, "File request successfully aborted."));
       try {
-        NamespaceDirector.getNamespace()
-          .resolveVFSbyLocalFile(fileToRemove)
-          .decreaseUsedSpace(sizeToRemove);
+        Namespace.getInstance().resolveVFSbyLocalFile(fileToRemove).decreaseUsedSpace(sizeToRemove);
       } catch (NamespaceException e) {
         log.error(e.getMessage());
         surlReturnStatus.getStatus()

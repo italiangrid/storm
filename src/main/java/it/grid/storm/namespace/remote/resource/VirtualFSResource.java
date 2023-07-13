@@ -17,15 +17,12 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.model.SAInfo;
 import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.namespace.remote.Constants;
 
-/**
- * @author Michele Dibenedetto
- */
 @Path("/" + Constants.RESOURCE + "/" + Constants.VERSION)
 public class VirtualFSResource {
 
@@ -40,7 +37,7 @@ public class VirtualFSResource {
   public Map<String, SAInfo> listVFS() {
 
     log.debug("Serving VFS resource listing");
-    List<VirtualFS> vfsCollection = NamespaceDirector.getNamespace().getAllDefinedVFS();
+    List<VirtualFS> vfsCollection = Namespace.getInstance().getAllDefinedVFS();
     Map<String, SAInfo> output = Maps.newHashMap();
 
     for (VirtualFS vfs : vfsCollection) {
