@@ -485,8 +485,11 @@ public class StoRIImpl implements StoRI {
 						authority = transProt.getAuthority();
 					}
 					
-					if (choosen.equals(Protocol.HTTP) || choosen.equals(Protocol.HTTPS)){
-					  resultTURL = buildHTTPTURL(choosen,authority);
+					if (choosen.equals(Protocol.HTTP)
+							|| choosen.equals(Protocol.HTTPS)
+							|| choosen.equals(Protocol.DAV)
+							|| choosen.equals(Protocol.DAVS)) {
+						  resultTURL = buildHTTPTURL(choosen,authority);
 					} else {
 					  resultTURL = buildTURL(choosen, authority);
 					}
@@ -583,7 +586,7 @@ public class StoRIImpl implements StoRI {
 
 	  sb.append(getStFN().toString());
 	  
-	  log.debug("built http turl: {}", sb.toString());
+	  log.debug("built {} turl: {}", p.getSchema(), sb.toString());
 	  
 	  return TTURL.makeFromString(sb.toString());
 	  

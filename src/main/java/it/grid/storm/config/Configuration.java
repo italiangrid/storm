@@ -1297,7 +1297,7 @@ public class Configuration {
   }
 
   public String getHTTPTURLPrefix() {
-    return cr.getConfiguration().getString(HTTP_TURL_PREFIX, "/fileTransfer");
+    return cr.getConfiguration().getString(HTTP_TURL_PREFIX, "");
   }
 
   public long getInProgressPutRequestExpirationTime() {

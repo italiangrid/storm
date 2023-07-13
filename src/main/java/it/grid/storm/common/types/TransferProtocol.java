@@ -103,6 +103,28 @@ public class TransferProtocol {
 		}
 	};
 
+	/**
+	 * Static attribute that indicates DAV TransferProtocol.
+	 */
+	public static TransferProtocol DAV = new TransferProtocol("dav") {
+
+		public int hashCode() {
+
+			return 7;
+		}
+	};
+
+	/**
+	 * Static attribute that indicates DAV TransferProtocol.
+	 */
+	public static TransferProtocol DAVS = new TransferProtocol("davs") {
+
+		public int hashCode() {
+
+			return 9;
+		}
+	};
+
 	private TransferProtocol(String protocol) {
 
 		this.protocol = protocol;
@@ -139,6 +161,10 @@ public class TransferProtocol {
 			return HTTP;
 		if (protocol.toLowerCase().replaceAll(" ", "").equals(HTTPS.toString()))
 			return HTTPS;
+		if (protocol.toLowerCase().replaceAll(" ", "").equals(DAV.toString()))
+			return DAV;
+		if (protocol.toLowerCase().replaceAll(" ", "").equals(DAVS.toString()))
+			return DAVS;
 		return EMPTY;
 	}
 }

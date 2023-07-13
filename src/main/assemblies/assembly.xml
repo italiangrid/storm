@@ -37,7 +37,7 @@
       <includes>
         <include>lcmaps.db</include>
         <include>logging.xml</include>
-        <include>namespace-1.5.0.xsd</include>
+        <include>namespace-1.5.1.xsd</include>
         <include>namespace.xml</include>
         <include>path-authz.db</include>
         <include>storm.properties.template</include>
