@@ -1,4 +1,4 @@
-<namespace xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="namespace-1.5.0.xsd" version="1.5.0">
+<namespace xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="namespace-1.5.1.xsd" version="1.5.1">
   <filesystems>
     <filesystem name="DTEAMTEST1-FS" fs_type="gpfs">
       <space-token-description>TEST1</space-token-description>
