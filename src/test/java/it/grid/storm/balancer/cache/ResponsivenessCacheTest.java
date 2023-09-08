@@ -6,21 +6,27 @@ package it.grid.storm.balancer.cache;
 
 import static it.grid.storm.balancer.cache.Responsiveness.RESPONSIVE;
 import static it.grid.storm.balancer.cache.Responsiveness.UNRESPONSIVE;
-import static it.grid.storm.config.Configuration.CONFIG_FILE_PATH;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
+import static org.junit.Assert.fail;
+import java.io.IOException;
+import org.apache.commons.configuration.ConfigurationException;
 import org.junit.Before;
 import org.junit.Test;
-
 import it.grid.storm.balancer.BalancerUtils;
 import it.grid.storm.balancer.Node;
+import it.grid.storm.config.Configuration;
 
 public class ResponsivenessCacheTest extends BalancerUtils {
 
   static {
-    System.setProperty(CONFIG_FILE_PATH, "storm.properties");
+    try {
+      Configuration.init("src/test/resources/storm.properties");
+    } catch (ConfigurationException | IOException e) {
+      e.printStackTrace();
+      fail();
+    }
   }
 
   private final ResponsivenessCache CACHE = ResponsivenessCache.INSTANCE;

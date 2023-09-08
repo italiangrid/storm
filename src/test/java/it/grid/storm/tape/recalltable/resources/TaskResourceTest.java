@@ -25,7 +25,7 @@ import java.util.UUID;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-
+import org.apache.commons.configuration.ConfigurationException;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -35,6 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 
 import it.grid.storm.catalogs.TapeRecallCatalog;
+import it.grid.storm.config.Configuration;
 import it.grid.storm.griduser.VONameMatchingRule;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
@@ -69,7 +70,12 @@ public class TaskResourceTest {
   private TapeRecallCatalog BROKEN_RECALL_CATALOG = getTapeRecallCatalogInsertError();
 
   static {
-    System.setProperty(CONFIG_FILE_PATH, "storm.properties");
+    try {
+      Configuration.init("src/test/resources/storm.properties");
+    } catch (ConfigurationException | IOException e) {
+      e.printStackTrace();
+      fail();
+    }
   }
 
   private TapeRecallCatalog getTapeRecallCatalogInsertSuccess(UUID groupTaskId) {
