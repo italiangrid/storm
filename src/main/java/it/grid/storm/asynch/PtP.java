@@ -421,10 +421,7 @@ public class PtP implements Delegable, Chooser, Request {
                     DataHelper.getRequestor(requestData), e.getMessage(), e);
                 return;
               }
-              if (!canWrite) {
-                // URGENT!!!
-                // roll back! ok3, ok2 and ok1
-              } else {
+              if (canWrite) {
                 log.debug(
                     "PTP CHUNK. Addition of ReadWrite ACL on file successfully completed for {}",
                     fileStoRI.getAbsolutePath());
@@ -436,9 +433,14 @@ public class PtP implements Delegable, Chooser, Request {
                     .trackVolatile(fileStoRI.getPFN(), Calendar.getInstance(),
                         requestData.fileLifetime());
                 }
+                return;
               }
             } else {
               log.debug("ACL setup skipped by configuration");
+              requestData.setTransferURL(auxTURL);
+              requestData.changeStatusSRM_SPACE_AVAILABLE("srmPrepareToPut successfully handled!");
+              failure = false;
+              return;
             }
           } else {
             failure = true;
@@ -448,6 +450,10 @@ public class PtP implements Delegable, Chooser, Request {
           }
         } else {
           log.debug("Creation of file|Space reservation skipped by configuration");
+          requestData.setTransferURL(auxTURL);
+          requestData.changeStatusSRM_SPACE_AVAILABLE("srmPrepareToPut successfully handled!");
+          failure = false;
+          return;
         }
       } else {
         failure = true;
