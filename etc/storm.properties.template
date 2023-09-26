@@ -236,6 +236,11 @@ transit.delay = 10
 
 # Skip ACL setup for PtG requests
 ptg.skip-acl-setup = false
+# Skip ACL setup for PtP requests
+ptp.skip-acl-setup = false
+# Skip both file creation and ACL setup for PtP requests
+ptp.skip-file-creation = false
+
 
 # The caching policy for successful name lookups from the name service.
 # The value is specified as integer to indicate the number of seconds to cache the successful lookup.

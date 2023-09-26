@@ -157,6 +157,8 @@ public class Configuration {
   private static final String XMLRPC_SECURITY_ENABLED_KEY = "synchcall.xmlrpc.security.enabled";
   private static final String XMLRPC_SECURITY_TOKEN_KEY = "synchcall.xmlrpc.security.token";
   private static final String PTG_SKIP_ACL_SETUP = "ptg.skip-acl-setup";
+  private static final String PTP_SKIP_ACL_SETUP = "ptp.skip-acl-setup";
+  private static final String PTP_SKIP_FILE_CREATION = "ptp.skip-file-creation";
   private static final String HTTP_TURL_PREFIX = "http.turl_prefix";
   private static final String NETWORKADDRESS_CACHE_TTL = "networkaddress.cache.ttl";
   private static final String NETWORKADDRESS_CACHE_NEGATIVE_TTL =
@@ -1244,6 +1246,16 @@ public class Configuration {
   public Boolean getPTGSkipACLSetup() {
 
     return cr.getConfiguration().getBoolean(PTG_SKIP_ACL_SETUP, false);
+  }
+
+  public Boolean getPTPSkipACLSetup() {
+
+    return cr.getConfiguration().getBoolean(PTP_SKIP_ACL_SETUP, false);
+  }
+
+  public Boolean getPTPSkipFileCreation() {
+
+    return cr.getConfiguration().getBoolean(PTP_SKIP_FILE_CREATION, false);
   }
 
   @Override

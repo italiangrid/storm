@@ -8,11 +8,6 @@ import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.LocalUser;
 
-/**
- * @author Michele Dibenedetto
- * 
- */
-
 public interface AclManager {
 
   /**
@@ -24,7 +19,7 @@ public interface AclManager {
    *         a not existent file
    */
   FilesystemPermission grantGroupPermission(LocalFile localFile, LocalUser localUser,
-      FilesystemPermission permission) throws IllegalArgumentException;
+      FilesystemPermission permission);
 
   /**
    * @param localFile an existent file if received null parameters or the LocalFile object refers to
@@ -36,7 +31,7 @@ public interface AclManager {
    *         a not existent file
    */
   FilesystemPermission grantUserPermission(LocalFile localFile, LocalUser localUser,
-      FilesystemPermission permission) throws IllegalArgumentException;
+      FilesystemPermission permission);
 
   /**
    * @param localFile an existent file
@@ -45,8 +40,7 @@ public interface AclManager {
    * @throws IllegalArgumentException if received null parameters or the LocalFile object refers to
    *         a not existent file
    */
-  FilesystemPermission removeGroupPermission(LocalFile localFile, LocalUser localUser)
-      throws IllegalArgumentException;
+  FilesystemPermission removeGroupPermission(LocalFile localFile, LocalUser localUser);
 
   /**
    * @param localFile an existent file
@@ -55,8 +49,7 @@ public interface AclManager {
    * @throws IllegalArgumentException if received null parameters or the LocalFile object refers to
    *         a not existent file
    */
-  FilesystemPermission removeUserPermission(LocalFile localFile, LocalUser localUser)
-      throws IllegalArgumentException;
+  FilesystemPermission removeUserPermission(LocalFile localFile, LocalUser localUser);
 
   /**
    * @param localFile an existent file
@@ -67,7 +60,7 @@ public interface AclManager {
    *         a not existent file
    */
   FilesystemPermission revokeGroupPermission(LocalFile localFile, LocalUser localUser,
-      FilesystemPermission permission) throws IllegalArgumentException;
+      FilesystemPermission permission);
 
   /**
    * @param localFile an existent file
@@ -78,7 +71,7 @@ public interface AclManager {
    *         a not existent file
    */
   FilesystemPermission revokeUserPermission(LocalFile localFile, LocalUser localUser,
-      FilesystemPermission permission) throws IllegalArgumentException;
+      FilesystemPermission permission);
 
   /**
    * @param localFile an existent file
@@ -89,7 +82,7 @@ public interface AclManager {
    *         a not existent file
    */
   FilesystemPermission setGroupPermission(LocalFile localFile, LocalUser localUser,
-      FilesystemPermission permission) throws IllegalArgumentException;
+      FilesystemPermission permission);
 
   /**
    * @param localFile an existent file
@@ -100,14 +93,14 @@ public interface AclManager {
    *         a not existent file
    */
   FilesystemPermission setUserPermission(LocalFile localFile, LocalUser localUser,
-      FilesystemPermission permission) throws IllegalArgumentException;
+      FilesystemPermission permission);
 
   /**
    * @param localFile an existent file
    * @throws IllegalArgumentException if received null parameters or the LocalFile object refers to
    *         a not existent file
    */
-  void removeHttpsPermissions(LocalFile localFile) throws IllegalArgumentException;
+  void removeHttpsPermissions(LocalFile localFile);
 
   /**
    * @param localFile an existent file
@@ -117,7 +110,7 @@ public interface AclManager {
    *         a not existent file
    */
   void grantHttpsUserPermission(LocalFile localFile, LocalUser localUser,
-      FilesystemPermission permission) throws IllegalArgumentException;
+      FilesystemPermission permission);
 
   /**
    * @param localFile an existent file
@@ -137,7 +130,7 @@ public interface AclManager {
    *         a not existent file
    */
   void grantHttpsGroupPermission(LocalFile localFile, LocalUser localUser,
-      FilesystemPermission permission) throws IllegalArgumentException;
+      FilesystemPermission permission);
 
   /**
    * @param localFile an existent file
@@ -146,8 +139,7 @@ public interface AclManager {
    * @throws IllegalArgumentException if received null parameters or the LocalFile object refers to
    *         a not existent file
    */
-  void grantHttpsServiceUserPermission(LocalFile localFile, FilesystemPermission permission)
-      throws IllegalArgumentException;
+  void grantHttpsServiceUserPermission(LocalFile localFile, FilesystemPermission permission);
 
   /**
    * @param oldLocalFile an existent source file
@@ -155,7 +147,6 @@ public interface AclManager {
    * @throws IllegalArgumentException if received null parameters or the LocalFile objects refers to
    *         not existent files
    */
-  void moveHttpsPermissions(LocalFile oldLocalFile, LocalFile newLocalFile)
-      throws IllegalArgumentException;
+  void moveHttpsPermissions(LocalFile oldLocalFile, LocalFile newLocalFile);
 
 }

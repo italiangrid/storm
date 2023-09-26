@@ -483,8 +483,9 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
 
     if (!downgradedToAnonymous && requestData instanceof IdentityInputData) {
 
-      if (!setupACLs)
+      if (!setupACLs) {
         return verifyPath(fileStoRI);
+      }
 
       return verifyPath(fileStoRI)
           && setParentsAcl(fileStoRI, ((IdentityInputData) requestData).getUser().getLocalUser());

@@ -28,11 +28,13 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
+import it.grid.storm.acl.AclManagerFS;
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.common.types.PFN;
+import it.grid.storm.config.Configuration;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
@@ -67,6 +69,19 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
   private static final Logger log = LoggerFactory.getLogger(PutDoneCommand.class);
 
   private static final String SRM_COMMAND = "srmPutDone";
+
+  /**
+   * boolean that indicates if setting ACL on the 0-size file is necessary or not
+   */
+  protected boolean setupACLs = true;
+
+  public PutDoneCommand() {
+
+    if (Configuration.getInstance().getPTPSkipACLSetup()) {
+      setupACLs = false;
+      log.debug("Skipping ACL setup on PTP as requested by configuration.");
+    }
+  }
 
   private ManageFileTransferRequestFilesInputData inputDataSanityCheck(InputData inputData)
       throws PutDoneCommandException {
@@ -236,7 +251,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
           spaceAvailableSURLs.add(surlStatus.getSurl());
           // DO PutDone
           try {
-            executePutDone(surlStatus.getSurl(), user);
+            executePutDone(surlStatus.getSurl(), user, setupACLs);
           } catch (PutDoneCommandException e) {
             newStatus = e.getReturnStatus();
             atLeastOneFailure = true;
@@ -340,10 +355,10 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
   }
 
   public static boolean executePutDone(TSURL surl) throws PutDoneCommandException {
-    return executePutDone(surl, null);
+    return executePutDone(surl, null, Configuration.getInstance().getPTPSkipACLSetup());
   }
 
-  public static boolean executePutDone(TSURL surl, GridUserInterface user)
+  public static boolean executePutDone(TSURL surl, GridUserInterface user, boolean setupACLs)
       throws PutDoneCommandException {
 
     Preconditions.checkNotNull(surl, "Null SURL received");
@@ -380,8 +395,8 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
       }
     }
 
-    // 2- JiTs must me removed from the TURL
-    if (stori.hasJustInTimeACLs()) {
+    if (setupACLs) {
+
       log.debug("PutDone: JiT case, removing ACEs on SURL: " + surl.toString());
       // Retrieve the PFN of the SURL parents
       List<StoRI> storiParentsList = stori.getParents();
@@ -399,10 +414,15 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
         log.warn("PutDone: Unable to get the local user for user {}. CannotMapUserException: {}",
             user, e.getMessage(), e);
       }
-      if (localUser != null) {
-        VolatileAndJiTCatalog.getInstance().expirePutJiTs(stori.getPFN(), localUser);
+
+      if (stori.hasJustInTimeACLs()) {
+        if (localUser != null) {
+          VolatileAndJiTCatalog.getInstance().expirePutJiTs(stori.getPFN(), localUser);
+        } else {
+          VolatileAndJiTCatalog.getInstance().removeAllJiTsOn(stori.getPFN());
+        }
       } else {
-        VolatileAndJiTCatalog.getInstance().removeAllJiTsOn(stori.getPFN());
+        unsetAoTAcl(stori, localUser);
       }
     }
 
@@ -430,4 +450,17 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
     return true;
   }
 
+  private static boolean unsetAoTAcl(StoRI fileStori, LocalUser localUser) {
+
+    log.debug("SrmMkdir: Removing AoT ACL {} to user {} for file: '{}'", localUser,
+        fileStori.getAbsolutePath());
+    try {
+      AclManagerFS.getInstance().removeGroupPermission(fileStori.getLocalFile(), localUser);
+    } catch (IllegalArgumentException e) {
+      log.error("Unable to remove user traverse permission on parent file. "
+          + "IllegalArgumentException: {}", e.getMessage(), e);
+      return false;
+    }
+    return true;
+  }
 }
