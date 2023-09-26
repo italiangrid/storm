@@ -518,7 +518,7 @@ public class PtP implements Delegable, Chooser, Request {
     if (!preparePath(fileStoRI)) {
       return false;
     }
-    if (!setupACLs) {
+    if (setupACLs) {
       if (requestData instanceof IdentityInputData) {
         LocalUser user = ((IdentityInputData) requestData).getUser().getLocalUser();
         return setParentAcl(fileStoRI, user);
