@@ -426,9 +426,9 @@ public class StoRIImpl implements StoRI {
 
       if (desiredP.isEmpty()) {
         String msg =
-            String.format("None of [%s] protocols matches the available " + "protocols [%s]",
-                join(desiredP, ','), join(availableP, ','));
-        log.error(msg);
+            String.format("None of [%s] protocols matches the available protocols [%s]",
+                join(desiredProtocols.getDesiredProtocols(), ','), join(availableP, ','));
+        log.debug(msg);
         throw new InvalidGetTURLProtocolException(msg);
 
       } else {

@@ -381,7 +381,7 @@ public class PtP implements Delegable, Chooser, Request {
       requestData.changeStatusSRM_NOT_SUPPORTED(
           "Unable to build TURL with " + "specified transfer protocols!");
       failure = true;
-      log.error("ERROR in PtPChunk! No valid transfer protocol found. {}", e.getMessage(), e);
+      log.error("ERROR in PtPChunk! No valid transfer protocol found. {}", e.getMessage());
       return;
     } catch (TURLBuildingException e) {
       requestData.changeStatusSRM_FAILURE(
@@ -401,7 +401,7 @@ public class PtP implements Delegable, Chooser, Request {
       failure = true;
       log.error(
           "ERROR in PtGChunk! Unable to find LocalUser for {}! CannotMapUserException: {}",
-          DataHelper.getRequestor(requestData), e.getMessage(), e);
+          DataHelper.getRequestor(requestData), e.getMessage());
       return;
     }
     if (canTraverse) {
@@ -418,7 +418,7 @@ public class PtP implements Delegable, Chooser, Request {
                 failure = true;
                 log.error(
                     "ERROR in PtGChunk! Unable to find LocalUser for {}! CannotMapUserException: {}",
-                    DataHelper.getRequestor(requestData), e.getMessage(), e);
+                    DataHelper.getRequestor(requestData), e.getMessage());
                 return;
               }
               if (canWrite) {
