@@ -17,7 +17,7 @@
     <logbackVersion>1.2.3</logbackVersion>
     <nettyVersion>3.5.0.Final</nettyVersion>
     <jnaVersion>3.3.0</jnaVersion>
-    <jettisonVersion>1.1</jettisonVersion>
+    <jettisonVersion>1.5.2</jettisonVersion>
     <commonsDbcpVersion>2.8.0</commonsDbcpVersion>
     <commonsIoVersion>2.8.0</commonsIoVersion>
     <commonsNetVersion>3.8.0</commonsNetVersion>
