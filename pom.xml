@@ -32,7 +32,7 @@
     <activationVersion>1.1.1</activationVersion>
     <commonsValidatorVersion>1.7</commonsValidatorVersion>
     <wsdl4jVersion>1.5.1</wsdl4jVersion>
-    <xalanVersion>2.7.1</xalanVersion>
+    <xalanVersion>2.7.2</xalanVersion>
     <mailVersion>1.4.6</mailVersion>
     <jakartaXmlBindVersion>2.3.3</jakartaXmlBindVersion>
 
