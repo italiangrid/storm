@@ -34,3 +34,9 @@ the following URLs
 
 * GGUS (official support channel): http://www.ggus.eu
 
+## Partners
+
+StoRM developers use [YourKit Java Profiler](http://www.yourkit.com/) to provide useful insights into the performance of this Java application. 
+
+![YourKit Logo](https://www.yourkit.com/images/yklogo.png)
+
