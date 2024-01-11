@@ -35,6 +35,8 @@ If you are upgrading from **StoRM v1.11.20** (or earlier versions) please follow
 The following guides contains examples of a quick all-in-one deployment for the supported platforms.
 
 * [All-in-one deployment on CentOS 7 with Puppet][quick-deployment-centos7]
+* [StoRM WebDAV deployment on CentOS 7 with Puppet 7][quick-dav-deployment-centos7]
+
 
 ## System Requirements
 
@@ -1033,6 +1035,7 @@ After restarting the service, all LCMAPS calls will be logged to the new file.
 [puppet-post]: {{site.baseurl}}/2023/06/21/StoRM-Puppet-module-major-release.html
 
 [quick-deployment-centos7]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.22/quick-deployments/centos7/
+[quick-dav-deployment-centos7]: {{site.baseurl}}/documentation/sysadmin-guide/1.11.22/quick-deployments/webdav/
 
 [Home-INFN]: https://home.infn.it/it/
 [Home-INFN-CNAF]: https://www.cnaf.infn.it/
