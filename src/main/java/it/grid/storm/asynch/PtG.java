@@ -21,7 +21,7 @@ import it.grid.storm.catalogs.TapeRecallCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.FilesystemPermission;
@@ -104,7 +104,7 @@ public class PtG implements Delegable, Chooser, Request, Suspendedable {
     requestData = reqData;
     start = Calendar.getInstance();
 
-    if (Configuration.getInstance().getPTGSkipACLSetup()) {
+    if (StormConfiguration.getInstance().getPTGSkipACLSetup()) {
       setupACLs = false;
       log.debug("Skipping ACL setup on PTG as requested by configuration.");
     }

@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.common.types.TimeUnit;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
@@ -163,7 +163,7 @@ public class PtGChunkCatalog {
     try {
       long pinLifeTime = PinLifetimeConverter.getInstance().toStoRM(chunkDataTO.lifeTime());
       // Check for max value allowed
-      long max = Configuration.getInstance().getPinLifetimeMaximum();
+      long max = StormConfiguration.getInstance().getPinLifetimeMaximum();
       if (pinLifeTime > max) {
         log.warn("PinLifeTime is greater than the max value allowed."
             + " Drop the value to the max = {} seconds", max);

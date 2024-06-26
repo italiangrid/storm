@@ -20,7 +20,7 @@ import it.grid.storm.acl.AclManager;
 import it.grid.storm.acl.AclManagerFS;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.TimeUnit;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.LocalUser;
@@ -81,20 +81,20 @@ public class VolatileAndJiTCatalog {
   /** Timer object in charge of cleaning periodically the Catalog! */
   private final Timer cleaner = new Timer();
   /** Delay time before starting cleaning thread! Set to 1 minute */
-  private final long delay = Configuration.getInstance().getCleaningInitialDelay() * 1000;
+  private final long delay = StormConfiguration.getInstance().getCleaningInitialDelay() * 1000;
   /** Period of execution of cleaning! Set to 1 hour */
-  private final long period = Configuration.getInstance().getCleaningTimeInterval() * 1000;
+  private final long period = StormConfiguration.getInstance().getCleaningTimeInterval() * 1000;
   /** fileLifetime to use if user specified a non-positive value */
-  private final long defaultFileLifetime = Configuration.getInstance().getFileLifetimeDefault();
+  private final long defaultFileLifetime = StormConfiguration.getInstance().getFileLifetimeDefault();
   /** Number of seconds to use as default if the supplied lifetime is zero! */
-  private final long floor = Configuration.getInstance().getPinLifetimeDefault();
+  private final long floor = StormConfiguration.getInstance().getPinLifetimeDefault();
   /**
    * Maximum number of seconds that an ACL can live: the life time requested by the user cannot be
    * greater than this value! This ceiling is needed because of the cron job that removes pool
    * account mappings: when the mapping is removed, there must NOT be ANY ACL for that pool-user
    * left!
    */
-  private final long ceiling = Configuration.getInstance().getPinLifetimeMaximum();
+  private final long ceiling = StormConfiguration.getInstance().getPinLifetimeMaximum();
 
   /**
    * Private constructor that starts the cleaning timer.

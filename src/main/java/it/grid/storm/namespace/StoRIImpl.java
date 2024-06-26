@@ -25,7 +25,7 @@ import it.grid.storm.common.types.InvalidStFNAttributeException;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.common.types.TURLPrefix;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.filesystem.FilesystemIF;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.ReservationException;
@@ -553,7 +553,7 @@ public class StoRIImpl implements StoRI {
 
   private TTURL buildHTTPTURL(Protocol p, Authority authority) {
 
-    String prefix = Configuration.getInstance().getHTTPTURLPrefix();
+    String prefix = StormConfiguration.getInstance().getHTTPTURLPrefix();
     StringBuilder sb = new StringBuilder();
     sb.append(p.getProtocolPrefix());
     sb.append(authority);

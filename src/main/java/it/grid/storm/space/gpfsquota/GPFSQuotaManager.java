@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.concurrency.NamedThreadFactory;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.filesystem.FilesystemError;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.model.VirtualFS;
@@ -104,7 +104,7 @@ public enum GPFSQuotaManager {
 
     quotaService = new ExecutorCompletionService<>(quotaWorkersExecutionService);
 
-    long refreshPeriod = Configuration.getInstance().getGPFSQuotaRefreshPeriod();
+    long refreshPeriod = StormConfiguration.getInstance().getGPFSQuotaRefreshPeriod();
 
     log.info("GPFSQuotaManager refresh period (in seconds): {}", refreshPeriod);
 

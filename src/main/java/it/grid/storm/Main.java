@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.startup.Bootstrap;
@@ -42,7 +42,7 @@ public class Main {
 
     log.info("Load configuration from {} ...", DEFAULT_CONFIG_FILE);
     try {
-      Configuration.init(DEFAULT_CONFIG_FILE);
+      StormConfiguration.init(DEFAULT_CONFIG_FILE);
     } catch (IOException | ConfigurationException e) {
       log.error(e.getMessage(), e);
       exit(1);
@@ -56,7 +56,7 @@ public class Main {
       exit(1);
     }
 
-    StoRM storm = new StoRM(Configuration.getInstance(), Namespace.getInstance());
+    StoRM storm = new StoRM(StormConfiguration.getInstance(), Namespace.getInstance());
 
     try {
       storm.init();

@@ -8,7 +8,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import it.grid.storm.catalogs.executors.threads.BoLFinalizer;
 import it.grid.storm.catalogs.executors.threads.PtGFinalizer;
 import it.grid.storm.catalogs.executors.threads.PtPFinalizer;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 
 public class RequestFinalizerService {
 
@@ -20,7 +20,7 @@ public class RequestFinalizerService {
   private BoLFinalizer bolTask;
   private PtGFinalizer ptgTask;
 
-  public RequestFinalizerService(Configuration config) {
+  public RequestFinalizerService(StormConfiguration config) {
 
     delay = config.getTransitInitialDelay() * 1000L;
     period = config.getTransitTimeInterval() * 1000L;

@@ -4,7 +4,7 @@
  */
 package it.grid.storm.persistence.pool.impl;
 
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 
 public class StormBeIsamConnectionPool extends DefaultDatabaseConnectionPool {
 
@@ -17,12 +17,12 @@ public class StormBeIsamConnectionPool extends DefaultDatabaseConnectionPool {
     return instance;
   }
 
-  private final static Configuration c = Configuration.getInstance();
+  private final static StormConfiguration c = StormConfiguration.getInstance();
 
   private StormBeIsamConnectionPool() {
 
-    super(DefaultMySqlDatabaseConnector.getStormBeIsamDatabaseConnector(), c.getDbPoolSize(),
-        c.getDbPoolMinIdle(), c.getDbPoolMaxWaitMillis(), c.isDbPoolTestOnBorrow(),
+    super(DefaultMySqlDatabaseConnector.getStormBeIsamDatabaseConnector(), c.getStormBeIsamPoolSize(),
+        c.getStormBeIsamPoolMinIdle(), c.getDbPoolMaxWaitMillis(), c.isDbPoolTestOnBorrow(),
         c.isDbPoolTestWhileIdle());
   }
 

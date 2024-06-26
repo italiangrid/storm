@@ -6,7 +6,7 @@ package it.grid.storm.persistence.pool.impl;
 
 import static java.lang.String.format;
 
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.persistence.pool.DatabaseConnector;
 
 public class DefaultMySqlDatabaseConnector implements DatabaseConnector {
@@ -22,7 +22,7 @@ public class DefaultMySqlDatabaseConnector implements DatabaseConnector {
 
     this.name = database;
 
-    Configuration config = Configuration.getInstance();
+    StormConfiguration config = StormConfiguration.getInstance();
 
     this.username = config.getDbUsername();
     this.password = config.getDbPassword();

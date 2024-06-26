@@ -6,7 +6,7 @@ package it.grid.storm.synchcall.data.datatransfer;
 
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.common.types.TimeUnit;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.persistence.converter.OverwriteModeConverter;
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
 import it.grid.storm.srm.types.TOverwriteMode;
@@ -17,7 +17,7 @@ public class AnonymousPrepareToPutInputData extends AnonymousFileTransferInputDa
     implements PrepareToPutInputData {
 
   private TOverwriteMode overwriteMode =
-      OverwriteModeConverter.toSTORM(Configuration.getInstance().getDefaultOverwriteMode());
+      OverwriteModeConverter.toSTORM(StormConfiguration.getInstance().getDefaultOverwriteMode());
   private TSizeInBytes fileSize = TSizeInBytes.makeEmpty();
   private TLifeTimeInSeconds desiredFileLifetime;
 
@@ -33,7 +33,7 @@ public class AnonymousPrepareToPutInputData extends AnonymousFileTransferInputDa
 
     super(surl, transferProtocols);
     this.desiredFileLifetime = TLifeTimeInSeconds
-      .make(Configuration.getInstance().getFileLifetimeDefault(), TimeUnit.SECONDS);
+      .make(StormConfiguration.getInstance().getFileLifetimeDefault(), TimeUnit.SECONDS);
 
   }
 

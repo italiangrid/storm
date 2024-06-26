@@ -17,7 +17,7 @@ import it.grid.storm.catalogs.PtPChunkCatalog;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.InvalidSURLException;
@@ -72,7 +72,7 @@ public class PtPAbortExecutor implements AbortExecutorInterface {
 
   private static final Logger log = LoggerFactory.getLogger(PtPAbortExecutor.class);
 
-  static Configuration config = Configuration.getInstance();
+  static StormConfiguration config = StormConfiguration.getInstance();
   private static int maxLoopTimes = PtPAbortExecutor.config.getMaxLoop();
 
   private Namespace namespace;

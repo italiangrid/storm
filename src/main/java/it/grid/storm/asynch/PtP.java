@@ -26,7 +26,7 @@ import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
@@ -129,11 +129,6 @@ public class PtP implements Delegable, Chooser, Request {
   protected boolean setupACLs = true;
 
   /**
-   * boolean that indicates if the creation of the 0-size file is necessary or not
-   */
-  protected boolean setupFile = true;
-
-  /**
    * Constructor requiring the VomsGridUser, the RequestSummaryData, the PtPChunkData about this
    * chunk, and the GlobalStatusManager. If the supplied attributes are null, an
    * InvalidPtPChunkAttributesException is thrown.
@@ -147,12 +142,7 @@ public class PtP implements Delegable, Chooser, Request {
     this.requestData = chunkData;
     start = Calendar.getInstance();
 
-    if (Configuration.getInstance().getPTPSkipFileCreation()) {
-      setupFile = false;
-      log.debug("Skipping 0-file setup on PTP as requested by configuration.");
-      setupACLs = false;
-      log.debug("Skipping ACL setup on PTP as a consequence of skipping 0-size file creation.");
-    } else if (Configuration.getInstance().getPTPSkipACLSetup()) {
+    if (StormConfiguration.getInstance().getPTPSkipACLSetup()) {
       setupACLs = false;
       log.debug("Skipping ACL setup on PTP as requested by configuration.");
     }
@@ -404,67 +394,52 @@ public class PtP implements Delegable, Chooser, Request {
           DataHelper.getRequestor(requestData), e.getMessage());
       return;
     }
-    if (canTraverse) {
-      if (hasEnoughSpace(fileStoRI)) {
-        if (setupFile) {
-          if (managePermitReserveSpaceStep(fileStoRI)) {
-            if (setupACLs) {
-              boolean canWrite;
-              try {
-                canWrite = managePermitSetFileStep(fileStoRI);
-              } catch (CannotMapUserException e) {
-                requestData.changeStatusSRM_FAILURE(
-                    "Unable to find local user for " + DataHelper.getRequestor(requestData));
-                failure = true;
-                log.error(
-                    "ERROR in PtGChunk! Unable to find LocalUser for {}! CannotMapUserException: {}",
-                    DataHelper.getRequestor(requestData), e.getMessage());
-                return;
-              }
-              if (canWrite) {
-                log.debug(
-                    "PTP CHUNK. Addition of ReadWrite ACL on file successfully completed for {}",
-                    fileStoRI.getAbsolutePath());
-                requestData.setTransferURL(auxTURL);
-                requestData.changeStatusSRM_SPACE_AVAILABLE("srmPrepareToPut successfully handled!");
-                failure = false;
-                if (VOLATILE.equals(requestData.fileStorageType())) {
-                  VolatileAndJiTCatalog.getInstance()
-                    .trackVolatile(fileStoRI.getPFN(), Calendar.getInstance(),
-                        requestData.fileLifetime());
-                }
-                return;
-              }
-            } else {
-              log.debug("ACL setup skipped by configuration");
-              requestData.setTransferURL(auxTURL);
-              requestData.changeStatusSRM_SPACE_AVAILABLE("srmPrepareToPut successfully handled!");
-              failure = false;
-              return;
-            }
-          } else {
-            failure = true;
-            requestData.changeStatusSRM_FAILURE("Unable to reserve space on storage area");
-            log.error("ERROR in PtGChunk! Unable to reserve space on storage area");
-            return;
-          }
-        } else {
-          log.debug("Creation of file|Space reservation skipped by configuration");
-          requestData.setTransferURL(auxTURL);
-          requestData.changeStatusSRM_SPACE_AVAILABLE("srmPrepareToPut successfully handled!");
-          failure = false;
-          return;
-        }
-      } else {
-        failure = true;
-        requestData.changeStatusSRM_FAILURE("Not enough space on storage area");
-        log.error("ERROR in PtGChunk! Not enough space on storage area");
-        return;
-      }
-    } else {
+    if (!canTraverse) {
       failure = true;
       requestData.changeStatusSRM_FAILURE("Unable to set up parent path");
       log.error("ERROR in PtGChunk! Unable to set up parent path");
+      return;
+    }
+    if (!hasEnoughSpace(fileStoRI)) {
+      failure = true;
+      requestData.changeStatusSRM_FAILURE("Not enough space on storage area");
+      log.error("ERROR in PtGChunk! Not enough space on storage area");
+      return;
+    }
+    if (!setupACLs) {
+      log.debug("ACL setup and file creation skipped by configuration");
+      requestData.setTransferURL(auxTURL);
+      requestData.changeStatusSRM_SPACE_AVAILABLE("srmPrepareToPut successfully handled!");
+      failure = false;
+      return;
+    }
+    if (!managePermitReserveSpaceStep(fileStoRI)) {
+      failure = true;
+      requestData.changeStatusSRM_FAILURE("Unable to reserve space on storage area");
+      log.error("ERROR in PtGChunk! Unable to reserve space on storage area");
+      return;
+    }
+    boolean canWrite;
+    try {
+      canWrite = managePermitSetFileStep(fileStoRI);
+    } catch (CannotMapUserException e) {
+      requestData.changeStatusSRM_FAILURE(
+          "Unable to find local user for " + DataHelper.getRequestor(requestData));
+      failure = true;
+      log.error("ERROR in PtGChunk! Unable to find LocalUser for {}! CannotMapUserException: {}",
+          DataHelper.getRequestor(requestData), e.getMessage());
+      return;
+    }
+    if (canWrite) {
+      log.debug("PTP CHUNK. Addition of ReadWrite ACL on file successfully completed for {}",
+          fileStoRI.getAbsolutePath());
+      requestData.setTransferURL(auxTURL);
+      requestData.changeStatusSRM_SPACE_AVAILABLE("srmPrepareToPut successfully handled!");
+      failure = false;
+      if (VOLATILE.equals(requestData.fileStorageType())) {
+        VolatileAndJiTCatalog.getInstance()
+          .trackVolatile(fileStoRI.getPFN(), Calendar.getInstance(), requestData.fileLifetime());
+      }
       return;
     }
   }
@@ -483,7 +458,7 @@ public class PtP implements Delegable, Chooser, Request {
       log.debug("{} is full!", fs.getAliasName());
       return false;
     }
-    boolean isDiskUsageServiceEnabled = Configuration.getInstance().getDiskUsageServiceEnabled();
+    boolean isDiskUsageServiceEnabled = StormConfiguration.getInstance().getDiskUsageServiceEnabled();
     if (!sp.isSAInitialized(PtP.log, fileStoRI) && isDiskUsageServiceEnabled) {
       /* Trust we got space, let the request pass */
       log.debug(
@@ -554,7 +529,7 @@ public class PtP implements Delegable, Chooser, Request {
   private boolean prepareDirectory(LocalFile dir) {
 
     boolean automaticDirectoryCreation =
-        Configuration.getInstance().getAutomaticDirectoryCreation();
+        StormConfiguration.getInstance().getAutomaticDirectoryCreation();
 
     if (dir.exists()) {
       if (!dir.isDirectory()) {

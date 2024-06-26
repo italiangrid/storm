@@ -15,7 +15,7 @@
 
 package it.grid.storm.griduser;
 
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 
 import java.util.Map;
 
@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 public class GridUserManager {
 
 	static final Logger log = LoggerFactory.getLogger(GridUserManager.class);
-	static Configuration config = Configuration.getInstance();
+	static StormConfiguration config = StormConfiguration.getInstance();
 	static GridUserFactory userFactory = null;
 
 	static {

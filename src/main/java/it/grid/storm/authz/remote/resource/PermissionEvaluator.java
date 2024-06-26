@@ -24,7 +24,7 @@ import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.remote.Constants;
 import it.grid.storm.common.types.InvalidStFNAttributeException;
 import it.grid.storm.common.types.StFN;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.griduser.FQAN;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
@@ -42,7 +42,7 @@ class PermissionEvaluator {
 
   public static Boolean isOverwriteAllowed() {
 
-    return OverwriteModeConverter.toSTORM(Configuration.getInstance().getDefaultOverwriteMode())
+    return OverwriteModeConverter.toSTORM(StormConfiguration.getInstance().getDefaultOverwriteMode())
       .equals(TOverwriteMode.ALWAYS);
   }
 

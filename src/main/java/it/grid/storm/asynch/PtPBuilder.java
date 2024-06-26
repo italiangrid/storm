@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.grid.storm.common.types.TURLPrefix;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.persistence.exceptions.InvalidFileTransferDataAttributesException;
 import it.grid.storm.persistence.exceptions.InvalidPtPDataAttributesException;
 import it.grid.storm.persistence.exceptions.InvalidSurlRequestDataAttributesException;
@@ -43,7 +43,7 @@ public class PtPBuilder {
     TLifeTimeInSeconds pinLifetime = inputData.getDesiredPinLifetime();
     TLifeTimeInSeconds fileLifetime = inputData.getDesiredFileLifetime();
     TFileStorageType fileStorageType = TFileStorageType
-      .getTFileStorageType(Configuration.getInstance().getDefaultFileStorageType());
+      .getTFileStorageType(StormConfiguration.getInstance().getDefaultFileStorageType());
     TSpaceToken spaceToken = inputData.getTargetSpaceToken();
     TSizeInBytes expectedFileSize = inputData.getFileSize();
     TURLPrefix transferProtocols = inputData.getTransferProtocols();

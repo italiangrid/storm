@@ -11,7 +11,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import it.grid.storm.catalogs.TapeRecallCatalog;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.tape.recalltable.TapeRecallException;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
@@ -44,7 +44,7 @@ public class TasksResource {
 
   private static final Logger log = LoggerFactory.getLogger(TasksResource.class);
 
-  private static Configuration config = Configuration.getInstance();
+  private static StormConfiguration config = StormConfiguration.getInstance();
 
   /**
    * Return recall tasks for being taken over. The status of the tasks that are returned is set to

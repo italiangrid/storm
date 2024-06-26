@@ -22,7 +22,7 @@ import it.grid.storm.balancer.BalancingStrategy;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.GUID;
 import it.grid.storm.common.types.PFN;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.filesystem.Filesystem;
 import it.grid.storm.filesystem.FilesystemIF;
 import it.grid.storm.filesystem.GPFSSpaceSystem;
@@ -76,7 +76,7 @@ public class VirtualFS {
   FilesystemIF fsWrapper = null;
   List<MappingRule> mappingRules = Lists.newArrayList();
   List<ApproachableRule> approachableRules = Lists.newArrayList();
-  Configuration config;
+  StormConfiguration config;
   StorageClassType storageClass = null;
   TSpaceToken spaceToken;
   SAAuthzType saAuthzType = SAAuthzType.UNKNOWN;
@@ -760,7 +760,7 @@ public class VirtualFS {
     // Get the default space size
     TSizeInBytes defaultFileSize = null;
     try {
-      defaultFileSize = TSizeInBytes.make(Configuration.getInstance().getFileDefaultSize());
+      defaultFileSize = TSizeInBytes.make(StormConfiguration.getInstance().getFileDefaultSize());
     } catch (it.grid.storm.srm.types.InvalidTSizeAttributesException e) {
       log.debug("Invalid size created.");
     }

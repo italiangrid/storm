@@ -6,7 +6,7 @@ package it.grid.storm.synchcall.command.discovery;
 
 import it.grid.storm.Constants;
 import it.grid.storm.catalogs.TapeRecallCatalog;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.srm.types.ArrayOfTExtraInfo;
 import it.grid.storm.srm.types.InvalidTExtraInfoAttributeException;
@@ -99,7 +99,7 @@ public class PingCommand extends DiscoveryCommand implements Command {
 
     Properties properties = new Properties();
 
-    Configuration config = Configuration.getInstance();
+    StormConfiguration config = StormConfiguration.getInstance();
     String configurationPATH = config.namespaceConfigPath();
     String pingPropertiesFileName = config.getPingValuesPropertiesFilename();
     String propertiesFile = configurationPATH + File.separator + pingPropertiesFileName;

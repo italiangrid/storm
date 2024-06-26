@@ -10,7 +10,7 @@ package it.grid.storm.authz.path.conf;
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.authz.path.model.PathACE;
 import it.grid.storm.authz.path.model.PathAuthzEvaluationAlgorithm;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -42,7 +42,7 @@ public class PathAuthzDBReader {
 
     log.info("Path Authorization : Initializing...");
     if (!(existsAuthzDBFile(filename))) {
-      String configurationPATH = Configuration.getInstance().namespaceConfigPath();
+      String configurationPATH = StormConfiguration.getInstance().namespaceConfigPath();
       if (configurationPATH.length() == 0) {
         String userDir = System.getProperty("user.dir");
         log.debug("Unable to found the configuration path. Assume: '{}'", userDir);

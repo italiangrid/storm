@@ -30,7 +30,7 @@ import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
@@ -104,13 +104,13 @@ public class MkdirCommand extends DirectoryCommand implements Command {
   private static final String SRM_COMMAND = "SrmMkdir";
 
   private final Namespace namespace;
-  private final Configuration configuration;
+  private final StormConfiguration configuration;
   private final AclManager aclManager;
 
   public MkdirCommand() {
 
     namespace = Namespace.getInstance();
-    configuration = Configuration.getInstance();
+    configuration = StormConfiguration.getInstance();
     aclManager = AclManagerFS.getInstance();
   }
 

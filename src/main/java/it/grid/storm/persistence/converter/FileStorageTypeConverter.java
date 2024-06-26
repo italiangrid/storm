@@ -9,7 +9,7 @@ import java.util.Map;
 
 import com.google.common.collect.Maps;
 
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.srm.types.TFileStorageType;
 
 /**
@@ -75,7 +75,7 @@ public class FileStorageTypeConverter {
     TFileStorageType aux = DBtoSTORM.get(s);
     if (aux == null)
       // This case is that the String s is different from V,P or D.
-      aux = DBtoSTORM.get(Configuration.getInstance().getDefaultFileStorageType());
+      aux = DBtoSTORM.get(StormConfiguration.getInstance().getDefaultFileStorageType());
     if (aux == null)
       // This case should never happen, but in case we prefer ponder PERMANENT.
       return TFileStorageType.EMPTY;

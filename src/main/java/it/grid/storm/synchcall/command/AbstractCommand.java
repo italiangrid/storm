@@ -4,7 +4,7 @@
  */
 package it.grid.storm.synchcall.command;
 
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.synchcall.data.IdentityInputData;
 import it.grid.storm.synchcall.data.InputData;
@@ -12,7 +12,7 @@ import it.grid.storm.synchcall.data.InputData;
 
 public abstract class AbstractCommand implements Command {
   
-	protected static Configuration config = Configuration.getInstance();
+	protected static StormConfiguration config = StormConfiguration.getInstance();
 
 	public static GridUserInterface getUserFromInputData(InputData id){
 	  

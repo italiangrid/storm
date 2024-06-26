@@ -4,7 +4,7 @@
  */
 package it.grid.storm.tape.recalltable.resources;
 
-import static it.grid.storm.config.Configuration.CONFIG_FILE_PATH;
+import static it.grid.storm.config.StormConfiguration.CONFIG_FILE_PATH;
 import static it.grid.storm.tape.recalltable.resources.TaskInsertRequest.MAX_RETRY_ATTEMPTS;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -35,7 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 
 import it.grid.storm.catalogs.TapeRecallCatalog;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.griduser.VONameMatchingRule;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
@@ -71,7 +71,7 @@ public class TaskResourceTest {
 
   static {
     try {
-      Configuration.init("src/test/resources/storm.properties");
+      StormConfiguration.init("src/test/resources/storm.properties");
     } catch (ConfigurationException | IOException e) {
       e.printStackTrace();
       fail();

@@ -34,7 +34,7 @@ import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.common.types.PFN;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.CannotMapUserException;
@@ -77,7 +77,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
 
   public PutDoneCommand() {
 
-    if (Configuration.getInstance().getPTPSkipACLSetup()) {
+    if (StormConfiguration.getInstance().getPTPSkipACLSetup()) {
       setupACLs = false;
       log.debug("Skipping ACL setup on PTP as requested by configuration.");
     }
@@ -355,7 +355,7 @@ public class PutDoneCommand extends DataTransferCommand implements Command {
   }
 
   public static boolean executePutDone(TSURL surl) throws PutDoneCommandException {
-    return executePutDone(surl, null, Configuration.getInstance().getPTPSkipACLSetup());
+    return executePutDone(surl, null, StormConfiguration.getInstance().getPTPSkipACLSetup());
   }
 
   public static boolean executePutDone(TSURL surl, GridUserInterface user, boolean setupACLs)

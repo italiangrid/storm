@@ -15,7 +15,7 @@ import com.google.common.collect.Lists;
 
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.common.types.TimeUnit;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
@@ -143,7 +143,7 @@ public class PtPChunkCatalog {
     try {
       long pinLifeTime = PinLifetimeConverter.getInstance().toStoRM(auxTO.pinLifetime());
       // Check for max value allowed
-      long max = Configuration.getInstance().getPinLifetimeMaximum();
+      long max = StormConfiguration.getInstance().getPinLifetimeMaximum();
       if (pinLifeTime > max) {
         log.warn("PinLifeTime is greater than the max value allowed. Drop the "
             + "value to the max = {} seconds", max);
@@ -171,7 +171,7 @@ public class PtPChunkCatalog {
           + "its String representation! String: " + auxTO.fileStorageType());
       // Use the default value defined in Configuration.
       fileStorageType = TFileStorageType
-        .getTFileStorageType(Configuration.getInstance().getDefaultFileStorageType());
+        .getTFileStorageType(StormConfiguration.getInstance().getDefaultFileStorageType());
       errorSb.append("\nUsed the default TFileStorageType as defined " + "in StoRM config.: "
           + fileStorageType);
     }

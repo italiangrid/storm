@@ -4,7 +4,7 @@
  */
 package it.grid.storm.health;
 
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.logging.StoRMLoggers;
 
 import java.text.SimpleDateFormat;

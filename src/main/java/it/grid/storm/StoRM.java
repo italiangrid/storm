@@ -26,7 +26,7 @@ import it.grid.storm.check.CheckResponse;
 import it.grid.storm.check.CheckStatus;
 import it.grid.storm.check.SimpleCheckManager;
 import it.grid.storm.check.sanity.filesystem.SupportedFSType;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.health.HealthMonitor;
 import it.grid.storm.info.du.DiskUsageService;
 import it.grid.storm.metrics.StormMetricsReporter;
@@ -82,11 +82,11 @@ public class StoRM {
   private boolean isRestServerRunning;
   private RestServer restServer;
 
-  private final Configuration config;
+  private final StormConfiguration config;
   private final ReservedSpaceCatalog spaceCatalog;
   private final Namespace namespace;
 
-  public StoRM(Configuration config, Namespace namespace) {
+  public StoRM(StormConfiguration config, Namespace namespace) {
 
     this.config = config;
     this.namespace = namespace;
@@ -364,11 +364,11 @@ public class StoRM {
 
   private void configureRestService() {
 
-    int restServicePort = Configuration.getInstance().getRestServicesPort();
-    boolean isTokenEnabled = Configuration.getInstance().getXmlRpcTokenEnabled();
-    String token = Configuration.getInstance().getXmlRpcToken();
-    int maxThreads = Configuration.getInstance().getRestServicesMaxThreads();
-    int maxQueueSize = Configuration.getInstance().getRestServicesMaxQueueSize();
+    int restServicePort = StormConfiguration.getInstance().getRestServicesPort();
+    boolean isTokenEnabled = StormConfiguration.getInstance().getXmlRpcTokenEnabled();
+    String token = StormConfiguration.getInstance().getXmlRpcToken();
+    int maxThreads = StormConfiguration.getInstance().getRestServicesMaxThreads();
+    int maxQueueSize = StormConfiguration.getInstance().getRestServicesMaxQueueSize();
 
     restServer = new RestServer(restServicePort, maxThreads, maxQueueSize, isTokenEnabled, token);
   }

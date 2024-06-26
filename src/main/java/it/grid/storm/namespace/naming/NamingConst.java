@@ -4,7 +4,7 @@
  */
 package it.grid.storm.namespace.naming;
 
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 
 public class NamingConst {
 
@@ -25,11 +25,11 @@ public class NamingConst {
 
 	private static NamingConst instance = new NamingConst();
 
-	private final Configuration config;
+	private final StormConfiguration config;
 
 	private NamingConst() {
 
-		config = Configuration.getInstance();
+		config = StormConfiguration.getInstance();
 	}
 
 	public static String getServiceDefaultHost() {

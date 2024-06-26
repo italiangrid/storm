@@ -56,7 +56,7 @@
     <java.version>11</java.version>
 
 	<!-- storm-native-libs -->
-    <nativeInterfaceVersion>1.0.7</nativeInterfaceVersion>
+    <nativeInterfaceVersion>2.0.0</nativeInterfaceVersion>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
@@ -158,7 +158,6 @@
         <artifactId>maven-assembly-plugin</artifactId>
         <version>${plugin.assembly.version}</version>
         <configuration>
-          <finalName>storm-backend-server</finalName>
           <appendAssemblyId>false</appendAssemblyId>
           <outputDirectory>${project.build.directory}</outputDirectory>
           <descriptors>

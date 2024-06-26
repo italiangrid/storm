@@ -4,6 +4,85 @@
  */
 package it.grid.storm.config;
 
+import static it.grid.storm.config.ConfigurationDefaults.AUTOMATIC_DIRECTORY_CREATION;
+import static it.grid.storm.config.ConfigurationDefaults.BOL_CORE_POOL_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.BOL_MAX_POOL_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.BOL_QUEUE_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.BOOK_KEEPING_ENABLED;
+import static it.grid.storm.config.ConfigurationDefaults.CLEANING_INITIAL_DELAY;
+import static it.grid.storm.config.ConfigurationDefaults.CLEANING_TIME_INTERVAL;
+import static it.grid.storm.config.ConfigurationDefaults.CORE_POOL_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.DB_PASSWORD;
+import static it.grid.storm.config.ConfigurationDefaults.DB_POOL_MAXWAITMILLIS;
+import static it.grid.storm.config.ConfigurationDefaults.DB_POOL_TESTONBORROW;
+import static it.grid.storm.config.ConfigurationDefaults.DB_POOL_TESTWHILEIDLE;
+import static it.grid.storm.config.ConfigurationDefaults.DB_URL_HOSTNAME;
+import static it.grid.storm.config.ConfigurationDefaults.DB_URL_PORT;
+import static it.grid.storm.config.ConfigurationDefaults.DB_URL_PROPERTIES;
+import static it.grid.storm.config.ConfigurationDefaults.DB_USER_NAME;
+import static it.grid.storm.config.ConfigurationDefaults.DEFAULT_FILE_STORAGE_TYPE;
+import static it.grid.storm.config.ConfigurationDefaults.DEFAULT_OVERWRITE_MODE;
+import static it.grid.storm.config.ConfigurationDefaults.DISKUSAGE_SERVICE_ENABLED;
+import static it.grid.storm.config.ConfigurationDefaults.ENABLE_WRITE_PERM_ON_DIRECTORY;
+import static it.grid.storm.config.ConfigurationDefaults.EXPIRED_INPROGRESS_PTP_TIME;
+import static it.grid.storm.config.ConfigurationDefaults.EXPIRED_REQUEST_PURGING;
+import static it.grid.storm.config.ConfigurationDefaults.EXPIRED_REQUEST_TIME;
+import static it.grid.storm.config.ConfigurationDefaults.EXTRA_SLASHES_FOR_FILE_TURL;
+import static it.grid.storm.config.ConfigurationDefaults.EXTRA_SLASHES_FOR_GSIFTP_TURL;
+import static it.grid.storm.config.ConfigurationDefaults.EXTRA_SLASHES_FOR_RFIO_TURL;
+import static it.grid.storm.config.ConfigurationDefaults.EXTRA_SLASHES_FOR_ROOT_TURL;
+import static it.grid.storm.config.ConfigurationDefaults.FILE_DEFAULT_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.FILE_LIFETIME_DEFAULT;
+import static it.grid.storm.config.ConfigurationDefaults.GPFS_QUOTA_REFRESH_PERIOD;
+import static it.grid.storm.config.ConfigurationDefaults.GRIDFTP_TIME_OUT;
+import static it.grid.storm.config.ConfigurationDefaults.GRID_USER_MAPPER_CLASSNAME;
+import static it.grid.storm.config.ConfigurationDefaults.HEARTHBEAT_PERIOD;
+import static it.grid.storm.config.ConfigurationDefaults.JAVA_NET_PREFERIPV6ADDRESSES;
+import static it.grid.storm.config.ConfigurationDefaults.LS_ALL_LEVEL_RECURSIVE;
+import static it.grid.storm.config.ConfigurationDefaults.LS_MAX_NUMBER_OF_ENTRY;
+import static it.grid.storm.config.ConfigurationDefaults.LS_NUM_OF_LEVELS;
+import static it.grid.storm.config.ConfigurationDefaults.LS_OFFSET;
+import static it.grid.storm.config.ConfigurationDefaults.MAX_LOOP;
+import static it.grid.storm.config.ConfigurationDefaults.MAX_POOL_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.PERFORMANCE_GLANCE_TIME_INTERVAL;
+import static it.grid.storm.config.ConfigurationDefaults.PERFORMANCE_LOGBOOK_TIME_INTERVAL;
+import static it.grid.storm.config.ConfigurationDefaults.PERFORMANCE_MEASURING;
+import static it.grid.storm.config.ConfigurationDefaults.PICKING_INITIAL_DELAY;
+import static it.grid.storm.config.ConfigurationDefaults.PICKING_MAX_BATCH_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.PICKING_TIME_INTERVAL;
+import static it.grid.storm.config.ConfigurationDefaults.PING_VALUES_PROPERTIES_FILENAME;
+import static it.grid.storm.config.ConfigurationDefaults.PIN_LIFETIME_DEFAULT;
+import static it.grid.storm.config.ConfigurationDefaults.PIN_LIFETIME_MAXIMUM;
+import static it.grid.storm.config.ConfigurationDefaults.PTG_CORE_POOL_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.PTG_MAX_POOL_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.PTG_QUEUE_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.PTG_SKIP_ACL_SETUP;
+import static it.grid.storm.config.ConfigurationDefaults.PTP_CORE_POOL_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.PTP_MAX_POOL_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.PTP_QUEUE_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.PTP_SKIP_ACL_SETUP;
+import static it.grid.storm.config.ConfigurationDefaults.PURGE_BATCH_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.QUEUE_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.REFRESH_RATE_AUTHZDB_FILES_IN_SECONDS;
+import static it.grid.storm.config.ConfigurationDefaults.REQUEST_PURGER_DELAY;
+import static it.grid.storm.config.ConfigurationDefaults.REQUEST_PURGER_PERIOD;
+import static it.grid.storm.config.ConfigurationDefaults.REST_SERVICES_MAX_QUEUE_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.REST_SERVICES_MAX_THREAD;
+import static it.grid.storm.config.ConfigurationDefaults.REST_SERVICES_PORT;
+import static it.grid.storm.config.ConfigurationDefaults.SANITY_CHECK_ENABLED;
+import static it.grid.storm.config.ConfigurationDefaults.SERVER_POOL_STATUS_CHECK_TIMEOUT;
+import static it.grid.storm.config.ConfigurationDefaults.SRM_SERVICE_PORT;
+import static it.grid.storm.config.ConfigurationDefaults.STORMBEISAM_POOL_MAXTOTAL;
+import static it.grid.storm.config.ConfigurationDefaults.STORMBEISAM_POOL_MINIDLE;
+import static it.grid.storm.config.ConfigurationDefaults.STORMDB_POOL_MAXTOTAL;
+import static it.grid.storm.config.ConfigurationDefaults.STORMDB_POOL_MINIDLE;
+import static it.grid.storm.config.ConfigurationDefaults.SYNCHRONOUS_QUOTA_CHECK_ENABLED;
+import static it.grid.storm.config.ConfigurationDefaults.TRANSIT_INITIAL_DELAY;
+import static it.grid.storm.config.ConfigurationDefaults.TRANSIT_TIME_INTERVAL;
+import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_MAX_QUEUE_SIZE;
+import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_MAX_THREAD;
+import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_SECURITY_ENABLED;
+import static it.grid.storm.config.ConfigurationDefaults.XMLRPC_SERVER_PORT;
 import static it.grid.storm.info.du.DiskUsageService.DEFAULT_INITIAL_DELAY;
 import static it.grid.storm.info.du.DiskUsageService.DEFAULT_TASKS_INTERVAL;
 import static it.grid.storm.info.du.DiskUsageService.DEFAULT_TASKS_PARALLEL;
@@ -20,11 +99,10 @@ import java.util.List;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-
-import it.grid.storm.rest.RestServer;
-import it.grid.storm.xmlrpc.XMLRPCHttpServer;
 
 /**
  * Singleton holding all configuration values that any other object in the StoRM backend reads from
@@ -36,36 +114,47 @@ import it.grid.storm.xmlrpc.XMLRPCHttpServer;
  * specified in each method comment.
  */
 
-public class Configuration {
+public class StormConfiguration {
 
   public static final String DEFAULT_STORM_CONFIG_FILE =
       "/etc/storm/backend-server/storm.properties";
-  public static final int DEFAULT_STORM_CONFIG_REFRESH_RATE = 0;
+
+  private static Logger log = LoggerFactory.getLogger(StormConfiguration.class);
 
   private final ConfigReader cr;
 
-  private static Configuration instance;
+  private static StormConfiguration instance;
 
   /* System properties */
   public static final String CONFIG_FILE_PATH = "storm.configuration.file";
-  public static final String REFRESH_RATE = "storm.configuration.refresh";
 
   /* Configuration file properties */
   private static final String MANAGED_SURLS_KEY = "storm.service.SURL.endpoint";
   private static final String MANAGED_SURL_DEFAULT_PORTS_KEY = "storm.service.SURL.default-ports";
   private static final String SERVICE_HOSTNAME_KEY = "storm.service.FE-public.hostname";
   private static final String SERVICE_PORT_KEY = "storm.service.port";
-  private static final String LIST_OF_MACHINE_IPS_KEY = "storm.service.FE-list.IPs";
-  private static final String DB_URL_HOSTNAME_KEY = "storm.service.request-db.host";
-  private static final String DB_URL_PORT_KEY = "storm.service.request-db.port";
-  private static final String DB_URL_PROPERTIES_KEY = "storm.service.request-db.properties";
-  private static final String DB_USER_NAME_KEY = "storm.service.request-db.username";
-  private static final String DB_PASSWORD_KEY = "storm.service.request-db.passwd";
-  private static final String DB_POOL_SIZE_KEY = "persistence.internal-db.connection-pool.size";
-  private static final String DB_POOL_MINIDLE_KEY = "persistence.internal-db.connection-pool.minIdle";
-  private static final String DB_POOL_MAXWAITMILLIS_KEY = "persistence.internal-db.connection-pool.maxWaitMillis";
-  private static final String DB_POOL_TESTONBORROW_KEY = "persistence.internal-db.connection-pool.testOnBorrow";
-  private static final String DB_POOL_TESTWHILEIDLE_KEY = "persistence.internal-db.connection-pool.testWhileIdle";
+  private static final String DB_URL_HOSTNAME_LEGACY_KEY = "storm.service.request-db.host";
+  private static final String DB_URL_PORT_LEGACY_KEY = "storm.service.request-db.port";
+  private static final String DB_URL_PROPERTIES_LEGACY_KEY = "storm.service.request-db.properties";
+  private static final String DB_USER_NAME_LEGACY_KEY = "storm.service.request-db.username";
+  private static final String DB_PASSWORD_LEGACY_KEY = "storm.service.request-db.passwd";
+
+  private static final String DB_URL_HOSTNAME_KEY = "storm.service.db.host";
+  private static final String DB_URL_PORT_KEY = "storm.service.db.port";
+  private static final String DB_URL_PROPERTIES_KEY = "storm.service.db.properties";
+  private static final String DB_USER_NAME_KEY = "storm.service.db.username";
+  private static final String DB_PASSWORD_KEY = "storm.service.db.password";
+
+  private static final String DB_POOL_MAXWAITMILLIS_KEY = "storm.service.db.pool.maxWaitMillis";
+  private static final String DB_POOL_TESTONBORROW_KEY = "storm.service.db.pool.testOnBorrow";
+  private static final String DB_POOL_TESTWHILEIDLE_KEY = "storm.service.db.pool.testWhileIdle";
+  private static final String STORMDB_POOL_MAXTOTAL_KEY = "storm.service.db.pool.stormdb.maxTotal";
+  private static final String STORMDB_POOL_MINIDLE_KEY = "storm.service.db.pool.stormdb.minIdle";
+  private static final String STORMBEISAM_POOL_MAXTOTAL_KEY =
+      "storm.service.db.pool.stormbeisam.maxTotal";
+  private static final String STORMBEISAM_POOL_MINIDLE_KEY =
+      "storm.service.db.pool.stormbeisam.minIdle";
+
   private static final String CLEANING_INITIAL_DELAY_KEY = "gc.pinnedfiles.cleaning.delay";
   private static final String CLEANING_TIME_INTERVAL_KEY = "gc.pinnedfiles.cleaning.interval";
   private static final String FILE_DEFAULT_SIZE_KEY = "fileSize.default";
@@ -80,11 +169,6 @@ public class Configuration {
   private static final String XMLRPC_MAX_THREAD_KEY = "synchcall.xmlrpc.maxthread";
   private static final String XMLRPC_MAX_QUEUE_SIZE_KEY = "synchcall.xmlrpc.max_queue_size";
   private static final String LIST_OF_DEFAULT_SPACE_TOKEN_KEY = "storm.service.defaultSpaceTokens";
-  private static final String COMMAND_SERVER_BINDING_PORT_KEY = "storm.commandserver.port";
-  private static final String BE_PERSISTENCE_POOL_DB_MAX_ACTIVE_KEY =
-      "persistence.internal-db.connection-pool.maxActive";
-  private static final String BE_PERSISTENCE_POOL_DB_MAX_WAIT_KEY =
-      "persistence.internal-db.connection-pool.maxWait";
   private static final String XMLRPC_SERVER_PORT_KEY = "synchcall.xmlrpc.unsecureServerPort";
   private static final String LS_MAX_NUMBER_OF_ENTRY_KEY = "synchcall.directoryManager.maxLsEntry";
   private static final String LS_ALL_LEVEL_RECURSIVE_KEY =
@@ -106,12 +190,6 @@ public class Configuration {
   private static final String CORE_POOL_SIZE_KEY = "scheduler.crusher.workerCorePoolSize";
   private static final String MAX_POOL_SIZE_KEY = "scheduler.crusher.workerMaxPoolSize";
   private static final String QUEUE_SIZE_KEY = "scheduler.crusher.queueSize";
-  private static final String NAMESPACE_CONFIG_FILENAME_KEY = "namespace.filename";
-  private static final String NAMESPACE_SCHEMA_FILENAME_KEY = "namespace.schema.filename";
-  private static final String NAMESPACE_CONFIG_REFRESH_RATE_IN_SECONDS_KEY =
-      "namespace.refreshrate";
-  private static final String NAMESPACE_AUTOMATIC_RELOADING_KEY =
-      "namespace.automatic-config-reload";
   private static final String GRIDFTP_TIME_OUT_KEY = "asynch.srmcopy.gridftp.timeout";
   private static final String AUTOMATIC_DIRECTORY_CREATION_KEY = "directory.automatic-creation";
   private static final String DEFAULT_OVERWRITE_MODE_KEY = "default.overwrite";
@@ -139,59 +217,47 @@ public class Configuration {
   private static final String GRID_USER_MAPPER_CLASSNAME_KEY = "griduser.mapper.classname";
   private static final String AUTHZ_DB_PATH_KEY = "authzdb.path";
   private static final String REFRESH_RATE_AUTHZDB_FILES_IN_SECONDS_KEY = "authzdb.refreshrate";
-  private static final String RECALL_TABLE_TESTING_MODE_KEY = "tape.recalltable.service.test-mode";
   private static final String REST_SERVICES_PORT_KEY = "storm.rest.services.port";
-  private static final String REST_SERVICES_MAX_THREAD = "storm.rest.services.maxthread";
-  private static final String REST_SERVICES_MAX_QUEUE_SIZE = "storm.rest.services.max_queue_size";
-  private static final String RETRY_VALUE_KEY_KEY = "tape.recalltable.service.param.retry-value";
-  private static final String STATUS_KEY_KEY = "tape.recalltable.service.param.status";
-  private static final String TASKOVER_KEY_KEY = "tape.recalltable.service.param.takeover";
+  private static final String REST_SERVICES_MAX_THREAD_KEY = "storm.rest.services.maxthread";
+  private static final String REST_SERVICES_MAX_QUEUE_SIZE_KEY =
+      "storm.rest.services.max_queue_size";
   private static final String STORM_PROPERTIES_VERSION_KEY = "storm.properties.version";
-  private static final String TAPE_SUPPORT_ENABLED_KEY = "tape.support.enabled";
   private static final String SYNCHRONOUS_QUOTA_CHECK_ENABLED_KEY = "info.quota-check.enabled";
   private static final String GPFS_QUOTA_REFRESH_PERIOD_KEY = "info.quota.refresh.period";
-  private static final String FAST_BOOTSTRAP_ENABLED_KEY = "bootstrap.fast.enabled";
   private static final String SERVER_POOL_STATUS_CHECK_TIMEOUT_KEY =
       "server-pool.status-check.timeout";
   private static final String SANITY_CHECK_ENABLED_KEY = "sanity-check.enabled";
   private static final String XMLRPC_SECURITY_ENABLED_KEY = "synchcall.xmlrpc.security.enabled";
   private static final String XMLRPC_SECURITY_TOKEN_KEY = "synchcall.xmlrpc.security.token";
-  private static final String PTG_SKIP_ACL_SETUP = "ptg.skip-acl-setup";
-  private static final String PTP_SKIP_ACL_SETUP = "ptp.skip-acl-setup";
-  private static final String PTP_SKIP_FILE_CREATION = "ptp.skip-file-creation";
+  private static final String PTG_SKIP_ACL_SETUP_KEY = "ptg.skip-acl-setup";
+  private static final String PTP_SKIP_ACL_SETUP_KEY = "ptp.skip-acl-setup";
   private static final String HTTP_TURL_PREFIX = "http.turl_prefix";
   private static final String NETWORKADDRESS_CACHE_TTL = "networkaddress.cache.ttl";
   private static final String NETWORKADDRESS_CACHE_NEGATIVE_TTL =
       "networkaddress.cache.negative.ttl";
 
-  public static final String DISKUSAGE_SERVICE_ENABLED = "storm.service.du.enabled";
-  private static final String DISKUSAGE_SERVICE_INITIAL_DELAY = "storm.service.du.delaySecs";
-  private static final String DISKUSAGE_SERVICE_TASKS_INTERVAL = "storm.service.du.periodSecs";
-  private static final String DISKUSAGE_SERVICE_TASKS_PARALLEL = "storm.service.du.parallelTasks";
+  public static final String DISKUSAGE_SERVICE_ENABLED_KEY = "storm.service.du.enabled";
+  private static final String DISKUSAGE_SERVICE_INITIAL_DELAY_KEY = "storm.service.du.delaySecs";
+  private static final String DISKUSAGE_SERVICE_TASKS_INTERVAL_KEY = "storm.service.du.periodSecs";
+  private static final String DISKUSAGE_SERVICE_TASKS_PARALLEL_KEY =
+      "storm.service.du.parallelTasks";
 
-  private static final String JAVA_NET_PREFERIPV6ADDRESSES = "java.net.preferIPv6Addresses";
+  private static final String JAVA_NET_PREFERIPV6ADDRESSES_KEY = "java.net.preferIPv6Addresses";
 
   public static void init(String filePath) throws IOException, ConfigurationException {
-    instance = new Configuration(filePath);
+    instance = new StormConfiguration(filePath);
   }
 
-  private Configuration(String filePath) throws IOException, ConfigurationException {
-
-    int refreshRate;
-    try {
-      refreshRate = Integer.valueOf(getProperty(REFRESH_RATE));
-    } catch (NumberFormatException e) {
-      refreshRate = DEFAULT_STORM_CONFIG_REFRESH_RATE;
-    }
-    cr = new ConfigReader(filePath, refreshRate);
+  private StormConfiguration(String filePath) throws IOException, ConfigurationException {
+    cr = new ConfigReader(filePath);
   }
 
   /**
    * Returns the sole instance of the Configuration class.
    */
-  public static Configuration getInstance() {
+  public static StormConfiguration getInstance() {
 
-    return Configuration.instance;
+    return StormConfiguration.instance;
   }
 
   /**
@@ -236,7 +302,7 @@ public class Configuration {
 
     Integer[] portsArray;
     if (!cr.getConfiguration().containsKey(MANAGED_SURL_DEFAULT_PORTS_KEY)) {
-      portsArray = new Integer[] {8444};
+      portsArray = new Integer[] {ConfigurationDefaults.SRM_SERVICE_PORT};
     } else {
       // load from external source
       String[] portString = cr.getConfiguration().getStringArray(MANAGED_SURL_DEFAULT_PORTS_KEY);
@@ -254,120 +320,51 @@ public class Configuration {
    */
   public String getServiceHostname() {
 
-    return cr.getConfiguration().getString(SERVICE_HOSTNAME_KEY, "UNDEFINED_STORM_HOSTNAME");
+    String hostname = cr.getConfiguration().getString(SERVICE_HOSTNAME_KEY);
+    if (hostname == null) {
+      log.error("Hostname not defined! Please set '{}' property", SERVICE_HOSTNAME_KEY);
+      throw new IllegalArgumentException(SERVICE_HOSTNAME_KEY + " not set!");
+    }
+    return hostname;
   }
 
-  /**
-   * Method used by SFN to establish the FE binding port. If no value is found in the configuration
-   * medium, then the default one is used instead. key="storm.service.port"; default value="8444"
-   */
   public int getServicePort() {
 
-    return cr.getConfiguration().getInt(SERVICE_PORT_KEY, 8444);
+    return cr.getConfiguration().getInt(SERVICE_PORT_KEY, SRM_SERVICE_PORT);
   }
 
-  /**
-   * Method used to get a List of Strings of the IPs of the machine hosting the FE for _this_ StoRM
-   * instance! Used in the xmlrcp server configuration, to allow request coming from the specified
-   * IP. (Into the xmlrpc server the filter is done by IP, not hostname.) This paramter is mandatory
-   * when a distribuited FE-BE installation of StoRM is used togheter with a dynamic DNS on the FE
-   * hostname. In that case the properties storm.machinenames is not enough meaningfull. If no value
-   * is found in the configuration medium, then the default value is returned instead.
-   * key="storm.machineIPs"; default value={"127.0.0.1"};
-   */
-  public List<String> getListOfMachineIPs() {
-
-    if (cr.getConfiguration().containsKey(LIST_OF_MACHINE_IPS_KEY)) {
-
-      String[] names = cr.getConfiguration().getString(LIST_OF_MACHINE_IPS_KEY).split(";"); // split
-      for (int i = 0; i < names.length; i++) {
-        names[i] = names[i].trim().toLowerCase(); // for each bit remove
-      }
-      return Arrays.asList(names);
-
-    } else {
-      return Arrays.asList("127.0.0.1");
-    }
-  }
-
-  /**
-   * Method used by all DAO Objects to get the DataBase Driver. If no value is found in the
-   * configuration medium, then the default value is returned instead.
-   * key="asynch.picker.db.driver"; default value="com.mysql.cj.jdbc.Driver";
-   */
-  public String getDBDriver() {
-
-    return "com.mysql.cj.jdbc.Driver";
-  }
-
-  /**
-   * Method used by all DAO Objects to get DB URL. If no value is found in the configuration medium,
-   * then the default value is returned instead.
-   */
-  public String getStormDbURL() {
-
-    String host = getDbHostname();
-    String properties = getDbProperties();
-    if (properties.isEmpty()) {
-      return "jdbc:mysql://" + host + "/storm_db";
-    }
-    return "jdbc:mysql://" + host + "/storm_db?" + properties;
-  }
-
-  /**
-   * Method used by all DAO Objects to get the DB username. If no value is found in the
-   * configuration medium, then the default value is returned instead. Default value = "storm"; key
-   * searched in medium = "asynch.picker.db.username".
-   */
   public String getDbUsername() {
 
-    return cr.getConfiguration().getString(DB_USER_NAME_KEY, "storm");
+    return cr.getConfiguration()
+      .getString(DB_USER_NAME_KEY,
+          cr.getConfiguration().getString(DB_USER_NAME_LEGACY_KEY, DB_USER_NAME));
   }
 
-  /**
-   * Method used by all DAO Objects to get the DB password. If no value is found in the
-   * configuration medium, then the default value is returned instead. Default value = "storm"; key
-   * searched in medium = "asynch.picker.db.passwd".
-   */
   public String getDbPassword() {
 
-    return cr.getConfiguration().getString(DB_PASSWORD_KEY, "storm");
+    return cr.getConfiguration()
+      .getString(DB_PASSWORD_KEY,
+          cr.getConfiguration().getString(DB_PASSWORD_LEGACY_KEY, DB_PASSWORD));
   }
 
   public String getDbHostname() {
 
-    return cr.getConfiguration().getString(DB_URL_HOSTNAME_KEY, "localhost");
+    return cr.getConfiguration()
+      .getString(DB_URL_HOSTNAME_KEY,
+          cr.getConfiguration().getString(DB_URL_HOSTNAME_LEGACY_KEY, DB_URL_HOSTNAME));
   }
-
-  /*
-   * END definition of MANDATORY PROPERTIES
-   */
 
   public String getDbProperties() {
 
-    return cr.getConfiguration().getString(DB_URL_PROPERTIES_KEY, "serverTimezone=UTC&autoReconnect=true");
+    return cr.getConfiguration()
+      .getString(DB_URL_PROPERTIES_KEY,
+          cr.getConfiguration().getString(DB_URL_PROPERTIES_LEGACY_KEY, DB_URL_PROPERTIES));
   }
 
   public int getDbPort() {
 
-    return cr.getConfiguration().getInt(DB_URL_PORT_KEY, 3306);
-  }
-
-  /**
-   * Sets the maximum total number of idle and borrows connections that can be active at the same
-   * time. Use a negative value for no limit.
-   */
-  public int getDbPoolSize() {
-
-    return cr.getConfiguration().getInt(DB_POOL_SIZE_KEY, 50);
-  }
-
-  /**
-   * Sets the minimum number of idle connections in the pool.
-   */
-  public int getDbPoolMinIdle() {
-
-    return cr.getConfiguration().getInt(DB_POOL_MINIDLE_KEY, 10);
+    return cr.getConfiguration()
+      .getInt(DB_URL_PORT_KEY, cr.getConfiguration().getInt(DB_URL_PORT_LEGACY_KEY, DB_URL_PORT));
   }
 
   /**
@@ -375,7 +372,7 @@ public class Configuration {
    */
   public int getDbPoolMaxWaitMillis() {
 
-    return cr.getConfiguration().getInt(DB_POOL_MAXWAITMILLIS_KEY, -1);
+    return cr.getConfiguration().getInt(DB_POOL_MAXWAITMILLIS_KEY, DB_POOL_MAXWAITMILLIS);
   }
 
   /**
@@ -384,7 +381,7 @@ public class Configuration {
    */
   public boolean isDbPoolTestOnBorrow() {
 
-    return cr.getConfiguration().getBoolean(DB_POOL_TESTONBORROW_KEY, true);
+    return cr.getConfiguration().getBoolean(DB_POOL_TESTONBORROW_KEY, DB_POOL_TESTONBORROW);
   }
 
   /**
@@ -392,7 +389,27 @@ public class Configuration {
    */
   public boolean isDbPoolTestWhileIdle() {
 
-    return cr.getConfiguration().getBoolean(DB_POOL_TESTWHILEIDLE_KEY, true);
+    return cr.getConfiguration().getBoolean(DB_POOL_TESTWHILEIDLE_KEY, DB_POOL_TESTWHILEIDLE);
+  }
+
+  public int getStormDbPoolSize() {
+
+    return cr.getConfiguration().getInt(STORMDB_POOL_MAXTOTAL_KEY, STORMDB_POOL_MAXTOTAL);
+  }
+
+  public int getStormDbPoolMinIdle() {
+
+    return cr.getConfiguration().getInt(STORMDB_POOL_MINIDLE_KEY, STORMDB_POOL_MINIDLE);
+  }
+
+  public int getStormBeIsamPoolSize() {
+
+    return cr.getConfiguration().getInt(STORMBEISAM_POOL_MAXTOTAL_KEY, STORMBEISAM_POOL_MAXTOTAL);
+  }
+
+  public int getStormBeIsamPoolMinIdle() {
+
+    return cr.getConfiguration().getInt(STORMBEISAM_POOL_MINIDLE_KEY, STORMBEISAM_POOL_MINIDLE);
   }
 
   /**
@@ -402,7 +419,7 @@ public class Configuration {
    */
   public long getCleaningInitialDelay() {
 
-    return cr.getConfiguration().getLong(CLEANING_INITIAL_DELAY_KEY, 10);
+    return cr.getConfiguration().getLong(CLEANING_INITIAL_DELAY_KEY, CLEANING_INITIAL_DELAY);
   }
 
   /**
@@ -413,7 +430,7 @@ public class Configuration {
    */
   public long getCleaningTimeInterval() {
 
-    return cr.getConfiguration().getLong(CLEANING_TIME_INTERVAL_KEY, 300);
+    return cr.getConfiguration().getLong(CLEANING_TIME_INTERVAL_KEY, CLEANING_TIME_INTERVAL);
   }
 
   /**
@@ -423,7 +440,7 @@ public class Configuration {
    */
   public long getFileDefaultSize() {
 
-    return cr.getConfiguration().getLong(FILE_DEFAULT_SIZE_KEY, 1000000);
+    return cr.getConfiguration().getLong(FILE_DEFAULT_SIZE_KEY, FILE_DEFAULT_SIZE);
   }
 
   /**
@@ -434,7 +451,7 @@ public class Configuration {
    */
   public long getFileLifetimeDefault() {
 
-    return cr.getConfiguration().getLong(FILE_LIFETIME_DEFAULT_KEY, 3600);
+    return cr.getConfiguration().getLong(FILE_LIFETIME_DEFAULT_KEY, FILE_LIFETIME_DEFAULT);
   }
 
   /**
@@ -446,7 +463,7 @@ public class Configuration {
    */
   public long getPinLifetimeDefault() {
 
-    return cr.getConfiguration().getLong(PIN_LIFETIME_DEFAULT_KEY, 259200);
+    return cr.getConfiguration().getLong(PIN_LIFETIME_DEFAULT_KEY, PIN_LIFETIME_DEFAULT);
   }
 
   /**
@@ -457,7 +474,7 @@ public class Configuration {
    */
   public long getPinLifetimeMaximum() {
 
-    return cr.getConfiguration().getLong(PIN_LIFETIME_MAXIMUM_KEY, 1814400);
+    return cr.getConfiguration().getLong(PIN_LIFETIME_MAXIMUM_KEY, PIN_LIFETIME_MAXIMUM);
   }
 
   /**
@@ -467,7 +484,7 @@ public class Configuration {
    */
   public long getTransitInitialDelay() {
 
-    return cr.getConfiguration().getLong(TRANSIT_INITIAL_DELAY_KEY, 10);
+    return cr.getConfiguration().getLong(TRANSIT_INITIAL_DELAY_KEY, TRANSIT_INITIAL_DELAY);
   }
 
   /**
@@ -477,7 +494,7 @@ public class Configuration {
    */
   public long getTransitTimeInterval() {
 
-    return cr.getConfiguration().getLong(TRANSIT_TIME_INTERVAL_KEY, 300);
+    return cr.getConfiguration().getLong(TRANSIT_TIME_INTERVAL_KEY, TRANSIT_TIME_INTERVAL);
   }
 
   /**
@@ -487,7 +504,7 @@ public class Configuration {
    */
   public long getPickingInitialDelay() {
 
-    return cr.getConfiguration().getLong(PICKING_INITIAL_DELAY_KEY, 1);
+    return cr.getConfiguration().getLong(PICKING_INITIAL_DELAY_KEY, PICKING_INITIAL_DELAY);
   }
 
   /**
@@ -497,7 +514,7 @@ public class Configuration {
    */
   public long getPickingTimeInterval() {
 
-    return cr.getConfiguration().getLong(PICKING_TIME_INTERVAL_KEY, 2);
+    return cr.getConfiguration().getLong(PICKING_TIME_INTERVAL_KEY, PICKING_TIME_INTERVAL);
   }
 
   /**
@@ -507,7 +524,7 @@ public class Configuration {
    */
   public int getPickingMaxBatchSize() {
 
-    return cr.getConfiguration().getInt(PICKING_MAX_BATCH_SIZE_KEY, 100);
+    return cr.getConfiguration().getInt(PICKING_MAX_BATCH_SIZE_KEY, PICKING_MAX_BATCH_SIZE);
   }
 
   /**
@@ -515,14 +532,14 @@ public class Configuration {
    */
   public int getXMLRPCMaxThread() {
 
-    return cr.getConfiguration()
-      .getInt(XMLRPC_MAX_THREAD_KEY, XMLRPCHttpServer.DEFAULT_MAX_THREAD_NUM);
+    int res = cr.getConfiguration().getInt(XMLRPC_MAX_THREAD_KEY, XMLRPC_MAX_THREAD);
+    return res <= 0 ? XMLRPC_MAX_THREAD : res;
   }
 
   public int getXMLRPCMaxQueueSize() {
 
-    return cr.getConfiguration()
-      .getInt(XMLRPC_MAX_QUEUE_SIZE_KEY, XMLRPCHttpServer.DEFAULT_MAX_QUEUE_SIZE);
+    int res = cr.getConfiguration().getInt(XMLRPC_MAX_QUEUE_SIZE_KEY, XMLRPC_MAX_QUEUE_SIZE);
+    return res <= 0 ? XMLRPC_MAX_QUEUE_SIZE : res;
   }
 
   /**
@@ -543,48 +560,13 @@ public class Configuration {
   }
 
   /**
-   * Method used by StoRMCommandServer to establish the listening port to which it should bind. If
-   * no value is found in the configuration medium, then the default value is returned instead.
-   * key="storm.commandserver.port"; default value=4444;
-   */
-  public int getCommandServerBindingPort() {
-
-    return cr.getConfiguration().getInt(COMMAND_SERVER_BINDING_PORT_KEY, 4444);
-  }
-
-  /**
-   * Method used in Persistence Component it returns an int indicating the maximum number of active
-   * connections in the connection pool. It is the maximum number of active connections that can be
-   * allocated from this pool at the same time... 0 (zero) for no limit. If no value is found in the
-   * configuration medium, then the default value is returned instead.
-   * key="persistence.db.pool.maxActive"; default value=10;
-   */
-  public int getBEPersistencePoolDBMaxActive() {
-
-    return cr.getConfiguration().getInt(BE_PERSISTENCE_POOL_DB_MAX_ACTIVE_KEY, 10);
-  }
-
-  /**
-   * Method used in Persistence Component it returns an int indicating the maximum waiting time in
-   * _milliseconds_ for the connection in the pool. It represents the time that the pool will wait
-   * (when there are no available connections) for a connection to be returned before throwing an
-   * exception... a value of -1 to wait indefinitely. If no value is found in the configuration
-   * medium, then the default value is returned instead. key="persistence.db.pool.maxWait"; default
-   * value=50;
-   */
-  public int getBEPersistencePoolDBMaxWait() {
-
-    return cr.getConfiguration().getInt(BE_PERSISTENCE_POOL_DB_MAX_WAIT_KEY, 50);
-  }
-
-  /**
    * Method used by the Synch Component to set the binding port for the _unsecure_ xmlrpc server in
    * the BE. If no value is found in the configuration medium, then the default value is returned
    * instead. key="synchcall.xmlrpc.unsecureServerPort"; default value=8080;
    */
   public int getXmlRpcServerPort() {
 
-    return cr.getConfiguration().getInt(XMLRPC_SERVER_PORT_KEY, 8080);
+    return cr.getConfiguration().getInt(XMLRPC_SERVER_PORT_KEY, XMLRPC_SERVER_PORT);
   }
 
   /**
@@ -596,7 +578,7 @@ public class Configuration {
    */
   public int getLSMaxNumberOfEntry() {
 
-    return cr.getConfiguration().getInt(LS_MAX_NUMBER_OF_ENTRY_KEY, 500);
+    return cr.getConfiguration().getInt(LS_MAX_NUMBER_OF_ENTRY_KEY, LS_MAX_NUMBER_OF_ENTRY);
   }
 
   /**
@@ -606,7 +588,7 @@ public class Configuration {
    */
   public boolean getLSallLevelRecursive() {
 
-    return cr.getConfiguration().getBoolean(LS_ALL_LEVEL_RECURSIVE_KEY, false);
+    return cr.getConfiguration().getBoolean(LS_ALL_LEVEL_RECURSIVE_KEY, LS_ALL_LEVEL_RECURSIVE);
   }
 
   /**
@@ -616,7 +598,7 @@ public class Configuration {
    */
   public int getLSnumOfLevels() {
 
-    return cr.getConfiguration().getInt(LS_NUM_OF_LEVELS_KEY, 1);
+    return cr.getConfiguration().getInt(LS_NUM_OF_LEVELS_KEY, LS_NUM_OF_LEVELS);
   }
 
   /**
@@ -626,7 +608,7 @@ public class Configuration {
    */
   public int getLSoffset() {
 
-    return cr.getConfiguration().getInt(LS_OFFSET_KEY, 0);
+    return cr.getConfiguration().getInt(LS_OFFSET_KEY, LS_OFFSET);
   }
 
   /**
@@ -644,7 +626,7 @@ public class Configuration {
    */
   public int getPtPCorePoolSize() {
 
-    return cr.getConfiguration().getInt(PTP_CORE_POOL_SIZE_KEY, 50);
+    return cr.getConfiguration().getInt(PTP_CORE_POOL_SIZE_KEY, PTP_CORE_POOL_SIZE);
   }
 
   /**
@@ -662,7 +644,7 @@ public class Configuration {
    */
   public int getPtPMaxPoolSize() {
 
-    return cr.getConfiguration().getInt(PTP_MAX_POOL_SIZE_KEY, 200);
+    return cr.getConfiguration().getInt(PTP_MAX_POOL_SIZE_KEY, PTP_MAX_POOL_SIZE);
   }
 
   /**
@@ -680,7 +662,7 @@ public class Configuration {
    */
   public int getPtPQueueSize() {
 
-    return cr.getConfiguration().getInt(PTP_QUEUE_SIZE_KEY, 1000);
+    return cr.getConfiguration().getInt(PTP_QUEUE_SIZE_KEY, PTP_QUEUE_SIZE);
   }
 
   /**
@@ -698,7 +680,7 @@ public class Configuration {
    */
   public int getPtGCorePoolSize() {
 
-    return cr.getConfiguration().getInt(PTG_CORE_POOL_SIZE_KEY, 50);
+    return cr.getConfiguration().getInt(PTG_CORE_POOL_SIZE_KEY, PTG_CORE_POOL_SIZE);
   }
 
   /**
@@ -716,7 +698,7 @@ public class Configuration {
    */
   public int getPtGMaxPoolSize() {
 
-    return cr.getConfiguration().getInt(PTG_MAX_POOL_SIZE_KEY, 200);
+    return cr.getConfiguration().getInt(PTG_MAX_POOL_SIZE_KEY, PTG_MAX_POOL_SIZE);
   }
 
   /**
@@ -734,7 +716,7 @@ public class Configuration {
    */
   public int getPtGQueueSize() {
 
-    return cr.getConfiguration().getInt(PTG_QUEUE_SIZE_KEY, 2000);
+    return cr.getConfiguration().getInt(PTG_QUEUE_SIZE_KEY, PTG_QUEUE_SIZE);
   }
 
   /**
@@ -751,7 +733,7 @@ public class Configuration {
    */
   public int getBoLCorePoolSize() {
 
-    return cr.getConfiguration().getInt(BOL_CORE_POOL_SIZE_KEY, 50);
+    return cr.getConfiguration().getInt(BOL_CORE_POOL_SIZE_KEY, BOL_CORE_POOL_SIZE);
   }
 
   /**
@@ -768,7 +750,7 @@ public class Configuration {
    */
   public int getBoLMaxPoolSize() {
 
-    return cr.getConfiguration().getInt(BOL_MAX_POOL_SIZE_KEY, 200);
+    return cr.getConfiguration().getInt(BOL_MAX_POOL_SIZE_KEY, BOL_MAX_POOL_SIZE);
   }
 
   /**
@@ -786,7 +768,7 @@ public class Configuration {
    */
   public int getBoLQueueSize() {
 
-    return cr.getConfiguration().getInt(BOL_QUEUE_SIZE_KEY, 2000);
+    return cr.getConfiguration().getInt(BOL_QUEUE_SIZE_KEY, BOL_QUEUE_SIZE);
   }
 
   /**
@@ -803,7 +785,7 @@ public class Configuration {
    */
   public int getCorePoolSize() {
 
-    return cr.getConfiguration().getInt(CORE_POOL_SIZE_KEY, 10);
+    return cr.getConfiguration().getInt(CORE_POOL_SIZE_KEY, CORE_POOL_SIZE);
   }
 
   /**
@@ -820,7 +802,7 @@ public class Configuration {
    */
   public int getMaxPoolSize() {
 
-    return cr.getConfiguration().getInt(MAX_POOL_SIZE_KEY, 50);
+    return cr.getConfiguration().getInt(MAX_POOL_SIZE_KEY, MAX_POOL_SIZE);
   }
 
   /**
@@ -837,7 +819,7 @@ public class Configuration {
    */
   public int getQueueSize() {
 
-    return cr.getConfiguration().getInt(QUEUE_SIZE_KEY, 2000);
+    return cr.getConfiguration().getInt(QUEUE_SIZE_KEY, QUEUE_SIZE);
   }
 
   /**
@@ -847,7 +829,7 @@ public class Configuration {
    */
   public String getNamespaceConfigFilename() {
 
-    return cr.getConfiguration().getString(NAMESPACE_CONFIG_FILENAME_KEY, "namespace.xml");
+    return "namespace.xml";
   }
 
   /**
@@ -857,25 +839,7 @@ public class Configuration {
    */
   public String getNamespaceSchemaFilename() {
 
-    return cr.getConfiguration().getString(NAMESPACE_SCHEMA_FILENAME_KEY, "Schema UNKNOWN!");
-  }
-
-  public int getNamespaceConfigRefreshRateInSeconds() {
-
-    return cr.getConfiguration().getInt(NAMESPACE_CONFIG_REFRESH_RATE_IN_SECONDS_KEY, 3);
-  }
-
-  /**
-   * getNamespaceAutomaticReloading
-   * 
-   * @return boolean Method used by Namespace Configuration Reloading Strategy (Peeper). If "peeper"
-   *         found namespace.xml config file changed it checks if it can perform an automatic
-   *         reload. If no value is found in the configuration medium, then the default one is used
-   *         instead. key="namespace.automatic-config-reload"; default value=false
-   */
-  public boolean getNamespaceAutomaticReloading() {
-
-    return cr.getConfiguration().getBoolean(NAMESPACE_AUTOMATIC_RELOADING_KEY, false);
+    return "namespace-1.5.0.xsd";
   }
 
   /**
@@ -885,7 +849,7 @@ public class Configuration {
    */
   public int getGridFTPTimeOut() {
 
-    return cr.getConfiguration().getInt(GRIDFTP_TIME_OUT_KEY, 15000);
+    return cr.getConfiguration().getInt(GRIDFTP_TIME_OUT_KEY, GRIDFTP_TIME_OUT);
   }
 
   /**
@@ -896,7 +860,8 @@ public class Configuration {
    */
   public boolean getAutomaticDirectoryCreation() {
 
-    return cr.getConfiguration().getBoolean(AUTOMATIC_DIRECTORY_CREATION_KEY, false);
+    return cr.getConfiguration()
+      .getBoolean(AUTOMATIC_DIRECTORY_CREATION_KEY, AUTOMATIC_DIRECTORY_CREATION);
   }
 
   /**
@@ -906,7 +871,7 @@ public class Configuration {
    */
   public String getDefaultOverwriteMode() {
 
-    return cr.getConfiguration().getString(DEFAULT_OVERWRITE_MODE_KEY, "N");
+    return cr.getConfiguration().getString(DEFAULT_OVERWRITE_MODE_KEY, DEFAULT_OVERWRITE_MODE);
   }
 
   /**
@@ -916,7 +881,8 @@ public class Configuration {
    */
   public String getDefaultFileStorageType() {
 
-    return cr.getConfiguration().getString(DEFAULT_FILE_STORAGE_TYPE_KEY, "V");
+    return cr.getConfiguration()
+      .getString(DEFAULT_FILE_STORAGE_TYPE_KEY, DEFAULT_FILE_STORAGE_TYPE);
   }
 
   /**
@@ -926,7 +892,7 @@ public class Configuration {
    */
   public int getPurgeBatchSize() {
 
-    return cr.getConfiguration().getInt(PURGE_BATCH_SIZE_KEY, 800);
+    return cr.getConfiguration().getInt(PURGE_BATCH_SIZE_KEY, PURGE_BATCH_SIZE);
   }
 
   /**
@@ -938,7 +904,7 @@ public class Configuration {
    */
   public long getExpiredRequestTime() {
 
-    return cr.getConfiguration().getInt(EXPIRED_REQUEST_TIME_KEY, 604800);
+    return cr.getConfiguration().getInt(EXPIRED_REQUEST_TIME_KEY, EXPIRED_REQUEST_TIME);
   }
 
   /**
@@ -948,7 +914,7 @@ public class Configuration {
    */
   public int getRequestPurgerDelay() {
 
-    return cr.getConfiguration().getInt(REQUEST_PURGER_DELAY_KEY, 10);
+    return cr.getConfiguration().getInt(REQUEST_PURGER_DELAY_KEY, REQUEST_PURGER_DELAY);
   }
 
   /**
@@ -958,7 +924,7 @@ public class Configuration {
    */
   public int getRequestPurgerPeriod() {
 
-    return cr.getConfiguration().getInt(REQUEST_PURGER_PERIOD_KEY, 600);
+    return cr.getConfiguration().getInt(REQUEST_PURGER_PERIOD_KEY, REQUEST_PURGER_PERIOD);
   }
 
   /**
@@ -968,7 +934,7 @@ public class Configuration {
    */
   public boolean getExpiredRequestPurging() {
 
-    return cr.getConfiguration().getBoolean(EXPIRED_REQUEST_PURGING_KEY, true);
+    return cr.getConfiguration().getBoolean(EXPIRED_REQUEST_PURGING_KEY, EXPIRED_REQUEST_PURGING);
   }
 
   /**
@@ -978,7 +944,8 @@ public class Configuration {
    */
   public String getExtraSlashesForFileTURL() {
 
-    return cr.getConfiguration().getString(EXTRA_SLASHES_FOR_FILE_TURL_KEY, "");
+    return cr.getConfiguration()
+      .getString(EXTRA_SLASHES_FOR_FILE_TURL_KEY, EXTRA_SLASHES_FOR_FILE_TURL);
   }
 
   /**
@@ -989,7 +956,8 @@ public class Configuration {
    */
   public String getExtraSlashesForRFIOTURL() {
 
-    return cr.getConfiguration().getString(EXTRA_SLASHES_FOR_RFIO_TURL_KEY, "");
+    return cr.getConfiguration()
+      .getString(EXTRA_SLASHES_FOR_RFIO_TURL_KEY, EXTRA_SLASHES_FOR_RFIO_TURL);
   }
 
   /**
@@ -1000,7 +968,8 @@ public class Configuration {
    */
   public String getExtraSlashesForGsiFTPTURL() {
 
-    return cr.getConfiguration().getString(EXTRA_SLASHES_FOR_GSIFTP_TURL_KEY, "");
+    return cr.getConfiguration()
+      .getString(EXTRA_SLASHES_FOR_GSIFTP_TURL_KEY, EXTRA_SLASHES_FOR_GSIFTP_TURL);
   }
 
   /**
@@ -1011,7 +980,8 @@ public class Configuration {
    */
   public String getExtraSlashesForROOTTURL() {
 
-    return cr.getConfiguration().getString(EXTRA_SLASHES_FOR_ROOT_TURL_KEY, "/");
+    return cr.getConfiguration()
+      .getString(EXTRA_SLASHES_FOR_ROOT_TURL_KEY, EXTRA_SLASHES_FOR_ROOT_TURL);
   }
 
   /**
@@ -1023,8 +993,8 @@ public class Configuration {
    */
   public String getPingValuesPropertiesFilename() {
 
-    final String KEY = "ping-values.properties";
-    return cr.getConfiguration().getString(PING_VALUES_PROPERTIES_FILENAME_KEY, KEY);
+    return cr.getConfiguration()
+      .getString(PING_VALUES_PROPERTIES_FILENAME_KEY, PING_VALUES_PROPERTIES_FILENAME);
   }
 
   /**
@@ -1033,7 +1003,7 @@ public class Configuration {
    */
   public int getHearthbeatPeriod() {
 
-    return cr.getConfiguration().getInt(HEARTHBEAT_PERIOD_KEY, 60);
+    return cr.getConfiguration().getInt(HEARTHBEAT_PERIOD_KEY, HEARTHBEAT_PERIOD);
   }
 
   /**
@@ -1044,7 +1014,8 @@ public class Configuration {
    */
   public int getHearthbeatPerformanceGlanceTimeInterval() {
 
-    return cr.getConfiguration().getInt(PERFORMANCE_GLANCE_TIME_INTERVAL_KEY, 15);
+    return cr.getConfiguration()
+      .getInt(PERFORMANCE_GLANCE_TIME_INTERVAL_KEY, PERFORMANCE_GLANCE_TIME_INTERVAL);
   }
 
   /**
@@ -1055,7 +1026,8 @@ public class Configuration {
    */
   public int getHearthbeatPerformanceLogbookTimeInterval() {
 
-    return cr.getConfiguration().getInt(PERFORMANCE_LOGBOOK_TIME_INTERVAL_KEY, 15);
+    return cr.getConfiguration()
+      .getInt(PERFORMANCE_LOGBOOK_TIME_INTERVAL_KEY, PERFORMANCE_LOGBOOK_TIME_INTERVAL);
   }
 
   /**
@@ -1066,7 +1038,7 @@ public class Configuration {
    */
   public boolean isHearthbeatPerformanceMeasuringEnabled() {
 
-    return cr.getConfiguration().getBoolean(PERFORMANCE_MEASURING_KEY, false);
+    return cr.getConfiguration().getBoolean(PERFORMANCE_MEASURING_KEY, PERFORMANCE_MEASURING);
   }
 
   /**
@@ -1079,7 +1051,7 @@ public class Configuration {
    */
   public boolean isHearthbeatBookkeepingEnabled() {
 
-    return cr.getConfiguration().getBoolean(BOOK_KEEPING_ENABLED_KEY, false);
+    return cr.getConfiguration().getBoolean(BOOK_KEEPING_ENABLED_KEY, BOOK_KEEPING_ENABLED);
   }
 
   /**
@@ -1089,12 +1061,13 @@ public class Configuration {
    */
   public boolean getEnableWritePermOnDirectory() {
 
-    return cr.getConfiguration().getBoolean(ENABLE_WRITE_PERM_ON_DIRECTORY_KEY, false);
+    return cr.getConfiguration()
+      .getBoolean(ENABLE_WRITE_PERM_ON_DIRECTORY_KEY, ENABLE_WRITE_PERM_ON_DIRECTORY);
   }
 
   public int getMaxLoop() {
 
-    return cr.getConfiguration().getInt(MAX_LOOP_KEY, 10);
+    return cr.getConfiguration().getInt(MAX_LOOP_KEY, MAX_LOOP);
   }
 
   /**
@@ -1104,8 +1077,8 @@ public class Configuration {
    */
   public String getGridUserMapperClassname() {
 
-    final String CLASSNAME = "it.grid.storm.griduser.StormLcmapsJNAMapper";
-    return cr.getConfiguration().getString(GRID_USER_MAPPER_CLASSNAME_KEY, CLASSNAME);
+    return cr.getConfiguration()
+      .getString(GRID_USER_MAPPER_CLASSNAME_KEY, GRID_USER_MAPPER_CLASSNAME);
   }
 
   /**
@@ -1125,12 +1098,8 @@ public class Configuration {
    */
   public int getRefreshRateAuthzDBfilesInSeconds() {
 
-    return cr.getConfiguration().getInt(REFRESH_RATE_AUTHZDB_FILES_IN_SECONDS_KEY, 5);
-  }
-
-  public boolean getRecallTableTestingMode() {
-
-    return cr.getConfiguration().getBoolean(RECALL_TABLE_TESTING_MODE_KEY, false);
+    return cr.getConfiguration()
+      .getInt(REFRESH_RATE_AUTHZDB_FILES_IN_SECONDS_KEY, REFRESH_RATE_AUTHZDB_FILES_IN_SECONDS);
   }
 
   /**
@@ -1140,17 +1109,18 @@ public class Configuration {
    */
   public int getRestServicesPort() {
 
-    return cr.getConfiguration().getInt(REST_SERVICES_PORT_KEY, 9998);
+    return cr.getConfiguration().getInt(REST_SERVICES_PORT_KEY, REST_SERVICES_PORT);
   }
 
   public int getRestServicesMaxThreads() {
 
-    return cr.getConfiguration().getInt(REST_SERVICES_MAX_THREAD, RestServer.DEFAULT_MAX_THREAD_NUM);
+    return cr.getConfiguration().getInt(REST_SERVICES_MAX_THREAD_KEY, REST_SERVICES_MAX_THREAD);
   }
 
   public int getRestServicesMaxQueueSize() {
 
-    return cr.getConfiguration().getInt(REST_SERVICES_MAX_QUEUE_SIZE, RestServer.DEFAULT_MAX_QUEUE_SIZE);
+    return cr.getConfiguration()
+      .getInt(REST_SERVICES_MAX_QUEUE_SIZE_KEY, REST_SERVICES_MAX_QUEUE_SIZE);
   }
 
   /**
@@ -1159,7 +1129,7 @@ public class Configuration {
    */
   public String getRetryValueKey() {
 
-    return cr.getConfiguration().getString(RETRY_VALUE_KEY_KEY, "retry-value");
+    return "retry-value";
   }
 
   /**
@@ -1168,7 +1138,7 @@ public class Configuration {
    */
   public String getStatusKey() {
 
-    return cr.getConfiguration().getString(STATUS_KEY_KEY, "status");
+    return "status";
   }
 
   /**
@@ -1177,7 +1147,7 @@ public class Configuration {
    */
   public String getTaskoverKey() {
 
-    return cr.getConfiguration().getString(TASKOVER_KEY_KEY, "first");
+    return "first";
   }
 
   public String getStoRMPropertiesVersion() {
@@ -1186,21 +1156,12 @@ public class Configuration {
   }
 
   /**
-   * Flag to support or not the TAPE integration. Default value is false.
-   * 
-   * @return
-   */
-  public boolean getTapeSupportEnabled() {
-
-    return cr.getConfiguration().getBoolean(TAPE_SUPPORT_ENABLED_KEY, false);
-  }
-
-  /**
    * @return
    */
   public boolean getSynchronousQuotaCheckEnabled() {
 
-    return cr.getConfiguration().getBoolean(SYNCHRONOUS_QUOTA_CHECK_ENABLED_KEY, false);
+    return cr.getConfiguration()
+      .getBoolean(SYNCHRONOUS_QUOTA_CHECK_ENABLED_KEY, SYNCHRONOUS_QUOTA_CHECK_ENABLED);
   }
 
   /**
@@ -1209,15 +1170,7 @@ public class Configuration {
    */
   public int getGPFSQuotaRefreshPeriod() {
 
-    return cr.getConfiguration().getInt(GPFS_QUOTA_REFRESH_PERIOD_KEY, 900);
-  }
-
-  /**
-   * @return
-   */
-  public boolean getFastBootstrapEnabled() {
-
-    return cr.getConfiguration().getBoolean(FAST_BOOTSTRAP_ENABLED_KEY, true);
+    return cr.getConfiguration().getInt(GPFS_QUOTA_REFRESH_PERIOD_KEY, GPFS_QUOTA_REFRESH_PERIOD);
   }
 
   /**
@@ -1225,17 +1178,18 @@ public class Configuration {
    */
   public Long getServerPoolStatusCheckTimeout() {
 
-    return cr.getConfiguration().getLong(SERVER_POOL_STATUS_CHECK_TIMEOUT_KEY, 20000);
+    return cr.getConfiguration()
+      .getLong(SERVER_POOL_STATUS_CHECK_TIMEOUT_KEY, SERVER_POOL_STATUS_CHECK_TIMEOUT);
   }
 
   public boolean getSanityCheckEnabled() {
 
-    return cr.getConfiguration().getBoolean(SANITY_CHECK_ENABLED_KEY, true);
+    return cr.getConfiguration().getBoolean(SANITY_CHECK_ENABLED_KEY, SANITY_CHECK_ENABLED);
   }
 
   public Boolean getXmlRpcTokenEnabled() {
 
-    return cr.getConfiguration().getBoolean(XMLRPC_SECURITY_ENABLED_KEY, false);
+    return cr.getConfiguration().getBoolean(XMLRPC_SECURITY_ENABLED_KEY, XMLRPC_SECURITY_ENABLED);
   }
 
   public String getXmlRpcToken() {
@@ -1245,17 +1199,12 @@ public class Configuration {
 
   public Boolean getPTGSkipACLSetup() {
 
-    return cr.getConfiguration().getBoolean(PTG_SKIP_ACL_SETUP, false);
+    return cr.getConfiguration().getBoolean(PTG_SKIP_ACL_SETUP_KEY, PTG_SKIP_ACL_SETUP);
   }
 
   public Boolean getPTPSkipACLSetup() {
 
-    return cr.getConfiguration().getBoolean(PTP_SKIP_ACL_SETUP, false);
-  }
-
-  public Boolean getPTPSkipFileCreation() {
-
-    return cr.getConfiguration().getBoolean(PTP_SKIP_FILE_CREATION, false);
+    return cr.getConfiguration().getBoolean(PTP_SKIP_ACL_SETUP_KEY, PTP_SKIP_ACL_SETUP);
   }
 
   @Override
@@ -1264,10 +1213,10 @@ public class Configuration {
     StringBuilder configurationStringBuilder = new StringBuilder();
     try {
       // This class methods
-      Method[] methods = Configuration.instance.getClass().getDeclaredMethods();
+      Method[] methods = StormConfiguration.instance.getClass().getDeclaredMethods();
 
       // This class fields
-      Field[] fields = Configuration.instance.getClass().getDeclaredFields();
+      Field[] fields = StormConfiguration.instance.getClass().getDeclaredFields();
       HashMap<String, String> methodKeyMap = new HashMap<>();
       for (Field field : fields) {
         String fieldName = field.getName();
@@ -1280,9 +1229,10 @@ public class Configuration {
               + fieldName.substring(0, fieldName.lastIndexOf('_')).replace("_", "").toLowerCase();
           if (methodKeyMap.containsKey(mapKey)) {
             String value = methodKeyMap.get(mapKey);
-            methodKeyMap.put(mapKey, value + " , " + (String) field.get(Configuration.instance));
+            methodKeyMap.put(mapKey,
+                value + " , " + (String) field.get(StormConfiguration.instance));
           } else {
-            methodKeyMap.put(mapKey, (String) field.get(Configuration.instance));
+            methodKeyMap.put(mapKey, (String) field.get(StormConfiguration.instance));
           }
         }
       }
@@ -1296,7 +1246,7 @@ public class Configuration {
          */
         if (method.getName().substring(0, 3).equals("get")
             && (!method.getName().equals("getInstance")) && method.getModifiers() == 1) {
-          field = method.invoke(Configuration.instance, dummyArray);
+          field = method.invoke(StormConfiguration.instance, dummyArray);
           if (field.getClass().isArray()) {
             field = ArrayUtils.toString(field);
           }
@@ -1331,7 +1281,8 @@ public class Configuration {
   }
 
   public long getInProgressPutRequestExpirationTime() {
-    return cr.getConfiguration().getLong(EXPIRED_INPROGRESS_PTP_TIME_KEY, 2592000L);
+    return cr.getConfiguration()
+      .getLong(EXPIRED_INPROGRESS_PTP_TIME_KEY, EXPIRED_INPROGRESS_PTP_TIME);
   }
 
   public int getNetworkAddressCacheTtl() {
@@ -1344,27 +1295,31 @@ public class Configuration {
 
   public boolean getDiskUsageServiceEnabled() {
 
-    return cr.getConfiguration().getBoolean(DISKUSAGE_SERVICE_ENABLED, false);
+    return cr.getConfiguration()
+      .getBoolean(DISKUSAGE_SERVICE_ENABLED_KEY, DISKUSAGE_SERVICE_ENABLED);
   }
 
   public int getDiskUsageServiceInitialDelay() {
 
-    return cr.getConfiguration().getInt(DISKUSAGE_SERVICE_INITIAL_DELAY, DEFAULT_INITIAL_DELAY);
+    return cr.getConfiguration().getInt(DISKUSAGE_SERVICE_INITIAL_DELAY_KEY, DEFAULT_INITIAL_DELAY);
   }
 
   public int getDiskUsageServiceTasksInterval() {
 
     // default: 604800 s => 1 week
-    return cr.getConfiguration().getInt(DISKUSAGE_SERVICE_TASKS_INTERVAL, DEFAULT_TASKS_INTERVAL);
+    return cr.getConfiguration()
+      .getInt(DISKUSAGE_SERVICE_TASKS_INTERVAL_KEY, DEFAULT_TASKS_INTERVAL);
   }
 
   public boolean getDiskUsageServiceTasksParallel() {
 
-    return cr.getConfiguration().getBoolean(DISKUSAGE_SERVICE_TASKS_PARALLEL, DEFAULT_TASKS_PARALLEL);
+    return cr.getConfiguration()
+      .getBoolean(DISKUSAGE_SERVICE_TASKS_PARALLEL_KEY, DEFAULT_TASKS_PARALLEL);
   }
 
   public boolean getPreferIPv6Addresses() {
 
-    return cr.getConfiguration().getBoolean(JAVA_NET_PREFERIPV6ADDRESSES, true);
+    return cr.getConfiguration()
+      .getBoolean(JAVA_NET_PREFERIPV6ADDRESSES_KEY, JAVA_NET_PREFERIPV6ADDRESSES);
   }
 }

@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.persistence.converter.RequestTypeConverter;
 import it.grid.storm.persistence.converter.StatusCodeConverter;
 import it.grid.storm.persistence.dao.AbstractDAO;
@@ -121,7 +121,7 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
   private final StatusCodeConverter statusCodeConverter;
   private final RequestTypeConverter requestTypeConverter;
   private final int MAX_FETCHED_REQUESTS =
-      Configuration.getInstance().getPickingMaxBatchSize();
+      StormConfiguration.getInstance().getPickingMaxBatchSize();
 
   public static synchronized RequestSummaryDAO getInstance() {
     if (instance == null) {
@@ -860,7 +860,7 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
       con = getConnection();
 
       ps = con.prepareStatement(COUNT_PURGEABLE_REQUESTS);
-      ps.setLong(1, Configuration.getInstance().getExpiredRequestTime());
+      ps.setLong(1, StormConfiguration.getInstance().getExpiredRequestTime());
       ps.setInt(2, statusCodeConverter.toDB(SRM_REQUEST_QUEUED));
       ps.setInt(3, statusCodeConverter.toDB(SRM_REQUEST_INPROGRESS));
 

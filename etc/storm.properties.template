@@ -15,7 +15,7 @@
 # ============================
 # StoRM Service DNS
 # ============================
-# hostname with which the service is published
+# Host with which the SRM service is published on BDII
 storm.service.FE-public.hostname =
 
 
@@ -49,12 +49,18 @@ storm.service.SURL.default-ports =
 # FE/BE communication RDBMS
 # ============================
 #
-# Parameters to connect to the DB used as channel for the requests. 
-storm.service.request-db.host =  
-storm.service.request-db.username =   
-storm.service.request-db.passwd =
+# Parameters to connect to the DB used as channel for the requests.
+# Deprecated since v1.12.0:
+# storm.service.request-db.host =
+# storm.service.request-db.username =
+# storm.service.request-db.passwd =
+# storm.service.request-db.properties =
 # Added v1.12.0
-storm.service.request-db.port =
+storm.service.db.host =
+storm.service.db.username =
+storm.service.db.password =
+storm.service.db.port =
+storm.service.db.properties =
 
 #############################################
 ############  PROFILE PARAMETERS ############
@@ -106,14 +112,25 @@ default.storagetype = P
 # ============================
 # BE-private RDBMS
 # ============================
-persistence.internal-db.connection-pool.maxActive = 50
-persistence.internal-db.connection-pool.maxWait = 50
-persistence.internal-db.connection-pool.size = 50
+
+# Removed by 1.12.0
+# persistence.internal-db.connection-pool.maxActive = 50
+# persistence.internal-db.connection-pool.maxWait = 50
+# persistence.internal-db.connection-pool.size = 50
+
 # Added with 1.12.0:
-persistence.internal-db.connection-pool.minIdle = 10
-persistence.internal-db.connection-pool.maxWaitMillis = -1
-persistence.internal-db.connection-pool.testOnBorrow = true
-persistence.internal-db.connection-pool.testWhileIdle = true
+
+# Sets the maximum permitted lifetime of a connection in milliseconds. A value of zero or less indicates an infinite lifetime.
+storm.service.db.pool.maxWaitMillis = -1
+storm.service.db.pool.testOnBorrow = true
+storm.service.db.pool.testWhileIdle = true
+
+storm.service.db.pool.stormdb.maxTotal = 500
+storm.service.db.pool.stormdb.minIdle = 50
+
+storm.service.db.pool.stormbeisam.maxTotal = 200
+storm.service.db.pool.stormbeisam.minIdle = 10
+
 
 # ============================
 # ASYNCH SCHEDULER Component parameters
@@ -238,8 +255,6 @@ transit.delay = 10
 ptg.skip-acl-setup = false
 # Skip ACL setup for PtP requests
 ptp.skip-acl-setup = false
-# Skip both file creation and ACL setup for PtP requests
-ptp.skip-file-creation = false
 
 
 # The caching policy for successful name lookups from the name service.

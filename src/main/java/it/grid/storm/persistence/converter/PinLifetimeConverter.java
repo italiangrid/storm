@@ -5,7 +5,7 @@
 package it.grid.storm.persistence.converter;
 
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 
 /**
  * Class that handles DB representation of a TLifetimeInSeconds, in particular it takes care of
@@ -53,10 +53,10 @@ public class PinLifetimeConverter {
   public long toStoRM(int s) {
 
     if (s == 0) {
-      return Configuration.getInstance().getPinLifetimeDefault();
+      return StormConfiguration.getInstance().getPinLifetimeDefault();
     } else if (s < 0) {
       // The default is used also as a Minimum
-      return Configuration.getInstance().getPinLifetimeDefault();
+      return StormConfiguration.getInstance().getPinLifetimeDefault();
     }
     return Integer.valueOf(s).longValue();
   }
@@ -64,10 +64,10 @@ public class PinLifetimeConverter {
   public long toStoRM(long s) {
 
     if (s == 0) {
-      return Configuration.getInstance().getPinLifetimeDefault();
+      return StormConfiguration.getInstance().getPinLifetimeDefault();
     } else if (s < 0) {
       // The default is used also as a Minimum
-      return Configuration.getInstance().getPinLifetimeDefault();
+      return StormConfiguration.getInstance().getPinLifetimeDefault();
     }
     return s;
   }

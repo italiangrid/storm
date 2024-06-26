@@ -12,7 +12,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 
 /**
  * This class represents a Request Token
@@ -31,7 +31,7 @@ public class TRequestToken implements Serializable {
 
 	private final Calendar expiration;
 
-	private static final long REQUEST_LIFETIME = Configuration.getInstance()
+	private static final long REQUEST_LIFETIME = StormConfiguration.getInstance()
 		.getExpiredRequestTime() * 1000;
 
 	public TRequestToken(String requestToken, Date timestamp)

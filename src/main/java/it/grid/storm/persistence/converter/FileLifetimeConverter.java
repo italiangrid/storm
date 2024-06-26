@@ -5,7 +5,7 @@
 package it.grid.storm.persistence.converter;
 
 import it.grid.storm.srm.types.TLifeTimeInSeconds;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 
 /**
  * Class that handles DB representation of a pinLifetime as expressed by a TLifetimeInSeconds
@@ -53,7 +53,7 @@ public class FileLifetimeConverter {
   public long toStoRM(int s) {
 
     if (s <= 0)
-      return Configuration.getInstance().getFileLifetimeDefault();
+      return StormConfiguration.getInstance().getFileLifetimeDefault();
     return Integer.valueOf(s).longValue();
   }
 }

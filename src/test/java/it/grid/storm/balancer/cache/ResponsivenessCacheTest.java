@@ -16,13 +16,13 @@ import org.junit.Before;
 import org.junit.Test;
 import it.grid.storm.balancer.BalancerUtils;
 import it.grid.storm.balancer.Node;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 
 public class ResponsivenessCacheTest extends BalancerUtils {
 
   static {
     try {
-      Configuration.init("src/test/resources/storm.properties");
+      StormConfiguration.init("src/test/resources/storm.properties");
     } catch (ConfigurationException | IOException e) {
       e.printStackTrace();
       fail();

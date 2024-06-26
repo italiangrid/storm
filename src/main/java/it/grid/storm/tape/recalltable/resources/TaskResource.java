@@ -41,7 +41,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.grid.storm.catalogs.TapeRecallCatalog;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
@@ -60,7 +60,7 @@ public class TaskResource {
 
   private static final Logger log = LoggerFactory.getLogger(TaskResource.class);
 
-  private static Configuration config = Configuration.getInstance();
+  private static StormConfiguration config = StormConfiguration.getInstance();
 
   private ResourceService service;
   private TapeRecallCatalog recallCatalog;

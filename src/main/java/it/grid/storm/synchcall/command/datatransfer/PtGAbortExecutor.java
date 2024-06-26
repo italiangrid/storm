@@ -15,7 +15,7 @@ package it.grid.storm.synchcall.command.datatransfer;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.srm.types.ArrayOfSURLs;
 import it.grid.storm.srm.types.ArrayOfTSURLReturnStatus;
@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 
 public class PtGAbortExecutor implements AbortExecutorInterface {
 
-  static Configuration config = Configuration.getInstance();
+  static StormConfiguration config = StormConfiguration.getInstance();
   private static int maxLoopTimes = PtGAbortExecutor.config.getMaxLoop();
 
   private static final Logger log = LoggerFactory

@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.Lists;
 
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 
 public class HealthMonitor {
 
@@ -30,16 +30,16 @@ public class HealthMonitor {
   public synchronized static HealthMonitor getInstance() {
 
     if (instance == null) {
-      instance = new HealthMonitor(Configuration.getInstance());
+      instance = new HealthMonitor(StormConfiguration.getInstance());
     }
     return instance;
   }
 
   public static void init() {
-    instance = new HealthMonitor(Configuration.getInstance());
+    instance = new HealthMonitor(StormConfiguration.getInstance());
   }
 
-  private HealthMonitor(Configuration config) {
+  private HealthMonitor(StormConfiguration config) {
 
     healthTimer = new Timer();
     bookKeepers = new Hashtable<String, BookKeeper>();

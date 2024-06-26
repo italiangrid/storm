@@ -4,17 +4,10 @@
  */
 package it.grid.storm.namespace.config.xml;
 
-import it.grid.storm.namespace.NamespaceValidator;
-import it.grid.storm.namespace.config.NamespaceLoader;
-
 import static java.io.File.separatorChar;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -29,7 +22,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-public class XMLNamespaceLoader extends Observable implements NamespaceLoader {
+import it.grid.storm.namespace.NamespaceValidator;
+import it.grid.storm.namespace.config.NamespaceLoader;
+
+public class XMLNamespaceLoader implements NamespaceLoader {
 
   private static Logger log = LoggerFactory.getLogger(XMLNamespaceLoader.class);
 
@@ -38,9 +34,7 @@ public class XMLNamespaceLoader extends Observable implements NamespaceLoader {
   public int refresh; // refresh time in seconds before the configuration is
   // checked for a change in parameters!
   private XMLConfiguration config = null;
-  private final int delay = 1000; // delay for 5 sec.
   private long period = -1;
-  private final Timer timer = new Timer();
   private XMLReloadingStrategy xmlStrategy;
   private String namespaceFN = null;
   private final String namespaceSchemaURL;
@@ -102,24 +96,10 @@ public class XMLNamespaceLoader extends Observable implements NamespaceLoader {
     init(namespaceFN, refresh);
   }
 
-  public void setObserver(Observer obs) {
-
-    addObserver(obs);
-  }
-
   public void setNotifyManaged() {
 
     xmlStrategy.notifingPerformed();
     config.setReloadingStrategy(xmlStrategy);
-  }
-
-  /**
-   * The setChanged() protected method must overridden to make it public
-   */
-  @Override
-  public synchronized void setChanged() {
-
-    super.setChanged();
   }
 
   private void init(String namespaceFileName, int refresh) {
@@ -151,16 +131,6 @@ public class XMLNamespaceLoader extends Observable implements NamespaceLoader {
         log.debug("Namespace is valid in respect of NAMESPACE SCHEMA.");
       }
 
-      // This will throw a ConfigurationException if the XML document does not
-      // conform to its DTD.
-
-      config.setReloadingStrategy(xmlStrategy);
-
-      Peeper peeper = new Peeper(this);
-      timer.schedule(peeper, delay, period);
-
-      log.debug("Timer initialized");
-
       config.load();
       log.debug("Namespace Configuration read!");
 
@@ -173,10 +143,10 @@ public class XMLNamespaceLoader extends Observable implements NamespaceLoader {
 
   private String getNamespaceFileName() {
 
-    String configurationDir = it.grid.storm.config.Configuration.getInstance().configurationDir();
+    String configurationDir = it.grid.storm.config.StormConfiguration.getInstance().configurationDir();
     // Looking for namespace configuration file
     String namespaceFN =
-        it.grid.storm.config.Configuration.getInstance().getNamespaceConfigFilename();
+        it.grid.storm.config.StormConfiguration.getInstance().getNamespaceConfigFilename();
     // Build the filename
     if (configurationDir.charAt(configurationDir.length() - 1) != separatorChar) {
       configurationDir += Character.toString(separatorChar);
@@ -195,7 +165,7 @@ public class XMLNamespaceLoader extends Observable implements NamespaceLoader {
   private String getNamespaceSchemaFileName() {
 
     String schemaName =
-        it.grid.storm.config.Configuration.getInstance().getNamespaceSchemaFilename();
+        it.grid.storm.config.StormConfiguration.getInstance().getNamespaceSchemaFilename();
 
     if ("Schema UNKNOWN!".equals(schemaName)) {
 
@@ -242,82 +212,4 @@ public class XMLNamespaceLoader extends Observable implements NamespaceLoader {
     NamespaceValidator validator = new NamespaceValidator();
     return validator.validateSchema(namespaceSchemaURL, filename);
   }
-
-  /**
-   * 
-   * <p>
-   * Title:
-   * </p>
-   * 
-   * <p>
-   * Description:
-   * </p>
-   * 
-   * <p>
-   * Copyright: Copyright (c) 2006
-   * </p>
-   * 
-   * <p>
-   * Company: INFN-CNAF and ICTP/eGrid project
-   * </p>
-   * 
-   * @author Riccardo Zappi
-   * @version 1.0
-   */
-  private class Peeper extends TimerTask {
-
-    private XMLReloadingStrategy reloadingStrategy;
-
-    private boolean signal;
-    private final XMLNamespaceLoader observed;
-
-    public Peeper(XMLNamespaceLoader obs) {
-
-      observed = obs;
-    }
-
-    @Override
-    public void run() {
-
-      // log.debug(" The glange of peeper..");
-      reloadingStrategy = (XMLReloadingStrategy) config.getReloadingStrategy();
-      boolean changed = reloadingStrategy.reloadingRequired();
-      if (changed) {
-        log.debug(" NAMESPACE CONFIGURATION is changed ! ");
-        log.debug(" ... CHECK of VALIDITY of NAMESPACE Configuration ...");
-        boolean valid = XMLNamespaceLoader.checkValidity(namespaceSchemaURL, namespaceFN);
-        if (!valid) {
-          log.debug(" Namespace configuration is not reloaded.. Please rectify the error.");
-          schemaValidity = false;
-          reloadingStrategy.notifingPerformed();
-          reloadingStrategy.reloadingPerformed();
-        } else {
-          log.debug(" ... NAMESPACE Configuration is VALID in respect of Schema Grammar.");
-          log.debug(" ----> RELOADING  ");
-
-          schemaValidity = true;
-
-          boolean forceReloading =
-              it.grid.storm.config.Configuration.getInstance().getNamespaceAutomaticReloading();
-          if (forceReloading) {
-            config.reload();
-          } else {
-            log.debug(
-                " ----> RELOAD of namespace don't be executed because NO AUTOMATIC RELOAD is configured.");
-          }
-          reloadingStrategy.reloadingPerformed();
-        }
-      }
-
-      signal = reloadingStrategy.notifingRequired();
-      if ((signal)) {
-        observed.setChanged();
-        observed.notifyObservers(" MSG : Namespace is changed!");
-        reloadingStrategy.notifingPerformed();
-      }
-
-    }
-
-  }
-
 }

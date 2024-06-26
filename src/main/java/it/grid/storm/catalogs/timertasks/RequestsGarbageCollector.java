@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.grid.storm.catalogs.TapeRecallCatalog;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.persistence.dao.RequestSummaryDAO;
 import it.grid.storm.persistence.impl.mysql.RequestSummaryDAOMySql;
 
@@ -19,7 +19,7 @@ public class RequestsGarbageCollector extends TimerTask {
 
   private static final Logger log = LoggerFactory.getLogger(RequestsGarbageCollector.class);
 
-  private final Configuration config = Configuration.getInstance();
+  private final StormConfiguration config = StormConfiguration.getInstance();
   private final RequestSummaryDAO dao = RequestSummaryDAOMySql.getInstance();
 
   private Timer handler;

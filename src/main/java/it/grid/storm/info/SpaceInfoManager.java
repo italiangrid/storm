@@ -4,7 +4,7 @@
  */
 package it.grid.storm.info;
 
-import static it.grid.storm.config.Configuration.DISKUSAGE_SERVICE_ENABLED;
+import static it.grid.storm.config.StormConfiguration.DISKUSAGE_SERVICE_ENABLED_KEY;
 
 import java.io.FileNotFoundException;
 import java.util.List;
@@ -16,7 +16,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.persistence.exceptions.DataAccessException;
@@ -32,7 +32,7 @@ public class SpaceInfoManager {
   private static final SpaceInfoManager instance = new SpaceInfoManager();
 
   private static final String USED_SPACE_INI_FILEPATH =
-      Configuration.getInstance().configurationDir() + "/used-space.ini".replaceAll("/+", "/");
+      StormConfiguration.getInstance().configurationDir() + "/used-space.ini".replaceAll("/+", "/");
 
   private static final Logger log = LoggerFactory.getLogger(SpaceInfoManager.class);
 
@@ -69,14 +69,14 @@ public class SpaceInfoManager {
       return;
     }
 
-    if (Configuration.getInstance().getDiskUsageServiceEnabled()) {
+    if (StormConfiguration.getInstance().getDiskUsageServiceEnabled()) {
       log.info("The remaining {} storage spaces will be initialized by DiskUsage service",
           ssni.size());
     } else {
       log.warn(
           "The remaining {} storage spaces WON'T be initialized with DUs. "
               + "Please enable DiskUsage service by setting '{}' as true.",
-          ssni.size(), DISKUSAGE_SERVICE_ENABLED);
+          ssni.size(), DISKUSAGE_SERVICE_ENABLED_KEY);
     }
   }
 
