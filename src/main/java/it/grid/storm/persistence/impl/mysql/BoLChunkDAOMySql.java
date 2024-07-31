@@ -105,6 +105,12 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
           + "SET sb.statusCode=? "
           + "WHERE sb.statusCode=? AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(rq.timeStamp) >= rq.pinLifetime ";
 
+  private static final String ABORT_EXPIRED_BOL_REQUESTS_INPROGRESS =
+      "UPDATE status_BoL sb "
+          + "JOIN (request_BoL rb, request_queue rq) ON sb.request_BoLID=rb.ID AND rb.request_queueID=rq.ID "
+          + "SET sb.statusCode=? "
+          + "WHERE sb.statusCode=? AND rq.timeStamp <= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL ? SECOND)";
+
   private static BoLChunkDAOMySql instance;
 
   public static synchronized BoLChunkDAO getInstance() {
@@ -687,6 +693,49 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
     }
     return count;
   }
+
+  public int abortInProgressRequestsSince(long expirationTimeInSeconds) {
+
+    Connection con = null;
+    PreparedStatement ps = null;
+
+    int count = 0;
+
+    try {
+
+      // start transaction
+      con = getConnection();
+
+      ps = con.prepareStatement(ABORT_EXPIRED_BOL_REQUESTS_INPROGRESS);
+      ps.setInt(1, statusCodeConverter.toDB(SRM_ABORTED));
+      ps.setInt(2, statusCodeConverter.toDB(SRM_REQUEST_INPROGRESS));
+      ps.setLong(3, expirationTimeInSeconds);
+      log.trace("BoL CHUNK DAO - transitExpiredSRM_SUCCESS method: {}", ps);
+
+      count = ps.executeUpdate();
+
+      if (count == 0) {
+        log.trace(
+            "BoLChunkDAO! No chunk of BoL request was transited from SRM_SUCCESS to SRM_RELEASED.");
+      } else {
+        log.info(
+            "BoLChunkDAO! {} chunks of BoL requests were transited from SRM_SUCCESS to SRM_RELEASED.",
+            count);
+      }
+
+    } catch (SQLException e) {
+
+      log.error("BoLChunkDAO! SQLException.", e.getMessage(), e);
+      e.printStackTrace();
+
+    } finally {
+
+      closeStatement(ps);
+      closeConnection(con);
+    }
+    return count;
+  }
+
 
   public synchronized void updateStatusOnMatchingStatus(TRequestToken requestToken,
       TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation) {

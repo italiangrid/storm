@@ -35,6 +35,8 @@ public interface BoLChunkDAO {
 
   int releaseExpiredAndSuccessfulRequests();
 
+  int abortInProgressRequestsSince(long expirationTimeInSeconds);
+
   void updateStatusOnMatchingStatus(TRequestToken requestToken, TStatusCode expectedStatusCode,
       TStatusCode newStatusCode, String explanation);
 

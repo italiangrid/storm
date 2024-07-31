@@ -235,7 +235,15 @@ purge.size=800
 #Time after that the GC consider a _terminated_ request as garbage
 #Default: 21600s (6h)
 expired.request.time=21600
-
+#
+#Time after that the GC consider an _in-progress_ PtP request as terminated
+#Deprecates "expired.inprogress.time"
+#Default: 2592000s (720h)
+expired.inprogress.ptp.time=2592000
+#
+#Time after that the GC consider an _in-progress_ BoL request as terminated
+#Default: 2592000s (720h)
+expired.inprogress.bol.time=2592000
 
 # ==========================================================
 # Expired-Put-Requests-Agent parameters

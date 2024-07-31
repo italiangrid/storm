@@ -90,6 +90,7 @@ public class ConfigurationDefaults {
   public static final boolean PTG_SKIP_ACL_SETUP = false;
   public static final boolean PTP_SKIP_ACL_SETUP = false;
 
+  public static final long EXPIRED_INPROGRESS_BOL_TIME = 2592000L;
   public static final long EXPIRED_INPROGRESS_PTP_TIME = 2592000L;
 
   public static final boolean SANITY_CHECK_ENABLED = true;

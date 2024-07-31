@@ -24,6 +24,7 @@ import static it.grid.storm.config.ConfigurationDefaults.DEFAULT_FILE_STORAGE_TY
 import static it.grid.storm.config.ConfigurationDefaults.DEFAULT_OVERWRITE_MODE;
 import static it.grid.storm.config.ConfigurationDefaults.DISKUSAGE_SERVICE_ENABLED;
 import static it.grid.storm.config.ConfigurationDefaults.ENABLE_WRITE_PERM_ON_DIRECTORY;
+import static it.grid.storm.config.ConfigurationDefaults.EXPIRED_INPROGRESS_BOL_TIME;
 import static it.grid.storm.config.ConfigurationDefaults.EXPIRED_INPROGRESS_PTP_TIME;
 import static it.grid.storm.config.ConfigurationDefaults.EXPIRED_REQUEST_PURGING;
 import static it.grid.storm.config.ConfigurationDefaults.EXPIRED_REQUEST_TIME;
@@ -196,7 +197,8 @@ public class StormConfiguration {
   private static final String DEFAULT_FILE_STORAGE_TYPE_KEY = "default.storagetype";
   private static final String PURGE_BATCH_SIZE_KEY = "purge.size";
   private static final String EXPIRED_REQUEST_TIME_KEY = "expired.request.time";
-  private static final String EXPIRED_INPROGRESS_PTP_TIME_KEY = "expired.inprogress.time";
+  private static final String EXPIRED_INPROGRESS_BOL_TIME_KEY = "expired.inprogress.bol.time";
+  private static final String EXPIRED_INPROGRESS_PTP_TIME_KEY = "expired.inprogress.ptp.time";
   private static final String REQUEST_PURGER_DELAY_KEY = "purge.delay";
   private static final String REQUEST_PURGER_PERIOD_KEY = "purge.interval";
   private static final String EXPIRED_REQUEST_PURGING_KEY = "purging";
@@ -1283,6 +1285,11 @@ public class StormConfiguration {
   public long getInProgressPutRequestExpirationTime() {
     return cr.getConfiguration()
       .getLong(EXPIRED_INPROGRESS_PTP_TIME_KEY, EXPIRED_INPROGRESS_PTP_TIME);
+  }
+
+  public long getInProgressBolRequestExpirationTime() {
+    return cr.getConfiguration()
+      .getLong(EXPIRED_INPROGRESS_BOL_TIME_KEY, EXPIRED_INPROGRESS_BOL_TIME);
   }
 
   public int getNetworkAddressCacheTtl() {
