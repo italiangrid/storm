@@ -29,7 +29,7 @@
     <jerseyVersion>2.25.1</jerseyVersion>
     <jettisonVersion>1.1</jettisonVersion>
     <jettyVersion>8.1.9.v20130131</jettyVersion>
-    <jnaVersion>3.3.0</jnaVersion>
+    <jnaVersion>5.14.0</jnaVersion>
     <jsonVersion>20080701</jsonVersion>
     <junitVersion>4.13.2</junitVersion>
     <logbackVersion>1.2.3</logbackVersion>
