@@ -307,6 +307,12 @@
     </dependency>
 
     <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna-platform</artifactId>
+      <version>${jnaVersion}</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.codehaus.jettison</groupId>
       <artifactId>jettison</artifactId>
       <version>${jettisonVersion}</version>
