@@ -43,11 +43,6 @@ public class GridUserManager {
 		return GridUserFactory.getInstance();
 	}
 
-	public static String getMapperClassName() {
-
-		return config.getGridUserMapperClassname();
-	}
-
 	public static GridUserInterface makeVOMSGridUser(String dn, String proxy,
 		FQAN[] fqans) throws IllegalArgumentException {
 

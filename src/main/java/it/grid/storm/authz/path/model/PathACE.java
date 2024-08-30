@@ -20,9 +20,6 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @author zappi
- */
 public class PathACE {
 
   private static final Logger log = LoggerFactory.getLogger(PathACE.class);
@@ -30,10 +27,9 @@ public class PathACE {
   public static final String ALL_GROUPS_PATTERN = "@ALL@?|\\*";
   public static final String ALL_GROUPS = "@ALL@";
   private static final Pattern allGroupsPattern = Pattern.compile(ALL_GROUPS_PATTERN);
-  public static final String FIELD_SEP = "\\s"; // * White space character **/
+  public static final String FIELD_SEP = "\\s";
   private static final boolean PERMIT_ACE = true;
-  public static final String ALGORITHM = "algorithm"; // property key used to
-                                                      // define the algorithm
+  public static final String ALGORITHM = "algorithm";
 
   public static final PathACE PERMIT_ALL = buildPermitAllPathACE();
 
@@ -43,20 +39,6 @@ public class PathACE {
   private StFN storageFileName;
   private PathAccessMask pathAccessMask;
   private boolean isPermitACE;
-
-  // =========== CONSTRUCTORs ============
-
-  /**
-   * Quite similar to clone
-   * 
-   * @throws AuthzException
-   */
-  public static PathACE build(PathACE other) throws AuthzException {
-
-    PathACE result = new PathACE(other.localGroupName, other.getStorageFileName(),
-        other.getPathAccessMask(), other.isPermitAce());
-    return result;
-  }
 
   private static PathACE buildPermitAllPathACE() throws IllegalStateException {
 

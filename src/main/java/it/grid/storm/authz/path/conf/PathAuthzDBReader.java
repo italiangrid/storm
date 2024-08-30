@@ -24,9 +24,6 @@ import java.io.FileNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @author zappi
- */
 public class PathAuthzDBReader {
 
   private static final Logger log = LoggerFactory.getLogger(PathAuthzDBReader.class);
@@ -55,15 +52,6 @@ public class PathAuthzDBReader {
     log.debug("Loading Path Authz DB : '{}'", authzDBFilename);
     pathAuthzDB = loadPathAuthzDB(authzDBFilename);
     log.info("Path Authz DB ('{}') loaded.", pathAuthzDB.getPathAuthzDBID());
-    log.info(pathAuthzDB.toString());
-  }
-
-  public void refreshPathAuthzDB() throws Exception {
-
-    log.debug("<PathAuthzDBReader> Start refreshing.");
-    pathAuthzDB = loadPathAuthzDB(authzDBFilename);
-    log.debug("<PathAuthzDBReader> End refreshing.");
-    log.info("Path Authz DB ('{}') RE-loaded.", pathAuthzDB.getPathAuthzDBID());
     log.info(pathAuthzDB.toString());
   }
 

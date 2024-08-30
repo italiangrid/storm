@@ -80,7 +80,6 @@ public class ConfigurationDefaults {
   public static final boolean BOOK_KEEPING_ENABLED = false;
   public static final boolean ENABLE_WRITE_PERM_ON_DIRECTORY = false;
   public static final int MAX_LOOP = 10;
-  public static final String GRID_USER_MAPPER_CLASSNAME = "it.grid.storm.griduser.StormLcmapsJNAMapper";
 
   public static final int REFRESH_RATE_AUTHZDB_FILES_IN_SECONDS = 5;
   public static final int REST_SERVICES_PORT = 9998;

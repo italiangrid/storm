@@ -27,9 +27,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.QueryParam;
 import it.grid.storm.authz.remote.Constants;
 
-/**
- * @author Michele Dibenedetto
- */
 @Path("/" + Constants.RESOURCE + "/" + Constants.VERSION_1_0 + "/{filePath}")
 public class AuthorizationResourceCompat_1_0 {
 

@@ -326,14 +326,6 @@ public class StoRM {
   }
 
   /**
-   * @return
-   */
-  public synchronized boolean pickerIsRunning() {
-
-    return isPickerRunning;
-  }
-
-  /**
    * Method used to start xmlrpcServer.
    * 
    * @throws Exception
@@ -458,14 +450,6 @@ public class StoRM {
     }
     log.debug("Space Garbage Collector stopped.");
     isSpaceGCRunning = false;
-  }
-
-  /**
-   * @return
-   */
-  public synchronized boolean spaceGCIsRunning() {
-
-    return isSpaceGCRunning;
   }
 
   public synchronized void startExpiredAgent() {

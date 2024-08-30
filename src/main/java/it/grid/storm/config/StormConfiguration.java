@@ -36,7 +36,6 @@ import static it.grid.storm.config.ConfigurationDefaults.FILE_DEFAULT_SIZE;
 import static it.grid.storm.config.ConfigurationDefaults.FILE_LIFETIME_DEFAULT;
 import static it.grid.storm.config.ConfigurationDefaults.GPFS_QUOTA_REFRESH_PERIOD;
 import static it.grid.storm.config.ConfigurationDefaults.GRIDFTP_TIME_OUT;
-import static it.grid.storm.config.ConfigurationDefaults.GRID_USER_MAPPER_CLASSNAME;
 import static it.grid.storm.config.ConfigurationDefaults.HEARTHBEAT_PERIOD;
 import static it.grid.storm.config.ConfigurationDefaults.JAVA_NET_PREFERIPV6ADDRESSES;
 import static it.grid.storm.config.ConfigurationDefaults.LS_ALL_LEVEL_RECURSIVE;
@@ -216,7 +215,6 @@ public class StormConfiguration {
   private static final String BOOK_KEEPING_ENABLED_KEY = "health.bookkeeping.enabled";
   private static final String ENABLE_WRITE_PERM_ON_DIRECTORY_KEY = "directory.writeperm";
   private static final String MAX_LOOP_KEY = "abort.maxloop";
-  private static final String GRID_USER_MAPPER_CLASSNAME_KEY = "griduser.mapper.classname";
   private static final String AUTHZ_DB_PATH_KEY = "authzdb.path";
   private static final String REFRESH_RATE_AUTHZDB_FILES_IN_SECONDS_KEY = "authzdb.refreshrate";
   private static final String REST_SERVICES_PORT_KEY = "storm.rest.services.port";
@@ -1070,17 +1068,6 @@ public class StormConfiguration {
   public int getMaxLoop() {
 
     return cr.getConfiguration().getInt(MAX_LOOP_KEY, MAX_LOOP);
-  }
-
-  /**
-   * Method used to retrieve the ClassName for the User Mapper Class If no value is found in the
-   * configuration medium, then the default one is used instead, that is
-   * "it.grid.storm.griduser.LcmapsJNAMapper" key="griduser.mapper.classname";
-   */
-  public String getGridUserMapperClassname() {
-
-    return cr.getConfiguration()
-      .getString(GRID_USER_MAPPER_CLASSNAME_KEY, GRID_USER_MAPPER_CLASSNAME);
   }
 
   /**

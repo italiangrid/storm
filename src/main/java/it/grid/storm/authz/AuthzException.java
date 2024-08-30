@@ -7,34 +7,20 @@
  */
 package it.grid.storm.authz;
 
-/**
- * @author zappi
- * 
- */
 public class AuthzException extends RuntimeException {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
 
-	public AuthzException() {
+  public AuthzException() {
 
-		super();
-	}
+    super();
+  }
 
-	public AuthzException(String message) {
+  public AuthzException(String message) {
 
-		super(message);
-	}
-
-	public AuthzException(String message, Throwable cause) {
-
-		super(message, cause);
-	}
-
-	public AuthzException(Throwable cause) {
-
-		super(cause);
-	}
+    super(message);
+  }
 }

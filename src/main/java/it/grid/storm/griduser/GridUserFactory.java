@@ -14,233 +14,146 @@
 
 package it.grid.storm.griduser;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Map;
 
 import org.slf4j.Logger;
 
 public class GridUserFactory {
 
-	private static final Logger log = GridUserManager.log;
-	private MapperInterface defaultMapperClass = null;
+  private static final Logger log = GridUserManager.log;
+  private static final String GRID_USER_MAPPER_CLASSNAME =
+      "it.grid.storm.griduser.StormLcmapsJNAMapper";
 
-	private static GridUserFactory instance = null;
+  private MapperInterface defaultMapperClass = null;
 
-	private GridUserFactory() throws GridUserException {
+  private static GridUserFactory instance = null;
 
-		defaultMapperClass = makeMapperClass(GridUserManager.getMapperClassName());
-	}
+  private GridUserFactory() throws GridUserException {
 
-	static GridUserFactory getInstance() {
+    defaultMapperClass = makeMapperClass(GRID_USER_MAPPER_CLASSNAME);
+  }
 
-		if (instance == null) {
-			try {
-				instance = new GridUserFactory();
-			} catch (GridUserException ex) {
-				log.error("Unable to load GridUser Mapper Driver!", ex);
-			}
-		}
-		return instance;
-	}
+  static GridUserFactory getInstance() {
 
-	/**
-	 * Build a simple GridUser. No VOMS attributes are passed..
-	 * 
-	 * @return GridUserInterface
-	 */
-	GridUserInterface createGridUser(String distinguishName) {
+    if (instance == null) {
+      try {
+        instance = new GridUserFactory();
+      } catch (GridUserException ex) {
+        log.error("Unable to load GridUser Mapper Driver!", ex);
+      }
+    }
+    return instance;
+  }
 
-		GridUserInterface user = new GridUser(defaultMapperClass, distinguishName);
-		log.debug("Created new Grid User (NO VOMS) : {}", user);
-		return user;
-	}
+  /**
+   * Build a simple GridUser. No VOMS attributes are passed..
+   * 
+   * @return GridUserInterface
+   */
+  GridUserInterface createGridUser(String distinguishName) {
 
-	/**
-	 * Build a simple GridUser. Parsing of proxy is not performed here! This
-	 * methos is meaningful only for srmCopy call.
-	 * 
-	 * @return GridUserInterface
-	 */
-	GridUserInterface createGridUser(String distinguishName, String proxyString) {
+    GridUserInterface user = new GridUser(defaultMapperClass, distinguishName);
+    log.debug("Created new Grid User (NO VOMS) : {}", user);
+    return user;
+  }
 
-		GridUserInterface user = new GridUser(defaultMapperClass, distinguishName,
-			proxyString);
-		log.debug("Created new Grid User (NO VOMS with PROXY) : {}", user);
-		return user;
-	}
+  /**
+   * Build a simple GridUser. Parsing of proxy is not performed here! This methos is meaningful only
+   * for srmCopy call.
+   * 
+   * @return GridUserInterface
+   */
+  GridUserInterface createGridUser(String distinguishName, String proxyString) {
 
-	/**
-	 * Build a VOMS Grid User, if FQAN passed are not null. Otherwise a simple
-	 * GridUser instance wil be returned.
-	 * 
-	 * @return GridUserInterface
-	 */
-	GridUserInterface createGridUser(String distinguishName, FQAN[] fqans)
-		throws IllegalArgumentException {
+    GridUserInterface user = new GridUser(defaultMapperClass, distinguishName, proxyString);
+    log.debug("Created new Grid User (NO VOMS with PROXY) : {}", user);
+    return user;
+  }
 
-		GridUserInterface user = null;
-		try {
-			user = new VomsGridUser(defaultMapperClass, distinguishName, fqans);
-		} catch (IllegalArgumentException e) {
-		  log.error(e.getMessage(), e);
-			throw e;
-		}
-		log.debug("Created new Grid User (VOMS USER) : {}", user);
-		return user;
-	}
+  /**
+   * Build a VOMS Grid User, if FQAN passed are not null. Otherwise a simple GridUser instance wil
+   * be returned.
+   * 
+   * @return GridUserInterface
+   */
+  GridUserInterface createGridUser(String distinguishName, FQAN[] fqans)
+      throws IllegalArgumentException {
 
-	/**
-	 * Build a VOMS Grid User, if FQAN passed are not null. Otherwise a simple
-	 * GridUser instance wil be returned.
-	 * 
-	 * @return GridUserInterface
-	 */
-	GridUserInterface createGridUser(String distinguishName, FQAN[] fqans,
-		String proxyString) throws IllegalArgumentException {
+    GridUserInterface user = null;
+    try {
+      user = new VomsGridUser(defaultMapperClass, distinguishName, fqans);
+    } catch (IllegalArgumentException e) {
+      log.error(e.getMessage(), e);
+      throw e;
+    }
+    log.debug("Created new Grid User (VOMS USER) : {}", user);
+    return user;
+  }
 
-		GridUserInterface user = null;
-		try {
-			user = new VomsGridUser(defaultMapperClass, distinguishName, proxyString,
-				fqans);
-		} catch (IllegalArgumentException e) {
-		  log.error(e.getMessage(), e);
-			throw e;
-		}
-		log.debug("Created new Grid User (VOMS USER with PROXY) : {}" , user);
-		return user;
-	}
+  /**
+   * Build a VOMS Grid User, if FQAN passed are not null. Otherwise a simple GridUser instance wil
+   * be returned.
+   * 
+   * @return GridUserInterface
+   */
+  GridUserInterface createGridUser(String distinguishName, FQAN[] fqans, String proxyString)
+      throws IllegalArgumentException {
 
-	GridUserInterface decode(Map<String, Object> inputParam) {
+    GridUserInterface user = null;
+    try {
+      user = new VomsGridUser(defaultMapperClass, distinguishName, proxyString, fqans);
+    } catch (IllegalArgumentException e) {
+      log.error(e.getMessage(), e);
+      throw e;
+    }
+    log.debug("Created new Grid User (VOMS USER with PROXY) : {}", user);
+    return user;
+  }
 
-		// Member name for VomsGridUser Creation
-		String member_DN = new String("userDN");
-		String member_Fqans = new String("userFQANS");
+  GridUserInterface decode(Map<String, Object> inputParam) {
 
-		// Get DN and FQANs[]
-		String dnString = (String) inputParam.get(member_DN);
-		Object[] fqansArr = (Object[]) inputParam.get(member_Fqans);
+    // Member name for VomsGridUser Creation
+    String member_DN = new String("userDN");
+    String member_Fqans = new String("userFQANS");
 
-		// Destination Fqans array
-		FQAN[] fqans = null;
+    // Get DN and FQANs[]
+    String dnString = (String) inputParam.get(member_DN);
+    Object[] fqansArr = (Object[]) inputParam.get(member_Fqans);
 
-		if (fqansArr != null) {
-			// Define FQAN[]
-			fqans = new FQAN[fqansArr.length];
-			log.debug("fqans_vector Size: {}" , fqansArr.length);
+    // Destination FQANs array
+    FQAN[] fqans = null;
 
-			for (int i = 0; i < fqansArr.length; i++) {
+    if (fqansArr != null) {
+      // Define FQAN[]
+      fqans = new FQAN[fqansArr.length];
+      log.debug("fqans_vector Size: {}", fqansArr.length);
 
-				log.debug("FQAN[{}]: {}",i, (String) fqansArr[i]);
-				fqans[i] = new FQAN((String) fqansArr[i]);
-			}
-		}
+      for (int i = 0; i < fqansArr.length; i++) {
 
-		if (dnString != null) {
-			log.debug("DN: {}" , dnString);
-			// Creation of srm GridUser type
-			if (fqans != null && fqans.length > 0) {
-				log.debug("VomsGU with FQAN");
-				try {
-					return createGridUser(dnString, fqans);
-				} catch (IllegalArgumentException e) {
-				  log.error(e.getMessage(), e);
-				}
-			} else {
-				return createGridUser(dnString);
-			}
-		}
-		return null;
-	}
+        log.debug("FQAN[{}]: {}", i, (String) fqansArr[i]);
+        fqans[i] = new FQAN((String) fqansArr[i]);
+      }
+    }
 
-	private MapperInterface makeMapperClass(String mapperClassName)
-		throws GridUserException {
+    if (dnString != null) {
+      log.debug("DN: {}", dnString);
+      // Creation of srm GridUser type
+      if (fqans != null && fqans.length > 0) {
+        log.debug("VomsGU with FQAN");
+        try {
+          return createGridUser(dnString, fqans);
+        } catch (IllegalArgumentException e) {
+          log.error(e.getMessage(), e);
+        }
+      } else {
+        return createGridUser(dnString);
+      }
+    }
+    return null;
+  }
 
-		MapperInterface mapper = null;
-		Class mapperClass = null;
-		if (mapperClassName == null) {
-			throw new GridUserException(
-				"Cannot load Mapper Driver without a valid Mapper Driver Class Name!");
-		}
+  private MapperInterface makeMapperClass(String mapperClassName) throws GridUserException {
 
-		// Retrieve the Class of driver
-		try {
-			mapperClass = Class.forName(mapperClassName);
-		} catch (ClassNotFoundException e) {
-			throw new GridUserException(
-				"Cannot load Mapper Driver instance without a valid Mapper Driver Class Name!",
-				e);
-		}
-
-		// Check if the Class implements the right interface
-		if (!MapperInterface.class.isAssignableFrom(mapperClass)) {
-			throw new GridUserException(
-				"Cannot load Mapper Driver instance without a valid Mapper Driver Class Name!");
-		}
-		try {
-			Constructor<MapperInterface>[] constructors = (Constructor<MapperInterface>[]) mapperClass
-				.getConstructors();
-			boolean found = false;
-			for (Constructor<MapperInterface> constructor : constructors) {
-				if (constructor.getParameterTypes().length == 0) {
-					found = true;
-					break;
-				}
-			}
-			if (found) {
-				mapper = (MapperInterface) mapperClass.newInstance();
-			} else {
-				try {
-					Method method = ((Class<MapperInterface>) mapperClass).getMethod(
-						"getInstance", null);
-					if (Modifier.isStatic(method.getModifiers())) {
-						try {
-							mapper = (MapperInterface) method.invoke(this, null);
-						} catch (IllegalArgumentException e) {
-						  log.error(e.getMessage(), e);
-							throw new GridUserException(
-								"Cannot instantiate Mapper Driver using getInstance for Mapper Driver named :'"
-									+ mapperClassName + "'");
-						} catch (InvocationTargetException e) {
-						  log.error(e.getMessage(), e);
-							throw new GridUserException(
-								"Cannot instantiate Mapper Driver using getInstance for Mapper Driver named :'"
-									+ mapperClassName + "'");
-						}
-					} else {
-						log
-							.error("Unable to instantiate the class using eiter no args constructor niether getInstance method. getInstance exists but is not static");
-						throw new GridUserException(
-							"Cannot instantiate Mapper Driver using new or getInstance for Mapper Driver named :'"
-								+ mapperClassName + "'");
-					}
-				} catch (SecurityException e) {
-				  log.error(e.getMessage(), e);
-					throw new GridUserException(
-						"Cannot instantiate Mapper Driver using getInstance for Mapper Driver named :'"
-							+ mapperClassName + "'");
-				} catch (NoSuchMethodException e) {
-				  log.error(e.getMessage(), e);
-					throw new GridUserException(
-						"Cannot instantiate Mapper Driver using new or getInstance for Mapper Driver named :'"
-							+ mapperClassName + "'");
-				}
-			}
-
-		} catch (IllegalAccessException e) {
-		  log.error(e.getMessage(), e);
-			throw new GridUserException(
-				"Cannot create a new Instance of the Mapper Driver named :'"
-					+ mapperClassName + "'");
-		} catch (InstantiationException e) {
-
-		  log.error(e.getMessage(), e);
-			throw new GridUserException(
-				"Cannot create a new Instance of the Mapper Driver named :'"
-					+ mapperClassName + "'");
-		}
-		return mapper;
-	}
+    return new StormLcmapsJNAMapper();
+  }
 }

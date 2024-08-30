@@ -37,7 +37,7 @@ public class XMLRPCExecutor {
    * @return
    */
 
-  public Map execute(OperationType type, Map inputParam) throws StoRMXmlRpcException {
+  public Map<String, Object> execute(OperationType type, Map<String, Object> inputParam) throws StoRMXmlRpcException {
 
     long startTime = System.currentTimeMillis();
     long duration = System.nanoTime();
@@ -66,7 +66,7 @@ public class XMLRPCExecutor {
       throw new StoRMXmlRpcException(
           "Unable to process the request. CommandException: " + e.getMessage());
     }
-    Map outputParam = converter.convertFromOutputData(outputData);
+    Map<String, Object> outputParam = converter.convertFromOutputData(outputData);
     duration = System.nanoTime() - duration;
 
     logExecution(convertOperationType(type), DataHelper.getRequestor(inputData), startTime,

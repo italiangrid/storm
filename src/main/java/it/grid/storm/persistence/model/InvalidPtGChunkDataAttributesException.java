@@ -17,12 +17,11 @@ import it.grid.storm.srm.types.TReturnStatus;
 import it.grid.storm.srm.types.TTURL;
 
 /**
- * This class represents an exceptin thrown when the attributes supplied to the
- * constructor of PtGChunkData are invalid, that is if any of the following is
- * _null_: requestToken, fromSURL, storageSystemInfo, lifeTime, fileStorageType,
- * spaceToken, numOfLevels, TURLPrefix transferProtocols, fileSize, status,
- * estimatedWaitTimeOnQueue, estimatedProcessingTime, transferURL,
- * remainingPinTime.
+ * This class represents an exception thrown when the attributes supplied to the constructor of
+ * PtGChunkData are invalid, that is if any of the following is _null_: requestToken, fromSURL,
+ * storageSystemInfo, lifeTime, fileStorageType, spaceToken, numOfLevels, TURLPrefix
+ * transferProtocols, fileSize, status, estimatedWaitTimeOnQueue, estimatedProcessingTime,
+ * transferURL, remainingPinTime.
  * 
  * @author EGRID - ICTP Trieste
  * @date March 23rd, 2005
@@ -30,83 +29,82 @@ import it.grid.storm.srm.types.TTURL;
  */
 public class InvalidPtGChunkDataAttributesException extends Exception {
 
-	// booleans that indicate whether the corresponding variable is null
-	private boolean nullRequestToken;
-	private boolean nullFromSURL;
-	private boolean nullStorageSystemInfo;
-	private boolean nullLifeTime;
-	private boolean nullFileStorageType;
-	private boolean nullSpaceToken;
-	private boolean nullDirOption;
-	private boolean nullTransferProtocols;
-	private boolean nullFileSize;
-	private boolean nullStatus;
-	private boolean nullEstimatedWaitTimeOnQueue;
-	private boolean nullEstimatedProcessingTime;
-	private boolean nullTransferURL;
-	private boolean nullRemainingPinTime;
+  private static final long serialVersionUID = 1L;
 
-	/**
-	 * Constructor that requires the attributes that caused the exception to be
-	 * thrown.
-	 */
-	public InvalidPtGChunkDataAttributesException(TRequestToken requestToken,
-		TSURL fromSURL, TStorageSystemInfo storageSystemInfo,
-		TLifeTimeInSeconds lifeTime, TFileStorageType fileStorageType,
-		TSpaceToken spaceToken, TDirOption dirOption, TURLPrefix transferProtocols,
-		TSizeInBytes fileSize, TReturnStatus status,
-		TLifeTimeInSeconds estimatedWaitTimeOnQueue,
-		TLifeTimeInSeconds estimatedProcessingTime, TTURL transferURL,
-		TLifeTimeInSeconds remainingPinTime) {
+  // booleans that indicate whether the corresponding variable is null
+  private boolean nullRequestToken;
+  private boolean nullFromSURL;
+  private boolean nullStorageSystemInfo;
+  private boolean nullLifeTime;
+  private boolean nullFileStorageType;
+  private boolean nullSpaceToken;
+  private boolean nullDirOption;
+  private boolean nullTransferProtocols;
+  private boolean nullFileSize;
+  private boolean nullStatus;
+  private boolean nullEstimatedWaitTimeOnQueue;
+  private boolean nullEstimatedProcessingTime;
+  private boolean nullTransferURL;
+  private boolean nullRemainingPinTime;
 
-		nullRequestToken = requestToken == null;
-		nullFromSURL = fromSURL == null;
-		nullStorageSystemInfo = storageSystemInfo == null;
-		nullLifeTime = lifeTime == null;
-		nullFileStorageType = fileStorageType == null;
-		nullSpaceToken = spaceToken == null;
-		nullDirOption = dirOption == null;
-		nullTransferProtocols = transferProtocols == null;
-		nullFileSize = fileSize == null;
-		nullStatus = status == null;
-		nullEstimatedWaitTimeOnQueue = estimatedWaitTimeOnQueue == null;
-		nullEstimatedProcessingTime = estimatedProcessingTime == null;
-		nullTransferURL = transferURL == null;
-		nullRemainingPinTime = remainingPinTime == null;
-	}
+  /**
+   * Constructor that requires the attributes that caused the exception to be thrown.
+   */
+  public InvalidPtGChunkDataAttributesException(TRequestToken requestToken, TSURL fromSURL,
+      TStorageSystemInfo storageSystemInfo, TLifeTimeInSeconds lifeTime,
+      TFileStorageType fileStorageType, TSpaceToken spaceToken, TDirOption dirOption,
+      TURLPrefix transferProtocols, TSizeInBytes fileSize, TReturnStatus status,
+      TLifeTimeInSeconds estimatedWaitTimeOnQueue, TLifeTimeInSeconds estimatedProcessingTime,
+      TTURL transferURL, TLifeTimeInSeconds remainingPinTime) {
 
-	public String toString() {
+    nullRequestToken = requestToken == null;
+    nullFromSURL = fromSURL == null;
+    nullStorageSystemInfo = storageSystemInfo == null;
+    nullLifeTime = lifeTime == null;
+    nullFileStorageType = fileStorageType == null;
+    nullSpaceToken = spaceToken == null;
+    nullDirOption = dirOption == null;
+    nullTransferProtocols = transferProtocols == null;
+    nullFileSize = fileSize == null;
+    nullStatus = status == null;
+    nullEstimatedWaitTimeOnQueue = estimatedWaitTimeOnQueue == null;
+    nullEstimatedProcessingTime = estimatedProcessingTime == null;
+    nullTransferURL = transferURL == null;
+    nullRemainingPinTime = remainingPinTime == null;
+  }
 
-		StringBuilder sb = new StringBuilder();
-		sb.append("Invalid PtGChunkData attributes: null-requestToken=");
-		sb.append(nullRequestToken);
-		sb.append("; nul-fromSURL=");
-		sb.append(nullFromSURL);
-		sb.append("; null-storageSystemInfo=");
-		sb.append(nullStorageSystemInfo);
-		sb.append("; null-lifeTime=");
-		sb.append(nullLifeTime);
-		sb.append("; null-filestorageType=");
-		sb.append(nullFileStorageType);
-		sb.append("; null-spaceToken=");
-		sb.append(nullSpaceToken);
-		sb.append("; null-dirOption=");
-		sb.append(nullDirOption);
-		sb.append("; null-transferProtocols=");
-		sb.append(nullTransferProtocols);
-		sb.append("; null-fileSize=");
-		sb.append(nullFileSize);
-		sb.append("; null-status=");
-		sb.append(nullStatus);
-		sb.append("; null-estimatedWaitTimeOnQueue=");
-		sb.append(nullEstimatedWaitTimeOnQueue);
-		sb.append("; null-estimatedProcessingTime=");
-		sb.append(nullEstimatedProcessingTime);
-		sb.append("; null-transferURL=");
-		sb.append(nullTransferURL);
-		sb.append("; null-remainingPinTime=");
-		sb.append(nullRemainingPinTime);
-		sb.append(".");
-		return sb.toString();
-	}
+  public String toString() {
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("Invalid PtGChunkData attributes: null-requestToken=");
+    sb.append(nullRequestToken);
+    sb.append("; nul-fromSURL=");
+    sb.append(nullFromSURL);
+    sb.append("; null-storageSystemInfo=");
+    sb.append(nullStorageSystemInfo);
+    sb.append("; null-lifeTime=");
+    sb.append(nullLifeTime);
+    sb.append("; null-filestorageType=");
+    sb.append(nullFileStorageType);
+    sb.append("; null-spaceToken=");
+    sb.append(nullSpaceToken);
+    sb.append("; null-dirOption=");
+    sb.append(nullDirOption);
+    sb.append("; null-transferProtocols=");
+    sb.append(nullTransferProtocols);
+    sb.append("; null-fileSize=");
+    sb.append(nullFileSize);
+    sb.append("; null-status=");
+    sb.append(nullStatus);
+    sb.append("; null-estimatedWaitTimeOnQueue=");
+    sb.append(nullEstimatedWaitTimeOnQueue);
+    sb.append("; null-estimatedProcessingTime=");
+    sb.append(nullEstimatedProcessingTime);
+    sb.append("; null-transferURL=");
+    sb.append(nullTransferURL);
+    sb.append("; null-remainingPinTime=");
+    sb.append(nullRemainingPinTime);
+    sb.append(".");
+    return sb.toString();
+  }
 }

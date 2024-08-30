@@ -46,14 +46,15 @@
     <xercesImplVersion>2.12.2</xercesImplVersion>
 
     <!-- maven plugins -->
-    <plugin.assembly.version>3.3.0</plugin.assembly.version>
-    <plugin.compiler.version>3.6.1</plugin.compiler.version>
-    <plugin.enforcer.version>3.0.0</plugin.enforcer.version>
-    <plugin.license.version>1.9.0</plugin.license.version>
-    <plugin.surefire.version>2.20</plugin.surefire.version>
+    <plugin.assembly.version>3.7.1</plugin.assembly.version>
+    <plugin.compiler.version>3.13.0</plugin.compiler.version>
+    <plugin.enforcer.version>3.5.0</plugin.enforcer.version>
+    <plugin.license.version>1.10.b1</plugin.license.version>
+    <plugin.surefire.version>3.5.0</plugin.surefire.version>
+    <plugin.jar.version>3.4.2</plugin.jar.version>
 
 	<!-- java -->
-    <java.version>11</java.version>
+    <java.version>17</java.version>
 
 	<!-- storm-native-libs -->
     <nativeInterfaceVersion>2.0.0</nativeInterfaceVersion>
@@ -82,7 +83,7 @@
             <configuration>
               <rules>
                 <requireMavenVersion>
-                  <version>3.1.1</version>
+                  <version>3.6.3</version>
                 </requireMavenVersion>
               </rules>
             </configuration>
@@ -96,8 +97,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${plugin.compiler.version}</version>
         <configuration>
-          <source>11</source>
-          <target>11</target>
+          <source>17</source>
+          <target>17</target>
       </configuration>
       </plugin>
 
@@ -177,7 +178,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.0.2</version>
+        <version>${plugin.jar.version}</version>
         <configuration>
           <archive>
             <manifest>

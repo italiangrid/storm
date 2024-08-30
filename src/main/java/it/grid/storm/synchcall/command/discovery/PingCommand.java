@@ -4,6 +4,17 @@
  */
 package it.grid.storm.synchcall.command.discovery;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.Constants;
 import it.grid.storm.catalogs.TapeRecallCatalog;
 import it.grid.storm.config.StormConfiguration;
@@ -19,20 +30,9 @@ import it.grid.storm.synchcall.data.OutputData;
 import it.grid.storm.synchcall.data.discovery.PingInputData;
 import it.grid.storm.synchcall.data.discovery.PingOutputData;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Properties;
-
 public class PingCommand extends DiscoveryCommand implements Command {
 
-  public static final Logger log = LoggerFactory.getLogger(PingCommand.class);
+  private static final Logger log = LoggerFactory.getLogger(PingCommand.class);
   private static final String KEY_ELEMENT_KEY = "key=";
 
   public OutputData execute(InputData data) {
@@ -113,8 +113,8 @@ public class PingCommand extends DiscoveryCommand implements Command {
       }
     }
 
-    properties.put(Constants.BE_VERSION.getKey(), Constants.BE_VERSION.getValue());
-    properties.put(Constants.BE_OS_DISTRIBUTION.getKey(), Constants.BE_OS_DISTRIBUTION.getValue());
+    properties.put(Constants.BE_VERSION.left, Constants.BE_VERSION.right);
+    properties.put(Constants.BE_OS_DISTRIBUTION.left, Constants.BE_OS_DISTRIBUTION.right);
     return properties;
   }
 
@@ -138,14 +138,14 @@ public class PingCommand extends DiscoveryCommand implements Command {
         break;
       case BE_OS_PLATFORM:
         try {
-          arrayResult.addTExtraInfo(new TExtraInfo(key, Constants.BE_OS_PLATFORM.getValue()));
+          arrayResult.addTExtraInfo(new TExtraInfo(key, Constants.BE_OS_PLATFORM.right));
         } catch (InvalidTExtraInfoAttributeException e) {
           log.error(e.getMessage(), e);
         }
         break;
       case BE_OS_KERNEL_RELEASE:
         try {
-          arrayResult.addTExtraInfo(new TExtraInfo(key, Constants.BE_OS_KERNEL_RELEASE.getValue()));
+          arrayResult.addTExtraInfo(new TExtraInfo(key, Constants.BE_OS_KERNEL_RELEASE.right));
         } catch (InvalidTExtraInfoAttributeException e) {
           log.error(e.getMessage(), e);
         }
@@ -291,16 +291,16 @@ public class PingCommand extends DiscoveryCommand implements Command {
    */
   private enum SpecialKey {
 
-    ALL("all", "return all the pair <key,value> defined in properties"), BE_OS_PLATFORM(
-        Constants.BE_OS_PLATFORM.getKey(),
-        "returns the operating system platform"), BE_OS_KERNEL_RELEASE(
-            Constants.BE_OS_KERNEL_RELEASE.getKey(),
-            "returns the operating system kernel release"), TEST_TAKEOVER("take-over",
-                "testing the take-over method"), TEST_POST_NEW_TASK("new-task",
-                    "testing the take-over method"), TEST_PUT_NEW_STATUS("new-status",
-                        "testing the take-over method"), TEST_PUT_RETRY_VALUE("retry-value",
-                            "testing the take-over method"), UNKNOWN("unknown",
-                                "Unable to manage the key");
+    /* @formatter:off */
+    ALL("all", "return all the pair <key,value> defined in properties"),
+    BE_OS_PLATFORM(Constants.BE_OS_PLATFORM.left,"returns the operating system platform"),
+    BE_OS_KERNEL_RELEASE(Constants.BE_OS_KERNEL_RELEASE.left, "returns the operating system kernel release"),
+    TEST_TAKEOVER("take-over", "testing the take-over method"),
+    TEST_POST_NEW_TASK("new-task", "testing the take-over method"),
+    TEST_PUT_NEW_STATUS("new-status", "testing the take-over method"),
+    TEST_PUT_RETRY_VALUE("retry-value", "testing the take-over method"),
+    UNKNOWN("unknown", "Unable to manage the key");
+    /* @formatter:on */
 
     private final String operationName;
     private final String operationDescription;

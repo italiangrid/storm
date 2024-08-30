@@ -32,9 +32,6 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.QueryParam;
 import it.grid.storm.authz.remote.Constants;
 
-/**
- * @author Michele Dibenedetto
- */
 @Path("/" + Constants.RESOURCE + "/" + Constants.VERSION + "/{filePath}")
 public class AuthorizationResource {
 

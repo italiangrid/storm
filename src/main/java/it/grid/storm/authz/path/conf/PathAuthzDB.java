@@ -17,9 +17,6 @@ import it.grid.storm.common.types.StFN;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * @author zappi
- */
 public class PathAuthzDB {
 
   public static final String MOCK_ID = "mock-PathAuthzDB";
@@ -39,13 +36,6 @@ public class PathAuthzDB {
     this.authzDB.addAll(aces);
   }
 
-  public PathAuthzDB(String pathAuthzDBID, List<PathACE> aces) {
-
-    this.pathAuthzDBID = pathAuthzDBID;
-    this.evaluationAlg = DEFAULT_ALGORITHM;
-    this.authzDB.addAll(aces);
-  }
-
   /**
    * Empty constructor. Use it only if there is not
    */
@@ -54,11 +44,6 @@ public class PathAuthzDB {
     this.pathAuthzDBID = MOCK_ID;
     this.evaluationAlg = DEFAULT_ALGORITHM;
     this.authzDB.add(PathACE.PERMIT_ALL);
-  }
-
-  public void addPathACE(PathACE pathAce) {
-
-    authzDB.add(pathAce);
   }
 
   public List<PathACE> getACL() {

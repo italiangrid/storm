@@ -268,31 +268,4 @@ public class AdvancedPicker {
     return true;
   }
 
-  /**
-   * Method used to remove chunks of the request identified by the supplied TRequestToken, with
-   * surls given by the collection c. Chunks in the DB get their status changed and so will not be
-   * considered for processing.
-   * 
-   * If a null TRequestToken or Collection is supplied, or some other abort request has been issued,
-   * then FALSE is returned; otherwise TRUE is returned.
-   */
-  synchronized public boolean abortChunksOfRequest(TRequestToken rt, Collection<TSURL> c) {
-
-    if (abort) {
-
-      return false;
-    }
-
-    if ((rt == null) || (c == null)) {
-
-      return false;
-    }
-
-    abortToken = rt;
-    abortSURLS = c;
-    abort = true;
-
-    return true;
-  }
-
 }

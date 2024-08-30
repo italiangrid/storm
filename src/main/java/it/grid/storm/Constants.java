@@ -16,17 +16,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
+import com.mysql.cj.conf.ConnectionUrlParser.Pair;
 
 public class Constants {
 
   private static final Logger log = LoggerFactory.getLogger(Constants.class);
 
-  public static final Entry BE_VERSION;
-  public static final Entry NAMESPACE_VERSION;
-  public static final Entry BE_OS_DISTRIBUTION;
-  public static final Entry BE_OS_PLATFORM;
-  public static final Entry BE_OS_KERNEL_RELEASE;
+  public static final Pair<String, String> BE_VERSION;
+  public static final Pair<String, String> BE_OS_DISTRIBUTION;
+  public static final Pair<String, String> BE_OS_PLATFORM;
+  public static final Pair<String, String> BE_OS_KERNEL_RELEASE;
 
+  
+  private static final String BE_VERSION_KEY = "BE-Version";
+  private static final String BE_OS_DISTRIBUTION_KEY = "BE-OS-Platform";
   private static final String BE_OS_PLATFORM_KEY = "BE-OS-Platform";
   private static final String BE_OS_KERNEL_RELEASE_KEY = "BE-OS-Kernel-Release";
 
@@ -35,12 +38,11 @@ public class Constants {
   private Constants() {}
 
   static {
-    BE_VERSION = new Entry("BE-Version", Constants.class.getPackage().getImplementationVersion());
-    NAMESPACE_VERSION = new Entry("Namespace-version", "1.5.0");
-    BE_OS_DISTRIBUTION = new Entry("BE-OS-Distribution", getDistribution());
+    BE_VERSION = new Pair<>(BE_VERSION_KEY, Constants.class.getPackage().getImplementationVersion());
+    BE_OS_DISTRIBUTION = new Pair<>(BE_OS_DISTRIBUTION_KEY, getDistribution());
     Map<String, String> map = getPlatformKernel();
-    BE_OS_PLATFORM = new Entry(BE_OS_PLATFORM_KEY, map.get(BE_OS_PLATFORM_KEY));
-    BE_OS_KERNEL_RELEASE = new Entry(BE_OS_KERNEL_RELEASE_KEY, map.get(BE_OS_KERNEL_RELEASE_KEY));
+    BE_OS_PLATFORM = new Pair<>(BE_OS_PLATFORM_KEY, map.get(BE_OS_PLATFORM_KEY));
+    BE_OS_KERNEL_RELEASE = new Pair<>(BE_OS_KERNEL_RELEASE_KEY, map.get(BE_OS_KERNEL_RELEASE_KEY));
   }
 
   /**
@@ -114,25 +116,4 @@ public class Constants {
     return map;
   }
 
-  public static class Entry {
-
-    private final String key;
-    private final String value;
-
-    private Entry(String key, String value) {
-
-      this.key = key;
-      this.value = value;
-    }
-
-    public String getKey() {
-
-      return key;
-    }
-
-    public String getValue() {
-
-      return value;
-    }
-  }
 }

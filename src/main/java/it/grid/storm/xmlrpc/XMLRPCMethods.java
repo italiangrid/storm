@@ -14,166 +14,116 @@
 
 package it.grid.storm.xmlrpc;
 
-import it.grid.storm.common.OperationType;
-import java.util.HashMap;
 import java.util.Map;
+
+import it.grid.storm.common.OperationType;
 
 public class XMLRPCMethods {
 
-	private final XMLRPCExecutor executor = new XMLRPCExecutor();
+  private final XMLRPCExecutor executor = new XMLRPCExecutor();
 
-	public XMLRPCMethods() {
+  public XMLRPCMethods() {
 
-	};
+  };
 
-	public Map ping(Map inputParam) throws StoRMXmlRpcException {
+  public Map<String, Object> ping(Map<String, Object> inputParam) throws StoRMXmlRpcException {
 
-		return executor.execute(OperationType.PNG, inputParam);
-	}
+    return executor.execute(OperationType.PNG, inputParam);
+  }
 
-	public Map putDone(Map inputParam) throws StoRMXmlRpcException {
+  public Map<String, Object> putDone(Map<String, Object> inputParam) throws StoRMXmlRpcException {
 
-		return executor.execute(OperationType.PD, inputParam);
-	}
+    return executor.execute(OperationType.PD, inputParam);
+  }
 
-	public Map releaseFiles(Map inputParam) throws StoRMXmlRpcException {
+  public Map<String, Object> releaseFiles(Map<String, Object> inputParam)
+      throws StoRMXmlRpcException {
 
-		return executor.execute(OperationType.RF, inputParam);
-	}
+    return executor.execute(OperationType.RF, inputParam);
+  }
 
-	public Map extendFileLifeTime(Map inputParam) throws StoRMXmlRpcException {
+  public Map<String, Object> extendFileLifeTime(Map<String, Object> inputParam)
+      throws StoRMXmlRpcException {
 
-		return executor.execute(OperationType.EFL, inputParam);
-	}
+    return executor.execute(OperationType.EFL, inputParam);
+  }
 
-	public Map abortRequest(Map inputParam) throws StoRMXmlRpcException {
+  public Map<String, Object> abortRequest(Map<String, Object> inputParam)
+      throws StoRMXmlRpcException {
 
-		return executor.execute(OperationType.AR, inputParam);
-	}
+    return executor.execute(OperationType.AR, inputParam);
+  }
 
-	public Map abortFiles(HashMap inputParam) throws StoRMXmlRpcException {
+  public Map<String, Object> abortFiles(Map<String, Object> inputParam)
+      throws StoRMXmlRpcException {
 
-		return executor.execute(OperationType.AF, inputParam);
-	}
+    return executor.execute(OperationType.AF, inputParam);
+  }
 
-	public Map reserveSpace(Map inputParam) throws StoRMXmlRpcException {
+  public Map<String, Object> reserveSpace(Map<String, Object> inputParam)
+      throws StoRMXmlRpcException {
 
-		return executor.execute(OperationType.RESSP, inputParam);
-	}
+    return executor.execute(OperationType.RESSP, inputParam);
+  }
 
-	/**
-	 * GetSpaceMetaData
-	 */
-	public Map getSpaceMetaData(HashMap inputParam) throws StoRMXmlRpcException {
+  public Map<String, Object> getSpaceMetaData(Map<String, Object> inputParam)
+      throws StoRMXmlRpcException {
 
-		return executor.execute(OperationType.GSM, inputParam);
-	}
+    return executor.execute(OperationType.GSM, inputParam);
+  }
 
-	/**
-	 * GetSpaceTokens
-	 * 
-	 * @param inputParam
-	 * @return
-	 */
-	public Map getSpaceTokens(Map inputParam) throws StoRMXmlRpcException {
+  public Map<String, Object> getSpaceTokens(Map<String, Object> inputParam) throws StoRMXmlRpcException {
 
-		return executor.execute(OperationType.GST, inputParam);
-	}
+    return executor.execute(OperationType.GST, inputParam);
+  }
 
-	/**
-	 * ReleaseSpace
-	 */
+  public Map<String, Object> ReleaseSpace(Map<String, Object> inputParam) throws StoRMXmlRpcException {
 
-	public Map ReleaseSpace(Map inputParam) throws StoRMXmlRpcException {
+    return executor.execute(OperationType.RELSP, inputParam);
+  }
 
-		return executor.execute(OperationType.RELSP, inputParam);
-	}
+  public Map<String, Object> ls(Map<String, Object> inputParam) throws StoRMXmlRpcException {
 
-	/**
-	 * SrmLs request. This method catch an SrmLs request passed by StoRM FrontEnd
-	 * trough xmlrpc communication. The Hastable is the default Java type used to
-	 * represent structure passed by xmlrpc.
-	 * 
-	 * @param Hastable
-	 *          output parameter structure returned.
-	 * @param inputParameter
-	 *          input parameter structure received from xmlrpc call.
-	 */
+    return executor.execute(OperationType.LS, inputParam);
+  }
 
-	public Map ls(Map inputParam) throws StoRMXmlRpcException {
+  public Map<String, Object> mkdir(Map<String, Object> inputParam) throws StoRMXmlRpcException {
 
-		return executor.execute(OperationType.LS, inputParam);
-	}
+    return executor.execute(OperationType.MKD, inputParam);
+  }
 
-	/**
-	 * SrmMkdir functionality.
-	 */
+  public Map<String, Object> rmdir(Map<String, Object> inputParam) throws StoRMXmlRpcException {
 
-	public Map mkdir(Map inputParam) throws StoRMXmlRpcException {
+    return executor.execute(OperationType.RMD, inputParam);
+  }
 
-		return executor.execute(OperationType.MKD, inputParam);
-	}
+  public Map<String, Object> rm(Map<String, Object> inputParam) throws StoRMXmlRpcException {
 
-	/**
-	 * SrmRmdir functionality.
-	 * 
-	 * @param inputParam
-	 * @return
-	 */
-	public Map rmdir(Map inputParam) throws StoRMXmlRpcException {
+    return executor.execute(OperationType.RM, inputParam);
+  }
 
-		return executor.execute(OperationType.RMD, inputParam);
-	}
+  public Map<String, Object> mv(Map<String, Object> inputParam) throws StoRMXmlRpcException {
 
-	/**
-	 * SrmRm functionality.
-	 * 
-	 * @param inputParam
-	 * @return
-	 */
-	public Map rm(Map inputParam) throws StoRMXmlRpcException {
+    return executor.execute(OperationType.MV, inputParam);
+  }
 
-		return executor.execute(OperationType.RM, inputParam);
-	}
+  public Map<String, Object> prepareToPut(Map<String, Object> inputParam) throws StoRMXmlRpcException {
 
-	/**
-	 * SrmMv functionality.
-	 */
+    return executor.execute(OperationType.PTP, inputParam);
+  }
 
-	public Map mv(Map inputParam) throws StoRMXmlRpcException {
+  public Map<String, Object> prepareToPutStatus(Map<String, Object> inputParam) throws StoRMXmlRpcException {
 
-		return executor.execute(OperationType.MV, inputParam);
-	}
+    return executor.execute(OperationType.SPTP, inputParam);
+  }
 
-	/**
-	 * SrmPrepareToPut functionality.
-	 */
-	public Map prepareToPut(Map inputParam) throws StoRMXmlRpcException {
+  public Map<String, Object> prepareToGet(Map<String, Object> inputParam) throws StoRMXmlRpcException {
 
-		return executor.execute(OperationType.PTP, inputParam);
-	}
+    return executor.execute(OperationType.PTG, inputParam);
+  }
 
-	/**
-	 * SrmPrepareToPutStatus functionality.
-	 */
-	public Map prepareToPutStatus(Map inputParam) throws StoRMXmlRpcException {
+  public Map<String, Object> prepareToGetStatus(Map<String, Object> inputParam) throws StoRMXmlRpcException {
 
-		return executor.execute(OperationType.SPTP, inputParam);
-	}
-
-	/**
-	 * SrmPrepareToGet functionality.
-	 */
-	public Map prepareToGet(Map inputParam) throws StoRMXmlRpcException {
-
-		return executor.execute(OperationType.PTG, inputParam);
-	}
-
-	/**
-	 * SrmPrepareToGetStatus functionality.
-	 */
-	public Map prepareToGetStatus(Map inputParam) throws StoRMXmlRpcException {
-
-		return executor.execute(OperationType.SPTG, inputParam);
-	}
+    return executor.execute(OperationType.SPTG, inputParam);
+  }
 }
