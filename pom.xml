@@ -57,7 +57,7 @@
     <java.version>17</java.version>
 
 	<!-- storm-native-libs -->
-    <nativeInterfaceVersion>2.0.0</nativeInterfaceVersion>
+    <nativeInterfaceVersion>2.1.0</nativeInterfaceVersion>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 

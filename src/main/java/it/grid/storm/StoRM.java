@@ -461,6 +461,7 @@ public class StoRM {
 
     log.debug("Starting Expired Agent.");
     expiredAgent = new RequestFinalizerService(config);
+    expiredAgent.start();
     isExpiredAgentRunning = true;
     log.debug("Expired Agent started.");
   }

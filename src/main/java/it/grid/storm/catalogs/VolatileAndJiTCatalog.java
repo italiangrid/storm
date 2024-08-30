@@ -127,31 +127,6 @@ public class VolatileAndJiTCatalog {
   }
 
   /**
-   * Method used to expire _all_ related entries in the JiT catalogue, that were setup during a PtG
-   * operation. The method is intended to be used by code handling srmAbort command. Notice that the
-   * Traverse on the parents is NOT removed! This is to accomodate for the use case of a user that
-   * has run many PtG on different SURLs but all contained in the same directory tree! In practice
-   * this method removes the R permission. If any entry does not exist, then nothing happens and a
-   * warning gets written in the logs; otherwise entries get their start time set to now, and the
-   * lifetime set to zero; in case more than one matching entry is found, a message gets written to
-   * the logs, and the updating continues anyway as explained. At this point, when the garbage
-   * collector wakes up the entries get cleanly handled (physical ACL is removed, catalog entry
-   * removed, etc.); or an earlier cleaning can be forced by invoking directly the purge mehod. The
-   * method returns FALSE in case an entry was not found or the supplied parameters were null, and
-   * TRUE otherwise. Yet keep in mind that it says nothing of whether the DB operation was
-   * successful or not.
-   */
-  synchronized public boolean expireGetJiTs(PFN pfn, LocalUser localUser) {
-
-    if (pfn != null && localUser != null) {
-      return expireJiT(pfn, localUser, FilesystemPermission.Read);
-    }
-    log.error("VolatileAndJiT CATALOG: programming bug! expireGetJiTs invoked "
-        + "on null attributes; pfn={} localUser={}", pfn, localUser);
-    return false;
-  }
-
-  /**
    * Method used to expire an entry in the JiT catalogue. The method is intended to be used by code
    * handling srmAbort command. If the entry does not exist, then nothing happens and a warning gets
    * written in the logs; otherwise the entry gets its start time set to now, and its lifetime set
