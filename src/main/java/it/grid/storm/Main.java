@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
+import com.sun.jna.NativeLibrary;
+
 import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
@@ -24,6 +26,8 @@ import it.grid.storm.startup.BootstrapException;
 public class Main {
 
   private static final Logger log = LoggerFactory.getLogger(Main.class);
+
+  public static final String JNA_LIBRARY_PATH = "jna.library.path";
 
   public static final String DEFAULT_CONFIG_DIR = "/etc/storm/backend-server";
   public static final String DEFAULT_CONFIG_FILE = DEFAULT_CONFIG_DIR + "/storm.properties";
@@ -36,9 +40,12 @@ public class Main {
 
   public static void main(String[] args) {
 
+    log.info("Starting StoRM Backend service ...");
+    NativeLibrary.addSearchPath("storm_lcmaps", "/usr/lib64");
+    log.info("JNA library path in use: {}", System.getProperty(JNA_LIBRARY_PATH));
+
     log.info("Configure logging from {} ...", DEFAULT_LOGGING_FILE);
     Bootstrap.configureLogging(DEFAULT_LOGGING_FILE);
-
 
     log.info("Load configuration from {} ...", DEFAULT_CONFIG_FILE);
     try {
