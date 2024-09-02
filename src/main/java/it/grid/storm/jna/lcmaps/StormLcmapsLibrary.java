@@ -10,7 +10,7 @@ import com.sun.jna.Native;
 
 public interface StormLcmapsLibrary extends Library {
 
-  public static final java.lang.String JNA_LIBRARY_NAME = "storm_lcmaps";
+  public static final String JNA_LIBRARY_NAME = "storm_lcmaps";
   public static final StormLcmapsLibrary INSTANCE = (StormLcmapsLibrary) Native
     .load(StormLcmapsLibrary.JNA_LIBRARY_NAME, StormLcmapsLibrary.class);
 
