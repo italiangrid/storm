@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 
 import org.slf4j.Logger;
 
+import it.grid.storm.jna.lcmaps.MapperInterface;
+
 public class SimpleUserMapper implements MapperInterface {
 
 	private static final Logger log = GridUserManager.log;

@@ -18,6 +18,8 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 
+import it.grid.storm.jna.lcmaps.MapperInterface;
+
 public class GridUserFactory {
 
   private static final Logger log = GridUserManager.log;
@@ -154,6 +156,6 @@ public class GridUserFactory {
 
   private MapperInterface makeMapperClass(String mapperClassName) throws GridUserException {
 
-    return new StormLcmapsJNAMapper();
+    return new LcmapsJNAMapper();
   }
 }

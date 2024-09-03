@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
 import it.grid.storm.common.types.VO;
+import it.grid.storm.jna.lcmaps.MapperInterface;
 
 /**
  * Encapsulates user Grid credentials access, and maps those to a local user

@@ -7,6 +7,7 @@ package it.grid.storm.griduser;
 import it.grid.storm.jna.lcmaps.LcmapsAccountInterface;
 import it.grid.storm.jna.lcmaps.LcmapsInterface;
 import it.grid.storm.jna.lcmaps.LcmapsPoolindexInterface;
+import it.grid.storm.jna.lcmaps.MapperInterface;
 import it.grid.storm.jna.lcmaps.lcmaps_account_info_t;
 
 import org.apache.commons.lang.ArrayUtils;

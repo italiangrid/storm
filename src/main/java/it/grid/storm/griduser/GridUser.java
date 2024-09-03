@@ -16,6 +16,7 @@
 package it.grid.storm.griduser;
 
 import it.grid.storm.common.types.*;
+import it.grid.storm.jna.lcmaps.MapperInterface;
 
 class GridUser extends AbstractGridUser {
 
