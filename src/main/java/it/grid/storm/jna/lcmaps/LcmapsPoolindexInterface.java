@@ -9,7 +9,7 @@ import com.sun.jna.Native;
 
 public interface LcmapsPoolindexInterface extends Library {
 
-  public static final String JNA_LIBRARY_NAME = "lcmaps_return_poolindex_without_gsi";
+  public static final String JNA_LIBRARY_NAME = "/usr/lib64/liblcmaps_return_poolindex_without_gsi.so";
   public static final LcmapsPoolindexInterface INSTANCE =
       (LcmapsPoolindexInterface) Native.load(JNA_LIBRARY_NAME, LcmapsPoolindexInterface.class);
 
