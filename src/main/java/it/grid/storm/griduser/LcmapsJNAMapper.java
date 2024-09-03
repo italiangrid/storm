@@ -8,7 +8,7 @@ import it.grid.storm.jna.lcmaps.LcmapsAccountInterface;
 import it.grid.storm.jna.lcmaps.LcmapsInterface;
 import it.grid.storm.jna.lcmaps.LcmapsPoolindexInterface;
 import it.grid.storm.jna.lcmaps.MapperInterface;
-import it.grid.storm.jna.lcmaps.lcmaps_account_info_t;
+import it.grid.storm.jna.lcmaps.LcmapsAccountInfoT;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
@@ -21,7 +21,7 @@ public class LcmapsJNAMapper implements MapperInterface {
 
   private static final Logger log = LoggerFactory.getLogger(LcmapsJNAMapper.class);
 
-  private lcmaps_account_info_t account = new lcmaps_account_info_t();
+  private LcmapsAccountInfoT account = new LcmapsAccountInfoT();
 
   private final String LCMAPS_DEFAULT_LOG_FILE = "/var/log/lcmaps.log";
 
@@ -96,20 +96,20 @@ public class LcmapsJNAMapper implements MapperInterface {
         gids = new int[numGids];
         int index = 0;
         if (account.npgid > 0) {
-          for (int gid : account.pgid_list.getPointer().getIntArray(0, account.npgid)) {
+          for (int gid : account.pgid_list) {
             gids[index] = gid;
             index++;
           }
         } else {
           log.warn("No primary gid returned by Lcmaps! Mapping error");
         }
-        for (int gid : account.sgid_list.getPointer().getIntArray(0, account.nsgid)) {
+        for (int gid : account.sgid_list) {
           gids[index] = gid;
           index++;
         }
       } else {
         if (account.npgid > 0) {
-          gids = account.pgid_list.getPointer().getIntArray(0, account.npgid);
+          gids = account.pgid_list;
         }
       }
       log.info("Mapped user to : <uid={},gids={}>", account.uid, ArrayUtils.toString(gids));

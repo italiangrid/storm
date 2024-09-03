@@ -13,7 +13,7 @@ public interface LcmapsAccountInterface extends Library {
   public static final LcmapsAccountInterface INSTANCE =
       (LcmapsAccountInterface) Native.load(JNA_LIBRARY_NAME, LcmapsAccountInterface.class);
 
-  int lcmaps_account_info_init(lcmaps_account_info_t plcmaps_account);
+  int lcmaps_account_info_init(LcmapsAccountInfoT plcmaps_account);
 
-  int lcmaps_account_info_clean(lcmaps_account_info_t plcmaps_account);
+  int lcmaps_account_info_clean(LcmapsAccountInfoT plcmaps_account);
 }

@@ -49,7 +49,7 @@ public class StormLcmapsJNAMapper implements MapperInterface {
         fail(LcmapsError.INIT_FAILURE);
       }
  
-      lcmaps_account_info_t lcmapsAccount = new lcmaps_account_info_t();
+      LcmapsAccountInfoT lcmapsAccount = new LcmapsAccountInfoT();
       if (LcmapsAccountInterface.INSTANCE.lcmaps_account_info_init(lcmapsAccount) != 0) {
         fail(LcmapsError.ACCOUNT_INITIALIZATION_FAILURE);
       }
@@ -73,10 +73,10 @@ public class StormLcmapsJNAMapper implements MapperInterface {
       }
 
       if (lcmapsAccount.npgid > 0) {
-        gid = lcmapsAccount.pgid_list.getValue();
+        gid = lcmapsAccount.pgid_list[0];
       } else {
         if (lcmapsAccount.nsgid > 0) {
-          gid = lcmapsAccount.sgid_list.getValue();
+          gid = lcmapsAccount.sgid_list[0];
         } else {
           if (LcmapsAccountInterface.INSTANCE.lcmaps_account_info_clean(lcmapsAccount) != 0) {
             log.warn("LCMAPS error on cleaning account object");

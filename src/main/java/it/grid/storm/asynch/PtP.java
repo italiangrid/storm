@@ -29,6 +29,7 @@ import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FilesystemPermission;
+import it.grid.storm.filesystem.InvalidPermissionOnFileException;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.ReservationException;
 import it.grid.storm.griduser.CannotMapUserException;
@@ -843,7 +844,7 @@ public class PtP implements Delegable, Chooser, Request {
               + "an error occured while trying to create the file: {}; error: {}",
           localFile.toString(), e.getMessage(), e);
       return false;
-    } catch (it.grid.storm.filesystem.InvalidPermissionOnFileException e) {
+    } catch (InvalidPermissionOnFileException e) {
       // I haven t got the right to create a file as StoRM user!
       // This is thrown when executing createNewFile method!
       requestData.changeStatusSRM_FAILURE("Space Management step in " + "srmPrepareToPut failed!");

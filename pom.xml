@@ -231,7 +231,7 @@
     <dependency>
       <groupId>org.italiangrid</groupId>
       <artifactId>storm-native-interface</artifactId>
-      <version>${nativeInterfaceVersion}</version>
+      <version>2.1.0</version>
     </dependency>
 
     <dependency>
@@ -299,12 +299,6 @@
       <groupId>io.netty</groupId>
       <artifactId>netty</artifactId>
       <version>${nettyVersion}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>net.java.dev.jna</groupId>
-      <artifactId>jna</artifactId>
-      <version>${jnaVersion}</version>
     </dependency>
 
     <dependency>

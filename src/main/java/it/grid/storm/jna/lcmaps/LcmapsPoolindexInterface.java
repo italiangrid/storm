@@ -14,5 +14,5 @@ public interface LcmapsPoolindexInterface extends Library {
       (LcmapsPoolindexInterface) Native.load(JNA_LIBRARY_NAME, LcmapsPoolindexInterface.class);
 
   int lcmaps_return_account_without_gsi(String user_dn, String[] fqan_list, int nfqan,
-      lcmaps_account_info_t plcmaps_account);
+      LcmapsAccountInfoT plcmaps_account);
 }

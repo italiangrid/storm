@@ -4,39 +4,20 @@
  */
 package it.grid.storm.jna.lcmaps;
 
-/**
- * @author dibenedetto_m
- * 
- */
-
 import com.sun.jna.Structure;
-import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.Structure.FieldOrder;
 
-public class lcmaps_account_info_t extends Structure {
+@FieldOrder({"uid", "pgid_list", "npgid", "sgid_list", "nsgid", "poolindex"})
+public class LcmapsAccountInfoT extends Structure {
 
-	// / < the uid of the local account
 	public int uid;
-	/**
-	 * < the list of primary gids<br>
-	 * C type : int*
-	 */
-	public IntByReference pgid_list;
-	// / < the number of primary gids found
+	public int[] pgid_list;
 	public int npgid;
-	/**
-	 * < the list of secondary gids<br>
-	 * C type : int*
-	 */
-	public IntByReference sgid_list;
-	// / < the number of secondary gids found
+	public int[] sgid_list;
 	public int nsgid;
-	/**
-	 * < the pool index<br>
-	 * C type : char*
-	 */
 	public String poolindex;
 
-	public lcmaps_account_info_t() {
+	public LcmapsAccountInfoT() {
 
 		super();
 	}
@@ -58,8 +39,8 @@ public class lcmaps_account_info_t extends Structure {
 	 *          < the pool index<br>
 	 *          C type : char*
 	 */
-	public lcmaps_account_info_t(int uid, IntByReference pgid_list, int npgid,
-		IntByReference sgid_list, int nsgid, String poolindex) {
+	public LcmapsAccountInfoT(int uid, int[] pgid_list, int npgid,
+	    int[] sgid_list, int nsgid, String poolindex) {
 
 		super();
 		this.uid = uid;
@@ -70,12 +51,12 @@ public class lcmaps_account_info_t extends Structure {
 		this.poolindex = poolindex;
 	}
 
-	public static class ByReference extends lcmaps_account_info_t implements
+	public static class ByReference extends LcmapsAccountInfoT implements
 		Structure.ByReference {
 
 	};
 
-	public static class ByValue extends lcmaps_account_info_t implements
+	public static class ByValue extends LcmapsAccountInfoT implements
 		Structure.ByValue {
 
 	};
