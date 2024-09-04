@@ -54,7 +54,7 @@ public class StormLcmapsJNAMapper implements MapperInterface {
         fail(LcmapsError.INIT_FAILURE);
       }
  
-      LcmapsAccountInfoT lcmapsAccount = new LcmapsAccountInfoT();
+      LcmapsAccountInfoT.ByReference lcmapsAccount = new LcmapsAccountInfoT.ByReference();
       if (LcmapsAccountInterface.INSTANCE.lcmaps_account_info_init(lcmapsAccount) != 0) {
         fail(LcmapsError.ACCOUNT_INITIALIZATION_FAILURE);
       }

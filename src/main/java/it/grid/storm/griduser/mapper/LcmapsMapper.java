@@ -45,7 +45,7 @@ public class LcmapsMapper implements MapperInterface {
 
     log.debug("Mapping user with dn = {} and fqans='{}'", dn, ArrayUtils.toString(fqans));
     log.debug("Lcmaps log file is {}", LCMAPS_LOG_FILE);
-    LcmapsAccountInfoT account = new LcmapsAccountInfoT();
+    LcmapsAccountInfoT.ByReference account = new LcmapsAccountInfoT.ByReference();
     int uid = -1;
     int[] gids = null;
 
