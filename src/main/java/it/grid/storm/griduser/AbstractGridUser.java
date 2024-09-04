@@ -16,7 +16,7 @@
 package it.grid.storm.griduser;
 
 import it.grid.storm.common.types.VO;
-import it.grid.storm.jna.lcmaps.MapperInterface;
+import it.grid.storm.griduser.mapper.MapperInterface;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

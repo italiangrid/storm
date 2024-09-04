@@ -2,13 +2,18 @@
  * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
  * SPDX-License-Identifier: Apache-2.0
  */
-package it.grid.storm.jna.lcmaps;
+package it.grid.storm.griduser.mapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.LocalUser;
+import it.grid.storm.jna.lcmaps.LcmapsAccountInfoT;
+import it.grid.storm.jna.lcmaps.LcmapsAccountInterface;
+import it.grid.storm.jna.lcmaps.LcmapsError;
+import it.grid.storm.jna.lcmaps.LcmapsInterface;
+import it.grid.storm.jna.lcmaps.LcmapsPoolindexInterface;
 
 /**
  * 
@@ -56,7 +61,7 @@ public class StormLcmapsJNAMapper implements MapperInterface {
 
       log.debug("LCMAPS account info retrieved: {}", lcmapsAccount);
 
-      if (LcmapsPoolindexInterface.INSTANCE.lcmaps_return_account_without_gsi(dn, fqans, fqans.length, lcmapsAccount) != 0) {
+      if (LcmapsPoolindexInterface.INSTANCE.lcmaps_return_account_without_gsi(dn, fqans, fqans.length, 0, lcmapsAccount) != 0) {
         if (LcmapsAccountInterface.INSTANCE.lcmaps_account_info_clean(lcmapsAccount) != 0) {
           log.warn("LCMAPS error on cleaning account object");
         }

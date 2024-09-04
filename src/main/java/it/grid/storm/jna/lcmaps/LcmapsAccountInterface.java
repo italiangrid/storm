@@ -9,7 +9,7 @@ import com.sun.jna.Native;
 
 public interface LcmapsAccountInterface extends Library {
 
-  public static final java.lang.String JNA_LIBRARY_NAME = "/usr/lib64/liblcmaps_without_gsi.so";
+  public static final java.lang.String JNA_LIBRARY_NAME = "lcmaps_without_gsi";
   public static final LcmapsAccountInterface INSTANCE =
       (LcmapsAccountInterface) Native.load(JNA_LIBRARY_NAME, LcmapsAccountInterface.class);
 

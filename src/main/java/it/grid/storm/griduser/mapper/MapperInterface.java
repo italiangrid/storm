@@ -2,7 +2,7 @@
  * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
  * SPDX-License-Identifier: Apache-2.0
  */
-package it.grid.storm.jna.lcmaps;
+package it.grid.storm.griduser.mapper;
 
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.LocalUser;
