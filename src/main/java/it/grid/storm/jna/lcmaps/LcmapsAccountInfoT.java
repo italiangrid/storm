@@ -4,46 +4,57 @@
  */
 package it.grid.storm.jna.lcmaps;
 
+import java.util.Arrays;
+
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 import com.sun.jna.Structure.FieldOrder;
 
-/**
-
-typedef struct lcmaps_account_info_s
-{
-    uid_t          uid;         // the uid of the local account
-    gid_t *        pgid_list;   // the list of primary gids
-    int            npgid;       // the number of primary gids found
-    gid_t *        sgid_list;   // the list of secondary gids
-    int            nsgid;       // the number of secondary gids found
-    char *         poolindex;   // the pool index
-} lcmaps_account_info_t;
-
-*/
-
 @FieldOrder({"uid", "pgid_list", "npgid", "sgid_list", "nsgid", "poolindex"})
 public class LcmapsAccountInfoT extends Structure {
 
+  /**
+   * The user id of the local account
+   */
   public int uid;
+
+  /**
+   * The list of primary group id
+   */
   public Pointer pgid_list;
+
+  /**
+   * The number of primary group id found
+   */
   public int npgid;
+
+  /**
+   * The list of secondary group id
+   */
   public Pointer sgid_list;
+
+  /**
+   * The number of secondary group id found
+   */
   public int nsgid;
+
+  /**
+   * The pool index
+   */
   public String poolindex;
 
   public static class ByReference extends LcmapsAccountInfoT implements Structure.ByReference {
-
-  };
+  }
 
   public static class ByValue extends LcmapsAccountInfoT implements Structure.ByValue {
-
   }
 
   @Override
   public String toString() {
-    return "LcmapsAccountInfoT [uid=" + uid + ", pgid_list=" + pgid_list + ", npgid=" + npgid
-        + ", sgid_list=" + sgid_list + ", nsgid=" + nsgid + ", poolindex=" + poolindex + "]";
+    return "LcmapsAccountInfoT [uid=" + uid + ", pgid_list="
+        + Arrays.toString(pgid_list.getIntArray(0, npgid)) + ", npgid=" + npgid + ", sgid_list="
+        + Arrays.toString(sgid_list.getIntArray(0, nsgid)) + ", nsgid=" + nsgid + ", poolindex="
+        + poolindex + "]";
   }
 
 }
