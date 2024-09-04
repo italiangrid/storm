@@ -59,14 +59,19 @@ public class StormLcmapsJNAMapper implements MapperInterface {
         fail(LcmapsError.ACCOUNT_INITIALIZATION_FAILURE);
       }
 
-      log.debug("LCMAPS account info retrieved: {}", lcmapsAccount);
+      log.debug("LCMAPS account info initialized: {}", lcmapsAccount);
 
       if (LcmapsPoolindexInterface.INSTANCE.lcmaps_return_account_without_gsi(dn, fqans, fqans.length, 0, lcmapsAccount) != 0) {
+
+        log.debug("LCMAPS account info retrieved: {}", lcmapsAccount);
+
         if (LcmapsAccountInterface.INSTANCE.lcmaps_account_info_clean(lcmapsAccount) != 0) {
           log.warn("LCMAPS error on cleaning account object");
         }
         fail(LcmapsError.RETURN_ACCOUNT_FAILED);
       }
+
+      log.debug("LCMAPS account info retrieved: {}", lcmapsAccount);
 
       uid = lcmapsAccount.uid;
 
