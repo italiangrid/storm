@@ -83,20 +83,20 @@ public class LcmapsMapper implements MapperInterface {
           gids = new int[numGids];
           int index = 0;
           if (account.npgid > 0) {
-            for (int id : account.pgid_list) {
+            for (int id : account.pgid_list.getIntArray(0, account.npgid)) {
               gids[index] = id;
               index++;
             }
           } else {
             log.warn("No primary gid returned by Lcmaps! Mapping error");
           }
-          for (int id : account.sgid_list) {
+          for (int id : account.sgid_list.getIntArray(0, account.nsgid)) {
             gids[index] = id;
             index++;
           }
         } else {
           if (account.npgid > 0) {
-            gids = account.pgid_list;
+            System.arraycopy(account.pgid_list.getIntArray(0, account.npgid), 0, gids, 0, account.npgid);
           }
         }
 

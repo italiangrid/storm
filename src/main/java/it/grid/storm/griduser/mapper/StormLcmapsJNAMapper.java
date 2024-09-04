@@ -83,10 +83,10 @@ public class StormLcmapsJNAMapper implements MapperInterface {
       }
 
       if (lcmapsAccount.npgid > 0) {
-        gid = lcmapsAccount.pgid_list[0];
+        gid = lcmapsAccount.pgid_list.getIntArray(0, lcmapsAccount.npgid)[0];
       } else {
         if (lcmapsAccount.nsgid > 0) {
-          gid = lcmapsAccount.sgid_list[0];
+          gid = lcmapsAccount.sgid_list.getIntArray(0, lcmapsAccount.npgid)[0];
         } else {
           if (LcmapsAccountInterface.INSTANCE.lcmaps_account_info_clean(lcmapsAccount) != 0) {
             log.warn("LCMAPS error on cleaning account object");
