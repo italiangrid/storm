@@ -51,10 +51,29 @@ public class LcmapsAccountInfoT extends Structure {
 
   @Override
   public String toString() {
-    return "LcmapsAccountInfoT [uid=" + uid + ", pgid_list="
-        + Arrays.toString(pgid_list.getIntArray(0, npgid)) + ", npgid=" + npgid + ", sgid_list="
-        + Arrays.toString(sgid_list.getIntArray(0, nsgid)) + ", nsgid=" + nsgid + ", poolindex="
-        + poolindex + "]";
+    StringBuilder b = new StringBuilder();
+    b.append("LcmapsAccountInfoT [uid=");
+    b.append(uid);
+    b.append(", pgid_list=");
+    if (pgid_list != null) {
+      b.append(Arrays.toString(pgid_list.getIntArray(0, npgid)));
+    } else {
+      b.append("null");
+    }
+    b.append(", npgid=");
+    b.append(npgid);
+    b.append(", sgid_list=");
+    if (sgid_list != null) {
+      b.append(Arrays.toString(sgid_list.getIntArray(0, nsgid)));
+    } else {
+      b.append("null");
+    }
+    b.append(", nsgid=");
+    b.append(nsgid);
+    b.append(", poolindex=");
+    b.append(poolindex);
+    b.append("]");
+    return b.toString();
   }
 
 }
