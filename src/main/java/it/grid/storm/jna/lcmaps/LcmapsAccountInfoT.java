@@ -4,6 +4,8 @@
  */
 package it.grid.storm.jna.lcmaps;
 
+import java.util.Arrays;
+
 import com.sun.jna.Structure;
 import com.sun.jna.Structure.FieldOrder;
 
@@ -52,5 +54,12 @@ public class LcmapsAccountInfoT extends Structure {
 
   public static class ByValue extends LcmapsAccountInfoT implements Structure.ByValue {
 
+  }
+
+  @Override
+  public String toString() {
+    return "LcmapsAccountInfoT [uid=" + uid + ", pgid_list=" + Arrays.toString(pgid_list)
+        + ", npgid=" + npgid + ", sgid_list=" + Arrays.toString(sgid_list) + ", nsgid=" + nsgid
+        + ", poolindex=" + poolindex + "]";
   };
 }
