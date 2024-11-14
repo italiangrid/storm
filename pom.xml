@@ -30,6 +30,7 @@
     <jettisonVersion>1.1</jettisonVersion>
     <jettyVersion>8.1.9.v20130131</jettyVersion>
     <jnaVersion>5.14.0</jnaVersion>
+    <jnr-posix.version>3.1.18</jnr-posix.version>
     <jsonVersion>20080701</jsonVersion>
     <junitVersion>4.13.2</junitVersion>
     <logbackVersion>1.2.3</logbackVersion>
@@ -368,6 +369,12 @@
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
       <version>${jsonVersion}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.jnr</groupId>
+      <artifactId>jnr-posix</artifactId>
+      <version>${jnr-posix.version}</version>
     </dependency>
 
     <dependency>
