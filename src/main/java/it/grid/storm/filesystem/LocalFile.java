@@ -25,12 +25,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Maps;
 
 import it.grid.storm.checksum.ChecksumAlgorithm;
 import it.grid.storm.checksum.ChecksumManager;
@@ -127,22 +124,15 @@ public class LocalFile {
    */
   public String getDefaultChecksum() {
 
+    if (isDirectory()) {
+      log.warn("Cannot return checksum of a directory: {}", localFile.getAbsolutePath());
+      return null;
+    }
     try {
       return ChecksumManager.getInstance().getDefaultChecksum(localFile.getAbsolutePath());
     } catch (FileNotFoundException e) {
       log.error(e.getMessage(), e);
       return null;
-    }
-
-  }
-
-  public Map<ChecksumAlgorithm, String> getChecksums() {
-
-    try {
-      return ChecksumManager.getInstance().getChecksums(localFile.getAbsolutePath());
-    } catch (FileNotFoundException e) {
-      log.error(e.getMessage(), e);
-      return Maps.newHashMap();
     }
 
   }
@@ -253,7 +243,7 @@ public class LocalFile {
 
   public long getSize() {
 
-    return fs.getSize(getAbsolutePath());
+    return localFile.length();
   }
 
   /**
