@@ -15,7 +15,7 @@ import it.grid.storm.check.Check;
 import it.grid.storm.check.CheckResponse;
 import it.grid.storm.check.CheckStatus;
 import it.grid.storm.check.GenericCheckException;
-import it.grid.storm.filesystem.FilesystemIF;
+import it.grid.storm.filesystem.Filesystem;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.GridUserInterface;
@@ -73,7 +73,7 @@ public class NamespaceFSExtendedACLUsageCheck implements Check {
           status = CheckStatus.INDETERMINATE;
           continue;
         }
-        FilesystemIF filesystem = vfs.getFilesystem();
+        Filesystem filesystem = vfs.getFilesystem();
         // tries to manage the extended attributes on file checkFile
         boolean currentResponse = this.checkEACL(checkFile, filesystem);
         if (!currentResponse) {
@@ -160,7 +160,7 @@ public class NamespaceFSExtendedACLUsageCheck implements Check {
    * @return true if the write, read and remove operations succeeds and the retrieved value matches
    *         CHECK_ATTRIBUTE_VALUE
    */
-  private boolean checkEACL(File file, FilesystemIF filesystem) {
+  private boolean checkEACL(File file, Filesystem filesystem) {
 
     boolean response = true;
     log.debug("Testing extended attribute management on file {}", file.getAbsolutePath());

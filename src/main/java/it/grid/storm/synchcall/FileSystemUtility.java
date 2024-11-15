@@ -10,8 +10,8 @@ import static it.grid.storm.metrics.StormMetricRegistry.METRIC_REGISTRY;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.grid.storm.filesystem.DefaultFilesystem;
 import it.grid.storm.filesystem.Filesystem;
-import it.grid.storm.filesystem.FilesystemIF;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.MetricsFilesystemAdapter;
 import it.grid.storm.filesystem.swig.genericfs;
@@ -29,7 +29,7 @@ public class FileSystemUtility {
     LocalFile file = null;
     VirtualFS vfs = null;
     genericfs fsDriver = null;
-    FilesystemIF fs = null;
+    Filesystem fs = null;
     try {
       vfs = Namespace.getInstance().resolveVFSbyAbsolutePath(absolutePath);
     } catch (NamespaceException ex) {
@@ -42,7 +42,7 @@ public class FileSystemUtility {
     try {
       fsDriver = (genericfs) (vfs.getFSDriver()).newInstance();
 
-      FilesystemIF wrappedFs = new Filesystem(fsDriver);
+      Filesystem wrappedFs = new DefaultFilesystem(fsDriver);
 
       wrappedFs = maybeWrapFilesystem(wrappedFs);
 

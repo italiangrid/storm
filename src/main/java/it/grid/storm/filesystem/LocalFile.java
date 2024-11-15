@@ -30,7 +30,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 
 import it.grid.storm.checksum.ChecksumAlgorithm;
@@ -38,37 +37,33 @@ import it.grid.storm.checksum.ChecksumManager;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.griduser.CannotMapUserException;
 import it.grid.storm.griduser.LocalUser;
-import jnr.posix.FileStat;
-import jnr.posix.POSIX;
-import jnr.posix.POSIXFactory;
 
 public class LocalFile {
 
   private static final Logger log = LoggerFactory.getLogger(LocalFile.class);
 
-  private final FilesystemIF fs;
+  private final Filesystem fs;
 
   private final File localFile;
-  private final FileStat fStat;
 
-  public LocalFile(final LocalFile parent, final String name, final FilesystemIF fs)
+  public LocalFile(final LocalFile parent, final String name, final Filesystem fs)
       throws NullPointerException {
 
     this(new File(parent.localFile, name), fs);
   }
 
-  public LocalFile(final String pathname, final FilesystemIF fs) throws NullPointerException {
+  public LocalFile(final String pathname, final Filesystem fs) throws NullPointerException {
 
     this(new File(pathname), fs);
   }
 
-  public LocalFile(final String parent, final String name, final FilesystemIF fs)
+  public LocalFile(final String parent, final String name, final Filesystem fs)
       throws NullPointerException {
 
     this(new File(parent, name), fs);
   }
 
-  private LocalFile(File localFile, FilesystemIF fs) {
+  private LocalFile(File localFile, Filesystem fs) {
 
     this.localFile = localFile;
 
@@ -76,7 +71,6 @@ public class LocalFile {
     checkNotNull(fs, "Null filesystem in LocalFile constructor");
 
     this.fs = fs;
-    fStat = POSIXFactory.getPOSIX().stat(localFile.toString());
   }
 
   /**
@@ -167,7 +161,7 @@ public class LocalFile {
    * Return the <em>effective</em> permission a group has on this file. Loads the ACL for this file
    * or directory, and return the permission associated with the local account primary group of the
    * given {@link LocalUser} instance <i>u</i>. If no ACE for that group is found, return
-   * {@link Filesystem#NONE}.
+   * {@link DefaultFilesystem#NONE}.
    * 
    * @param u the LocalUser whose local account primary GID's permissions are to be retrieved.
    * @return <em>effective</em> permission associated to the local account primary GID of the given
@@ -182,7 +176,7 @@ public class LocalFile {
   /**
    * Return the <em>effective</em> permission a user has on this file. Loads the ACL for this file
    * or directory, and return the permission associated with the local account UID of the given
-   * LocalUser <i>u</i>. If no ACE for that user is found, return {@link Filesystem#NONE}.
+   * LocalUser <i>u</i>. If no ACE for that user is found, return {@link DefaultFilesystem#NONE}.
    * 
    * @param u the LocalUser whose permissions are to be retrieved.
    * @return <em>effective</em> permission associated to the local account UID of the given
@@ -227,11 +221,11 @@ public class LocalFile {
    * Return the permission a group has on this file. Loads the ACL for this file or directory, and
    * return the permission associated with the local account primary group of the given
    * {@link LocalUser} instance <i>u</i>. If no ACE for that group is found, return
-   * {@link Filesystem#NONE}.
+   * {@link DefaultFilesystem#NONE}.
    * 
    * @param u the LocalUser whose local account primary GID's permissions are to be retrieved.
    * @return permission associated to the local account primary GID of the given LocalUser <i>u</i>
-   *         in the given file ACL. or {@link Filesystem#NONE} if no ACE for that group was found.
+   *         in the given file ACL. or {@link DefaultFilesystem#NONE} if no ACE for that group was found.
    */
   public FilesystemPermission getGroupPermission(final LocalUser u) {
 
@@ -240,7 +234,7 @@ public class LocalFile {
 
   public long getLastModifiedTime() {
 
-    return fStat.mtime();
+    return fs.getLastModifiedTime(getAbsolutePath());
   }
 
   public LocalFile getParentFile() {
@@ -259,17 +253,17 @@ public class LocalFile {
 
   public long getSize() {
 
-    return fStat.st_size();
+    return fs.getSize(getAbsolutePath());
   }
 
   /**
    * Return the permission a user has on this file. Loads the ACL for this file or directory, and
    * return the permission associated with the local account UID of the given LocalUser <i>u</i>. If
-   * no ACE for that user is found, return {@link Filesystem#NONE}.
+   * no ACE for that user is found, return {@link DefaultFilesystem#NONE}.
    * 
    * @param u the LocalUser whose permissions are to be retrieved.
    * @return permission associated to the local account UID of the given LocalUser <i>u</i> in this
-   *         file ACL, or {@link Filesystem#NONE} if no ACE for that user was found.
+   *         file ACL, or {@link DefaultFilesystem#NONE} if no ACE for that user was found.
    */
   public FilesystemPermission getUserPermission(final LocalUser u) {
 
@@ -289,7 +283,7 @@ public class LocalFile {
    * @param u the LocalUser whose local account primary GID's ACE is to be altered.
    * @param permission Capabilities to grant.
    * @return permission formerly associated to the local account primary GID of the given LocalUser
-   *         <i>u</i> in this file ACL, or {@link Filesystem#NONE} if no ACE for that group was
+   *         <i>u</i> in this file ACL, or {@link DefaultFilesystem#NONE} if no ACE for that group was
    *         found.
    */
   public FilesystemPermission grantGroupPermission(final LocalUser u,
@@ -311,7 +305,7 @@ public class LocalFile {
    * @param u the LocalUser whose local account UID's ACE is to be altered.
    * @param permission Capabilities to grant.
    * @return permission formerly associated to the local account UID of the given LocalUser <i>u</i>
-   *         in this file ACL, or {@link Filesystem#NONE} if no ACE for that user was found.
+   *         in this file ACL, or {@link DefaultFilesystem#NONE} if no ACE for that user was found.
    */
   public FilesystemPermission grantUserPermission(final LocalUser u,
       final FilesystemPermission permission) {
@@ -369,7 +363,7 @@ public class LocalFile {
    */
   public long length() throws SecurityException {
 
-    return fStat.st_size();
+    return getSize();
   }
 
   // overridden from java.io.File to change return value
@@ -417,12 +411,12 @@ public class LocalFile {
    * Removes the ACE (if any) of the primary group of the given LocalUser <i>u</i> from this file or
    * directory ACL. Returns the permission formerly associated with that group.
    * <p>
-   * If the given group is the file owning group, then its ACE is set to {@link Filesystem#NONE},
+   * If the given group is the file owning group, then its ACE is set to {@link DefaultFilesystem#NONE},
    * rather than removed.
    * 
    * @param u the LocalUser whose local account primary GID's ACE is to be altered.
    * @return permission formerly associated to the local account primary GID of the given LocalUser
-   *         <i>u</i> in this file ACL, or {@link Filesystem#NONE} if no ACE for that group was
+   *         <i>u</i> in this file ACL, or {@link DefaultFilesystem#NONE} if no ACE for that group was
    *         found.
    */
   public FilesystemPermission removeGroupPermission(final LocalUser u) {
@@ -436,12 +430,12 @@ public class LocalFile {
    * Removes the ACE (if any) of the primary user of the given LocalUser <i>u</i> from this file or
    * directory ACL. Returns the permission formerly associated with that user.
    * <p>
-   * If the given user is the file owner, then its ACE is set to {@link Filesystem#NONE}, rather
+   * If the given user is the file owner, then its ACE is set to {@link DefaultFilesystem#NONE}, rather
    * than removed.
    * 
    * @param u the LocalUser whose local account UID's ACE is to be altered.
    * @return permission formerly associated to the local account UID of the given LocalUser <i>u</i>
-   *         in this file ACL, or {@link Filesystem#NONE} if no ACE for that user was found.
+   *         in this file ACL, or {@link DefaultFilesystem#NONE} if no ACE for that user was found.
    */
   public FilesystemPermission removeUserPermission(final LocalUser u) {
 
@@ -467,12 +461,12 @@ public class LocalFile {
    * file ACL.
    * <p>
    * If no ACE is present for the specified group, then one is created and its permission value is
-   * set to {@link Filesystem#NONE}.
+   * set to {@link DefaultFilesystem#NONE}.
    * 
    * @param u the LocalUser whose local account primary GID's ACE is to be altered.
    * @param permission Capabilities to revoke.
    * @return permission formerly associated to the local account primary GID of the given LocalUser
-   *         <i>u</i> in this file ACL, or {@link Filesystem#NONE} if no ACE for that group was
+   *         <i>u</i> in this file ACL, or {@link DefaultFilesystem#NONE} if no ACE for that group was
    *         found.
    * @see fs_acl::revoke_group_perm()
    */
@@ -491,12 +485,12 @@ public class LocalFile {
    * file ACL.
    * <p>
    * If no ACE is present for the specified user, then one is created and its permission value is
-   * set to {@link Filesystem#NONE}.
+   * set to {@link DefaultFilesystem#NONE}.
    * 
    * @param u the LocalUser whose local account UID's ACE is to be altered.
    * @param permission Capabilities to revoke.
    * @return permission formerly associated to the local account UID of the given LocalUser <i>u</i>
-   *         in this file ACL, or {@link Filesystem#NONE} if no ACE for that user was found.
+   *         in this file ACL, or {@link DefaultFilesystem#NONE} if no ACE for that user was found.
    */
   public FilesystemPermission revokeUserPermission(final LocalUser u,
       final FilesystemPermission permission) {
@@ -532,7 +526,7 @@ public class LocalFile {
    * @param u the localUser whose local account primary GID's ACE is to be altered.
    * @param permission Permission to set in the group ACE.
    * @return permission formerly associated to the local account primary GID of the given LocalUser
-   *         <i>u</i> in this file ACL, or {@link Filesystem#NONE} if no ACE for that group was
+   *         <i>u</i> in this file ACL, or {@link DefaultFilesystem#NONE} if no ACE for that group was
    *         found.
    */
   public FilesystemPermission setGroupPermission(final LocalUser u,
@@ -551,7 +545,7 @@ public class LocalFile {
    * @param u the Grid user whose local account UID's ACE is to be altered.
    * @param permission Permission to set in the user ACE.
    * @return permission formerly associated to the local account UID of the given LocalUser <i>u</i>
-   *         in this file ACL, or {@link Filesystem#NONE} if no ACE for that user was found.
+   *         in this file ACL, or {@link DefaultFilesystem#NONE} if no ACE for that user was found.
    */
   public FilesystemPermission setUserPermission(final LocalUser u,
       final FilesystemPermission permission) {

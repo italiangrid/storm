@@ -23,8 +23,8 @@ import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.common.GUID;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.config.StormConfiguration;
+import it.grid.storm.filesystem.DefaultFilesystem;
 import it.grid.storm.filesystem.Filesystem;
-import it.grid.storm.filesystem.FilesystemIF;
 import it.grid.storm.filesystem.GPFSSpaceSystem;
 import it.grid.storm.filesystem.InvalidSpaceAttributesException;
 import it.grid.storm.filesystem.LocalFile;
@@ -73,7 +73,7 @@ public class VirtualFS {
   Hashtable protocols = null;
   genericfs genericFS = null;
   SpaceSystem spaceSystem = null;
-  FilesystemIF fsWrapper = null;
+  Filesystem fsWrapper = null;
   List<MappingRule> mappingRules = Lists.newArrayList();
   List<ApproachableRule> approachableRules = Lists.newArrayList();
   StormConfiguration config;
@@ -107,7 +107,7 @@ public class VirtualFS {
     this.genericFS = makeFSInstance();
 
     fsWrapper = RandomWaitFilesystemAdapter.maybeWrapFilesystem(fsWrapper);
-    this.fsWrapper = new MetricsFilesystemAdapter(new Filesystem(getFSDriverInstance()),
+    this.fsWrapper = new MetricsFilesystemAdapter(new DefaultFilesystem(getFSDriverInstance()),
         METRIC_REGISTRY.getRegistry());
   }
 
@@ -362,11 +362,11 @@ public class VirtualFS {
     return fs;
   }
 
-  public FilesystemIF getFilesystem() throws NamespaceException {
+  public Filesystem getFilesystem() throws NamespaceException {
 
     if (fsWrapper == null) {
 
-      FilesystemIF fs = new Filesystem(getFSDriverInstance());
+      Filesystem fs = new DefaultFilesystem(getFSDriverInstance());
 
       fs = RandomWaitFilesystemAdapter.maybeWrapFilesystem(fs);
 

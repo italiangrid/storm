@@ -26,7 +26,7 @@ import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.StFN;
 import it.grid.storm.common.types.TURLPrefix;
 import it.grid.storm.config.StormConfiguration;
-import it.grid.storm.filesystem.FilesystemIF;
+import it.grid.storm.filesystem.Filesystem;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.ReservationException;
 import it.grid.storm.filesystem.Space;
@@ -63,7 +63,7 @@ public class StoRIImpl implements StoRI {
   private Space space;
 
   private VirtualFS vfs;
-  private FilesystemIF fs;
+  private Filesystem fs;
   private SpaceSystem spaceDriver;
   private StoRIType type;
   private Capability capability;
