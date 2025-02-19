@@ -36,7 +36,7 @@
     <mailVersion>1.4.6</mailVersion>
     <jakartaXmlBindVersion>2.3.3</jakartaXmlBindVersion>
 
-    <mysqlConnectorVersion>8.0.16</mysqlConnectorVersion>
+    <mysqlConnectorVersion>8.0.28</mysqlConnectorVersion>
 
     <guavaVersion>24.1.1-jre</guavaVersion>
     <metrics.version>3.1.0</metrics.version>
