@@ -328,7 +328,13 @@ public class LocalFile {
    */
   public boolean isOnDisk() throws FSException {
 
-    final boolean isOnDisk = fs.isFileOnDisk(localFile.getAbsolutePath());
+    boolean isOnDisk = false;
+    try {
+      isOnDisk = fs.isFileOnDisk(localFile.getAbsolutePath());
+    } catch (Throwable e) {
+      log.error(e.getMessage());
+      return false;
+    }
 
     if (log.isDebugEnabled()) {
       log.debug("File {} is {} on disk.", localFile.getAbsolutePath(), (isOnDisk ? "" : "NOT"));
