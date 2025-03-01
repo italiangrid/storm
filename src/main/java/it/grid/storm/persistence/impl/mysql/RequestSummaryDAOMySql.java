@@ -205,11 +205,10 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
     } catch (SQLException e) {
       log.error("REQUEST SUMMARY DAO - findNew: Unable to complete picking. "
           + "Error: {}. Rolling back!", e.getMessage(), e);
-      e.printStackTrace();
       try {
         con.rollback();
       } catch (SQLException e1) {
-        e1.printStackTrace();
+        log.error("Got exception {}: {}", e1.getClass(), e1.getMessage());
       }
 
     } finally {
@@ -243,7 +242,6 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
     } catch (SQLException e) {
       log.error("REQUEST SUMMARY DAO! Unable to transit request identified by "
           + "ID {} to SRM_FAILURE! Error: {}", requestId, e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeStatement(ps);
       closeConnection(con);
@@ -291,11 +289,10 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
           "REQUEST SUMMARY DAO! Unable to transit PtG request identified "
               + "by ID {} to SRM_FAILURE! Error: {}\nRolling back...",
           requestId, e.getMessage(), e);
-      e.printStackTrace();
       try {
         con.rollback();
       } catch (SQLException e1) {
-        e1.printStackTrace();
+        log.error("Got exception {}: {}", e1.getClass(), e1.getMessage());
       }
     } finally {
       closeStatement(updateReq);
@@ -348,7 +345,7 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
       try {
         con.rollback();
       } catch (SQLException e1) {
-        e1.printStackTrace();
+        log.error("Got exception {}: {}", e1.getClass(), e1.getMessage());
       }
     } finally {
       closeStatement(updateReq);
@@ -377,7 +374,6 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
       update.executeUpdate();
     } catch (SQLException e) {
       log.error("REQUEST SUMMARY DAO: {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeStatement(update);
       closeConnection(con);
@@ -430,7 +426,6 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
 
     } catch (SQLException e) {
       log.error("REQUEST SUMMARY DAO: {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeStatement(update);
       closeConnection(con);
@@ -497,7 +492,6 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
     } catch (SQLException e) {
 
       log.error("REQUEST SUMMARY DAO - abortRequest: {}", e.getMessage(), e);
-      e.printStackTrace();
 
     } finally {
       closeResultSet(rs);
@@ -569,11 +563,10 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
       }
     } catch (SQLException e) {
       log.error("REQUEST SUMMARY DAO - abortInProgressRequest: {}", e.getMessage(), e);
-      e.printStackTrace();
       try {
         con.rollback();
       } catch (SQLException e1) {
-        e1.printStackTrace();
+        log.error("Got exception {}: {}", e1.getClass(), e1.getMessage());
       }
     } finally {
       closeResultSet(rs);
@@ -634,11 +627,10 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
       }
     } catch (SQLException e) {
       log.error("REQUEST SUMMARY DAO - abortChunksOfInProgressRequest: {}", e.getMessage(), e);
-      e.printStackTrace();
       try {
         con.rollback();
       } catch (SQLException e1) {
-        e1.printStackTrace();
+        log.error("Got exception {}: {}", e1.getClass(), e1.getMessage());
       }
     } finally {
       closeResultSet(rs);
@@ -687,7 +679,6 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
       }
     } catch (SQLException e) {
       log.error("REQUEST SUMMARY DAO - typeOf - {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeResultSet(rs);
       closeStatement(query);
@@ -748,7 +739,6 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
       }
     } catch (SQLException e) {
       log.error("REQUEST SUMMARY DAO - find - {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeResultSet(rs);
       closeStatement(query);
@@ -830,7 +820,7 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
       try {
         con.rollback();
       } catch (SQLException e1) {
-        e1.printStackTrace();
+        log.error("Got exception {}: {}", e1.getClass(), e1.getMessage());
       }
     } finally {
       closeResultSet(rs);
@@ -876,7 +866,6 @@ public class RequestSummaryDAOMySql extends AbstractDAO implements RequestSummar
     } catch (SQLException e) {
       log.error("REQUEST SUMMARY DAO - purgeExpiredRequests - Rolling back because of error: {}",
           e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeResultSet(rs);
       closeStatement(ps);

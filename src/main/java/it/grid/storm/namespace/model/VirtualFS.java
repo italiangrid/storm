@@ -10,7 +10,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Hashtable;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -65,12 +64,11 @@ public class VirtualFS {
   StoRI storiRoot = null;
   String spaceTokenDescription = null;
   String rootPath = null;
-  Class fsDriver = null;
-  Class spaceSystemDriver = null;
+  Class<?> fsDriver = null;
+  Class<?> spaceSystemDriver = null;
   DefaultValuesInterface defValue = null;
   Capability capabilities = null;
   PropertyInterface properties = null;
-  Hashtable protocols = null;
   genericfs genericFS = null;
   SpaceSystem spaceSystem = null;
   Filesystem fsWrapper = null;
@@ -101,7 +99,7 @@ public class VirtualFS {
     initializeSpaceUpdaterHelper();
   }
 
-  public void setFSDriver(Class fsDriver) throws NamespaceException {
+  public void setFSDriver(Class<?> fsDriver) throws NamespaceException {
 
     this.fsDriver = fsDriver;
     this.genericFS = makeFSInstance();
@@ -131,7 +129,7 @@ public class VirtualFS {
     this.properties = prop;
   }
 
-  public void setSpaceSystemDriver(Class spaceDriver) throws NamespaceException {
+  public void setSpaceSystemDriver(Class<?> spaceDriver) throws NamespaceException {
 
     if (spaceDriver == null) {
       throw new NamespaceException("NULL space driver");
@@ -279,7 +277,7 @@ public class VirtualFS {
     return false;
   }
 
-  public Class getFSDriver() throws NamespaceException {
+  public Class<?> getFSDriver() throws NamespaceException {
 
     return this.fsDriver;
   }
@@ -322,10 +320,10 @@ public class VirtualFS {
       throw new NamespaceException("Cannot build FS Driver istance without a valid Driver Class!");
     }
 
-    Class fsArgumentsClass[] = new Class[1];
+    Class<?> fsArgumentsClass[] = new Class[1];
     fsArgumentsClass[0] = String.class;
     Object[] fsArguments = new Object[] {this.rootPath};
-    Constructor fsConstructor = null;
+    Constructor<?> fsConstructor = null;
     try {
       fsConstructor = fsDriver.getConstructor(fsArgumentsClass);
     } catch (SecurityException ex) {
@@ -376,7 +374,7 @@ public class VirtualFS {
     return this.fsWrapper;
   }
 
-  public Class getSpaceSystemDriver() throws NamespaceException {
+  public Class<?> getSpaceSystemDriver() throws NamespaceException {
 
     return this.spaceSystemDriver;
   }
@@ -403,17 +401,15 @@ public class VirtualFS {
           "Cannot build Space Driver istance without a valid Driver Class!");
     }
 
-    // Check if SpaceSystem is GPFSSpaceSystem used for GPFS FS
-    // Check if SpaceSystem is MockSpaceSystem used for Posix FS
-    if ((this.spaceSystemDriver.getName().equals(GPFSSpaceSystem.class.getName()))
-        || (this.spaceSystemDriver.getName().equals(MockSpaceSystem.class.getName()))) {
+    if (this.spaceSystemDriver.isAssignableFrom(GPFSSpaceSystem.class)
+        || this.spaceSystemDriver.isAssignableFrom(MockSpaceSystem.class)) {
 
       // The class type argument is the mount point of GPFS file system
-      Class ssArgumentsClass[] = new Class[1];
+      Class<?> ssArgumentsClass[] = new Class[1];
       ssArgumentsClass[0] = String.class;
       Object[] ssArguments = new Object[] {this.rootPath};
 
-      Constructor ssConstructor = null;
+      Constructor<?> ssConstructor = null;
       try {
         ssConstructor = spaceSystemDriver.getConstructor(ssArgumentsClass);
       } catch (SecurityException ex) {

@@ -40,9 +40,10 @@ public class PinLifetimeConverter {
    */
   public int toDB(long l) {
 
-    if (l == TLifeTimeInSeconds.makeEmpty().value())
+    if (l == TLifeTimeInSeconds.makeEmpty().value()) {
       return 0;
-    return Long.valueOf(l).intValue();
+    }
+    return (int) l;
   }
 
   /**
@@ -54,19 +55,21 @@ public class PinLifetimeConverter {
 
     if (s == 0) {
       return StormConfiguration.getInstance().getPinLifetimeDefault();
-    } else if (s < 0) {
-      // The default is used also as a Minimum
+    }
+    // The default is used also as a Minimum
+    if (s < 0) {
       return StormConfiguration.getInstance().getPinLifetimeDefault();
     }
-    return Integer.valueOf(s).longValue();
+    return (long) s;
   }
 
   public long toStoRM(long s) {
 
     if (s == 0) {
       return StormConfiguration.getInstance().getPinLifetimeDefault();
-    } else if (s < 0) {
-      // The default is used also as a Minimum
+    }
+    // The default is used also as a Minimum
+    if (s < 0) {
       return StormConfiguration.getInstance().getPinLifetimeDefault();
     }
     return s;

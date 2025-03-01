@@ -77,7 +77,5 @@ public abstract class AbstractDAO {
 
     log.error("SQL Error: {}, SQLState: {}, VendorError: {}.", e.getMessage(), e.getSQLState(),
         e.getErrorCode(), e);
-    e.printStackTrace();
-
   }
 }

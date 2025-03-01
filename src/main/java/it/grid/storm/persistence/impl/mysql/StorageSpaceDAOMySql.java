@@ -129,7 +129,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
       }
 
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeResultSet(res);
       closeStatement(ps);
@@ -171,7 +171,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
         log.info("No rows found for query : {}", ps);
       }
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeResultSet(res);
       closeStatement(ps);
@@ -213,7 +213,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
         log.info("No rows found for query : {}", ps);
       }
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeResultSet(res);
       closeStatement(ps);
@@ -250,7 +250,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
         log.info("No rows found for query : {}", ps);
       }
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeResultSet(res);
       closeStatement(ps);
@@ -287,7 +287,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
         log.debug("No rows found for query : {}", ps);
       }
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeResultSet(res);
       closeStatement(ps);
@@ -323,7 +323,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
         log.info("No rows found for query : {}", ps);
       }
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeResultSet(res);
       closeStatement(ps);
@@ -352,7 +352,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
       log.debug("Number of rows removed: {}", res);
 
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeStatement(ps);
       closeConnection(con);
@@ -380,7 +380,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
       log.debug("Number of rows removed: {}", res);
 
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeStatement(ps);
       closeConnection(con);
@@ -415,7 +415,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
       }
 
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeStatement(ps);
       closeConnection(con);
@@ -484,7 +484,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
             res);
       }
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeStatement(ps);
       closeConnection(con);
@@ -525,7 +525,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
         log.debug("No storage space expired found at time " + currentTimeInSecond);
       }
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeResultSet(res);
       closeStatement(ps);
@@ -557,7 +557,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
       }
 
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeResultSet(res);
       closeStatement(ps);
@@ -590,7 +590,7 @@ public class StorageSpaceDAOMySql extends AbstractDAO implements StorageSpaceDAO
       }
 
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeResultSet(res);
       closeStatement(ps);

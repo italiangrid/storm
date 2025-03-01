@@ -215,7 +215,7 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
       try {
         con.rollback();
       } catch (SQLException e1) {
-        e1.printStackTrace();
+        log.error("Got exception {}: {}", e1.getClass(), e1.getMessage());
       }
     } finally {
       closeResultSet(rsid);
@@ -287,7 +287,7 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
       try {
         con.rollback();
       } catch (SQLException e1) {
-        e1.printStackTrace();
+        log.error("Got exception {}: {}", e1.getClass(), e1.getMessage());
       }
     } finally {
       closeResultSet(rsNew);
@@ -400,7 +400,6 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
 
     } catch (SQLException e) {
       log.error("PtG CHUNK DAO: Unable to complete update! {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeStatement(updateFileReq);
       closeConnection(con);
@@ -470,7 +469,6 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
     } catch (SQLException e) {
 
       log.error("PTG CHUNK DAO: {}", e.getMessage(), e);
-      e.printStackTrace();
       return null;
 
     } finally {
@@ -569,7 +567,7 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
       try {
         con.rollback();
       } catch (SQLException e1) {
-        e1.printStackTrace();
+        log.error("Got exception {}: {}", e1.getClass(), e1.getMessage());
       }
     } finally {
       closeResultSet(rsProtocols);
@@ -615,7 +613,6 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
 
     } catch (SQLException e) {
       log.error("PTG CHUNK DAO: {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeResultSet(rs);
       closeStatement(find);
@@ -662,7 +659,6 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
       }
     } catch (SQLException e) {
       log.error("PTG CHUNK DAO: {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeResultSet(rs);
       closeStatement(find);
@@ -716,7 +712,6 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
       }
     } catch (SQLException e) {
       log.error("PTG CHUNK DAO: {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeResultSet(rs);
       closeStatement(find);
@@ -758,7 +753,6 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
     } catch (SQLException e) {
       log.error("PtGChunkDAO! Unable to signal in DB that the request was "
           + "malformed! Request: {}; Exception: {}", auxTO.toString(), e.toString());
-      e.printStackTrace();
     } finally {
       closeStatement(update);
       closeConnection(con);
@@ -801,7 +795,6 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
     } catch (SQLException e) {
       log.error("PtG CHUNK DAO! Unable to determine numberInSRM_FILE_PINNED! " + "Returning 0! {}",
           e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeResultSet(rs);
       closeStatement(find);
@@ -930,11 +923,10 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
       con.commit();
     } catch (SQLException e) {
       log.error("PtGChunkDAO! SQLException. {}", e.getMessage(), e);
-      e.printStackTrace();
       try {
         con.rollback();
       } catch (SQLException e1) {
-        e1.printStackTrace();
+        log.error("Got exception {}: {}", e1.getClass(), e1.getMessage());
       }
     } finally {
       closeStatement(findExpired);
@@ -1013,7 +1005,6 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
       log.error(
           "PtG CHUNK DAO! Unable to transit chunks" + " from SRM_FILE_PINNED to SRM_RELEASED! {}",
           e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeStatement(stmt);
       closeConnection(con);
@@ -1156,7 +1147,6 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
     } catch (SQLException e) {
       log.error("PtG CHUNK DAO! Unable to updated from {} to {}! {}", expectedStatusCode,
           newStatusCode, e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeStatement(stmt);
       closeConnection(con);

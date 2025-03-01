@@ -96,7 +96,7 @@ public class TapeRecallDAOMySql extends AbstractDAO implements TapeRecallDAO {
         status = res.getInt(1);
       }
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeResultSet(res);
       closeStatement(ps);
@@ -136,7 +136,7 @@ public class TapeRecallDAOMySql extends AbstractDAO implements TapeRecallDAO {
         status = res.getInt(1);
       }
     } catch (SQLException e) {
-      log.error(e.getMessage(), e);
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeResultSet(res);
       closeStatement(ps);
@@ -176,7 +176,7 @@ public class TapeRecallDAOMySql extends AbstractDAO implements TapeRecallDAO {
         status = res.getInt(1);
       }
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeResultSet(res);
       closeStatement(ps);
@@ -214,7 +214,7 @@ public class TapeRecallDAOMySql extends AbstractDAO implements TapeRecallDAO {
       }
 
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeResultSet(res);
       closeStatement(ps);
@@ -244,7 +244,7 @@ public class TapeRecallDAOMySql extends AbstractDAO implements TapeRecallDAO {
         log.info("No tasks found with GroupTaskId='{}'", groupTaskId);
       }
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeResultSet(res);
       closeStatement(ps);
@@ -276,7 +276,7 @@ public class TapeRecallDAOMySql extends AbstractDAO implements TapeRecallDAO {
         log.info("No task found for requestToken={} taskId={}. Query={}", requestToken, taskId, ps);
       }
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeResultSet(res);
       closeStatement(ps);
@@ -302,7 +302,7 @@ public class TapeRecallDAOMySql extends AbstractDAO implements TapeRecallDAO {
       res = ps.executeQuery();
       response = res.first();
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeResultSet(res);
       closeStatement(ps);
@@ -374,7 +374,7 @@ public class TapeRecallDAOMySql extends AbstractDAO implements TapeRecallDAO {
       log.debug("Query(insert-task)={} exited with {}", ps, n);
 
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeResultSet(res);
       closeStatement(ps);
@@ -403,7 +403,7 @@ public class TapeRecallDAOMySql extends AbstractDAO implements TapeRecallDAO {
       count = ps.executeUpdate();
 
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeStatement(ps);
       closeConnection(con);
@@ -425,7 +425,7 @@ public class TapeRecallDAOMySql extends AbstractDAO implements TapeRecallDAO {
       ps.executeUpdate();
 
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeStatement(ps);
       closeConnection(con);
@@ -505,7 +505,7 @@ public class TapeRecallDAOMySql extends AbstractDAO implements TapeRecallDAO {
       }
 
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeResultSet(res);
       closeStatement(ps);
@@ -548,7 +548,7 @@ public class TapeRecallDAOMySql extends AbstractDAO implements TapeRecallDAO {
 
     } catch (SQLException e) {
 
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
 
     } finally {
 
@@ -700,7 +700,7 @@ public class TapeRecallDAOMySql extends AbstractDAO implements TapeRecallDAO {
             "Skipping the status upadate operation, the status already stored is equal to the new one provided");
       }
     } catch (IllegalArgumentException | SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeResultSet(res);
       closeStatement(ps);

@@ -5,10 +5,11 @@
 package it.grid.storm.persistence.util.helper;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class MySqlFormat implements SQLFormat {
 
-  private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+  private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
   /**
    * Create a string value of fields
@@ -21,7 +22,7 @@ public class MySqlFormat implements SQLFormat {
     if (value == null) {
       return null;
     }
-    if (value instanceof java.util.Date) {
+    if (value instanceof Date) {
       return dateFormat.format(value);
     }
     return value.toString();

@@ -127,7 +127,6 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
       updatePut.executeUpdate();
     } catch (SQLException e) {
       log.error("PtP CHUNK DAO: Unable to complete update! {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeStatement(updatePut);
       closeConnection(con);
@@ -155,7 +154,6 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
       stmt.executeUpdate();
     } catch (SQLException e) {
       log.error("PtP CHUNK DAO: Unable to complete update incomplete! {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeStatement(stmt);
       closeConnection(con);
@@ -246,11 +244,10 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
       con.commit();
     } catch (SQLException e) {
       log.error("PTP CHUNK DAO: {}", e.getMessage(), e);
-      e.printStackTrace();
       try {
         con.rollback();
       } catch (SQLException e1) {
-        e1.printStackTrace();
+        log.error("Got exception {}: {}", e1.getClass(), e1.getMessage());
       }
     } finally {
       closeResultSet(rsProtocols);
@@ -292,7 +289,6 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
           "PtPChunkDAO! Unable to signal in DB that a chunk of "
               + "the request was malformed! Request: {}; Error: {}",
           auxTO.toString(), e.getMessage(), e);
-      e.printStackTrace();
       updated = 0;
     } finally {
       closeStatement(signal);
@@ -334,7 +330,6 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
 
       log.error("PtPChunkDAO! Unable to select expired "
           + "SRM_SPACE_AVAILABLE chunks of PtP requests. {}", e.getMessage(), e);
-      e.printStackTrace();
 
     } finally {
 
@@ -388,7 +383,6 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
     } catch (SQLException e) {
       log.error("PtPChunkDAO! Unable to transit chunks from "
           + "SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED! {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeStatement(stmt);
       closeConnection(con);
@@ -398,7 +392,8 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
     return count;
   }
 
-  public synchronized int transitLongTimeInProgressRequestsToStatus(long expirationTime, TStatusCode status, String explanation) {
+  public synchronized int transitLongTimeInProgressRequestsToStatus(long expirationTime,
+      TStatusCode status, String explanation) {
 
     String sql = "UPDATE request_queue rq, request_Put rp, status_Put sp "
         + "SET rq.status=?, sp.statusCode=?, sp.explanation=? "
@@ -419,7 +414,7 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
       stmt.setLong(5, expirationTime);
       log.trace("PtP CHUNK DAO - transit SRM_REQUEST_INPROGRESS to {}: {}", status, stmt);
       count = stmt.executeUpdate();
- 
+
     } catch (SQLException e) {
       log.error("PtPChunkDAO! Unable to transit chunks from "
           + "SRM_REQUEST_INPROGRESS to SRM_FAILURE! {}", e.getMessage(), e);
@@ -428,7 +423,7 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
       closeStatement(stmt);
       closeConnection(con);
     }
-  return count;
+    return count;
   }
 
   public synchronized int updateStatus(Collection<Long> ids, TStatusCode fromStatus,
@@ -467,7 +462,6 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
     } catch (SQLException e) {
       log.error("PtPChunkDAO! Unable to transit chunks from "
           + "SRM_REQUEST_INPROGRESS to SRM_FAILURE! {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeStatement(stmt);
       closeConnection(con);
@@ -530,7 +524,6 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
       }
     } catch (SQLException e) {
       log.error("PTP CHUNK DAO! Unable to updated from to {}! {}", statusCode, e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeStatement(stmt);
       closeConnection(con);
@@ -612,7 +605,6 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
     } catch (SQLException e) {
       log.error("PTP CHUNK DAO! Unable to updated from {} to {}! Error: {}", expectedStatusCode,
           newStatusCode, e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeStatement(stmt);
       closeConnection(con);
@@ -706,7 +698,6 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
       return list;
     } catch (SQLException e) {
       log.error("PTP CHUNK DAO: {}", e.getMessage(), e);
-      /* return empty Collection! */
       return Lists.newArrayList();
     } finally {
       closeResultSet(rs);

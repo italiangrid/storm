@@ -490,7 +490,6 @@ public class StoRM {
 
     isDiskUsageServiceEnabled = config.getDiskUsageServiceEnabled();
 
-    Namespace namespace = Namespace.getInstance();
     List<VirtualFS> quotaEnabledVfs = namespace.getVFSWithQuotaEnabled();
     List<VirtualFS> sas = namespace.getAllDefinedVFS()
       .stream()

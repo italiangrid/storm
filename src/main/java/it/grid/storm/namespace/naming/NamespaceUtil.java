@@ -4,6 +4,7 @@
  */
 package it.grid.storm.namespace.naming;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -89,15 +90,16 @@ public class NamespaceUtil {
    */
   public static Collection<VirtualFS> getResidentVFS(String mountPointPath) {
 
-    List<VirtualFS> vfsSet = Namespace.getInstance().getAllDefinedVFS();
-    for (VirtualFS vfs : vfsSet) {
+    List<VirtualFS> vfsSet = new ArrayList<>();
+    
+    for (VirtualFS vfs : Namespace.getInstance().getAllDefinedVFS()) {
       String vfsRootPath;
       boolean enclosed;
 
       vfsRootPath = vfs.getRootPath();
       enclosed = NamespaceUtil.isEnclosed(mountPointPath, vfsRootPath);
-      if (!enclosed) {
-        vfsSet.remove(vfs);
+      if (enclosed) {
+        vfsSet.add(vfs);
       }
     }
     return vfsSet;

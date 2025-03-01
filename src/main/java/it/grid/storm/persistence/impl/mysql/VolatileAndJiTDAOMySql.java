@@ -71,7 +71,6 @@ public class VolatileAndJiTDAOMySql extends AbstractDAO implements VolatileAndJi
       stmt.execute();
     } catch (SQLException e) {
       log.error("VolatileAndJiTDAO! Error in addJiT: {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeStatement(stmt);
       closeConnection(con);
@@ -102,7 +101,6 @@ public class VolatileAndJiTDAOMySql extends AbstractDAO implements VolatileAndJi
       stmt.execute();
     } catch (SQLException e) {
       log.error("VolatileAndJiTDAO! Error in addVolatile: {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeStatement(stmt);
       closeConnection(con);
@@ -139,7 +137,6 @@ public class VolatileAndJiTDAOMySql extends AbstractDAO implements VolatileAndJi
       }
     } catch (SQLException e) {
       log.error("VolatileAndJiTDAO! Error in existsOnVolatile: {}", e.getMessage(), e);
-      e.printStackTrace();
       result = false;
     } finally {
       closeResultSet(rs);
@@ -183,7 +180,6 @@ public class VolatileAndJiTDAOMySql extends AbstractDAO implements VolatileAndJi
       log.debug("VolatileAndJiTDAO. {} jit entries forced updated.", n);
     } catch (SQLException e) {
       log.error("VolatileAndJiTDAO! Error in forceUpdateJiT: {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeStatement(stmt);
       closeConnection(con);
@@ -224,7 +220,6 @@ public class VolatileAndJiTDAOMySql extends AbstractDAO implements VolatileAndJi
       }
     } catch (SQLException e) {
       log.error("VolatileAndJiTDAO! Error in numberJiT: {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeResultSet(rs);
       closeStatement(stmt);
@@ -264,7 +259,6 @@ public class VolatileAndJiTDAOMySql extends AbstractDAO implements VolatileAndJi
       }
     } catch (SQLException e) {
       log.error("VolatileAndJiTDAO! Error in numberVolatile: {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeResultSet(rs);
       closeStatement(stmt);
@@ -292,7 +286,6 @@ public class VolatileAndJiTDAOMySql extends AbstractDAO implements VolatileAndJi
       log.debug("VolatileAndJiTDAO. removeJiT: {} entries removed", n);
     } catch (SQLException e) {
       log.error("VolatileAndJiTDAO! Error in removeJiT: {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeStatement(stmt);
       closeConnection(con);

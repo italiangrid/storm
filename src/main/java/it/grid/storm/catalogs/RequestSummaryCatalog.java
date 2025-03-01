@@ -72,7 +72,7 @@ public class RequestSummaryCatalog {
    * that request is failed and an attempt is made to signal such occurrence in the DB. Only
    * correctly formed requests are returned.
    */
-  synchronized public Collection<RequestSummaryData> fetchNewRequests(int capacity) {
+   public synchronized Collection<RequestSummaryData> fetchNewRequests(int capacity) {
 
     List<RequestSummaryData> list = Lists.newArrayList();
 
@@ -229,7 +229,7 @@ public class RequestSummaryCatalog {
    * Method used to update the global status of a request identified by TRequestToken, to the
    * supplied TReturnStatus. In case of any exception nothing happens.
    */
-  synchronized public void updateGlobalStatus(TRequestToken rt, TReturnStatus status) {
+  public synchronized void updateGlobalStatus(TRequestToken rt, TReturnStatus status) {
 
     dao.updateGlobalStatus(rt, status.getStatusCode(), status.getExplanation());
   }

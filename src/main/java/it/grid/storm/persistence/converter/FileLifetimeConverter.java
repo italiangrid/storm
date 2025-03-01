@@ -40,9 +40,10 @@ public class FileLifetimeConverter {
    */
   public int toDB(long l) {
 
-    if (l == TLifeTimeInSeconds.makeEmpty().value())
+    if (l == TLifeTimeInSeconds.makeEmpty().value()) {
       return 0;
-    return Long.valueOf(l).intValue();
+    }
+    return (int) l;
   }
 
   /**
@@ -52,8 +53,9 @@ public class FileLifetimeConverter {
    */
   public long toStoRM(int s) {
 
-    if (s <= 0)
+    if (s <= 0) {
       return StormConfiguration.getInstance().getFileLifetimeDefault();
-    return Integer.valueOf(s).longValue();
+    }
+    return (long) s;
   }
 }

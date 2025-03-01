@@ -105,11 +105,10 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
           + "SET sb.statusCode=? "
           + "WHERE sb.statusCode=? AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(rq.timeStamp) >= rq.pinLifetime ";
 
-  private static final String ABORT_EXPIRED_BOL_REQUESTS_INPROGRESS =
-      "UPDATE status_BoL sb "
-          + "JOIN (request_BoL rb, request_queue rq) ON sb.request_BoLID=rb.ID AND rb.request_queueID=rq.ID "
-          + "SET sb.statusCode=? "
-          + "WHERE sb.statusCode=? AND rq.timeStamp <= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL ? SECOND)";
+  private static final String ABORT_EXPIRED_BOL_REQUESTS_INPROGRESS = "UPDATE status_BoL sb "
+      + "JOIN (request_BoL rb, request_queue rq) ON sb.request_BoLID=rb.ID AND rb.request_queueID=rq.ID "
+      + "SET sb.statusCode=? "
+      + "WHERE sb.statusCode=? AND rq.timeStamp <= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL ? SECOND)";
 
   private static BoLChunkDAOMySql instance;
 
@@ -166,11 +165,11 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
       // update primary key reading the generated key
       to.setPrimaryKey(id);
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
       try {
         con.rollback();
       } catch (SQLException e1) {
-        e1.printStackTrace();
+        log.error("Got exception during rollback {}: {}", e1.getClass(), e1.getMessage());
       }
     } finally {
       closeResultSet(res);
@@ -240,7 +239,7 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
       try {
         con.rollback();
       } catch (SQLException e1) {
-        e1.printStackTrace();
+        log.error("Got exception {}: {}", e1.getClass(), e1.getMessage());
       }
     } finally {
       closeResultSet(rs);
@@ -370,7 +369,6 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
       ps.executeUpdate();
     } catch (SQLException e) {
       log.error("BoL CHUNK DAO: Unable to complete update incomplete! {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeStatement(ps);
       closeConnection(con);
@@ -445,7 +443,6 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
     } catch (SQLException e) {
 
       log.error("BOL CHUNK DAO: {}", e.getMessage(), e);
-      e.printStackTrace();
       return Lists.newArrayList();
 
     } finally {
@@ -496,7 +493,6 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
     } catch (SQLException e) {
 
       log.error("BOL CHUNK DAO: {}", e.getMessage(), e);
-      e.printStackTrace();
       return results;
 
     } finally {
@@ -555,7 +551,6 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
       }
     } catch (SQLException e) {
       log.error("BoL CHUNK DAO: {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeResultSet(rs);
       closeStatement(find);
@@ -612,7 +607,6 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
       }
     } catch (SQLException e) {
       log.error("BoL CHUNK DAO: {}", e.getMessage(), e);
-      e.printStackTrace();
     } finally {
       closeResultSet(rs);
       closeStatement(find);
@@ -637,7 +631,7 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
       result = ps.executeUpdate();
 
     } catch (SQLException e) {
-      e.printStackTrace();
+      log.error("Got exception {}: {}", e.getClass(), e.getMessage());
     } finally {
       closeStatement(ps);
       closeConnection(con);
@@ -684,7 +678,6 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
     } catch (SQLException e) {
 
       log.error("BoLChunkDAO! SQLException.", e.getMessage(), e);
-      e.printStackTrace();
 
     } finally {
 
@@ -726,7 +719,6 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
     } catch (SQLException e) {
 
       log.error("BoLChunkDAO! SQLException.", e.getMessage(), e);
-      e.printStackTrace();
 
     } finally {
 
@@ -786,14 +778,16 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
       count = stmt.executeUpdate();
 
     } catch (SQLException e) {
+
       log.error("BOL CHUNK DAO! Unable to updated from {} to {}!", expectedStatusCode,
           newStatusCode, e);
-      e.printStackTrace();
+
     } finally {
+
       closeStatement(stmt);
       closeConnection(con);
-    }
 
+    }
     return count;
   }
 
@@ -884,7 +878,6 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
     } catch (SQLException e) {
 
       log.error("BOL CHUNK DAO: {}", e.getMessage(), e);
-      e.printStackTrace();
 
     } finally {
 
