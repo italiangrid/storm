@@ -4,12 +4,12 @@
  */
 package it.grid.storm.persistence.impl.mysql;
 
-import static it.grid.storm.catalogs.ChunkDAOUtils.buildInClauseForArray;
 import static it.grid.storm.srm.types.TStatusCode.SRM_ABORTED;
 import static it.grid.storm.srm.types.TStatusCode.SRM_FAILURE;
 import static it.grid.storm.srm.types.TStatusCode.SRM_FILE_LIFETIME_EXPIRED;
 import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_INPROGRESS;
 import static it.grid.storm.srm.types.TStatusCode.SRM_SPACE_AVAILABLE;
+import static java.lang.String.format;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,8 +18,8 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +80,10 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
       "SELECT rp.ID, rp.targetSURL "
           + "FROM status_Put sp JOIN (request_Put rp, request_queue rq) ON sp.request_PutID=rp.ID AND rp.request_queueID=rq.ID "
           + "WHERE sp.statusCode=? AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(rq.timeStamp) >= rq.pinLifetime ";
+
+  private static final String UPDATE_STATUS_WHERE_ID_IN = "UPDATE status_Put sp "
+      + "JOIN (request_Put rp, request_queue rq) ON sp.request_PutID=rp.ID AND rp.request_queueID=rq.ID "
+      + "SET sp.statusCode=?, sp.explanation=? WHERE sp.statusCode=? AND rp.ID IN (%s)";
 
   private static PtPChunkDAO instance;
 
@@ -297,16 +301,6 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
     return updated;
   }
 
-  /**
-   * Method that retrieves all expired requests in SRM_SPACE_AVAILABLE state.
-   * 
-   * @return a Map containing the ID of the request as key and the relative SURL as value
-   */
-  public synchronized Map<Long, String> getExpiredSRM_SPACE_AVAILABLE() {
-
-    return getExpired(SRM_SPACE_AVAILABLE);
-  }
-
   public synchronized Map<Long, String> getExpired(TStatusCode status) {
 
     Map<Long, String> expiredRequests = Maps.newHashMap();
@@ -340,29 +334,17 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
     return expiredRequests;
   }
 
-  /**
-   * Method that updates chunks in SRM_SPACE_AVAILABLE state, into SRM_FILE_LIFETIME_EXPIRED. An
-   * array of Long representing the primary key of each chunk is required. This is needed when the
-   * client forgets to invoke srmPutDone(). In case of any error or exception, the returned int
-   * value will be zero or less than the input List size.
-   * 
-   * @param the list of the request id to update
-   * 
-   * @return The number of the updated records into the db
-   */
-  public synchronized int transitExpiredSRM_SPACE_AVAILABLEtoSRM_FILE_LIFETIME_EXPIRED(
-      Collection<Long> ids) {
+  public synchronized int updateStatus(Collection<Long> ids, TStatusCode fromStatus, TStatusCode toStatus, String explanation) {
 
-    Preconditions.checkNotNull(ids, "Invalid list of id");
-
-    String querySQL = "UPDATE status_Put sp "
-        + "JOIN (request_Put rp, request_queue rq) ON sp.request_PutID=rp.ID AND rp.request_queueID=rq.ID "
-        + "SET sp.statusCode=?, sp.explanation=? "
-        + "WHERE sp.statusCode=? AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(rq.timeStamp) >= rq.pinLifetime ";
-
-    if (!ids.isEmpty()) {
-      querySQL += "AND rp.ID IN (" + StringUtils.join(ids.toArray(), ',') + ")";
+    Preconditions.checkNotNull(ids, "Invalid null list of id");
+    Preconditions.checkArgument(!ids.isEmpty(), "Invalid empty list of id");
+    Preconditions.checkNotNull(fromStatus, "Invalid null fromStatus");
+    Preconditions.checkNotNull(toStatus, "Invalid null toStatus");
+    if (explanation == null) {
+      explanation = "";
     }
+
+    String querySQL = format(UPDATE_STATUS_WHERE_ID_IN, makeIdList(ids));
 
     Connection con = null;
     PreparedStatement stmt = null;
@@ -372,11 +354,14 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
       con = getConnection();
       stmt = con.prepareStatement(querySQL);
       stmt.setInt(1, statusCodeConverter.toDB(SRM_FILE_LIFETIME_EXPIRED));
-      stmt.setString(2, "Expired pinLifetime");
+      stmt.setString(2, explanation);
       stmt.setInt(3, statusCodeConverter.toDB(SRM_SPACE_AVAILABLE));
+      int paramNum = 4;
+      for (Long id: ids) {
+        stmt.setLong(paramNum++, id);
+      }
 
-      log.trace("PtP CHUNK DAO - transit SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED: {}",
-          stmt);
+      log.trace("PtP CHUNK DAO - transit {} to {}: {}", stmt, fromStatus, toStatus);
 
       count = stmt.executeUpdate();
 
@@ -390,6 +375,10 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
     log.trace("PtPChunkDAO! {} chunks of PtP requests were transited "
         + "from SRM_SPACE_AVAILABLE to SRM_FILE_LIFETIME_EXPIRED.", count);
     return count;
+  }
+
+  private Object makeIdList(Collection<Long> ids) {
+    return ids.stream().map(v -> "?").collect(Collectors.joining(", "));
   }
 
   public synchronized int transitLongTimeInProgressRequestsToStatus(long expirationTime,
@@ -423,51 +412,6 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
       closeStatement(stmt);
       closeConnection(con);
     }
-    return count;
-  }
-
-  public synchronized int updateStatus(Collection<Long> ids, TStatusCode fromStatus,
-      TStatusCode toStatus, String explanation) {
-
-    Preconditions.checkNotNull(ids, "Invalid list of id");
-
-    if (ids.isEmpty()) {
-      return 0;
-    }
-
-    String querySQL = "UPDATE request_queue rq, request_Put rp, status_Put sp "
-        + "SET rq.status=?, sp.statusCode=?, sp.explanation=? "
-        + "WHERE rq.ID = rp.request_queueID and rp.ID = sp.request_PutID "
-        + "AND rq.status=? AND rq.ID IN (" + buildInClauseForArray(ids.size()) + ")";
-
-    Connection con = null;
-    PreparedStatement stmt = null;
-    int count = 0;
-
-    try {
-      con = getConnection();
-      stmt = con.prepareStatement(querySQL);
-      stmt.setInt(1, statusCodeConverter.toDB(toStatus));
-      stmt.setInt(2, statusCodeConverter.toDB(toStatus));
-      stmt.setString(3, explanation);
-      stmt.setInt(4, statusCodeConverter.toDB(fromStatus));
-      int i = 5;
-      for (Long id : ids) {
-        stmt.setLong(i, id);
-        i++;
-      }
-      log.trace("PtP CHUNK DAO - transit SRM_REQUEST_INPROGRESS to SRM_FAILURE: {}", stmt);
-      count = stmt.executeUpdate();
-
-    } catch (SQLException e) {
-      log.error("PtPChunkDAO! Unable to transit chunks from "
-          + "SRM_REQUEST_INPROGRESS to SRM_FAILURE! {}", e.getMessage(), e);
-    } finally {
-      closeStatement(stmt);
-      closeConnection(con);
-    }
-    log.trace("PtPChunkDAO! {} chunks of PtP requests were transited "
-        + "from SRM_REQUEST_INPROGRESS to SRM_FAILURE.", count);
     return count;
   }
 
@@ -610,100 +554,6 @@ public class PtPChunkDAOMySql extends AbstractDAO implements PtPChunkDAO {
       closeConnection(con);
     }
     return count;
-  }
-
-  public Collection<PtPChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray, String dn) {
-
-    if (surlsUniqueIDs == null || surlsUniqueIDs.length == 0 || surlsArray == null
-        || surlsArray.length == 0 || dn == null) {
-      throw new IllegalArgumentException(
-          "Unable to perform the find, " + "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs
-              + " surlsArray=" + surlsArray + " dn=" + dn);
-    }
-    return find(surlsUniqueIDs, surlsArray, dn, true);
-  }
-
-  private synchronized Collection<PtPChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray,
-      String dn, boolean withDn) throws IllegalArgumentException {
-
-    if ((withDn && dn == null) || surlsUniqueIDs == null || surlsUniqueIDs.length == 0
-        || surlsArray == null || surlsArray.length == 0) {
-      throw new IllegalArgumentException(
-          "Unable to perform the find, " + "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs
-              + " surlsArray=" + surlsArray + " withDn=" + withDn + " dn=" + dn);
-    }
-
-    Connection con = null;
-    PreparedStatement find = null;
-    ResultSet rs = null;
-
-    try {
-      // get chunks of the request
-      String str =
-          "SELECT rq.ID, rq.r_token, rq.config_FileStorageTypeID, rq.config_OverwriteID, rq.timeStamp, rq.pinLifetime, rq.fileLifetime, "
-              + "rq.s_token, rq.client_dn, rq.proxy, rp.ID, rp.targetSURL, rp.expectedFileSize, rp.normalized_targetSURL_StFN, rp.targetSURL_uniqueID, "
-              + "sp.statusCode " + "FROM request_queue rq JOIN (request_Put rp, status_Put sp) "
-              + "ON (rp.request_queueID=rq.ID AND sp.request_PutID=rp.ID) "
-              + "WHERE ( rp.targetSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
-              + " AND rp.targetSURL IN " + makeSurlString(surlsArray) + " )";
-
-      if (withDn) {
-        str += " AND rq.client_dn=\'" + dn + "\'";
-      }
-
-      con = getConnection();
-      find = con.prepareStatement(str);
-
-      List<PtPChunkDataTO> list = Lists.newArrayList();
-
-      log.trace("PtP CHUNK DAO - find method: {}", find);
-      rs = find.executeQuery();
-
-      while (rs.next()) {
-
-        PtPChunkDataTO chunkDataTO = new PtPChunkDataTO();
-        chunkDataTO.setFileStorageType(rs.getString("rq.config_FileStorageTypeID"));
-        chunkDataTO.setOverwriteOption(rs.getString("rq.config_OverwriteID"));
-        chunkDataTO.setTimeStamp(rs.getTimestamp("rq.timeStamp"));
-        chunkDataTO.setPinLifetime(rs.getInt("rq.pinLifetime"));
-        chunkDataTO.setFileLifetime(rs.getInt("rq.fileLifetime"));
-        chunkDataTO.setSpaceToken(rs.getString("rq.s_token"));
-        chunkDataTO.setClientDN(rs.getString("rq.client_dn"));
-
-        /**
-         * This code is only for the 1.3.18. This is a workaround to get FQANs using the proxy field
-         * on request_queue. The FE use the proxy field of request_queue to insert a single FQAN
-         * string containing all FQAN separated by the "#" char. The proxy is a BLOB, hence it has
-         * to be properly converted in string.
-         */
-        java.sql.Blob blob = rs.getBlob("rq.proxy");
-        if (!rs.wasNull() && blob != null) {
-          byte[] bdata = blob.getBytes(1, (int) blob.length());
-          chunkDataTO.setVomsAttributes(new String(bdata));
-        }
-        chunkDataTO.setPrimaryKey(rs.getLong("rp.ID"));
-        chunkDataTO.setToSURL(rs.getString("rp.targetSURL"));
-
-        chunkDataTO.setNormalizedStFN(rs.getString("rp.normalized_targetSURL_StFN"));
-        int uniqueID = rs.getInt("rp.targetSURL_uniqueID");
-        if (!rs.wasNull()) {
-          chunkDataTO.setSurlUniqueID(Integer.valueOf(uniqueID));
-        }
-
-        chunkDataTO.setExpectedFileSize(rs.getLong("rp.expectedFileSize"));
-        chunkDataTO.setRequestToken(rs.getString("rq.r_token"));
-        chunkDataTO.setStatus(rs.getInt("sp.statusCode"));
-        list.add(chunkDataTO);
-      }
-      return list;
-    } catch (SQLException e) {
-      log.error("PTP CHUNK DAO: {}", e.getMessage(), e);
-      return Lists.newArrayList();
-    } finally {
-      closeResultSet(rs);
-      closeStatement(find);
-      closeConnection(con);
-    }
   }
 
   private String buildExpainationSet(String explanation) {

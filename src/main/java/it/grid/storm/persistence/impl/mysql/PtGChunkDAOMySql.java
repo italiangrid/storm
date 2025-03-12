@@ -4,12 +4,10 @@
  */
 package it.grid.storm.persistence.impl.mysql;
 
-import static it.grid.storm.srm.types.TRequestType.PREPARE_TO_GET;
 import static it.grid.storm.srm.types.TStatusCode.SRM_ABORTED;
 import static it.grid.storm.srm.types.TStatusCode.SRM_FAILURE;
 import static it.grid.storm.srm.types.TStatusCode.SRM_FILE_PINNED;
 import static it.grid.storm.srm.types.TStatusCode.SRM_RELEASED;
-import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_INPROGRESS;
 import static it.grid.storm.srm.types.TStatusCode.SRM_SUCCESS;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
@@ -17,18 +15,19 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -38,7 +37,6 @@ import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.naming.SURL;
-import it.grid.storm.persistence.converter.RequestTypeConverter;
 import it.grid.storm.persistence.converter.StatusCodeConverter;
 import it.grid.storm.persistence.dao.AbstractDAO;
 import it.grid.storm.persistence.dao.PtGChunkDAO;
@@ -68,14 +66,6 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
   private static final String SELECT_REQUEST_WHERE_TOKEN =
       "SELECT * FROM request_queue WHERE r_token=?";
 
-  private static final String INSERT_REQUEST =
-      "INSERT INTO request_queue (config_RequestTypeID,client_dn,pinLifetime,status,errstring,r_token,nbreqfiles,timeStamp) "
-          + "VALUES (?,?,?,?,?,?,?,?)";
-
-  private static final String INSERT_REQUEST_TRASNFER_PROTOCOL =
-      "INSERT INTO request_TransferProtocols (request_queueID,config_ProtocolsID) "
-          + "VALUES (?,?)";
-
   private static final String INSERT_REQUEST_DIR_OPTION =
       "INSERT INTO request_DirOption (isSourceADirectory,allLevelRecursive,numOfLevels) "
           + "VALUES (?,?,?)";
@@ -96,9 +86,6 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
       "UPDATE request_Get rg SET rg.normalized_sourceSURL_StFN=?, rg.sourceSURL_uniqueID=? "
           + "WHERE rg.ID=?";
 
-  private static final String SELECT_STATUS_GET_WHERE_GET_ID =
-      "SELECT statusCode, transferURL FROM status_Get WHERE request_GetID=?";
-
   private static final String SELECT_REQUEST_GET_PROTOCOLS_WHERE_TOKEN =
       "SELECT tp.config_ProtocolsID "
           + "FROM request_TransferProtocols tp JOIN request_queue rq ON tp.request_queueID=rq.ID "
@@ -113,17 +100,8 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
           + "LEFT JOIN request_DirOption d ON rg.request_DirOptionID=d.ID "
           + "WHERE rq.r_token=? AND sg.statusCode<>?";
 
-  private static final String SELECT_REQUEST_GET_WHERE_TOKEN =
-      "SELECT sg.statusCode, rg.ID, rg.sourceSURL, rg.normalized_sourceSURL_StFN, rg.sourceSURL_uniqueID "
-          + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
-          + "ON (rg.request_queueID=rq.ID AND sg.request_GetID=rg.ID) " + "WHERE rq.r_token=?";
-
   private static final String UPDATE_STATUS_GET_WHERE_REQUEST_GET_ID_IS =
       "UPDATE status_Get SET statusCode=?, explanation=? WHERE request_GetID=?";
-
-  private static final String COUNT_REQUEST_ON_SURL_WITH_STATUS =
-      "SELECT COUNT(rg.ID) FROM status_Get sg JOIN request_Get rg "
-          + "ON (sg.request_GetID=rg.ID) WHERE rg.sourceSURL_uniqueID=? AND sg.statusCode=?";
 
   private static final String SELECT_EXPIRED_REQUESTS =
       "SELECT rg.sourceSURL , rg.sourceSURL_uniqueID "
@@ -148,6 +126,15 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
           + "WHERE sb.statusCode=?"
           + " AND UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(rq.timeStamp) < rq.pinLifetime ";
 
+  private static final String UPDATE_STATUS_OF_REQUESTS =
+      "UPDATE status_Get sg JOIN (request_Get rg, request_queue rq) ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
+          + "SET sg.statusCode=? , sg.explanation=? WHERE rq.r_token=? AND rg.sourceSURL_uniqueID IN (%s)"
+          + " AND rg.sourceSURL IN (%s)";
+
+  private static final String UPDATE_STATUS_ON_MATCHING_STATUS = "UPDATE status_Get sg JOIN (request_Get rg, request_queue rq) "
+      + "ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID SET sg.statusCode=?, sg.explanation=? "
+      + "WHERE sg.statusCode=? AND rq.r_token=?";
+
   private static PtGChunkDAOMySql instance;
 
   public static synchronized PtGChunkDAO getInstance() {
@@ -157,13 +144,11 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
     return instance;
   }
 
-  private final RequestTypeConverter requestTypeConverter;
   private final StatusCodeConverter statusCodeConverter;
 
   private PtGChunkDAOMySql() {
 
     super(StormDbConnectionPool.getInstance());
-    requestTypeConverter = RequestTypeConverter.getInstance();
     statusCodeConverter = StatusCodeConverter.getInstance();
   }
 
@@ -220,79 +205,6 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
     } finally {
       closeResultSet(rsid);
       closeStatement(id);
-      closeConnection(con);
-    }
-  }
-
-  /**
-   * Method used to add a new record to the DB: the supplied PtGChunkDataTO gets its primaryKey
-   * changed to the one assigned by the DB. The client_dn must also be supplied as a String.
-   * 
-   * The supplied PtGChunkData is used to fill in all the DB tables where file specific info gets
-   * recorded: it _adds_ a new request!
-   */
-  public synchronized void addNew(PtGChunkDataTO to, String clientDn) {
-
-    Connection con = null;
-    ResultSet rsNew = null;
-    PreparedStatement addNew = null;
-    PreparedStatement addProtocols = null;
-
-    try {
-
-      con = getManagedConnection();
-
-      addNew = con.prepareStatement(INSERT_REQUEST, RETURN_GENERATED_KEYS);
-      addNew.setString(1, requestTypeConverter.toDB(PREPARE_TO_GET));
-      addNew.setString(2, clientDn);
-      addNew.setInt(3, to.lifeTime());
-      addNew.setInt(4, statusCodeConverter.toDB(SRM_REQUEST_INPROGRESS));
-      addNew.setString(5, "New PtG Request resulting from srmCopy invocation.");
-      addNew.setString(6, to.requestToken());
-      addNew.setInt(7, 1); // number of requested files set to 1!
-      addNew.setTimestamp(8, new Timestamp(new Date().getTime()));
-      log.trace("PTG CHUNK DAO: addNew; {}", addNew);
-      addNew.execute();
-
-      rsNew = addNew.getGeneratedKeys();
-
-      if (!rsNew.next()) {
-        log.error("Unable to insert new request");
-        con.rollback();
-        return;
-      }
-      int idNew = rsNew.getInt(1);
-
-      // add protocols...
-      addProtocols = con.prepareStatement(INSERT_REQUEST_TRASNFER_PROTOCOL);
-      for (Iterator<String> i = to.protocolList().iterator(); i.hasNext();) {
-        addProtocols.setInt(1, idNew);
-        addProtocols.setString(2, i.next());
-        log.trace("PTG CHUNK DAO: addNew; {}", addProtocols);
-        addProtocols.execute();
-      }
-
-      // addChild...
-      int id = fillPtGTables(con, to, idNew);
-
-      // end transaction!
-      con.commit();
-
-      // update primary key reading the generated key
-      to.setPrimaryKey(id);
-
-    } catch (SQLException e) {
-      log.error("PTG CHUNK DAO: Rolling back! Unable to complete addNew! "
-          + "PtGChunkDataTO: {}; error: {}", to, e.getMessage(), e);
-      try {
-        con.rollback();
-      } catch (SQLException e1) {
-        log.error("Got exception {}: {}", e1.getClass(), e1.getMessage());
-      }
-    } finally {
-      closeResultSet(rsNew);
-      closeStatement(addNew);
-      closeStatement(addProtocols);
       closeConnection(con);
     }
   }
@@ -434,51 +346,6 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
   }
 
   /**
-   * TODO WARNING! THIS IS A WORK IN PROGRESS!!!
-   * 
-   * Method used to refresh the PtGChunkDataTO information from the MySQL DB.
-   * 
-   * In this first version, only the statusCode and the TURL are reloaded from the DB. TODO The next
-   * version must contains all the information related to the Chunk!
-   * 
-   * In case of any error, an error messagge gets logged but no exception is thrown.
-   */
-
-  public synchronized PtGChunkDataTO refresh(long primaryKey) {
-
-    Connection con = null;
-    PreparedStatement find = null;
-    ResultSet rs = null;
-    PtGChunkDataTO chunkDataTO = null;
-
-    try {
-
-      con = getConnection();
-      find = con.prepareStatement(SELECT_STATUS_GET_WHERE_GET_ID);
-      find.setLong(1, primaryKey);
-      log.trace("PTG CHUNK DAO: refresh status method; {}", find);
-      rs = find.executeQuery();
-
-      while (rs.next()) {
-        chunkDataTO = new PtGChunkDataTO();
-        chunkDataTO.setStatus(rs.getInt("sg.statusCode"));
-        chunkDataTO.setTurl(rs.getString("sg.transferURL"));
-      }
-      return chunkDataTO;
-
-    } catch (SQLException e) {
-
-      log.error("PTG CHUNK DAO: {}", e.getMessage(), e);
-      return null;
-
-    } finally {
-      closeResultSet(rs);
-      closeStatement(find);
-      closeConnection(con);
-    }
-  }
-
-  /**
    * Method that queries the MySQL DB to find all entries matching the supplied TRequestToken. The
    * Collection contains the corresponding PtGChunkDataTO objects.
    * 
@@ -580,147 +447,6 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
   }
 
   /**
-   * Method that returns a Collection of ReducedPtGChunkDataTO associated to the given TRequestToken
-   * expressed as String.
-   */
-  public synchronized Collection<ReducedPtGChunkDataTO> findReduced(TRequestToken requestToken) {
-
-    Connection con = null;
-    PreparedStatement find = null;
-    ResultSet rs = null;
-    Collection<ReducedPtGChunkDataTO> results = Lists.newArrayList();
-
-    try {
-
-      con = getConnection();
-      find = con.prepareStatement(SELECT_REQUEST_GET_WHERE_TOKEN);
-      find.setString(1, requestToken.getValue());
-      log.trace("PtG CHUNK DAO! findReduced with request token; {}", find);
-      rs = find.executeQuery();
-
-      while (rs.next()) {
-        ReducedPtGChunkDataTO reducedChunkDataTO = new ReducedPtGChunkDataTO();
-        reducedChunkDataTO.setStatus(rs.getInt("sg.statusCode"));
-        reducedChunkDataTO.setPrimaryKey(rs.getLong("rg.ID"));
-        reducedChunkDataTO.setFromSURL(rs.getString("rg.sourceSURL"));
-        reducedChunkDataTO.setNormalizedStFN(rs.getString("rg.normalized_sourceSURL_StFN"));
-        int uniqueID = rs.getInt("rg.sourceSURL_uniqueID");
-        if (!rs.wasNull()) {
-          reducedChunkDataTO.setSurlUniqueID(uniqueID);
-        }
-        results.add(reducedChunkDataTO);
-      }
-
-    } catch (SQLException e) {
-      log.error("PTG CHUNK DAO: {}", e.getMessage(), e);
-    } finally {
-      closeResultSet(rs);
-      closeStatement(find);
-      closeConnection(con);
-    }
-    return results;
-  }
-
-  public synchronized Collection<ReducedPtGChunkDataTO> findReduced(TRequestToken requestToken,
-      int[] surlsUniqueIDs, String[] surlsArray) {
-
-    Connection con = null;
-    PreparedStatement find = null;
-    ResultSet rs = null;
-    Collection<ReducedPtGChunkDataTO> results = Lists.newArrayList();
-
-    try {
-
-      String str =
-          "SELECT sg.statusCode, rg.ID, rg.sourceSURL, rg.normalized_sourceSURL_StFN, rg.sourceSURL_uniqueID "
-              + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
-              + "ON (rg.request_queueID=rq.ID AND sg.request_GetID=rg.ID) "
-              + "WHERE rq.r_token=? AND ( rg.sourceSURL_uniqueID IN "
-              + makeSURLUniqueIDWhere(surlsUniqueIDs) + " AND rg.sourceSURL IN "
-              + makeSurlString(surlsArray) + " ) ";
-
-      con = getConnection();
-      find = con.prepareStatement(str);
-      find.setString(1, requestToken.getValue());
-      log.trace("PtG CHUNK DAO! findReduced with griduser+surlarray; {}", find);
-      rs = find.executeQuery();
-
-      while (rs.next()) {
-        ReducedPtGChunkDataTO chunkDataTO = new ReducedPtGChunkDataTO();
-        chunkDataTO.setStatus(rs.getInt("sg.statusCode"));
-        chunkDataTO.setPrimaryKey(rs.getLong("rg.ID"));
-        chunkDataTO.setFromSURL(rs.getString("rg.sourceSURL"));
-        chunkDataTO.setNormalizedStFN(rs.getString("rg.normalized_sourceSURL_StFN"));
-        int uniqueID = rs.getInt("rg.sourceSURL_uniqueID");
-        if (!rs.wasNull()) {
-          chunkDataTO.setSurlUniqueID(uniqueID);
-        }
-        results.add(chunkDataTO);
-      }
-    } catch (SQLException e) {
-      log.error("PTG CHUNK DAO: {}", e.getMessage(), e);
-    } finally {
-      closeResultSet(rs);
-      closeStatement(find);
-      closeConnection(con);
-    }
-    return results;
-  }
-
-  /**
-   * Method that returns a Collection of ReducedPtGChunkDataTO associated to the given griduser, and
-   * whose SURLs are contained in the supplied array of Strings.
-   */
-  public synchronized Collection<ReducedPtGChunkDataTO> findReduced(String griduser,
-      int[] surlUniqueIDs, String[] surls) {
-
-    Connection con = null;
-    PreparedStatement find = null;
-    ResultSet rs = null;
-    Collection<ReducedPtGChunkDataTO> results = Lists.newArrayList();
-
-    try {
-      /*
-       * NOTE: we search also on the fromSurl because otherwise we lost all request_get that have
-       * not the uniqueID set because are not yet been used by anybody
-       */
-      con = getConnection();
-      // get reduced chunks
-      String str =
-          "SELECT sg.statusCode, rg.ID, rg.sourceSURL, rg.normalized_sourceSURL_StFN, rg.sourceSURL_uniqueID "
-              + "FROM request_queue rq JOIN (request_Get rg, status_Get sg) "
-              + "ON (rg.request_queueID=rq.ID AND sg.request_GetID=rg.ID) "
-              + "WHERE rq.client_dn=? AND ( rg.sourceSURL_uniqueID IN "
-              + makeSURLUniqueIDWhere(surlUniqueIDs) + " AND rg.sourceSURL IN "
-              + makeSurlString(surls) + " ) ";
-      find = con.prepareStatement(str);
-      find.setString(1, griduser);
-      log.trace("PtG CHUNK DAO! findReduced with griduser+surlarray; {}", find);
-      rs = find.executeQuery();
-
-      while (rs.next()) {
-        ReducedPtGChunkDataTO chunkDataTO = new ReducedPtGChunkDataTO();
-        chunkDataTO.setStatus(rs.getInt("sg.statusCode"));
-        chunkDataTO.setPrimaryKey(rs.getLong("rg.ID"));
-        chunkDataTO.setFromSURL(rs.getString("rg.sourceSURL"));
-        chunkDataTO.setNormalizedStFN(rs.getString("rg.normalized_sourceSURL_StFN"));
-        int uniqueID = rs.getInt("rg.sourceSURL_uniqueID");
-        if (!rs.wasNull()) {
-          chunkDataTO.setSurlUniqueID(uniqueID);
-        }
-        results.add(chunkDataTO);
-      }
-    } catch (SQLException e) {
-      log.error("PTG CHUNK DAO: {}", e.getMessage(), e);
-    } finally {
-      closeResultSet(rs);
-      closeStatement(find);
-      closeConnection(con);
-    }
-    return results;
-  }
-
-  /**
    * Method used in extraordinary situations to signal that data retrieved from the DB was malformed
    * and could not be translated into the StoRM object model.
    * 
@@ -757,50 +483,6 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
       closeStatement(update);
       closeConnection(con);
     }
-  }
-
-  /**
-   * Method that returns the number of Get requests on the given SURL, that are in SRM_FILE_PINNED
-   * state.
-   * 
-   * This method is intended to be used by PtGChunkCatalog in the isSRM_FILE_PINNED method
-   * invocation.
-   * 
-   * In case of any error, 0 is returned.
-   */
-  // request_Get table
-  public synchronized int numberInSRM_FILE_PINNED(int surlUniqueID) {
-
-    return count(surlUniqueID, SRM_FILE_PINNED);
-  }
-
-  public synchronized int count(int surlUniqueID, TStatusCode status) {
-
-    Connection con = null;
-    PreparedStatement find = null;
-    ResultSet rs = null;
-    int count = 0;
-
-    try {
-      con = getConnection();
-      find = con.prepareStatement(COUNT_REQUEST_ON_SURL_WITH_STATUS);
-      find.setInt(1, surlUniqueID);
-      find.setInt(2, statusCodeConverter.toDB(status));
-      log.trace("PtG CHUNK DAO - numberInSRM_FILE_PINNED method: {}", find);
-      rs = find.executeQuery();
-
-      if (rs.next()) {
-        count = rs.getInt(1);
-      }
-    } catch (SQLException e) {
-      log.error("PtG CHUNK DAO! Unable to determine numberInSRM_FILE_PINNED! " + "Returning 0! {}",
-          e.getMessage(), e);
-    } finally {
-      closeResultSet(rs);
-      closeStatement(find);
-      closeConnection(con);
-    }
-    return count;
   }
 
   /**
@@ -969,102 +651,14 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
     return expiredSurlList;
   }
 
-  /**
-   * Method that updates all chunks in SRM_FILE_PINNED state, into SRM_RELEASED. An array of long
-   * representing the primary key of each chunk is required: only they get the status changed
-   * provided their current status is SRM_FILE_PINNED.
-   * 
-   * This method is used during srmReleaseFiles
-   * 
-   * In case of any error nothing happens and no exception is thrown, but proper messagges get
-   * logged.
-   */
-  public synchronized void transitSRM_FILE_PINNEDtoSRM_RELEASED(long[] ids) {
-
-    String str = "UPDATE status_Get sg SET sg.statusCode=? "
-        + "WHERE sg.statusCode=? AND sg.request_GetID IN " + makeWhereString(ids);
-
-    Connection con = null;
-    PreparedStatement stmt = null;
-    try {
-
-      con = getConnection();
-      stmt = con.prepareStatement(str);
-      stmt.setInt(1, statusCodeConverter.toDB(SRM_RELEASED));
-      stmt.setInt(2, statusCodeConverter.toDB(SRM_FILE_PINNED));
-      log.trace("PtG CHUNK DAO - transitSRM_FILE_PINNEDtoSRM_RELEASED: {}", stmt);
-      int count = stmt.executeUpdate();
-      if (count == 0) {
-        log.trace("PtG CHUNK DAO! No chunk of PtG request was "
-            + "transited from SRM_FILE_PINNED to SRM_RELEASED.");
-      } else {
-        log.info("PtG CHUNK DAO! {} chunks of PtG requests were transited "
-            + "from SRM_FILE_PINNED to SRM_RELEASED.", count);
-      }
-    } catch (SQLException e) {
-      log.error(
-          "PtG CHUNK DAO! Unable to transit chunks" + " from SRM_FILE_PINNED to SRM_RELEASED! {}",
-          e.getMessage(), e);
-    } finally {
-      closeStatement(stmt);
-      closeConnection(con);
-    }
-  }
-
-  /**
-   * @param ids
-   * @param token
-   */
-  public synchronized void transitSRM_FILE_PINNEDtoSRM_RELEASED(long[] ids, TRequestToken token) {
-
-    if (token == null) {
-      transitSRM_FILE_PINNEDtoSRM_RELEASED(ids);
-      return;
-    }
-
-    /*
-     * If a request token has been specified, only the related Get requests have to be released.
-     * This is done adding the r.r_token="..." clause in the where subquery.
-     */
-    String str = "UPDATE "
-        + "status_Get sg JOIN (request_Get rg, request_queue rq) ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
-        + "SET sg.statusCode=? " + "WHERE sg.statusCode=? AND rq.r_token='" + token.getValue()
-        + "' AND rg.ID IN " + makeWhereString(ids);
-
-    Connection con = null;
-    PreparedStatement stmt = null;
-    try {
-      con = getConnection();
-      stmt = con.prepareStatement(str);
-      stmt.setInt(1, statusCodeConverter.toDB(SRM_RELEASED));
-      stmt.setInt(2, statusCodeConverter.toDB(SRM_FILE_PINNED));
-      log.trace("PtG CHUNK DAO - transitSRM_FILE_PINNEDtoSRM_RELEASED: {}", stmt);
-      int count = stmt.executeUpdate();
-      if (count == 0) {
-        log.trace("PtG CHUNK DAO! No chunk of PtG request was"
-            + " transited from SRM_FILE_PINNED to SRM_RELEASED.");
-      } else {
-        log.info("PtG CHUNK DAO! {} chunks of PtG requests were transited from "
-            + "SRM_FILE_PINNED to SRM_RELEASED.", count);
-      }
-    } catch (SQLException e) {
-      log.error(
-          "PtG CHUNK DAO! Unable to transit chunks from " + "SRM_FILE_PINNED to SRM_RELEASED! {}",
-          e.getMessage(), e);
-    } finally {
-      closeStatement(stmt);
-      closeConnection(con);
-    }
-  }
-
   public synchronized void updateStatus(TRequestToken requestToken, int[] surlUniqueIDs,
       String[] surls, TStatusCode statusCode, String explanation) {
 
-    String str = "UPDATE "
-        + "status_Get sg JOIN (request_Get rg, request_queue rq) ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID "
-        + "SET sg.statusCode=? , sg.explanation=? " + "WHERE rq.r_token='" + requestToken.toString()
-        + "' AND ( rg.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlUniqueIDs)
-        + " AND rg.sourceSURL IN " + makeSurlString(surls) + " ) ";
+    List<Integer> surlIds = Arrays.stream(surlUniqueIDs).boxed().toList();
+    List<SURL> surlSources = makeSURLs(surls);
+
+    String str = String.format(UPDATE_STATUS_OF_REQUESTS, makeSURLUniqueIDWhere(surlIds),
+        makeSurlString(surlSources));
 
     Connection con = null;
     PreparedStatement stmt = null;
@@ -1072,8 +666,18 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
     try {
       con = getConnection();
       stmt = con.prepareStatement(str);
-      stmt.setInt(1, statusCodeConverter.toDB(statusCode));
-      stmt.setString(2, (explanation != null ? explanation : ""));
+      stmt.setString(1, requestToken.toString());
+      stmt.setInt(2, statusCodeConverter.toDB(statusCode));
+      stmt.setString(3, (explanation != null ? explanation : ""));
+      int paramNum = 4;
+      for (Integer id: surlIds) {
+        stmt.setInt(paramNum++, id);
+      }
+      for (SURL s: surlSources) {
+        stmt.setString(paramNum++, s.getNormalFormAsString());
+        stmt.setString(paramNum++, s.getQueryFormAsString());
+      }
+
       log.trace("PtG CHUNK DAO - updateStatus: {}", stmt);
       int count = stmt.executeUpdate();
       if (count == 0) {
@@ -1092,49 +696,20 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
   public synchronized void updateStatusOnMatchingStatus(TRequestToken requestToken,
       TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation) {
 
-    if (requestToken == null || requestToken.getValue().trim().isEmpty() || explanation == null) {
-      throw new IllegalArgumentException("Unable to perform the updateStatusOnMatchingStatus, "
-          + "invalid arguments: requestToken=" + requestToken + " explanation=" + explanation);
-    }
-    doUpdateStatusOnMatchingStatus(requestToken, null, null, expectedStatusCode, newStatusCode,
-        explanation, true, false, true);
-  }
-
-  private synchronized void doUpdateStatusOnMatchingStatus(TRequestToken requestToken,
-      int[] surlUniqueIDs, String[] surls, TStatusCode expectedStatusCode,
-      TStatusCode newStatusCode, String explanation, boolean withRequestToken, boolean withSurls,
-      boolean withExplanation) throws IllegalArgumentException {
-
-    if ((withRequestToken && requestToken == null) || (withExplanation && explanation == null)
-        || (withSurls && (surlUniqueIDs == null || surls == null))) {
-
-      throw new IllegalArgumentException("Unable to perform the doUpdateStatusOnMatchingStatus, "
-          + "invalid arguments: withRequestToken=" + withRequestToken + " requestToken="
-          + requestToken + " withSurls=" + withSurls + " surlUniqueIDs=" + surlUniqueIDs + " surls="
-          + surls + " withExplaination=" + withExplanation + " explanation=" + explanation);
-    }
-
-    String str = "UPDATE status_Get sg JOIN (request_Get rg, request_queue rq) "
-        + "ON sg.request_GetID=rg.ID AND rg.request_queueID=rq.ID " + "SET sg.statusCode=? ";
-    if (withExplanation) {
-      str += " , " + buildExpainationSet(explanation);
-    }
-    str += " WHERE sg.statusCode=? ";
-    if (withRequestToken) {
-      str += " AND " + buildTokenWhereClause(requestToken);
-    }
-    if (withSurls) {
-      str += " AND " + buildSurlsWhereClause(surlUniqueIDs, surls);
-    }
+    Preconditions.checkNotNull(requestToken, "Null requestToken");
+    Preconditions.checkArgument(!requestToken.getValue().trim().isEmpty(), "Invalid requestToken");
+    Preconditions.checkNotNull(explanation, "Null explanation");
 
     Connection con = null;
     PreparedStatement stmt = null;
 
     try {
       con = getConnection();
-      stmt = con.prepareStatement(str);
+      stmt = con.prepareStatement(UPDATE_STATUS_ON_MATCHING_STATUS);
       stmt.setInt(1, statusCodeConverter.toDB(newStatusCode));
-      stmt.setInt(2, statusCodeConverter.toDB(expectedStatusCode));
+      stmt.setString(2, explanation);
+      stmt.setInt(3, statusCodeConverter.toDB(expectedStatusCode));
+      stmt.setString(4, requestToken.toString());
       log.trace("PtG CHUNK DAO - updateStatusOnMatchingStatus: {}", stmt);
       int count = stmt.executeUpdate();
       if (count == 0) {
@@ -1154,87 +729,33 @@ public class PtGChunkDAOMySql extends AbstractDAO implements PtGChunkDAO {
   }
 
   /**
-   * Method that returns a String containing all IDs.
-   */
-  private String makeWhereString(long[] rowids) {
-
-    StringBuilder sb = new StringBuilder("(");
-    int n = rowids.length;
-    for (int i = 0; i < n; i++) {
-      sb.append(rowids[i]);
-      if (i < (n - 1)) {
-        sb.append(",");
-      }
-    }
-    sb.append(")");
-    return sb.toString();
-  }
-
-  /**
    * Method that returns a String containing all SURL's IDs.
    */
-  private String makeSURLUniqueIDWhere(int[] surlUniqueIDs) {
+  private String makeSURLUniqueIDWhere(List<Integer> surlUniqueIDs) {
 
-    StringBuilder sb = new StringBuilder("(");
-    for (int i = 0; i < surlUniqueIDs.length; i++) {
-      if (i > 0) {
-        sb.append(",");
+    return surlUniqueIDs.stream().map(v -> "?").collect(Collectors.joining(", "));
+  }
+
+  private List<SURL> makeSURLs(String[] surls) {
+
+    List<SURL> result = new ArrayList<>();
+    for (String s: surls) {
+      try {
+        result.add(SURL.makeSURLfromString(s));
+      } catch (NamespaceException e) {
+        log.error(e.getMessage());
+        continue;
       }
-      sb.append(surlUniqueIDs[i]);
     }
-    sb.append(")");
-    return sb.toString();
+    return result;
   }
 
   /**
    * Method that returns a String containing all SURLs.
    */
-  private String makeSurlString(String[] surls) {
+  private String makeSurlString(List<SURL> surls) {
 
-    StringBuilder sb = new StringBuilder("(");
-    int n = surls.length;
-
-    for (int i = 0; i < n; i++) {
-
-      SURL requestedSURL;
-
-      try {
-        requestedSURL = SURL.makeSURLfromString(surls[i]);
-      } catch (NamespaceException e) {
-        log.error(e.getMessage());
-        log.debug("Skip '{}' during query creation", surls[i]);
-        continue;
-      }
-
-      sb.append("'");
-      sb.append(requestedSURL.getNormalFormAsString());
-      sb.append("','");
-      sb.append(requestedSURL.getQueryFormAsString());
-      sb.append("'");
-
-      if (i < (n - 1)) {
-        sb.append(",");
-      }
-    }
-
-    sb.append(")");
-    return sb.toString();
-  }
-
-  private String buildExpainationSet(String explanation) {
-
-    return " sg.explanation='" + explanation + "' ";
-  }
-
-  private String buildTokenWhereClause(TRequestToken requestToken) {
-
-    return " rq.r_token='" + requestToken.toString() + "' ";
-  }
-
-  private String buildSurlsWhereClause(int[] surlsUniqueIDs, String[] surls) {
-
-    return " ( rg.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
-        + " AND rg.sourceSURL IN " + makeSurlString(surls) + " ) ";
+    return surls.stream().map(v -> "?,?").collect(Collectors.joining(", "));
   }
 
 }

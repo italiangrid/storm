@@ -20,20 +20,14 @@ public interface PtPChunkDAO {
 
   public Collection<PtPChunkDataTO> find(TRequestToken requestToken);
 
-  public Collection<PtPChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray, String dn);
-
   public int fail(PtPChunkDataTO auxTO);
-
-  public Map<Long, String> getExpiredSRM_SPACE_AVAILABLE();
 
   public Map<Long, String> getExpired(TStatusCode status);
 
-  public int transitExpiredSRM_SPACE_AVAILABLEtoSRM_FILE_LIFETIME_EXPIRED(Collection<Long> ids);
-
-  public int transitLongTimeInProgressRequestsToStatus(long expirationTime, TStatusCode status,
+  public int updateStatus(Collection<Long> ids, TStatusCode fromStatus, TStatusCode toStatus,
       String explanation);
 
-  public int updateStatus(Collection<Long> ids, TStatusCode fromStatus, TStatusCode toStatus,
+  public int transitLongTimeInProgressRequestsToStatus(long expirationTime, TStatusCode status,
       String explanation);
 
   public int updateStatus(TRequestToken requestToken, int[] surlsUniqueIDs, String[] surls,

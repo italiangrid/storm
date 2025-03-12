@@ -38,7 +38,7 @@ public class BoLFinalizer implements Runnable {
     log.debug("Search for SRM_REQUEST_INPROGRESS bol request to be moved to SRM_ABORTED ..");
     int nAborted = 0;
     try {
-      nAborted = dao.releaseExpiredAndSuccessfulRequests();
+      nAborted = dao.abortInProgressRequestsSince(inProgressRequestsExpirationTime);
     } catch (Throwable e) {
       log.error("{}: {}", e.getClass(), e.getMessage(), e);
     } finally {

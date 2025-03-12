@@ -2,6 +2,8 @@ package it.grid.storm.catalogs.executors.threads;
 
 
 import static it.grid.storm.srm.types.TStatusCode.SRM_FAILURE;
+import static it.grid.storm.srm.types.TStatusCode.SRM_FILE_LIFETIME_EXPIRED;
+import static it.grid.storm.srm.types.TStatusCode.SRM_SPACE_AVAILABLE;
 
 import java.util.Map;
 
@@ -50,17 +52,19 @@ public class PtPFinalizer implements Runnable {
 
   private void transitExpiredLifetimeRequests() {
 
-    Map<Long, String> expiredRequests = dao.getExpiredSRM_SPACE_AVAILABLE();
+    /* find all pin lifetime expired for a srmPtP */
+    Map<Long, String> expiredRequests = dao.getExpired(SRM_SPACE_AVAILABLE);
     log.debug("{} lifetime-expired requests found ... ", NAME, expiredRequests.size());
 
     if (expiredRequests.isEmpty()) {
       return;
     }
 
+    /* finalize srmPtP with a srmPd */
     expiredRequests.entrySet().forEach(e -> executePutDone(e.getKey(), e.getValue()));
 
-    int count =
-        dao.transitExpiredSRM_SPACE_AVAILABLEtoSRM_FILE_LIFETIME_EXPIRED(expiredRequests.keySet());
+    int count = dao.updateStatus(expiredRequests.keySet(), SRM_SPACE_AVAILABLE,
+        SRM_FILE_LIFETIME_EXPIRED, "Expired pinLifetime");
     log.info("{} updated expired put requests - {} db rows affected", NAME, count);
   }
 

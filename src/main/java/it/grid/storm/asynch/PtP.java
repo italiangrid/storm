@@ -5,6 +5,7 @@
 package it.grid.storm.asynch;
 
 import static it.grid.storm.srm.types.TFileStorageType.VOLATILE;
+import static java.lang.String.format;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -26,6 +27,7 @@ import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
+import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FilesystemPermission;
@@ -181,6 +183,30 @@ public class PtP implements Delegable, Chooser, Request {
 
       printRequestOutcome(requestData);
       return;
+    }
+
+    if (requestData.getSpaceToken() != null && !requestData.getSpaceToken().isEmpty()) {
+      StorageSpaceData st = null;
+      try {
+        st = ReservedSpaceCatalog.getInstance().getStorageSpace(requestData.getSpaceToken());
+      } catch (TransferObjectDecodingException | DataAccessException e) {
+        failure = true;
+        requestData.changeStatusSRM_FAILURE(
+            "Error loading storage space with token " + requestData.getSpaceToken().getValue());
+        log.info("Unable to load space token {}", requestData.getSpaceToken().getValue());
+        printRequestOutcome(requestData);
+        return;
+      }
+      if (st != null) {
+        if (st.getReservedSpaceSize().getSizeIn(SizeUnit.BYTES) < requestData.expectedFileSize().getSizeIn(SizeUnit.BYTES)) {
+          failure = true;
+          String errMessage = format("\"Storage space with token %s is not greater than the expected value %d", requestData.getSpaceToken().getValue(), requestData.expectedFileSize().value());
+          requestData.changeStatusSRM_FAILURE(errMessage);
+          log.info(errMessage);
+          printRequestOutcome(requestData);
+          return;
+        }
+      }
     }
 
     requestData.changeStatusSRM_REQUEST_INPROGRESS("request in progress");

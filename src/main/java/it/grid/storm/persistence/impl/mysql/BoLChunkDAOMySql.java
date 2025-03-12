@@ -4,7 +4,6 @@
  */
 package it.grid.storm.persistence.impl.mysql;
 
-import static it.grid.storm.srm.types.TRequestType.BRING_ON_LINE;
 import static it.grid.storm.srm.types.TStatusCode.SRM_ABORTED;
 import static it.grid.storm.srm.types.TStatusCode.SRM_RELEASED;
 import static it.grid.storm.srm.types.TStatusCode.SRM_REQUEST_INPROGRESS;
@@ -15,10 +14,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -28,7 +24,6 @@ import com.google.common.collect.Lists;
 
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.naming.SURL;
-import it.grid.storm.persistence.converter.RequestTypeConverter;
 import it.grid.storm.persistence.converter.StatusCodeConverter;
 import it.grid.storm.persistence.dao.AbstractDAO;
 import it.grid.storm.persistence.dao.BoLChunkDAO;
@@ -62,18 +57,6 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
           + "LEFT JOIN request_DirOption d ON rb.request_DirOptionID=d.ID "
           + "WHERE rq.r_token=? AND sb.statusCode<>?";
 
-  private static final String SELECT_FULL_BOL_REQUEST_WITH_TOKEN =
-      "SELECT sb.statusCode, rb.ID, rb.sourceSURL, rb.normalized_sourceSURL_StFN, rb.sourceSURL_uniqueID "
-          + "FROM request_queue rq JOIN (request_BoL rb, status_BoL sb) "
-          + "ON (rb.request_queueID=rq.ID AND sb.request_BoLID=rb.ID) " + "WHERE rq.r_token=?";
-
-  private static final String INSERT_INTO_REQUEST_QUEUE =
-      "INSERT INTO request_queue (config_RequestTypeID,client_dn,pinLifetime,status,errstring,r_token,nbreqfiles,timeStamp,deferredStartTime) "
-          + "VALUES (?,?,?,?,?,?,?,?,?)";
-
-  private static final String INSERT_INTO_REQUEST_TRANSFER_PROTOCOLS =
-      "INSERT INTO request_TransferProtocols (request_queueID,config_ProtocolsID) VALUES (?,?)";
-
   private static final String INSERT_INTO_REQUEST_DIR_OPTION =
       "INSERT INTO request_DirOption (isSourceADirectory,allLevelRecursive,numOfLevels) VALUES (?,?,?)";
 
@@ -82,7 +65,7 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
           + "VALUES (?,?,?,?,?)";
 
   private static final String UPDATE_REQUEST_BOL_WHERE_ID =
-      "UPDATE request_BoL SET normalized_sourceSURL_StFN=?, sourceSURL_uniqueID=? " + "WHERE ID=?";
+      "UPDATE request_BoL SET normalized_sourceSURL_StFN=?, sourceSURL_uniqueID=? WHERE ID=?";
 
   private static final String INSERT_INTO_STATUS_BOL =
       "INSERT INTO status_BoL (request_BoLID,statusCode,explanation) VALUES (?,?,?)";
@@ -120,12 +103,10 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
   }
 
   private final StatusCodeConverter statusCodeConverter;
-  private final RequestTypeConverter requestTypeConverter;
 
   private BoLChunkDAOMySql() {
     super(StormDbConnectionPool.getInstance());
     statusCodeConverter = StatusCodeConverter.getInstance();
-    requestTypeConverter = RequestTypeConverter.getInstance();
   }
 
   /**
@@ -174,77 +155,6 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
     } finally {
       closeResultSet(res);
       closeStatement(ps);
-      closeConnection(con);
-    }
-  }
-
-  /**
-   * Method used to add a new record to the DB: the supplied BoLChunkDataTO gets its primaryKey
-   * changed to the one assigned by the DB. The client_dn must also be supplied as a String. The
-   * supplied BoLChunkData is used to fill in all the DB tables where file specific info gets
-   * recorded: it _adds_ a new request!
-   */
-  public synchronized void addNew(BoLChunkDataTO to, String client_dn) {
-
-    final String DESCRIPTION = "New BoL Request resulting from srmCopy invocation.";
-
-    /* Result set containing the ID of the inserted new request */
-    ResultSet rs = null;
-    PreparedStatement addReqQ = null;
-    PreparedStatement addReqTP = null;
-    Connection con = null;
-
-    try {
-      // begin transaction
-
-      con = getManagedConnection();
-
-      // add to request_queue...
-      addReqQ = con.prepareStatement(INSERT_INTO_REQUEST_QUEUE, RETURN_GENERATED_KEYS);
-      /* request type set to bring online */
-      addReqQ.setString(1, requestTypeConverter.toDB(BRING_ON_LINE));
-      addReqQ.setString(2, client_dn);
-      addReqQ.setInt(3, to.getLifeTime());
-      addReqQ.setInt(4, statusCodeConverter.toDB(SRM_REQUEST_INPROGRESS));
-      addReqQ.setString(5, DESCRIPTION);
-      addReqQ.setString(6, to.getRequestToken());
-      addReqQ.setInt(7, 1); // number of requested files set to 1!
-      addReqQ.setTimestamp(8, new Timestamp(new Date().getTime()));
-      addReqQ.setInt(9, to.getDeferredStartTime());
-      log.trace("BoL CHUNK DAO: addNew; {}", addReqQ);
-      addReqQ.execute();
-
-      rs = addReqQ.getGeneratedKeys();
-      int id_new = extractID(rs);
-
-      addReqTP = con.prepareStatement(INSERT_INTO_REQUEST_TRANSFER_PROTOCOLS);
-      for (Iterator<String> i = to.getProtocolList().iterator(); i.hasNext();) {
-        addReqTP.setInt(1, id_new);
-        addReqTP.setString(2, i.next());
-        log.trace("BoL CHUNK DAO: addNew; {}", addReqTP);
-        addReqTP.execute();
-      }
-
-      // addChild...
-      int id_s = fillBoLTables(con, to, id_new);
-
-      // end transaction!
-      con.commit();
-
-      // update primary key reading the generated key
-      to.setPrimaryKey(id_s);
-    } catch (Exception e) {
-      log.error("BoL CHUNK DAO: unable to complete addNew! BoLChunkDataTO: {}; "
-          + "exception received: {}", to, e.getMessage(), e);
-      try {
-        con.rollback();
-      } catch (SQLException e1) {
-        log.error("Got exception {}: {}", e1.getClass(), e1.getMessage());
-      }
-    } finally {
-      closeResultSet(rs);
-      closeStatement(addReqQ);
-      closeStatement(addReqTP);
       closeConnection(con);
     }
   }
@@ -454,167 +364,6 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
     }
   }
 
-  /**
-   * Method that returns a Collection of ReducedBoLChunkDataTO associated to the given TRequestToken
-   * expressed as String.
-   */
-  public synchronized Collection<ReducedBoLChunkDataTO> findReduced(TRequestToken requestToken) {
-
-    Connection con = null;
-    PreparedStatement ps = null;
-    ResultSet rs = null;
-
-    List<ReducedBoLChunkDataTO> results = Lists.newArrayList();
-
-    try {
-
-      con = getConnection();
-
-      ps = con.prepareStatement(SELECT_FULL_BOL_REQUEST_WITH_TOKEN);
-      ps.setString(1, requestToken.getValue());
-      log.trace("BoL CHUNK DAO! findReduced with request token; {}", ps);
-      rs = ps.executeQuery();
-
-      ReducedBoLChunkDataTO chunkDataTO = null;
-      while (rs.next()) {
-        chunkDataTO = new ReducedBoLChunkDataTO();
-        chunkDataTO.setStatus(rs.getInt("sb.statusCode"));
-        chunkDataTO.setPrimaryKey(rs.getLong("rb.ID"));
-        chunkDataTO.setFromSURL(rs.getString("rb.sourceSURL"));
-        chunkDataTO.setNormalizedStFN(rs.getString("rb.normalized_sourceSURL_StFN"));
-        int uniqueID = rs.getInt("rb.sourceSURL_uniqueID");
-        if (!rs.wasNull()) {
-          chunkDataTO.setSurlUniqueID(uniqueID);
-        }
-        results.add(chunkDataTO);
-      }
-      return results;
-
-    } catch (SQLException e) {
-
-      log.error("BOL CHUNK DAO: {}", e.getMessage(), e);
-      return results;
-
-    } finally {
-      closeResultSet(rs);
-      closeStatement(ps);
-      closeConnection(con);
-    }
-  }
-
-  /**
-   * Method that returns a Collection of ReducedBoLChunkDataTO associated to the given griduser, and
-   * whose SURLs are contained in the supplied array of Strings.
-   */
-  public synchronized Collection<ReducedBoLChunkDataTO> findReduced(TRequestToken requestToken,
-      int[] surlUniqueIDs, String[] surls) {
-
-    Connection con = null;
-    PreparedStatement find = null;
-    ResultSet rs = null;
-    Collection<ReducedBoLChunkDataTO> results = Lists.newArrayList();
-
-    try {
-
-      con = getConnection();
-
-      /*
-       * NOTE: we search also on the fromSurl because otherwise we lost all request_Bol that have
-       * not the uniqueID set because are not yet been used by anybody
-       */
-      // get reduced chunks
-      String str =
-          "SELECT sb.statusCode, rb.ID, rb.sourceSURL, rb.normalized_sourceSURL_StFN, rb.sourceSURL_uniqueID "
-              + "FROM request_queue rq JOIN (request_BoL rb, status_BoL sb) "
-              + "ON (rb.request_queueID=rq.ID AND sb.request_BoLID=rb.ID) "
-              + "WHERE rq.r_token=? AND ( rb.sourceSURL_uniqueID IN "
-              + makeSURLUniqueIDWhere(surlUniqueIDs) + " AND rb.sourceSURL IN "
-              + makeSurlString(surls) + " ) ";
-      find = con.prepareStatement(str);
-      find.setString(1, requestToken.getValue());
-
-      log.trace("BoL CHUNK DAO! findReduced with griduser+surlarray; {}", find);
-      rs = find.executeQuery();
-
-      ReducedBoLChunkDataTO chunkDataTO = null;
-      while (rs.next()) {
-        chunkDataTO = new ReducedBoLChunkDataTO();
-        chunkDataTO.setStatus(rs.getInt("sb.statusCode"));
-        chunkDataTO.setPrimaryKey(rs.getLong("rb.ID"));
-        chunkDataTO.setFromSURL(rs.getString("rb.sourceSURL"));
-        chunkDataTO.setNormalizedStFN(rs.getString("rb.normalized_sourceSURL_StFN"));
-        int uniqueID = rs.getInt("rb.sourceSURL_uniqueID");
-        if (!rs.wasNull()) {
-          chunkDataTO.setSurlUniqueID(uniqueID);
-        }
-        results.add(chunkDataTO);
-      }
-    } catch (SQLException e) {
-      log.error("BoL CHUNK DAO: {}", e.getMessage(), e);
-    } finally {
-      closeResultSet(rs);
-      closeStatement(find);
-      closeConnection(con);
-    }
-    return results;
-  }
-
-  /**
-   * Method that returns a Collection of ReducedBoLChunkDataTO associated to the given griduser, and
-   * whose SURLs are contained in the supplied array of Strings.
-   */
-  public synchronized Collection<ReducedBoLChunkDataTO> findReduced(String griduser,
-      int[] surlUniqueIDs, String[] surls) {
-
-    Connection con = null;
-    PreparedStatement find = null;
-    ResultSet rs = null;
-
-    Collection<ReducedBoLChunkDataTO> results = Lists.newArrayList();
-
-    try {
-
-      con = getConnection();
-
-      /*
-       * NOTE: we search also on the fromSurl because otherwise we lost all request_Bol that have
-       * not the uniqueID set because are not yet been used by anybody
-       */
-      // get reduced chunks
-      String str =
-          "SELECT sb.statusCode, rb.ID, rb.sourceSURL, rb.normalized_sourceSURL_StFN, rb.sourceSURL_uniqueID "
-              + "FROM request_queue rq JOIN (request_BoL rb, status_BoL sb) "
-              + "ON (rb.request_queueID=rq.ID AND sb.request_BoLID=rb.ID) "
-              + "WHERE rq.client_dn=? AND ( rb.sourceSURL_uniqueID IN "
-              + makeSURLUniqueIDWhere(surlUniqueIDs) + " AND rb.sourceSURL IN "
-              + makeSurlString(surls) + " ) ";
-      find = con.prepareStatement(str);
-      find.setString(1, griduser);
-      log.trace("BoL CHUNK DAO! findReduced with griduser+surlarray; {}", find);
-      rs = find.executeQuery();
-
-      while (rs.next()) {
-        ReducedBoLChunkDataTO chunkDataTO = new ReducedBoLChunkDataTO();
-        chunkDataTO.setStatus(rs.getInt("sb.statusCode"));
-        chunkDataTO.setPrimaryKey(rs.getLong("rb.ID"));
-        chunkDataTO.setFromSURL(rs.getString("rb.sourceSURL"));
-        chunkDataTO.setNormalizedStFN(rs.getString("rb.normalized_sourceSURL_StFN"));
-        int uniqueID = rs.getInt("rb.sourceSURL_uniqueID");
-        if (!rs.wasNull()) {
-          chunkDataTO.setSurlUniqueID(uniqueID);
-        }
-        results.add(chunkDataTO);
-      }
-    } catch (SQLException e) {
-      log.error("BoL CHUNK DAO: {}", e.getMessage(), e);
-    } finally {
-      closeResultSet(rs);
-      closeStatement(find);
-      closeConnection(con);
-    }
-    return results;
-  }
-
   public synchronized int updateStatus(BoLChunkDataTO to, TStatusCode status, String explanation) {
 
     Connection con = null;
@@ -789,105 +538,6 @@ public class BoLChunkDAOMySql extends AbstractDAO implements BoLChunkDAO {
 
     }
     return count;
-  }
-
-  public Collection<BoLChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray, String dn)
-      throws IllegalArgumentException {
-
-    if (surlsUniqueIDs == null || surlsUniqueIDs.length == 0 || surlsArray == null
-        || surlsArray.length == 0 || dn == null) {
-      throw new IllegalArgumentException(
-          "Unable to perform the find, " + "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs
-              + " surlsArray=" + surlsArray + " dn=" + dn);
-    }
-    return find(surlsUniqueIDs, surlsArray, dn, true);
-  }
-
-  public Collection<BoLChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray)
-      throws IllegalArgumentException {
-
-    if (surlsUniqueIDs == null || surlsUniqueIDs.length == 0 || surlsArray == null
-        || surlsArray.length == 0) {
-      throw new IllegalArgumentException("Unable to perform the find, "
-          + "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs + " surlsArray=" + surlsArray);
-    }
-    return find(surlsUniqueIDs, surlsArray, null, false);
-  }
-
-  private synchronized Collection<BoLChunkDataTO> find(int[] surlsUniqueIDs, String[] surlsArray,
-      String dn, boolean withDn) throws IllegalArgumentException {
-
-    if ((withDn && dn == null) || surlsUniqueIDs == null || surlsUniqueIDs.length == 0
-        || surlsArray == null || surlsArray.length == 0) {
-      throw new IllegalArgumentException(
-          "Unable to perform the find, " + "invalid arguments: surlsUniqueIDs=" + surlsUniqueIDs
-              + " surlsArray=" + surlsArray + " withDn=" + withDn + " dn=" + dn);
-    }
-
-    Connection con = null;
-    PreparedStatement find = null;
-    ResultSet rs = null;
-    Collection<BoLChunkDataTO> results = Lists.newArrayList();
-
-    try {
-
-      con = getConnection();
-
-      // get chunks of the request
-      String str = "SELECT rq.ID, rq.r_token, sb.statusCode, rq.timeStamp, rq.pinLifetime, "
-          + "rq.deferredStartTime, rb.ID, rb.sourceSURL, rb.normalized_sourceSURL_StFN, "
-          + "rb.sourceSURL_uniqueID, d.isSourceADirectory, d.allLevelRecursive, d.numOfLevels "
-          + "FROM request_queue rq JOIN (request_BoL rb, status_BoL sb) "
-          + "ON (rb.request_queueID=rq.ID AND sb.request_BoLID=rb.ID) "
-          + "LEFT JOIN request_DirOption d ON rb.request_DirOptionID=d.ID "
-          + "WHERE ( rb.sourceSURL_uniqueID IN " + makeSURLUniqueIDWhere(surlsUniqueIDs)
-          + " AND rb.sourceSURL IN " + makeSurlString(surlsArray) + " )";
-
-      if (withDn) {
-        str += " AND rq.client_dn=\'" + dn + "\'";
-      }
-      find = con.prepareStatement(str);
-
-      log.trace("BOL CHUNK DAO - find method: {}", find);
-      rs = find.executeQuery();
-
-      while (rs.next()) {
-
-        BoLChunkDataTO chunkDataTO = new BoLChunkDataTO();
-        chunkDataTO.setStatus(rs.getInt("sb.statusCode"));
-        chunkDataTO.setLifeTime(rs.getInt("rq.pinLifetime"));
-        chunkDataTO.setDeferredStartTime(rs.getInt("rq.deferredStartTime"));
-        chunkDataTO.setRequestToken(rs.getString("rq.r_token"));
-        chunkDataTO.setTimeStamp(rs.getTimestamp("rq.timeStamp"));
-        chunkDataTO.setPrimaryKey(rs.getLong("rb.ID"));
-        chunkDataTO.setFromSURL(rs.getString("rb.sourceSURL"));
-        chunkDataTO.setNormalizedStFN(rs.getString("rb.normalized_sourceSURL_StFN"));
-
-        int uniqueID = rs.getInt("rb.sourceSURL_uniqueID");
-        if (!rs.wasNull()) {
-          chunkDataTO.setSurlUniqueID(Integer.valueOf(uniqueID));
-        }
-
-        chunkDataTO.setDirOption(rs.getBoolean("d.isSourceADirectory"));
-        chunkDataTO.setAllLevelRecursive(rs.getBoolean("d.allLevelRecursive"));
-        chunkDataTO.setNumLevel(rs.getInt("d.numOfLevels"));
-
-        results.add(chunkDataTO);
-      }
-
-    } catch (SQLException e) {
-
-      log.error("BOL CHUNK DAO: {}", e.getMessage(), e);
-
-    } finally {
-
-      closeResultSet(rs);
-      closeStatement(find);
-      closeConnection(con);
-
-    }
-
-    return results;
   }
 
   /**
