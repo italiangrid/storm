@@ -4,6 +4,9 @@
  */
 package it.grid.storm.asynch;
 
+import static it.grid.storm.srm.types.TFileStorageType.VOLATILE;
+import static java.lang.String.format;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -12,20 +15,23 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
+
 import it.grid.storm.acl.AclManagerFS;
 import it.grid.storm.authz.AuthzDecision;
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.path.model.SRMFileRequest;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
-import it.grid.storm.catalogs.PtPData;
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
 import it.grid.storm.catalogs.VolatileAndJiTCatalog;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.common.types.SizeUnit;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FilesystemPermission;
+import it.grid.storm.filesystem.InvalidPermissionOnFileException;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.filesystem.ReservationException;
 import it.grid.storm.griduser.CannotMapUserException;
@@ -33,7 +39,7 @@ import it.grid.storm.griduser.LocalUser;
 import it.grid.storm.namespace.ExpiredSpaceTokenException;
 import it.grid.storm.namespace.InvalidGetTURLProtocolException;
 import it.grid.storm.namespace.InvalidSURLException;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.TURLBuildingException;
@@ -42,13 +48,13 @@ import it.grid.storm.namespace.model.ACLEntry;
 import it.grid.storm.namespace.model.DefaultACL;
 import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.persistence.exceptions.DataAccessException;
+import it.grid.storm.persistence.model.PtPData;
 import it.grid.storm.persistence.model.TransferObjectDecodingException;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
 import it.grid.storm.space.SpaceHelper;
 import it.grid.storm.space.StorageSpaceData;
-import it.grid.storm.srm.types.TFileStorageType;
 import it.grid.storm.srm.types.TOverwriteMode;
 import it.grid.storm.srm.types.TRequestToken;
 import it.grid.storm.srm.types.TSURL;
@@ -65,13 +71,13 @@ import it.grid.storm.synchcall.data.IdentityInputData;
  * multifile request. StoRM then sends the chunk to a chunk-scheduler. For an existing file: if
  * TOverwriteMode is set to Never, then the chunk fails with SRM_DUPLICATION_ERROR; if
  * TOverwriteMode is Always or WhenFilesAreDifferent, the file gets treated in the same fashion:
- * moreover the behaviour is the same as for the case of a non existing file described later on,
+ * moreover the behavior is the same as for the case of a non existing file described later on,
  * except that the only policy check made is about the presence of write rights, instead of create
- * rights, as well as erasing the file before going on with the processing - all previous data gets
- * lost! If the SURL refers to a file that does not exist, the behaviour is identical whatever the
+ * rights, as well as erasing the file before going on with the processing all previous data gets
+ * lost! If the SURL refers to a file that does not exist, the behavior is identical whatever the
  * TOverwriteMode; in particular: AuthorisationCollector is queried for File Creation policies: if
  * it is set to Deny, then the chunk is failed with SRM_AUTHORIZATION_FAILURE. If it is set to
- * Permit, the situation is decribed later on. For any other decisions, the chunk is failed with
+ * Permit, the situation is described later on. For any other decisions, the chunk is failed with
  * SRM_FAILURE: it is caused when the policy is missing so no decision can be made, or if there is a
  * problem querying the Policies, or any new state for the AuthorisationDecision is introduced but
  * the PtP logic is not updated. In case Create rights are granted, the presence of a space token
@@ -83,12 +89,12 @@ import it.grid.storm.synchcall.data.IdentityInputData;
  * supplied, the space is allocated as requested and again a special mock reserve file gets created.
  * A Write ACL is setup on the file regardless of the Security Model (AoT or JiT); if the file is
  * specified as VOLATILE, it gets pinned in the PinnedFilesCatalog; if JiT is active, the ACL will
- * live only for the given time interval. A TURL gets filled in, the status transits to
+ * live only for the given time interval. A TURL gets filled in, the status moves to
  * SRM_SPACE_AVAILABLE, and the PtPCatalog is updated. There are error situations which get handled
  * as follows: If the placeHolder file cannot be created, or the implicit reservation fails, or the
- * supplied space token does not exist, the request fails and chenages state to SRM_FAILURE. If the
+ * supplied space token does not exist, the request fails and changes state to SRM_FAILURE. If the
  * setting up of the ACL fails, the request fails too and the state changes to SRM_FAILURE.
- * Appropriate messagges get logged.
+ * Appropriate messages get logged.
  *
  * @author EGRID - ICTP Trieste
  * @date June, 2005
@@ -106,12 +112,12 @@ public class PtP implements Delegable, Chooser, Request {
   protected final PtPData requestData;
 
   /**
-   * Time that wil be used in all jit and volatile tracking.
+   * Time that will be used in all JiT and volatile tracking.
    */
   protected final Calendar start;
 
   /**
-   * boolean that indicates the state of the shunk is failure
+   * boolean that indicates the state of the chunk is failure
    */
   protected boolean failure = false;
 
@@ -119,6 +125,11 @@ public class PtP implements Delegable, Chooser, Request {
    * boolean that indicates a failed chunk because of an expired space token
    */
   protected boolean spacefailure = false;
+
+  /**
+   * boolean that indicates if setting ACL on the 0-size file is necessary or not
+   */
+  protected boolean setupACLs = true;
 
   /**
    * Constructor requiring the VomsGridUser, the RequestSummaryData, the PtPChunkData about this
@@ -133,6 +144,11 @@ public class PtP implements Delegable, Chooser, Request {
     }
     this.requestData = chunkData;
     start = Calendar.getInstance();
+
+    if (StormConfiguration.getInstance().getPTPSkipACLSetup()) {
+      setupACLs = false;
+      log.debug("Skipping ACL setup on PTP as requested by configuration.");
+    }
   }
 
   /**
@@ -169,6 +185,30 @@ public class PtP implements Delegable, Chooser, Request {
       return;
     }
 
+    if (requestData.getSpaceToken() != null && !requestData.getSpaceToken().isEmpty()) {
+      StorageSpaceData st = null;
+      try {
+        st = ReservedSpaceCatalog.getInstance().getStorageSpace(requestData.getSpaceToken());
+      } catch (TransferObjectDecodingException | DataAccessException e) {
+        failure = true;
+        requestData.changeStatusSRM_FAILURE(
+            "Error loading storage space with token " + requestData.getSpaceToken().getValue());
+        log.info("Unable to load space token {}", requestData.getSpaceToken().getValue());
+        printRequestOutcome(requestData);
+        return;
+      }
+      if (st != null) {
+        if (st.getReservedSpaceSize().getSizeIn(SizeUnit.BYTES) < requestData.expectedFileSize().getSizeIn(SizeUnit.BYTES)) {
+          failure = true;
+          String errMessage = format("\"Storage space with token %s is not greater than the expected value %d", requestData.getSpaceToken().getValue(), requestData.expectedFileSize().value());
+          requestData.changeStatusSRM_FAILURE(errMessage);
+          log.info(errMessage);
+          printRequestOutcome(requestData);
+          return;
+        }
+      }
+    }
+
     requestData.changeStatusSRM_REQUEST_INPROGRESS("request in progress");
 
     StoRI fileStoRI = null;
@@ -176,10 +216,10 @@ public class PtP implements Delegable, Chooser, Request {
     try {
 
       if (requestData instanceof IdentityInputData) {
-        fileStoRI = NamespaceDirector.getNamespace()
+        fileStoRI = Namespace.getInstance()
           .resolveStoRIbySURL(surl, ((IdentityInputData) requestData).getUser());
       } else {
-        fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl);
+        fileStoRI = Namespace.getInstance().resolveStoRIbySURL(surl);
       }
 
     } catch (UnapprochableSurlException e) {
@@ -358,11 +398,11 @@ public class PtP implements Delegable, Chooser, Request {
       requestData.changeStatusSRM_NOT_SUPPORTED(
           "Unable to build TURL with " + "specified transfer protocols!");
       failure = true;
-      log.error("ERROR in PtPChunk! No valid transfer protocol found. {}", e.getMessage(), e);
+      log.error("ERROR in PtPChunk! No valid transfer protocol found. {}", e.getMessage());
       return;
     } catch (TURLBuildingException e) {
       requestData.changeStatusSRM_FAILURE(
-          "Unable to build the TURL for the " + "provided transfer protocol");
+          "Unable to build the TURL for the provided transfer protocol");
       failure = true;
       log.error("ERROR in PtPChunk! There was a failure building the TURL. "
           + "TURLBuildingException: {} ", e.getMessage(), e);
@@ -377,50 +417,103 @@ public class PtP implements Delegable, Chooser, Request {
           "Unable to find local user for " + DataHelper.getRequestor(requestData));
       failure = true;
       log.error(
-          "ERROR in PtGChunk! Unable to find LocalUser for {}! " + "CannotMapUserException: {}",
-          DataHelper.getRequestor(requestData), e.getMessage(), e);
+          "ERROR in PtGChunk! Unable to find LocalUser for {}! CannotMapUserException: {}",
+          DataHelper.getRequestor(requestData), e.getMessage());
       return;
     }
-    if (canTraverse) {
-      // Use any reserved space which implies the existence of a
-      // file!
-      if (managePermitReserveSpaceStep(fileStoRI)) {
-        boolean canWrite;
-        try {
-          canWrite = managePermitSetFileStep(fileStoRI);
-        } catch (CannotMapUserException e) {
-          requestData.changeStatusSRM_FAILURE(
-              "Unable to find local user for " + DataHelper.getRequestor(requestData));
-          failure = true;
-          log.error(
-              "ERROR in PtGChunk! Unable to find LocalUser for {}! " + "CannotMapUserException: {}",
-              DataHelper.getRequestor(requestData), e.getMessage(), e);
-          return;
-        }
-        if (!canWrite) {
-          // URGENT!!!
-          // roll back! ok3, ok2 and ok1
-        } else {
-          log.debug(
-              "PTP CHUNK. Addition of ReadWrite ACL on file successfully " + "completed for {}",
-              fileStoRI.getAbsolutePath());
-          requestData.setTransferURL(auxTURL);
-          requestData.changeStatusSRM_SPACE_AVAILABLE("srmPrepareToPut " + "successfully handled!");
-          failure = false;
-          if (requestData.fileStorageType().equals(TFileStorageType.VOLATILE)) {
-            VolatileAndJiTCatalog.getInstance()
-              .trackVolatile(fileStoRI.getPFN(), Calendar.getInstance(),
-                  requestData.fileLifetime());
-          }
-        }
-      } else {
-        // URGENT!!!
-        // roll back! ok2 and ok1
-      }
-    } else {
-      // URGENT!!!
-      // roll back ok1!
+    if (!canTraverse) {
+      failure = true;
+      requestData.changeStatusSRM_FAILURE("Unable to set up parent path");
+      log.error("ERROR in PtGChunk! Unable to set up parent path");
+      return;
     }
+    if (!hasEnoughSpace(fileStoRI)) {
+      failure = true;
+      requestData.changeStatusSRM_FAILURE("Not enough space on storage area");
+      log.error("ERROR in PtGChunk! Not enough space on storage area");
+      return;
+    }
+    if (!setupACLs) {
+      log.debug("ACL setup and file creation skipped by configuration");
+      requestData.setTransferURL(auxTURL);
+      requestData.changeStatusSRM_SPACE_AVAILABLE("srmPrepareToPut successfully handled!");
+      failure = false;
+      return;
+    }
+    if (!managePermitReserveSpaceStep(fileStoRI)) {
+      failure = true;
+      requestData.changeStatusSRM_FAILURE("Unable to reserve space on storage area");
+      log.error("ERROR in PtGChunk! Unable to reserve space on storage area");
+      return;
+    }
+    boolean canWrite;
+    try {
+      canWrite = managePermitSetFileStep(fileStoRI);
+    } catch (CannotMapUserException e) {
+      requestData.changeStatusSRM_FAILURE(
+          "Unable to find local user for " + DataHelper.getRequestor(requestData));
+      failure = true;
+      log.error("ERROR in PtGChunk! Unable to find LocalUser for {}! CannotMapUserException: {}",
+          DataHelper.getRequestor(requestData), e.getMessage());
+      return;
+    }
+    if (canWrite) {
+      log.debug("PTP CHUNK. Addition of ReadWrite ACL on file successfully completed for {}",
+          fileStoRI.getAbsolutePath());
+      requestData.setTransferURL(auxTURL);
+      requestData.changeStatusSRM_SPACE_AVAILABLE("srmPrepareToPut successfully handled!");
+      failure = false;
+      if (VOLATILE.equals(requestData.fileStorageType())) {
+        VolatileAndJiTCatalog.getInstance()
+          .trackVolatile(fileStoRI.getPFN(), Calendar.getInstance(), requestData.fileLifetime());
+      }
+      return;
+    }
+  }
+
+  private boolean hasEnoughSpace(StoRI fileStoRI) {
+
+    Preconditions.checkNotNull(fileStoRI.getVirtualFileSystem());
+    VirtualFS fs = fileStoRI.getVirtualFileSystem();
+
+    if (!fs.getProperties().isOnlineSpaceLimited()) {
+      log.debug("{} has no online space limited!", fs.getAliasName());
+      return true;
+    }
+    SpaceHelper sp = new SpaceHelper();
+    if (sp.isSAFull(PtP.log, fileStoRI)) {
+      log.debug("{} is full!", fs.getAliasName());
+      return false;
+    }
+    boolean isDiskUsageServiceEnabled = StormConfiguration.getInstance().getDiskUsageServiceEnabled();
+    if (!sp.isSAInitialized(PtP.log, fileStoRI) && isDiskUsageServiceEnabled) {
+      /* Trust we got space, let the request pass */
+      log.debug(
+          "PtPChunk: ReserveSpaceStep: the storage area space initialization is in progress, optimistic approach, considering we have enough space");
+      return true;
+    }
+    TSizeInBytes size = requestData.expectedFileSize();
+    if (size.isEmpty()) {
+      log.debug("Expected size is zero or non-available. We trust there's enough space");
+      return true;
+    }
+    long freeSpace = sp.getSAFreeSpace(PtP.log, fileStoRI);
+    if (freeSpace != -1 && freeSpace <= size.value()) {
+      TSpaceToken SASpaceToken = sp.getTokenFromStoRI(PtP.log, fileStoRI);
+      if (SASpaceToken == null || SASpaceToken.isEmpty()) {
+        log.error(
+            "PtPChunk - ReserveSpaceStep: Unable to get a valid TSpaceToken for stori {} . Unable to verify storage area space initialization",
+            fileStoRI);
+        requestData.changeStatusSRM_FAILURE("No valid space token for the Storage Area");
+
+      } else {
+        log.debug("PtPChunk - ReserveSpaceStep: no free space on Storage Area!");
+        requestData.changeStatusSRM_FAILURE("No free space on Storage Area");
+      }
+      failure = true;
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -433,12 +526,14 @@ public class PtP implements Delegable, Chooser, Request {
     if (!preparePath(fileStoRI)) {
       return false;
     }
-    if (requestData instanceof IdentityInputData) {
-      LocalUser user = ((IdentityInputData) requestData).getUser().getLocalUser();
-      return setParentAcl(fileStoRI, user);
-    }
+    if (setupACLs) {
+      if (requestData instanceof IdentityInputData) {
+        LocalUser user = ((IdentityInputData) requestData).getUser().getLocalUser();
+        return setParentAcl(fileStoRI, user);
+      }
 
-    setHttpsServiceParentAcl(fileStoRI);
+      setHttpsServiceParentAcl(fileStoRI);
+    }
     return true;
   }
 
@@ -461,7 +556,7 @@ public class PtP implements Delegable, Chooser, Request {
   private boolean prepareDirectory(LocalFile dir) {
 
     boolean automaticDirectoryCreation =
-        Configuration.getInstance().getAutomaticDirectoryCreation();
+        StormConfiguration.getInstance().getAutomaticDirectoryCreation();
 
     if (dir.exists()) {
       if (!dir.isDirectory()) {
@@ -501,7 +596,7 @@ public class PtP implements Delegable, Chooser, Request {
 
     VirtualFS vfs;
     try {
-      vfs = NamespaceDirector.getNamespace().resolveVFSbyLocalFile(dir);
+      vfs = Namespace.getInstance().resolveVFSbyLocalFile(dir);
     } catch (NamespaceException e) {
       log.error("srmPtP: Error during used space update - {}", e.getMessage());
       return;
@@ -634,7 +729,7 @@ public class PtP implements Delegable, Chooser, Request {
   private boolean setAoTAcl(StoRI fileStori, LocalUser localUser, FilesystemPermission permission)
       throws Exception {
 
-    log.debug("SrmMkdir: Adding AoT ACL {} to user {} for directory: '{}'", permission, localUser,
+    log.debug("SrmMkdir: Adding AoT ACL {} to user {} for file: '{}'", permission, localUser,
         fileStori.getAbsolutePath());
 
     try {
@@ -700,47 +795,6 @@ public class PtP implements Delegable, Chooser, Request {
     TSpaceToken spaceToken = requestData.getSpaceToken();
     LocalFile localFile = fileStoRI.getLocalFile();
 
-    // In case of SRM Storage Area limitation enabled,
-    // the Storage Area free size is retrieved from the database
-    // and the PtP fails if there is not enougth space.
-
-    VirtualFS fs = fileStoRI.getVirtualFileSystem();
-
-    if (fs != null && fs.getProperties().isOnlineSpaceLimited()) {
-      SpaceHelper sp = new SpaceHelper();
-      long freeSpace = sp.getSAFreeSpace(PtP.log, fileStoRI);
-      if ((sp.isSAFull(PtP.log, fileStoRI))
-          || (!size.isEmpty() && ((freeSpace != -1) && (freeSpace <= size.value())))) {
-        /* Verify if the storage area space has been initialized */
-        /*
-         * If is not initialized verify if the SpaceInfoManager is currently initializing this
-         * storage area
-         */
-        TSpaceToken SASpaceToken = sp.getTokenFromStoRI(PtP.log, fileStoRI);
-        if (SASpaceToken == null || SASpaceToken.isEmpty()) {
-          log.error("PtPChunk - ReserveSpaceStep: Unable to get a valid "
-              + "TSpaceToken for stori {} . Unable to verify storage area space "
-              + "initialization", fileStoRI);
-          requestData.changeStatusSRM_FAILURE("No valid space token for the Storage Area");
-          failure = true;
-          return false;
-        } else {
-          if (!sp.isSAInitialized(PtP.log, fileStoRI)
-              && Configuration.getInstance().getDiskUsageServiceEnabled()) {
-            /* Trust we got space, let the request pass */
-            log.debug("PtPChunk: ReserveSpaceStep: the storage area space "
-                + "initialization is in progress, optimistic approach, considering "
-                + "we got enough space");
-          } else {
-            log.debug("PtPChunk - ReserveSpaceStep: no free space on Storage Area!");
-            requestData.changeStatusSRM_FAILURE("No free space on Storage Area");
-            failure = true;
-            return false;
-          }
-        }
-      }
-    }
-
     try {
 
       boolean fileWasCreated = localFile.createNewFile();
@@ -798,12 +852,9 @@ public class PtP implements Delegable, Chooser, Request {
       return true;
 
     } catch (SecurityException e) {
-      // file.createNewFile could not create file because the Java
-      // SecurityManager did not grant
-      // write premission! This indicates a possible conflict between a
-      // local system administrator
-      // who applied a strict local policy, and policies as specified by
-      // the PolicyCollector!
+      // file.createNewFile could not create file because the Java SecurityManager did not grant
+      // write permission! This indicates a possible conflict between a local system administrator
+      // who applied a strict local policy, and policies as specified by the PolicyCollector!
       requestData.changeStatusSRM_FAILURE("Space Management step in " + "srmPrepareToPut failed!");
       failure = true;
       log.error("ERROR in PtPChunk! During space reservation step in PtP, "
@@ -811,8 +862,7 @@ public class PtP implements Delegable, Chooser, Request {
           + "writing the file! ", localFile.toString(), e);
       return false;
     } catch (IOException e) {
-      // file.createNewFile could not create file because of a local IO
-      // Error!
+      // file.createNewFile could not create file because of a local IO Error!
       requestData.changeStatusSRM_FAILURE("Space Management step in " + "srmPrepareToPut failed!");
       failure = true;
       log.error(
@@ -820,7 +870,7 @@ public class PtP implements Delegable, Chooser, Request {
               + "an error occured while trying to create the file: {}; error: {}",
           localFile.toString(), e.getMessage(), e);
       return false;
-    } catch (it.grid.storm.filesystem.InvalidPermissionOnFileException e) {
+    } catch (InvalidPermissionOnFileException e) {
       // I haven t got the right to create a file as StoRM user!
       // This is thrown when executing createNewFile method!
       requestData.changeStatusSRM_FAILURE("Space Management step in " + "srmPrepareToPut failed!");
@@ -844,9 +894,9 @@ public class PtP implements Delegable, Chooser, Request {
       log.info("PtPChunk execution failed. ExpiredSpaceTokenException: {}", e.getMessage());
       return false;
     } catch (Exception e) {
-      // This could be thrown by Java from Filesystem component given that
+      // This could be thrown by Java from FileSystem component given that
       // there is GPFS under the hoods, but I do not know exactly how
-      // java.io.File behaves with an ACL capable filesystem!!
+      // java.io.File behaves with an ACL capable FileSystem!!
       requestData.changeStatusSRM_FAILURE("Space Management step in " + "srmPrepareToPut failed!");
       failure = true;
       log.error(
@@ -861,7 +911,7 @@ public class PtP implements Delegable, Chooser, Request {
 
     StorageSpaceData spaceData = null;
     try {
-      spaceData = new ReservedSpaceCatalog().getStorageSpace(spaceToken);
+      spaceData = ReservedSpaceCatalog.getInstance().getStorageSpace(spaceToken);
     } catch (TransferObjectDecodingException e) {
       log.error("Unable to build StorageSpaceData from StorageSpaceTO."
           + " TransferObjectDecodingException: {}", e.getMessage());

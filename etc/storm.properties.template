@@ -15,7 +15,7 @@
 # ============================
 # StoRM Service DNS
 # ============================
-# hostname with which the service is published
+# Host with which the SRM service is published on BDII
 storm.service.FE-public.hostname =
 
 
@@ -49,10 +49,18 @@ storm.service.SURL.default-ports =
 # FE/BE communication RDBMS
 # ============================
 #
-# Parameters to connect to the DB used as channel for the requests. 
-storm.service.request-db.host =  
-storm.service.request-db.username =   
-storm.service.request-db.passwd =  
+# Parameters to connect to the DB used as channel for the requests.
+# Deprecated since v1.12.0:
+# storm.service.request-db.host =
+# storm.service.request-db.username =
+# storm.service.request-db.passwd =
+# storm.service.request-db.properties =
+# Added v1.12.0
+storm.service.db.host =
+storm.service.db.username =
+storm.service.db.password =
+storm.service.db.port =
+storm.service.db.properties =
 
 #############################################
 ############  PROFILE PARAMETERS ############
@@ -104,8 +112,24 @@ default.storagetype = P
 # ============================
 # BE-private RDBMS
 # ============================
-persistence.internal-db.connection-pool.maxActive = 50
-persistence.internal-db.connection-pool.maxWait = 50
+
+# Removed by 1.12.0
+# persistence.internal-db.connection-pool.maxActive = 50
+# persistence.internal-db.connection-pool.maxWait = 50
+# persistence.internal-db.connection-pool.size = 50
+
+# Added with 1.12.0:
+
+# Sets the maximum permitted lifetime of a connection in milliseconds. A value of zero or less indicates an infinite lifetime.
+storm.service.db.pool.maxWaitMillis = -1
+storm.service.db.pool.testOnBorrow = true
+storm.service.db.pool.testWhileIdle = true
+
+storm.service.db.pool.stormdb.maxTotal = 500
+storm.service.db.pool.stormdb.minIdle = 50
+
+storm.service.db.pool.stormbeisam.maxTotal = 200
+storm.service.db.pool.stormbeisam.minIdle = 10
 
 
 # ============================
@@ -132,8 +156,8 @@ scheduler.chunksched.copy.queueSize=500
 # ============================
 # ASYNCH PICKER Component parameters
 # ============================
-asynch.db.ReconnectPeriod=18000
-asynch.db.DelayPeriod=30
+asynch.db.ReconnectPeriod=18000 # removed since v1.12.0
+asynch.db.DelayPeriod=30 # removed since v1.12.0
 asynch.PickingInitialDelay=1
 # Polling time in seconds for pick up new requests from DB
 asynch.PickingTimeInterval=2
@@ -211,7 +235,15 @@ purge.size=800
 #Time after that the GC consider a _terminated_ request as garbage
 #Default: 21600s (6h)
 expired.request.time=21600
-
+#
+#Time after that the GC consider an _in-progress_ PtP request as terminated
+#Deprecates "expired.inprogress.time"
+#Default: 2592000s (720h)
+expired.inprogress.ptp.time=2592000
+#
+#Time after that the GC consider an _in-progress_ BoL request as terminated
+#Default: 2592000s (720h)
+expired.inprogress.bol.time=2592000
 
 # ==========================================================
 # Expired-Put-Requests-Agent parameters
@@ -229,6 +261,9 @@ transit.delay = 10
 
 # Skip ACL setup for PtG requests
 ptg.skip-acl-setup = false
+# Skip ACL setup for PtP requests
+ptp.skip-acl-setup = false
+
 
 # The caching policy for successful name lookups from the name service.
 # The value is specified as integer to indicate the number of seconds to cache the successful lookup.

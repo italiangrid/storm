@@ -5,19 +5,30 @@
 package it.grid.storm.persistence.dao;
 
 import java.util.Collection;
-import it.grid.storm.persistence.exceptions.DataAccessException;
-import it.grid.storm.persistence.model.PtGChunkTO;
+
+import it.grid.storm.persistence.model.PtGChunkDataTO;
+import it.grid.storm.persistence.model.ReducedPtGChunkDataTO;
 import it.grid.storm.srm.types.TRequestToken;
+import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.srm.types.TStatusCode;
 
 public interface PtGChunkDAO {
 
-	public PtGChunkTO getPtGChunkDataById(Long ssId) throws DataAccessException;
+  public void addChild(PtGChunkDataTO to);
 
-	public void addPtGChunkData(PtGChunkTO ptgChunkTO) throws DataAccessException;
+  public void update(PtGChunkDataTO to);
 
-	public Collection getPtGChunksDataByToken(TRequestToken token)
-		throws DataAccessException;
+  public void updateIncomplete(ReducedPtGChunkDataTO chunkTO);
 
-	public void removePtGChunksData(PtGChunkTO ptgChunkTO)
-		throws DataAccessException;
+  public Collection<PtGChunkDataTO> find(TRequestToken requestToken);
+
+  public void fail(PtGChunkDataTO auxTO);
+
+  public Collection<TSURL> transitExpiredSRM_FILE_PINNED();
+
+  public void updateStatus(TRequestToken requestToken, int[] surlUniqueIDs,
+      String[] surls, TStatusCode statusCode, String explanation);
+
+  public void updateStatusOnMatchingStatus(TRequestToken requestToken,
+      TStatusCode expectedStatusCode, TStatusCode newStatusCode, String explanation);
 }

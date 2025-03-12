@@ -13,11 +13,11 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Maps;
 
 import it.grid.storm.balancer.Node;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 
 public enum ResponsivenessCache {
 
-  INSTANCE(Configuration.getInstance().getServerPoolStatusCheckTimeout());
+  INSTANCE(StormConfiguration.getInstance().getServerPoolStatusCheckTimeout());
 
   private static final Logger log = LoggerFactory.getLogger(ResponsivenessCache.class);
 

@@ -22,18 +22,6 @@ import it.grid.storm.synchcall.data.space.GetSpaceTokensInputData;
 import it.grid.storm.synchcall.data.space.IdentityGetSpaceTokensInputData;
 import it.grid.storm.synchcall.data.space.GetSpaceTokensOutputData;
 
-/**
- * This class is part of the StoRM project. Copyright: Copyright (c) 2008
- * Company: INFN-CNAF and ICTP/EGRID project * Execute the GetSpaceTokens
- * request.
- * 
- * @author lucamag
- * @author Alberto Forti
- * 
- * @date May 29, 2008
- * 
- */
-
 public class GetSpaceTokensCommand extends SpaceCommand implements Command {
 
   public static final Logger log = LoggerFactory
@@ -44,7 +32,7 @@ public class GetSpaceTokensCommand extends SpaceCommand implements Command {
 
   public GetSpaceTokensCommand() {
 
-    catalog = new ReservedSpaceCatalog();
+    catalog = ReservedSpaceCatalog.getInstance();
   };
 
   public OutputData execute(InputData data) {

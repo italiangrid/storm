@@ -15,7 +15,7 @@ import it.grid.storm.common.types.Port;
 import it.grid.storm.common.types.SFN;
 import it.grid.storm.common.types.SiteProtocol;
 import it.grid.storm.common.types.StFN;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.naming.SURL;
 
@@ -66,7 +66,7 @@ public class TSURL {
 		if (tsurlManaged.isEmpty()) {
 
 			TSURL checkTSURL;
-			String[] surlValid = Configuration.getInstance().getManagedSURLs();
+			String[] surlValid = StormConfiguration.getInstance().getManagedSURLs();
 			for (String checkSurl : surlValid) {
 				try {
 
@@ -83,7 +83,7 @@ public class TSURL {
 
 		if (defaultPorts.isEmpty()) {
 
-			Integer[] ports = Configuration.getInstance()
+			Integer[] ports = StormConfiguration.getInstance()
 				.getManagedSurlDefaultPorts();
 
 			for (Integer portInteger : ports) {

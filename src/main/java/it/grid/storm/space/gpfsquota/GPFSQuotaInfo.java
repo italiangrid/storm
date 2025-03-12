@@ -17,117 +17,114 @@ import it.grid.storm.util.GPFSSizeHelper;
  */
 public class GPFSQuotaInfo implements GPFSFilesetQuotaInfo {
 
-    public static GPFSQuotaInfo fromNativeQuotaInfo(VirtualFS fs, quota_info qi) {
+  public static GPFSQuotaInfo fromNativeQuotaInfo(VirtualFS fs, quota_info qi) {
 
-		return new GPFSQuotaInfo(fs, qi);
-	}
+    return new GPFSQuotaInfo(fs, qi);
+  }
 
-	private long blockHardLimit;
-	private long blockSoftLimit;
-	private long blockUsage;
+  private long blockHardLimit;
+  private long blockSoftLimit;
+  private long blockUsage;
 
-	private String filesetName;
-	private boolean quotaEnabled = false;
-	private VirtualFS VFS;
+  private String filesetName;
+  private boolean quotaEnabled = false;
+  private VirtualFS VFS;
 
-	private GPFSQuotaInfo(VirtualFS fs, quota_info qi) {
+  private GPFSQuotaInfo(VirtualFS fs, quota_info qi) {
 
-		this.VFS = fs;
-		this.filesetName = qi.getFileset_name();
-		this.blockUsage = qi.getBlock_usage();
-		this.blockHardLimit = qi.getBlock_hard_limit();
-		this.blockSoftLimit = qi.getBlock_soft_limit();
-		this.quotaEnabled = true;
-	}
+    this.VFS = fs;
+    this.filesetName = qi.getFileset_name();
+    this.blockUsage = qi.getBlock_usage();
+    this.blockHardLimit = qi.getBlock_hard_limit();
+    this.blockSoftLimit = qi.getBlock_soft_limit();
+    this.quotaEnabled = true;
+  }
 
-	public long getBlockHardLimit() {
+  public long getBlockHardLimit() {
 
-		return blockHardLimit;
-	}
+    return blockHardLimit;
+  }
 
-	public long getBlockSoftLimit() {
+  public long getBlockSoftLimit() {
 
-		return blockSoftLimit;
-	}
+    return blockSoftLimit;
+  }
 
-	public long getBlockUsage() {
+  public long getBlockUsage() {
 
-		return blockUsage;
-	}
+    return blockUsage;
+  }
 
-	public String getFilesetName() {
+  public String getFilesetName() {
 
-		return filesetName;
-	}
+    return filesetName;
+  }
 
-	@Override
-	public SizeUnit getSizeUnit() {
+  @Override
+  public SizeUnit getSizeUnit() {
 
-		return SizeUnit.BYTES;
-	}
+    return SizeUnit.BYTES;
+  }
 
-	public VirtualFS getVFS() {
+  public VirtualFS getVFS() {
 
-		return VFS;
-	}
+    return VFS;
+  }
 
-	@Override
-	public boolean isQuotaEnabled() {
+  @Override
+  public boolean isQuotaEnabled() {
 
-		return quotaEnabled;
-	}
+    return quotaEnabled;
+  }
 
-	public void setBlockHardLimit(long blockHardLimit) {
+  public void setBlockHardLimit(long blockHardLimit) {
 
-		this.blockHardLimit = blockHardLimit;
-	}
+    this.blockHardLimit = blockHardLimit;
+  }
 
-	public void setBlockSoftLimit(long blockSoftLimit) {
+  public void setBlockSoftLimit(long blockSoftLimit) {
 
-		this.blockSoftLimit = blockSoftLimit;
-	}
+    this.blockSoftLimit = blockSoftLimit;
+  }
 
-	public void setBlockUsage(long blockUsage) {
+  public void setBlockUsage(long blockUsage) {
 
-		this.blockUsage = blockUsage;
-	}
+    this.blockUsage = blockUsage;
+  }
 
-	public void setFilesetName(String filesetName) {
+  public void setFilesetName(String filesetName) {
 
-		this.filesetName = filesetName;
-	}
+    this.filesetName = filesetName;
+  }
 
-	public void setVFS(VirtualFS vFS) {
+  public void setVFS(VirtualFS vFS) {
 
-		VFS = vFS;
-	}
+    VFS = vFS;
+  }
 
-	@Override
-	public String toString() {
-		return "GPFSQuotaInfo [filesetName=" + filesetName + ", blockUsage="
-			+ getBlockUsageAsTSize() + ", blockHardLimit=" + getBlockHardLimitAsTSize() + ", blockSoftLimit="
-			+ getBlockSoftLimitAsTSize() + ", quotaEnabled=" + quotaEnabled + "]";
-	}
+  @Override
+  public String toString() {
+    return "GPFSQuotaInfo [filesetName=" + filesetName + ", blockUsage=" + getBlockUsageAsTSize()
+        + ", blockHardLimit=" + getBlockHardLimitAsTSize() + ", blockSoftLimit="
+        + getBlockSoftLimitAsTSize() + ", quotaEnabled=" + quotaEnabled + "]";
+  }
 
-	@Override
-	public TSizeInBytes getBlockUsageAsTSize() {
+  @Override
+  public TSizeInBytes getBlockUsageAsTSize() {
 
-		return TSizeInBytes.make(GPFSSizeHelper.getBytesFromKIB(getBlockUsage()), 
-			getSizeUnit());
-	}
+    return TSizeInBytes.make(GPFSSizeHelper.getBytesFromKIB(getBlockUsage()));
+  }
 
-	@Override
-	public TSizeInBytes getBlockHardLimitAsTSize() {
+  @Override
+  public TSizeInBytes getBlockHardLimitAsTSize() {
 
-		return TSizeInBytes.make(GPFSSizeHelper.getBytesFromKIB(getBlockHardLimit()), 
-			getSizeUnit());
-	}
+    return TSizeInBytes.make(GPFSSizeHelper.getBytesFromKIB(getBlockHardLimit()));
+  }
 
-	@Override
-	public TSizeInBytes getBlockSoftLimitAsTSize() {
+  @Override
+  public TSizeInBytes getBlockSoftLimitAsTSize() {
 
-		return TSizeInBytes.make(GPFSSizeHelper.getBytesFromKIB(getBlockSoftLimit()), 
-			getSizeUnit());
-	}
+    return TSizeInBytes.make(GPFSSizeHelper.getBytesFromKIB(getBlockSoftLimit()));
+  }
 
 }

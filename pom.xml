@@ -29,7 +29,8 @@
     <jerseyVersion>2.25.1</jerseyVersion>
     <jettisonVersion>1.1</jettisonVersion>
     <jettyVersion>8.1.9.v20130131</jettyVersion>
-    <jnaVersion>3.3.0</jnaVersion>
+    <jnaVersion>5.14.0</jnaVersion>
+    <jnr-posix.version>3.1.18</jnr-posix.version>
     <jsonVersion>20080701</jsonVersion>
     <junitVersion>4.13.2</junitVersion>
     <logbackVersion>1.2.3</logbackVersion>
@@ -46,17 +47,26 @@
     <xercesImplVersion>2.12.2</xercesImplVersion>
 
     <!-- maven plugins -->
-    <plugin.assembly.version>3.3.0</plugin.assembly.version>
-    <plugin.compiler.version>3.6.1</plugin.compiler.version>
-    <plugin.enforcer.version>3.0.0</plugin.enforcer.version>
-    <plugin.license.version>1.9.0</plugin.license.version>
-    <plugin.surefire.version>2.20</plugin.surefire.version>
+    <plugin.assembly.version>3.7.1</plugin.assembly.version>
+    <plugin.compiler.version>3.13.0</plugin.compiler.version>
+    <plugin.enforcer.version>3.5.0</plugin.enforcer.version>
+    <plugin.license.version>1.10.b1</plugin.license.version>
+    <plugin.surefire.version>3.5.0</plugin.surefire.version>
+    <plugin.jar.version>3.4.2</plugin.jar.version>
 
 	<!-- java -->
-    <java.version>11</java.version>
+    <java.version>17</java.version>
 
 	<!-- storm-native-libs -->
-    <nativeInterfaceVersion>1.0.7</nativeInterfaceVersion>
+    <nativeInterfaceVersion>2.1.0</nativeInterfaceVersion>
+
+    <!-- jacoco -->
+    <plugin.jacoco.version>0.8.12</plugin.jacoco.version>
+ 
+    <!-- sonar -->
+    <sonar.projectKey>italiangrid_storm</sonar.projectKey>
+    <sonar.organization>italiangrid</sonar.organization>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
@@ -82,7 +92,7 @@
             <configuration>
               <rules>
                 <requireMavenVersion>
-                  <version>3.1.1</version>
+                  <version>3.6.3</version>
                 </requireMavenVersion>
               </rules>
             </configuration>
@@ -96,8 +106,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${plugin.compiler.version}</version>
         <configuration>
-          <source>11</source>
-          <target>11</target>
+          <source>17</source>
+          <target>17</target>
       </configuration>
       </plugin>
 
@@ -158,7 +168,6 @@
         <artifactId>maven-assembly-plugin</artifactId>
         <version>${plugin.assembly.version}</version>
         <configuration>
-          <finalName>storm-backend-server</finalName>
           <appendAssemblyId>false</appendAssemblyId>
           <outputDirectory>${project.build.directory}</outputDirectory>
           <descriptors>
@@ -178,7 +187,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.0.2</version>
+        <version>${plugin.jar.version}</version>
         <configuration>
           <archive>
             <manifest>
@@ -189,6 +198,30 @@
         </configuration>
       </plugin>
 
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${plugin.jacoco.version}</version>
+        <executions>
+          <execution>
+            <id>prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report</id>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <configuration>
+              <formats>
+                <format>XML</format>
+              </formats>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -231,7 +264,7 @@
     <dependency>
       <groupId>org.italiangrid</groupId>
       <artifactId>storm-native-interface</artifactId>
-      <version>${nativeInterfaceVersion}</version>
+      <version>2.1.0</version>
     </dependency>
 
     <dependency>
@@ -303,7 +336,7 @@
 
     <dependency>
       <groupId>net.java.dev.jna</groupId>
-      <artifactId>jna</artifactId>
+      <artifactId>jna-platform</artifactId>
       <version>${jnaVersion}</version>
     </dependency>
 
@@ -368,6 +401,12 @@
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
       <version>${jsonVersion}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.jnr</groupId>
+      <artifactId>jnr-posix</artifactId>
+      <version>${jnr-posix.version}</version>
     </dependency>
 
     <dependency>

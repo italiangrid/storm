@@ -8,11 +8,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Iterator;
 
-import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,24 +22,18 @@ public class ConfigReader {
 
   private String configurationPathname = "";
 
-  public ConfigReader(String configurationPathname, int refresh) throws ConfigurationException {
+  public ConfigReader(String configurationPathname) throws ConfigurationException {
 
     checkNotNull(configurationPathname, "Null configuration pathname.");
-    int refreshRate = refresh < 0 ? 0 : refresh;
     this.configurationPathname = configurationPathname;
-    log.info("Configuration file {}. Refresh rate: {} seconds", configurationPathname, refreshRate);
+    log.info("Configuration file {}.", configurationPathname);
 
-    FileChangedReloadingStrategy strategy = new FileChangedReloadingStrategy();
-    strategy.setRefreshDelay(refreshRate);
-    PropertiesConfiguration properties = new PropertiesConfiguration(configurationPathname);
-    logPropertiesConfiguration(properties);
-    properties.setReloadingStrategy(strategy);
-    this.c = new CompositeConfiguration();
-    ((CompositeConfiguration) this.c).addConfiguration(properties);
+    c = new PropertiesConfiguration(configurationPathname);
+    logPropertiesConfiguration(c);
     log.info("Configuration read successfully.");
   }
 
-  private void logPropertiesConfiguration(PropertiesConfiguration properties) {
+  private void logPropertiesConfiguration(Configuration properties) {
 
     log.debug("Configuration properties: ");
     String key;

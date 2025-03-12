@@ -4,7 +4,7 @@
  */
 package it.grid.storm.scheduler;
 
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +44,7 @@ public class ChunkScheduler implements Scheduler, Streets {
   private WorkerPool ptpWorkerPool;
   private WorkerPool bolWorkerPool;
 
-  private ChunkScheduler(Configuration configuration) {
+  private ChunkScheduler(StormConfiguration configuration) {
 
     int ptgWorkerCorePoolSize = configuration.getPtGCorePoolSize();
     int ptgWorkerMaxPoolSize = configuration.getPtGMaxPoolSize();
@@ -81,7 +81,7 @@ public class ChunkScheduler implements Scheduler, Streets {
   public static ChunkScheduler getInstance() {
 
     if (istance == null) {
-      istance = new ChunkScheduler(Configuration.getInstance());
+      istance = new ChunkScheduler(StormConfiguration.getInstance());
     }
     return istance;
   }

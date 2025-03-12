@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import it.grid.storm.griduser.LocalUser;
 
-public class RandomWaitFilesystemAdapter implements FilesystemIF {
+public class RandomWaitFilesystemAdapter implements Filesystem {
 
   public static final Logger LOG = LoggerFactory.getLogger(RandomWaitFilesystemAdapter.class);
 
@@ -23,7 +23,7 @@ public class RandomWaitFilesystemAdapter implements FilesystemIF {
   public static final String MAX_WAIT_TIME_MSEC = "storm.fs.sleep.maxTimeMs";
   public static final String MIN_WAIT_TIME_MSEC = "storm.fs.sleep.minTimeMs";
 
-  final FilesystemIF delegate;
+  final Filesystem delegate;
   final Random random = new Random();
   int maxWaitTime = 1000;
   int minWaitTime = 10;
@@ -38,7 +38,7 @@ public class RandomWaitFilesystemAdapter implements FilesystemIF {
     return time;
   }
 
-  private RandomWaitFilesystemAdapter(FilesystemIF delegate) {
+  private RandomWaitFilesystemAdapter(Filesystem delegate) {
 
     LOG.warn("RandomWaitFilesystemAdapter is ENABLED ({} property is defined)",
         RANDOM_SLEEP_ENABLED);
@@ -52,7 +52,7 @@ public class RandomWaitFilesystemAdapter implements FilesystemIF {
   }
 
 
-  public static FilesystemIF maybeWrapFilesystem(FilesystemIF delegate) {
+  public static Filesystem maybeWrapFilesystem(Filesystem delegate) {
     if (!isNull(getProperty(RANDOM_SLEEP_ENABLED))) {
       return new RandomWaitFilesystemAdapter(delegate);
     }

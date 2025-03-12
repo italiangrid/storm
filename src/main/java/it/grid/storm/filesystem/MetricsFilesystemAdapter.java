@@ -9,7 +9,7 @@ import com.codahale.metrics.Timer;
 
 import it.grid.storm.griduser.LocalUser;
 
-public class MetricsFilesystemAdapter implements FilesystemIF {
+public class MetricsFilesystemAdapter implements Filesystem {
 
   public static enum FilesystemMetric {
     FILE_ATTRIBUTE_OP("fs.fileAttributeOp"),
@@ -32,7 +32,7 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
 
   }
 
-  final FilesystemIF delegate;
+  final Filesystem delegate;
   final MetricRegistry registry;
 
   final Timer fileAttributeAccessTimer;
@@ -42,7 +42,7 @@ public class MetricsFilesystemAdapter implements FilesystemIF {
   final Timer fileOwnershipTimer;
   final Timer getFreeSpaceTimer;
 
-  public MetricsFilesystemAdapter(FilesystemIF fs, MetricRegistry r) {
+  public MetricsFilesystemAdapter(Filesystem fs, MetricRegistry r) {
     delegate = fs;
     registry = r;
 

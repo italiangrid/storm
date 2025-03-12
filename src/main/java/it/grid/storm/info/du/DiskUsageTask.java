@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 
 import it.grid.storm.catalogs.ReservedSpaceCatalog;
-import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.namespace.model.VirtualFS;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.space.DUResult;
@@ -25,11 +24,12 @@ public class DiskUsageTask implements Runnable {
 
   private static final Logger log = LoggerFactory.getLogger(DiskUsageTask.class);
 
-  private final ReservedSpaceCatalog spaceCatalog = new ReservedSpaceCatalog();
+  private final ReservedSpaceCatalog catalog;
   private VirtualFS vfs;
 
   public DiskUsageTask(VirtualFS vfs) {
     this.vfs = vfs;
+    this.catalog = ReservedSpaceCatalog.getInstance();
   }
 
   @Override
@@ -61,7 +61,7 @@ public class DiskUsageTask implements Runnable {
     Preconditions.checkNotNull(spaceToken, "Received null spaceToken!");
     Preconditions.checkNotNull(duResult, "Received null duResult!");
 
-    StorageSpaceData ssd = spaceCatalog.getStorageSpaceByAlias(spaceToken);
+    StorageSpaceData ssd = catalog.getStorageSpaceByAlias(spaceToken);
 
     if (ssd == null) {
       failPersistence(spaceToken, "Unable to retrieve StorageSpaceData");
@@ -70,8 +70,8 @@ public class DiskUsageTask implements Runnable {
 
     try {
 
-      ssd.setUsedSpaceSize(TSizeInBytes.make(duResult.getSizeInBytes(), SizeUnit.BYTES));
-      spaceCatalog.updateStorageSpace(ssd);
+      ssd.setUsedSpaceSize(TSizeInBytes.make(duResult.getSizeInBytes()));
+      catalog.updateStorageSpace(ssd);
       log.debug("StorageSpace table updated for SA: '{}' with used size = {}", spaceToken,
           duResult.getSizeInBytes());
 

@@ -127,8 +127,8 @@ public class TSpaceToken implements Serializable {
 		list.add(this.toString());
 	}
 
-	public void encode(Map<String, String> outputParam, String fieldName) {
+	public void encode(Map<String, Object> outputParam, String fieldName) {
 
-		outputParam.put(fieldName, (String) token);
+		outputParam.put(fieldName, token);
 	}
 }

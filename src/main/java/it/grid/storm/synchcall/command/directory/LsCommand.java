@@ -20,7 +20,6 @@ import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
 import it.grid.storm.checksum.ChecksumManager;
 import it.grid.storm.common.SRMConstants;
-import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
@@ -30,9 +29,8 @@ import it.grid.storm.namespace.InvalidDescendantsEmptyRequestException;
 import it.grid.storm.namespace.InvalidDescendantsFileRequestException;
 import it.grid.storm.namespace.InvalidDescendantsPathRequestException;
 import it.grid.storm.namespace.InvalidSURLException;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
-import it.grid.storm.namespace.NamespaceInterface;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
 import it.grid.storm.srm.types.ArrayOfSURLs;
@@ -84,13 +82,13 @@ public class LsCommand extends DirectoryCommand implements Command {
 
   private static final String SRM_COMMAND = "srmLs";
 
-  private final NamespaceInterface namespace;
+  private final Namespace namespace;
 
   private boolean atLeastOneInputSURLIsDir;
 
   public LsCommand() {
 
-    namespace = NamespaceDirector.getNamespace();
+    namespace = Namespace.getInstance();
   }
 
   /**
@@ -619,10 +617,10 @@ public class LsCommand extends DirectoryCommand implements Command {
       TSizeInBytes size = TSizeInBytes.makeEmpty();
       try {
         if (!(localElement.isDirectory())) {
-          size = TSizeInBytes.make(localElement.getExactSize(), SizeUnit.BYTES);
+          size = TSizeInBytes.make(localElement.getExactSize());
           log.debug("srmLs: Extracting size for {}. Size: {}", localElement.getPath(), size);
         } else {
-          size = TSizeInBytes.make(0, SizeUnit.BYTES);
+          size = TSizeInBytes.make(0);
         }
       } catch (InvalidTSizeAttributesException ex) {
         log.error("srmLs: Unable to create the size of file.", ex);

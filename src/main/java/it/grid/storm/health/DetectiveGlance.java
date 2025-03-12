@@ -78,8 +78,7 @@ public class DetectiveGlance {
 		stormStatus.setHeapFreeSize(getHeapFreeSize());
 		stormStatus.setMAXHeapSize(getHeapMaxSize());
 		stormStatus.setHeapSize(getHeapSize());
-		SimpleBookKeeper bk = HealthDirector.getHealthMonitor()
-			.getSimpleBookKeeper();
+		SimpleBookKeeper bk = HealthMonitor.getInstance().getSimpleBookKeeper();
 		if (bk != null) {
 
 			int ptgReq = bk.getNumberOfRequest(OperationType.PTG);

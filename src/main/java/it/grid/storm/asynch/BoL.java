@@ -4,24 +4,27 @@
  */
 package it.grid.storm.asynch;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.grid.storm.authz.AuthzDirector;
 import it.grid.storm.authz.SpaceAuthzInterface;
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
-import it.grid.storm.catalogs.BoLData;
-import it.grid.storm.catalogs.RequestData;
+import it.grid.storm.catalogs.TapeRecallCatalog;
 import it.grid.storm.catalogs.surl.SURLStatusManager;
 import it.grid.storm.catalogs.surl.SURLStatusManagerFactory;
-import it.grid.storm.common.types.SizeUnit;
 import it.grid.storm.ea.StormEA;
 import it.grid.storm.filesystem.FSException;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.AbstractGridUser;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.namespace.InvalidSURLException;
-import it.grid.storm.namespace.NamespaceDirector;
+import it.grid.storm.namespace.Namespace;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
 import it.grid.storm.namespace.UnapprochableSurlException;
+import it.grid.storm.persistence.model.BoLData;
+import it.grid.storm.persistence.model.RequestData;
 import it.grid.storm.scheduler.Chooser;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.Streets;
@@ -31,17 +34,13 @@ import it.grid.storm.srm.types.TSURL;
 import it.grid.storm.srm.types.TSizeInBytes;
 import it.grid.storm.srm.types.TSpaceToken;
 import it.grid.storm.srm.types.TStatusCode;
-import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 import it.grid.storm.tape.recalltable.model.TapeRecallStatus;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Class that represents a chunk of an srmBringOnLine request: it handles a single file of a
- * multifile/directory-expansion request. StoRM then sends the chunk to a chunk-scheduler. Security
+ * multi-file/directory expansion request. StoRM then sends the chunk to a chunk-scheduler. Security
  * checks performed as follows: both in the JiT and AoT approach, policies are checked to see if the
- * Griduser has read rights on the requested SURL. If the AuthorisationCollector replies with an
+ * grid-user has read rights on the requested SURL. If the AuthorisationCollector replies with an
  * isDeny, then the request fails with SRM_AUTHORIZATION_FAILURE status. If the
  * AuthorisationCollector replies with isIndeterminate, then the request fails with SRM_FAILURE and
  * explanation string "Failure in PolicySource prevented PolicyCollector from establishing access
@@ -56,21 +55,21 @@ import org.slf4j.LoggerFactory;
  * the grid credentials get mapped; the TURL finally gets constructed. If the local file does not
  * exist the request fails with SRM_INVALID_PATH and corresponding explanation string; if the user
  * cannot be mapped locally, the request fails with SRM_FAILURE and an explanation String which
- * includes the DN used for maping; if there are internal problems constructing the TURL again the
+ * includes the DN used for mapping; if there are internal problems constructing the TURL again the
  * request fails with SRM_FAILURE. Appropriate error messages get logged. (2) Traverse permissions
  * get set on all parent directories to allow access to the file. The operation may fail for several
  * reasons: the file or any of the parent directories may have been removed resulting in
- * SRM_INVALID_PATH; StoRM cannot set the requested permissions because a filesystem mask does not
- * allow the permissions to be set up; StoRM may be configured for the wrong filesystem; StoRM has
- * not got the right permissions to manipulate the ACLs on the filesystem; StoRM may have
- * encountered an unexpected error when working with the filesystem. In all these circumstances, the
+ * SRM_INVALID_PATH; StoRM cannot set the requested permissions because a file-system mask does not
+ * allow the permissions to be set up; StoRM may be configured for the wrong file-system; StoRM has
+ * not got the right permissions to manipulate the ACLs on the file-system; StoRM may have
+ * encountered an unexpected error when working with the file-system. In all these circumstances, the
  * status changes to SRM_FAILURE, together with an appropriate explanation String, and a respective
  * log message. (3) The file size is determined. The operation may fail and hence the request too
  * gets failed, in the following circumstances: the file somehow does not exist, the path to the
- * file is not found, an error while communicating with the underlaying FileSystem, or a JVM
+ * file is not found, an error while communicating with the underlying FileSystem, or a JVM
  * SecurityManager forbids such operation. In the first two cases the state changes to
  * SRM_INVALID_PATH, while in the other ones it changes to SRM_FAILURE; proper error strings explain
- * the situation further. Error messages get logged. (3) If AoT acls are in place, then the
+ * the situation further. Error messages get logged. (3) If AoT ACLs are in place, then the
  * PinnedFilesCatalog is asked to pinExistingVolatileEntry, that is, it is asked to pin the entry if
  * it is already present thereby extending its lifetime (if it is not present, it just means that
  * the requested file is PERMANENT and there is no need to pin it); status changes to
@@ -189,7 +188,7 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
 
     StoRI fileStoRI = null;
     try {
-      fileStoRI = NamespaceDirector.getNamespace().resolveStoRIbySURL(surl, gu);
+      fileStoRI = Namespace.getInstance().resolveStoRIbySURL(surl, gu);
     } catch (IllegalArgumentException e) {
       log.error(
           "Unable to build a stori for surl '{}' and user '{}'. " + "IllegalArgumentException: {}",
@@ -306,7 +305,7 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
       StormEA.setPinned(localFile.getAbsolutePath(), expDate);
 
 
-      requestData.setFileSize(TSizeInBytes.make(localFile.length(), SizeUnit.BYTES));
+      requestData.setFileSize(TSizeInBytes.make(localFile.length()));
 
       if (isStoriOndisk(fileStoRI)) {
 
@@ -319,7 +318,7 @@ public class BoL implements Delegable, Chooser, Request, Suspendedable {
         if (gu instanceof AbstractGridUser) {
           voName = ((AbstractGridUser) gu).getVO().getValue();
         }
-        new TapeRecallCatalog().insertTask(this, voName, localFile.getAbsolutePath());
+        TapeRecallCatalog.getInstance().insertTask(this, voName, localFile.getAbsolutePath());
         backupData(localFile);
       }
 

@@ -5,10 +5,10 @@
 package it.grid.storm.asynch;
 
 import it.grid.storm.catalogs.PtPChunkCatalog;
-import it.grid.storm.catalogs.PtPPersistentChunkData;
 import it.grid.storm.catalogs.RequestSummaryCatalog;
-import it.grid.storm.catalogs.RequestSummaryData;
 import it.grid.storm.griduser.GridUserInterface;
+import it.grid.storm.persistence.model.PtPPersistentChunkData;
+import it.grid.storm.persistence.model.RequestSummaryData;
 import it.grid.storm.scheduler.Delegable;
 import it.grid.storm.scheduler.SchedulerException;
 import it.grid.storm.srm.types.TSURL;

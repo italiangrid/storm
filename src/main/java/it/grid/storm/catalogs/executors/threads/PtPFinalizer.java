@@ -1,0 +1,96 @@
+/**
+ * Copyright (c) Istituto Nazionale di Fisica Nucleare (INFN).
+ * SPDX-License-Identifier: Apache-2.0
+ */
+package it.grid.storm.catalogs.executors.threads;
+
+
+import static it.grid.storm.srm.types.TStatusCode.SRM_FAILURE;
+import static it.grid.storm.srm.types.TStatusCode.SRM_FILE_LIFETIME_EXPIRED;
+import static it.grid.storm.srm.types.TStatusCode.SRM_SPACE_AVAILABLE;
+
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import it.grid.storm.persistence.dao.PtPChunkDAO;
+import it.grid.storm.persistence.impl.mysql.PtPChunkDAOMySql;
+import it.grid.storm.srm.types.InvalidTSURLAttributesException;
+import it.grid.storm.srm.types.TSURL;
+import it.grid.storm.synchcall.command.datatransfer.PutDoneCommand;
+import it.grid.storm.synchcall.command.datatransfer.PutDoneCommandException;
+
+
+public class PtPFinalizer implements Runnable {
+
+  private static final Logger log = LoggerFactory.getLogger(PtPFinalizer.class);
+
+  private static final String NAME = "Expired-PutRequests-Agent";
+
+  private long inProgressRequestsExpirationTime;
+  private final PtPChunkDAO dao;
+
+  public PtPFinalizer(long inProgressRequestsExpirationTime) {
+
+    this.inProgressRequestsExpirationTime = inProgressRequestsExpirationTime;
+    dao = PtPChunkDAOMySql.getInstance();
+    log.info("{} created.", NAME);
+  }
+
+  @Override
+  public void run() {
+
+    log.debug("{} run.", NAME);
+    try {
+
+      transitExpiredLifetimeRequests();
+      transitExpiredInProgressRequests();
+
+    } catch (Exception e) {
+
+      log.error("{}: {}", e.getClass(), e.getMessage(), e);
+
+    }
+  }
+
+  private void transitExpiredLifetimeRequests() {
+
+    /* find all pin lifetime expired for a srmPtP */
+    Map<Long, String> expiredRequests = dao.getExpired(SRM_SPACE_AVAILABLE);
+    log.debug("{} lifetime-expired requests found ... ", NAME, expiredRequests.size());
+
+    if (expiredRequests.isEmpty()) {
+      return;
+    }
+
+    /* finalize srmPtP with a srmPd */
+    expiredRequests.entrySet().forEach(e -> executePutDone(e.getKey(), e.getValue()));
+
+    int count = dao.updateStatus(expiredRequests.keySet(), SRM_SPACE_AVAILABLE,
+        SRM_FILE_LIFETIME_EXPIRED, "Expired pinLifetime");
+    log.info("{} updated expired put requests - {} db rows affected", NAME, count);
+  }
+
+  private void executePutDone(Long id, String surl) {
+
+    try {
+
+      if (PutDoneCommand.executePutDone(TSURL.makeFromStringValidate(surl))) {
+        log.info("{} successfully executed a srmPutDone on surl {}", NAME, surl);
+      }
+
+    } catch (InvalidTSURLAttributesException | PutDoneCommandException e) {
+
+      log.error("{}. Unable to execute PutDone on request with id {} and surl {}: ", NAME, id, surl,
+          e.getMessage(), e);
+    }
+  }
+
+  private void transitExpiredInProgressRequests() {
+
+    int count = dao.transitLongTimeInProgressRequestsToStatus(inProgressRequestsExpirationTime,
+        SRM_FAILURE, "Request timeout");
+    log.debug("{} moved in-progress put requests to failure - {} db rows affected", NAME, count);
+  }
+}

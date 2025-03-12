@@ -10,7 +10,7 @@ package it.grid.storm.authz.path.conf;
 import it.grid.storm.authz.AuthzException;
 import it.grid.storm.authz.path.model.PathACE;
 import it.grid.storm.authz.path.model.PathAuthzEvaluationAlgorithm;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,9 +24,6 @@ import java.io.FileNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @author zappi
- */
 public class PathAuthzDBReader {
 
   private static final Logger log = LoggerFactory.getLogger(PathAuthzDBReader.class);
@@ -42,7 +39,7 @@ public class PathAuthzDBReader {
 
     log.info("Path Authorization : Initializing...");
     if (!(existsAuthzDBFile(filename))) {
-      String configurationPATH = Configuration.getInstance().namespaceConfigPath();
+      String configurationPATH = StormConfiguration.getInstance().namespaceConfigPath();
       if (configurationPATH.length() == 0) {
         String userDir = System.getProperty("user.dir");
         log.debug("Unable to found the configuration path. Assume: '{}'", userDir);
@@ -55,15 +52,6 @@ public class PathAuthzDBReader {
     log.debug("Loading Path Authz DB : '{}'", authzDBFilename);
     pathAuthzDB = loadPathAuthzDB(authzDBFilename);
     log.info("Path Authz DB ('{}') loaded.", pathAuthzDB.getPathAuthzDBID());
-    log.info(pathAuthzDB.toString());
-  }
-
-  public void refreshPathAuthzDB() throws Exception {
-
-    log.debug("<PathAuthzDBReader> Start refreshing.");
-    pathAuthzDB = loadPathAuthzDB(authzDBFilename);
-    log.debug("<PathAuthzDBReader> End refreshing.");
-    log.info("Path Authz DB ('{}') RE-loaded.", pathAuthzDB.getPathAuthzDBID());
     log.info(pathAuthzDB.toString());
   }
 

@@ -7,7 +7,7 @@
  */
 package it.grid.storm.tape.recalltable.persistence;
 
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.persistence.exceptions.DataAccessException;
 import it.grid.storm.persistence.model.TapeRecallTO;
 import it.grid.storm.srm.types.TRequestToken;
@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 public class PropertiesDB {
 
 	private static final Logger log = LoggerFactory.getLogger(PropertiesDB.class);
-	private static Configuration config = Configuration.getInstance();
+	private static StormConfiguration config = StormConfiguration.getInstance();
 	private final String dataFileName = "recall-table.txt";
 	private final String propertiesDBName;
 

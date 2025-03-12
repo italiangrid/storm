@@ -7,12 +7,9 @@ package it.grid.storm.ea;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Maps;
 
 import it.grid.storm.checksum.ChecksumAlgorithm;
 
@@ -43,29 +40,6 @@ public class StormEA {
   public static String getChecksumAttributeName(ChecksumAlgorithm algorithm) {
 
     return EA_CHECKSUM + algorithm.getValue().toLowerCase();
-  }
-
-  public static Map<ChecksumAlgorithm, String> getChecksums(String filename) {
-
-    Map<ChecksumAlgorithm, String> result = Maps.newHashMap();
-
-    for (ChecksumAlgorithm checksumAlgorithm : ChecksumAlgorithm.values()) {
-
-      String cksm = null;
-
-      try {
-
-        cksm = getChecksum(filename, checksumAlgorithm);
-        if (cksm != null) {
-          result.put(checksumAlgorithm, cksm);
-        }
-
-      } catch (ExtendedAttributesException e) {
-        log.warn("Cannot retrieve checksum EA for algorithm {}", checksumAlgorithm, e);
-      }
-    }
-
-    return result;
   }
 
   public static String getChecksum(String fileName, ChecksumAlgorithm algorithm) {

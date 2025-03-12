@@ -4,7 +4,7 @@
  */
 package it.grid.storm.tape.recalltable.resources;
 
-import static it.grid.storm.config.Configuration.CONFIG_FILE_PATH;
+import static it.grid.storm.config.StormConfiguration.CONFIG_FILE_PATH;
 import static it.grid.storm.tape.recalltable.resources.TaskInsertRequest.MAX_RETRY_ATTEMPTS;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -25,7 +25,7 @@ import java.util.UUID;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-
+import org.apache.commons.configuration.ConfigurationException;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -34,6 +34,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 
+import it.grid.storm.catalogs.TapeRecallCatalog;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.griduser.VONameMatchingRule;
 import it.grid.storm.namespace.NamespaceException;
 import it.grid.storm.namespace.StoRI;
@@ -46,7 +48,6 @@ import it.grid.storm.rest.metadata.service.ResourceNotFoundException;
 import it.grid.storm.rest.metadata.service.ResourceService;
 import it.grid.storm.srm.types.InvalidTRequestTokenAttributesException;
 import it.grid.storm.srm.types.TRequestToken;
-import it.grid.storm.tape.recalltable.TapeRecallCatalog;
 
 public class TaskResourceTest {
 
@@ -69,7 +70,12 @@ public class TaskResourceTest {
   private TapeRecallCatalog BROKEN_RECALL_CATALOG = getTapeRecallCatalogInsertError();
 
   static {
-    System.setProperty(CONFIG_FILE_PATH, "storm.properties");
+    try {
+      StormConfiguration.init("src/test/resources/storm.properties");
+    } catch (ConfigurationException | IOException e) {
+      e.printStackTrace();
+      fail();
+    }
   }
 
   private TapeRecallCatalog getTapeRecallCatalogInsertSuccess(UUID groupTaskId) {

@@ -20,7 +20,6 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.grid.storm.catalogs.InvalidSpaceDataAttributesException;
 import it.grid.storm.common.types.InvalidPFNAttributeException;
 import it.grid.storm.common.types.PFN;
 import it.grid.storm.common.types.SizeUnit;
@@ -28,6 +27,7 @@ import it.grid.storm.common.types.TimeUnit;
 import it.grid.storm.common.types.VO;
 import it.grid.storm.griduser.GridUserInterface;
 import it.grid.storm.griduser.GridUserManager;
+import it.grid.storm.persistence.exceptions.InvalidSpaceDataAttributesException;
 import it.grid.storm.persistence.model.StorageSpaceTO;
 import it.grid.storm.srm.types.InvalidTSizeAttributesException;
 import it.grid.storm.srm.types.InvalidTSpaceTokenAttributesException;
@@ -218,7 +218,7 @@ public class StorageSpaceData {
       this.totalSpaceSize = TSizeInBytes.makeEmpty();
       if (ssTO.getTotalSize() >= 0) {
         try {
-          this.totalSpaceSize = TSizeInBytes.make(ssTO.getTotalSize(), SizeUnit.BYTES);
+          this.totalSpaceSize = TSizeInBytes.make(ssTO.getTotalSize());
           log.trace("StorageSpaceData - TotalSize (desired): {}", this.totalSpaceSize);
         } catch (InvalidTSizeAttributesException ex1) {
           log.error("Error while constructing TotalSize (desired)", ex1);
@@ -232,7 +232,7 @@ public class StorageSpaceData {
       this.setTotalGuaranteedSize(TSizeInBytes.makeEmpty());
       if (ssTO.getGuaranteedSize() >= 0) {
         try {
-          this.totalGuaranteedSize = TSizeInBytes.make(ssTO.getGuaranteedSize(), SizeUnit.BYTES);
+          this.totalGuaranteedSize = TSizeInBytes.make(ssTO.getGuaranteedSize());
           log.trace("StorageSpaceData - TotalSize (guaranteed): {}", this.totalGuaranteedSize);
         } catch (InvalidTSizeAttributesException ex2) {
           log.error("Error while constructing SpaceGuaranteed", ex2);
@@ -247,7 +247,7 @@ public class StorageSpaceData {
       this.forceAvailableSpaceSize(TSizeInBytes.makeEmpty());
       if (ssTO.getAvailableSize() >= 0) {
         try {
-          this.forceAvailableSpaceSize(TSizeInBytes.make(ssTO.getAvailableSize(), SizeUnit.BYTES));
+          this.forceAvailableSpaceSize(TSizeInBytes.make(ssTO.getAvailableSize()));
           log.trace("StorageSpaceData - AVAILABLE size : {}", this.getAvailableSpaceSize());
         } catch (InvalidTSizeAttributesException ex3) {
           log.error("Error while constructing AvailableSpaceSize", ex3);
@@ -263,7 +263,7 @@ public class StorageSpaceData {
       if (ssTO.getFreeSize() >= 0) {
         try {
 
-          this.forceFreeSpaceSize(TSizeInBytes.make(ssTO.getFreeSize(), SizeUnit.BYTES));
+          this.forceFreeSpaceSize(TSizeInBytes.make(ssTO.getFreeSize()));
           log.trace("StorageSpaceData - FREE (= available + unavailable) size : {}",
               this.getFreeSpaceSize());
         } catch (InvalidTSizeAttributesException ex3) {
@@ -279,7 +279,7 @@ public class StorageSpaceData {
       this.usedSpaceSize = TSizeInBytes.makeEmpty();
       if (ssTO.getUsedSize() >= 0) {
         try {
-          this.usedSpaceSize = TSizeInBytes.make(ssTO.getUsedSize(), SizeUnit.BYTES);
+          this.usedSpaceSize = TSizeInBytes.make(ssTO.getUsedSize());
           log.trace("StorageSpaceData - USED size: {}", this.usedSpaceSize);
         } catch (InvalidTSizeAttributesException ex3) {
           log.error("Error while constructing UsedSpaceSize", ex3);
@@ -294,7 +294,7 @@ public class StorageSpaceData {
       this.forceBusySpaceSize(TSizeInBytes.makeEmpty());
       if (ssTO.getBusySize() >= 0) {
         try {
-          this.forceBusySpaceSize(TSizeInBytes.make(ssTO.getBusySize(), SizeUnit.BYTES));
+          this.forceBusySpaceSize(TSizeInBytes.make(ssTO.getBusySize()));
           log.trace("StorageSpaceData - BUSY (= used + reserved + unavailable) size: {}",
               this.getBusySpaceSize());
         } catch (InvalidTSizeAttributesException ex3) {
@@ -311,7 +311,7 @@ public class StorageSpaceData {
       this.unavailableSpaceSize = TSizeInBytes.makeEmpty();
       if (ssTO.getUnavailableSize() >= 0) {
         try {
-          this.unavailableSpaceSize = TSizeInBytes.make(ssTO.getUnavailableSize(), SizeUnit.BYTES);
+          this.unavailableSpaceSize = TSizeInBytes.make(ssTO.getUnavailableSize());
           log.trace("StorageSpaceData - UNAVAILABLE size: {}", this.unavailableSpaceSize);
         } catch (InvalidTSizeAttributesException ex3) {
           log.error("Error while constructing UnavailableSpaceSize", ex3);
@@ -325,7 +325,7 @@ public class StorageSpaceData {
       this.reservedSpaceSize = TSizeInBytes.makeEmpty();
       if (ssTO.getReservedSize() >= 0) {
         try {
-          this.reservedSpaceSize = TSizeInBytes.make(ssTO.getReservedSize(), SizeUnit.BYTES);
+          this.reservedSpaceSize = TSizeInBytes.make(ssTO.getReservedSize());
           log.trace("StorageSpaceData - TotalSize (reserved): {}", this.reservedSpaceSize);
         } catch (InvalidTSizeAttributesException ex2) {
           log.error("Error while constructing SpaceReserved", ex2);
@@ -528,7 +528,7 @@ public class StorageSpaceData {
         long size = this.totalSpaceSize.value() - this.usedSpaceSize.value();
         if (size >= 0) {
           try {
-            this.freeSpaceSize = TSizeInBytes.make(size, SizeUnit.BYTES);
+            this.freeSpaceSize = TSizeInBytes.make(size);
           } catch (InvalidTSizeAttributesException e) {
             log.warn("Unable to create a valid Free Size, used empty one");
             this.freeSpaceSize = TSizeInBytes.makeEmpty();
@@ -588,7 +588,7 @@ public class StorageSpaceData {
     long freeSizeValue = this.totalSpaceSize.value() - this.getUsedSpaceSize().value();
     if ((freeSizeValue < this.totalSpaceSize.value()) && (freeSizeValue >= 0)) {
       try {
-        this.freeSpaceSize = TSizeInBytes.make(freeSizeValue, SizeUnit.BYTES);
+        this.freeSpaceSize = TSizeInBytes.make(freeSizeValue);
       } catch (InvalidTSizeAttributesException e) {
         log.error(e.getMessage(), e);
       }
@@ -603,7 +603,7 @@ public class StorageSpaceData {
     long busySize = usedSizeValue + reservedSizeValue + unavailableSizeValue;
     if ((busySize < this.totalSpaceSize.value()) && (busySize >= 0)) {
       try {
-        this.busySpaceSize = TSizeInBytes.make(busySize, SizeUnit.BYTES);
+        this.busySpaceSize = TSizeInBytes.make(busySize);
       } catch (InvalidTSizeAttributesException e) {
         log.error(e.getMessage(), e);
       }
@@ -616,7 +616,7 @@ public class StorageSpaceData {
     long availableSizeValue = getTotalSpaceSize().value() - busySizeValue;
     if ((availableSizeValue < this.totalSpaceSize.value()) && (availableSizeValue >= 0)) {
       try {
-        this.availableSpaceSize = TSizeInBytes.make(availableSizeValue, SizeUnit.BYTES);
+        this.availableSpaceSize = TSizeInBytes.make(availableSizeValue);
       } catch (InvalidTSizeAttributesException e) {
         log.error(e.getMessage(), e);
       }
@@ -655,7 +655,7 @@ public class StorageSpaceData {
       } else {
         try {
           this.busySpaceSize = TSizeInBytes.make(this.usedSpaceSize.value()
-              + this.unavailableSpaceSize.value() + this.reservedSpaceSize.value(), SizeUnit.BYTES);
+              + this.unavailableSpaceSize.value() + this.reservedSpaceSize.value());
         } catch (InvalidTSizeAttributesException e) {
           log.warn("Unable to create a valid Busy Size, used empty one");
           this.busySpaceSize = TSizeInBytes.makeEmpty();
@@ -676,8 +676,8 @@ public class StorageSpaceData {
         this.availableSpaceSize = TSizeInBytes.makeEmpty();
       } else {
         try {
-          this.availableSpaceSize = TSizeInBytes
-            .make(this.totalSpaceSize.value() - this.getBusySpaceSize().value(), SizeUnit.BYTES);
+          this.availableSpaceSize =
+              TSizeInBytes.make(this.totalSpaceSize.value() - this.getBusySpaceSize().value());
         } catch (InvalidTSizeAttributesException e) {
           log.warn("Unable to produce the TSizeInBytes object from '{}' and '{}'",
               (this.totalSpaceSize.value() - this.getBusySpaceSize().value()), SizeUnit.BYTES);

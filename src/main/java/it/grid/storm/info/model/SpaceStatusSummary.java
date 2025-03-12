@@ -21,287 +21,270 @@ import org.slf4j.LoggerFactory;
 
 public class SpaceStatusSummary {
 
-	protected final String saAlias;
-	/** defined in config/db (static value) **/
-	protected final long totalSpace;
-	/** defined in config/db (static value) **/
-	// published by DIP
+  protected final String saAlias;
+  /** defined in config/db (static value) **/
+  protected final long totalSpace;
+  /** defined in config/db (static value) **/
+  // published by DIP
 
-	protected long usedSpace = -1;
-	/** info retrieved by sensors **/
-	// published by DIP
-	protected long unavailableSpace = -1;
-	/** info retrieved by sensors **/
-	protected long reservedSpace = -1;
-	/** info retrieved from DB **/
-	// published by DIP SETTED TO ZERO BECAUSE CURRENTLY RETURN FAKE VALUES
-	// For now do not consider the reserved space, a better management is needed
+  protected long usedSpace = -1;
+  /** info retrieved by sensors **/
+  // published by DIP
+  protected long unavailableSpace = -1;
+  /** info retrieved by sensors **/
+  protected long reservedSpace = -1;
+  /** info retrieved from DB **/
 
-	private static final ReservedSpaceCatalog catalog = new ReservedSpaceCatalog();
+  private static final Logger log = LoggerFactory.getLogger(SpaceStatusSummary.class);
 
-	private static final Logger log = LoggerFactory
-		.getLogger(SpaceStatusSummary.class);
+  /*****************************
+   * Constructors
+   */
 
-	/*****************************
-	 * Constructors
-	 */
+  /**
+   * @param saAlias
+   * @param totalSpace
+   * @throws IllegalArgumentException
+   */
+  public SpaceStatusSummary(String saAlias, long totalSpace) throws IllegalArgumentException {
 
-	/**
-	 * @param saAlias
-	 * @param totalSpace
-	 * @throws IllegalArgumentException
-	 */
-	public SpaceStatusSummary(String saAlias, long totalSpace)
-		throws IllegalArgumentException {
+    if (totalSpace < 0 || saAlias == null) {
+      log.error("Unable to create SpaceStatusSummary. Received illegal parameter: saAlias: "
+          + saAlias + " totalSpace: " + totalSpace);
+      throw new IllegalArgumentException(
+          "Unable to create SpaceStatusSummary. Received illegal parameter");
+    }
+    this.saAlias = saAlias;
+    this.totalSpace = totalSpace;
+  }
 
-		if (totalSpace < 0 || saAlias == null) {
-			log
-				.error("Unable to create SpaceStatusSummary. Received illegal parameter: saAlias: "
-					+ saAlias + " totalSpace: " + totalSpace);
-			throw new IllegalArgumentException(
-				"Unable to create SpaceStatusSummary. Received illegal parameter");
-		}
-		this.saAlias = saAlias;
-		this.totalSpace = totalSpace;
-	}
+  private SpaceStatusSummary(String saAlias, long usedSpace, long unavailableSpace,
+      long reservedSpace, long totalSpace) {
 
-	private SpaceStatusSummary(String saAlias, long usedSpace,
-		long unavailableSpace, long reservedSpace, long totalSpace) {
+    this.saAlias = saAlias;
+    this.usedSpace = usedSpace;
+    this.unavailableSpace = unavailableSpace;
+    this.reservedSpace = reservedSpace;
+    this.totalSpace = totalSpace;
+  }
 
-		this.saAlias = saAlias;
-		this.usedSpace = usedSpace;
-		this.unavailableSpace = unavailableSpace;
-		this.reservedSpace = reservedSpace;
-		this.totalSpace = totalSpace;
-	}
+  /**
+   * Produce a SpaceStatusSummary with fields matching exactly the ones available on the database
+   * 
+   * @param saAlias
+   * @return
+   * @throws IllegalArgumentException
+   */
+  public static SpaceStatusSummary createFromDB(String saAlias) throws IllegalArgumentException {
 
-	/**
-	 * Produce a SpaceStatusSummary with fields matching exactly the ones
-	 * available on the database
-	 * 
-	 * @param saAlias
-	 * @return
-	 * @throws IllegalArgumentException
-	 */
-	public static SpaceStatusSummary createFromDB(String saAlias)
-		throws IllegalArgumentException {
+    StorageSpaceData storageSpaceData =
+        ReservedSpaceCatalog.getInstance().getStorageSpaceByAlias(saAlias);
+    if (storageSpaceData == null) {
+      throw new IllegalArgumentException(
+          "Unable to find a storage space row for alias \'" + saAlias + "\' from storm Database");
+    } else {
+      if (!storageSpaceData.isInitialized()) {
+        log.warn("Building the SpaceStatusSummary from non initialized space with alias \'"
+            + saAlias + "\'");
+      }
+      SpaceStatusSummary summary =
+          new SpaceStatusSummary(saAlias, storageSpaceData.getUsedSpaceSize().value(),
+              storageSpaceData.getUnavailableSpaceSize().value(),
+              storageSpaceData.getReservedSpaceSize().value(),
+              storageSpaceData.getTotalSpaceSize().value());
+      return summary;
+    }
+  }
 
-		StorageSpaceData storageSpaceData = catalog.getStorageSpaceByAlias(saAlias);
-		if (storageSpaceData == null) {
-			throw new IllegalArgumentException(
-				"Unable to find a storage space row for alias \'" + saAlias
-					+ "\' from storm Database");
-		} else {
-			if (!storageSpaceData.isInitialized()) {
-				log
-					.warn("Building the SpaceStatusSummary from non initialized space with alias \'"
-						+ saAlias + "\'");
-			}
-			SpaceStatusSummary summary = new SpaceStatusSummary(saAlias,
-				storageSpaceData.getUsedSpaceSize().value(), storageSpaceData
-					.getUnavailableSpaceSize().value(), storageSpaceData
-					.getReservedSpaceSize().value(), storageSpaceData.getTotalSpaceSize()
-					.value());
-			return summary;
-		}
-	}
+  /*****************************
+   * GETTER methods
+   ****************************/
 
-	/*****************************
-	 * GETTER methods
-	 ****************************/
+  /**
+   * @return the saAlias
+   */
+  public String getSaAlias() {
 
-	/**
-	 * @return the saAlias
-	 */
-	public String getSaAlias() {
+    return saAlias;
+  }
 
-		return saAlias;
-	}
+  /**
+   * busySpace = used + unavailable + reserved
+   * 
+   * @return the busySpace
+   */
+  public long getBusySpace() {
 
-	/**
-	 * busySpace = used + unavailable + reserved
-	 * 
-	 * @return the busySpace
-	 */
-	public long getBusySpace() {
+    return this.usedSpace + this.reservedSpace + this.unavailableSpace;
+  }
 
-		return this.usedSpace + this.reservedSpace + this.unavailableSpace;
-	}
+  /**
+   * availableSpace = totalSpace - busySpace
+   * 
+   * @return
+   */
+  public long getAvailableSpace() {
 
-	/**
-	 * availableSpace = totalSpace - busySpace
-	 * 
-	 * @return
-	 */
-	public long getAvailableSpace() {
+    return this.totalSpace - this.getBusySpace();
+  }
 
-		return this.totalSpace - this.getBusySpace();
-	}
+  /**
+   * @return the usedSpace
+   */
+  public long getUsedSpace() {
 
-	/**
-	 * @return the usedSpace
-	 */
-	public long getUsedSpace() {
+    return usedSpace;
+  }
 
-		return usedSpace;
-	}
+  /**
+   * @return the unavailableSpace
+   */
+  public long getUnavailableSpace() {
 
-	/**
-	 * @return the unavailableSpace
-	 */
-	public long getUnavailableSpace() {
+    return unavailableSpace;
+  }
 
-		return unavailableSpace;
-	}
+  /**
+   * @return the reservedSpace
+   */
+  public long getReservedSpace() {
 
-	/**
-	 * @return the reservedSpace
-	 */
-	public long getReservedSpace() {
+    return reservedSpace;
+  }
 
-		return reservedSpace;
-	}
+  /**
+   * @return the totalSpace
+   */
+  public long getTotalSpace() {
 
-	/**
-	 * @return the totalSpace
-	 */
-	public long getTotalSpace() {
+    return totalSpace;
+  }
 
-		return totalSpace;
-	}
+  /**
+   * Real One freeSpace = totalSpace - used - reserved For now... freeSpace = totalSpace - used
+   * 
+   * @return the freeSpace
+   */
+  public long getFreeSpace() {
 
-	/**
-	 * Real One freeSpace = totalSpace - used - reserved For now... freeSpace =
-	 * totalSpace - used
-	 * 
-	 * @return the freeSpace
-	 */
-	public long getFreeSpace() {
+    if (this.totalSpace >= 0) {
+      // For now do not consider the reserved space, a better management is
+      // needed
+      // this.freeSpace = this.totalSpace - this.usedSpace - this.reservedSpace;
+      return this.totalSpace - this.usedSpace;
+    } else {
+      return -1;
+    }
+  }
 
-		if (this.totalSpace >= 0) {
-			// For now do not consider the reserved space, a better management is
-			// needed
-			// this.freeSpace = this.totalSpace - this.usedSpace - this.reservedSpace;
-			return this.totalSpace - this.usedSpace;
-		} else {
-			return -1;
-		}
-	}
+  /*****************************
+   * SETTER methods
+   ****************************/
 
-	/*****************************
-	 * SETTER methods
-	 ****************************/
+  /**
+   * @param usedSpace the usedSpace to set
+   */
+  public void setUsedSpace(long usedSpace) {
 
-	/**
-	 * @param usedSpace
-	 *          the usedSpace to set
-	 */
-	public void setUsedSpace(long usedSpace) {
+    this.usedSpace = usedSpace;
+  }
 
-		this.usedSpace = usedSpace;
-	}
+  /**
+   * @param unavailableSpace the unavailableSpace to set
+   */
+  public void setUnavailableSpace(long unavailableSpace) {
 
-	/**
-	 * @param unavailableSpace
-	 *          the unavailableSpace to set
-	 */
-	public void setUnavailableSpace(long unavailableSpace) {
+    this.unavailableSpace = unavailableSpace;
+  }
 
-		this.unavailableSpace = unavailableSpace;
-	}
+  /**
+   * @param reservedSpace the reservedSpace to set
+   */
+  public void setReservedSpace(long reservedSpace) {
 
-	/**
-	 * @param reservedSpace
-	 *          the reservedSpace to set
-	 */
-	public void setReservedSpace(long reservedSpace) {
+    this.reservedSpace = reservedSpace;
+  }
 
-		this.reservedSpace = reservedSpace;
-	}
+  /*******************************
+   * JSON Building
+   */
 
-	/*******************************
-	 * JSON Building
-	 */
+  /**
+   * String saAlias; long busySpace; // busySpace = used + unavailable + reserved long usedSpace;
+   * //info retrieved by sensors long unavailableSpace; // info retrieved by sensors long
+   * reservedSpace; // info retrieved from DB long totalSpace; // defined in config/db (static
+   * value) long freeSpace; // freeSpace = totalSpace - used - reserved;
+   */
+  public String getJsonFormat() {
 
-	/**
-	 * String saAlias; long busySpace; // busySpace = used + unavailable +
-	 * reserved long usedSpace; //info retrieved by sensors long unavailableSpace;
-	 * // info retrieved by sensors long reservedSpace; // info retrieved from DB
-	 * long totalSpace; // defined in config/db (static value) long freeSpace; //
-	 * freeSpace = totalSpace - used - reserved;
-	 */
-	public String getJsonFormat() {
+    String result = "";
+    StringWriter strWriter = new StringWriter();
+    Configuration config = new Configuration();
+    MappedNamespaceConvention con = new MappedNamespaceConvention(config);
 
-		String result = "";
-		StringWriter strWriter = new StringWriter();
-		Configuration config = new Configuration();
-		MappedNamespaceConvention con = new MappedNamespaceConvention(config);
+    try {
+      AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
+      w.writeStartDocument();
+      // start main element
+      w.writeStartElement("sa-status");
+      // Alias
+      w.writeStartElement("alias");
+      w.writeCharacters(this.getSaAlias());
+      w.writeEndElement();
+      // busy space
+      w.writeStartElement("busy-space");
+      w.writeCharacters("" + this.getBusySpace());
+      w.writeEndElement();
+      // used space
+      w.writeStartElement("used-space");
+      w.writeCharacters("" + this.getUsedSpace());
+      w.writeEndElement();
+      // unavailable space
+      w.writeStartElement("unavailable-space");
+      w.writeCharacters("" + this.getUnavailableSpace());
+      w.writeEndElement();
+      // reserved space
+      w.writeStartElement("reserved-space");
+      w.writeCharacters("" + this.getReservedSpace());
+      w.writeEndElement();
+      // total space
+      w.writeStartElement("total-space");
+      w.writeCharacters("" + this.getTotalSpace());
+      w.writeEndElement();
+      // free space
+      w.writeStartElement("free-space");
+      w.writeCharacters("" + this.getFreeSpace());
+      w.writeEndElement();
+      // available space
+      w.writeStartElement("available-space");
+      w.writeCharacters("" + this.getAvailableSpace());
+      w.writeEndElement();
+      // end main element
+      w.writeEndElement();
+      w.writeEndDocument();
+      w.close();
+    } catch (XMLStreamException e) {
+      log.error("Unable to produce Json representation of the object. XMLStreamException: "
+          + e.getMessage());
+    }
+    try {
+      strWriter.close();
+    } catch (IOException e) {
+      log.error(
+          "Unable to close the StringWriter for Json representation of the object. IOException: "
+              + e.getMessage());
+    }
+    result = strWriter.toString();
+    return result;
+  }
 
-		try {
-			AbstractXMLStreamWriter w = new MappedXMLStreamWriter(con, strWriter);
-			w.writeStartDocument();
-			// start main element
-			w.writeStartElement("sa-status");
-			// Alias
-			w.writeStartElement("alias");
-			w.writeCharacters(this.getSaAlias());
-			w.writeEndElement();
-			// busy space
-			w.writeStartElement("busy-space");
-			w.writeCharacters("" + this.getBusySpace());
-			w.writeEndElement();
-			// used space
-			w.writeStartElement("used-space");
-			w.writeCharacters("" + this.getUsedSpace());
-			w.writeEndElement();
-			// unavailable space
-			w.writeStartElement("unavailable-space");
-			w.writeCharacters("" + this.getUnavailableSpace());
-			w.writeEndElement();
-			// reserved space
-			w.writeStartElement("reserved-space");
-			w.writeCharacters("" + this.getReservedSpace());
-			w.writeEndElement();
-			// total space
-			w.writeStartElement("total-space");
-			w.writeCharacters("" + this.getTotalSpace());
-			w.writeEndElement();
-			// free space
-			w.writeStartElement("free-space");
-			w.writeCharacters("" + this.getFreeSpace());
-			w.writeEndElement();
-			// available space
-			w.writeStartElement("available-space");
-			w.writeCharacters("" + this.getAvailableSpace());
-			w.writeEndElement();
-			// end main element
-			w.writeEndElement();
-			w.writeEndDocument();
-			w.close();
-		} catch (XMLStreamException e) {
-			log
-				.error("Unable to produce Json representation of the object. XMLStreamException: "
-					+ e.getMessage());
-		}
-		try {
-			strWriter.close();
-		} catch (IOException e) {
-			log
-				.error("Unable to close the StringWriter for Json representation of the object. IOException: "
-					+ e.getMessage());
-		}
-		result = strWriter.toString();
-		return result;
-	}
+  @Override
+  public String toString() {
 
-	@Override
-	public String toString() {
-
-		return "SpaceStatusSummary [getSaAlias()=" + getSaAlias()
-			+ ", getBusySpace()=" + getBusySpace() + ", getAvailableSpace()="
-			+ getAvailableSpace() + ", getUsedSpace()=" + getUsedSpace()
-			+ ", getUnavailableSpace()=" + getUnavailableSpace()
-			+ ", getReservedSpace()=" + getReservedSpace() + ", getTotalSpace()="
-			+ getTotalSpace() + ", getFreeSpace()=" + getFreeSpace() + "]";
-	}
+    return "SpaceStatusSummary [getSaAlias()=" + getSaAlias() + ", getBusySpace()=" + getBusySpace()
+        + ", getAvailableSpace()=" + getAvailableSpace() + ", getUsedSpace()=" + getUsedSpace()
+        + ", getUnavailableSpace()=" + getUnavailableSpace() + ", getReservedSpace()="
+        + getReservedSpace() + ", getTotalSpace()=" + getTotalSpace() + ", getFreeSpace()="
+        + getFreeSpace() + "]";
+  }
 }

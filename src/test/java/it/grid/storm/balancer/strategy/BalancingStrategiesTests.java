@@ -4,7 +4,7 @@
  */
 package it.grid.storm.balancer.strategy;
 
-import static it.grid.storm.config.Configuration.CONFIG_FILE_PATH;
+import static it.grid.storm.config.StormConfiguration.CONFIG_FILE_PATH;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

@@ -11,10 +11,6 @@ import it.grid.storm.filesystem.FilesystemPermission;
 import it.grid.storm.filesystem.LocalFile;
 import it.grid.storm.griduser.LocalUser;
 
-/**
- * @author Michele Dibenedetto
- * 
- */
 public class AclManagerFS implements AclManager {
 
   private static AclManagerFS instance = new AclManagerFS();

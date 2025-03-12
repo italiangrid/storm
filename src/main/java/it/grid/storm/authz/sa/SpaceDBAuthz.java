@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.grid.storm.authz.sa.model.SRMSpaceRequest;
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.griduser.GridUserInterface;
 
 /**
@@ -45,7 +45,7 @@ public class SpaceDBAuthz extends SpaceAuthz {
 
   public SpaceDBAuthz(String dbFileName) {
 
-    Configuration config = Configuration.getInstance();
+    StormConfiguration config = StormConfiguration.getInstance();
     configurationPATH = config.namespaceConfigPath();
     if (existsAuthzDBFile(dbFileName)) {
       this.dbFileName = dbFileName;

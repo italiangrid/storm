@@ -4,7 +4,7 @@
  */
 package it.grid.storm.scheduler;
 
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +37,7 @@ public class CrusherScheduler implements Scheduler {
 
   private static CrusherScheduler istance = null;
 
-  private CrusherScheduler(Configuration configuration) {
+  private CrusherScheduler(StormConfiguration configuration) {
 
     workerCorePoolSize = configuration.getCorePoolSize();
     workerMaxPoolSize = configuration.getMaxPoolSize();
@@ -51,7 +51,7 @@ public class CrusherScheduler implements Scheduler {
     log.trace("CrusherScheduler.getInstance");
 
     if (istance == null) {
-      istance = new CrusherScheduler(Configuration.getInstance());
+      istance = new CrusherScheduler(StormConfiguration.getInstance());
     }
     return istance;
   }

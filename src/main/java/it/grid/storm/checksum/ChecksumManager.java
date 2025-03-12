@@ -4,15 +4,16 @@
  */
 package it.grid.storm.checksum;
 
-import it.grid.storm.config.DefaultValue;
-import it.grid.storm.ea.ExtendedAttributesException;
-import it.grid.storm.ea.StormEA;
-
 import java.io.FileNotFoundException;
-import java.util.Map;
+
+import javax.ws.rs.NotSupportedException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.grid.storm.config.DefaultValue;
+import it.grid.storm.ea.ExtendedAttributesException;
+import it.grid.storm.ea.StormEA;
 
 public class ChecksumManager {
 
@@ -95,11 +96,6 @@ public class ChecksumManager {
     }
 
     return (value != null);
-  }
-
-  public Map<ChecksumAlgorithm, String> getChecksums(String fileName) throws FileNotFoundException {
-
-    return StormEA.getChecksums(fileName);
   }
 
 }

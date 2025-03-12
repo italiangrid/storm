@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.jetty8.InstrumentedHandler;
 
-import it.grid.storm.config.Configuration;
+import it.grid.storm.config.StormConfiguration;
 import it.grid.storm.metrics.NamedInstrumentedSelectChannelConnector;
 import it.grid.storm.metrics.NamedInstrumentedThreadPool;
 import it.grid.storm.rest.JettyThread;
@@ -53,9 +53,6 @@ public final class XMLRPCHttpServer {
    */
   private boolean running = false;
 
-  public static final int DEFAULT_MAX_THREAD_NUM = 256;
-  public static final int DEFAULT_MAX_QUEUE_SIZE = 1000;
-
   /**
    * @param port
    * @param maxThreadNum
@@ -69,28 +66,17 @@ public final class XMLRPCHttpServer {
 
 
   private void configureThreadPool(Server s, int maxThreadNum, int maxQueueSize) {
-    int threadNumber = maxThreadNum;
-
-    if (threadNumber <= 0) {
-      threadNumber = DEFAULT_MAX_THREAD_NUM;
-    }
-
-    int queueSize = maxQueueSize;
-
-    if (queueSize <= 0) {
-      queueSize = DEFAULT_MAX_QUEUE_SIZE;
-    }
 
     NamedInstrumentedThreadPool tp =
         new NamedInstrumentedThreadPool("xmlrpc", METRIC_REGISTRY.getRegistry());
 
-    tp.setMaxThreads(threadNumber);
-    tp.setMaxQueued(queueSize);
+    tp.setMaxThreads(maxThreadNum);
+    tp.setMaxQueued(maxQueueSize);
 
     s.setThreadPool(tp);
 
-    LOG.info("Configured XMLRPC server threadpool: maxThreads={}, maxQueueSize={}", threadNumber,
-        queueSize);
+    LOG.info("Configured XMLRPC server threadpool: maxThreads={}, maxQueueSize={}", maxThreadNum,
+        maxQueueSize);
   }
 
 
@@ -107,13 +93,13 @@ public final class XMLRPCHttpServer {
     ServletContextHandler servletContextHandler = new ServletContextHandler();
     servletContextHandler.addServlet(new ServletHolder(servlet), "/");
 
-    Boolean isTokenEnabled = Configuration.getInstance().getXmlRpcTokenEnabled();
+    Boolean isTokenEnabled = StormConfiguration.getInstance().getXmlRpcTokenEnabled();
 
     if (isTokenEnabled) {
 
       LOG.info("Enabling security filter for XML-RPC requests");
 
-      String token = Configuration.getInstance().getXmlRpcToken();
+      String token = StormConfiguration.getInstance().getXmlRpcToken();
 
       if (token == null || token.isEmpty()) {
 
